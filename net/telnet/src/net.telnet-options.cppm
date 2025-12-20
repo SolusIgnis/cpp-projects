@@ -1,5 +1,5 @@
 /**
- * @file telnet-options.cppm
+ * @file net.telnet-options.cppm
  * @version 0.5.7
  * @release_date October 30, 2025
  *
@@ -13,18 +13,18 @@
  * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage, `:stream` for negotiation operations, `:types` for `TelnetCommand`
  */
 module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
 //Module partition interface unit
-export module telnet:options;
+export module net.telnet:options;
 
 import std; // For std::string, std::vector, std::function, std::optional, std::size_t
 
 export import :types; ///< @see "telnet-types.cppm" for `byte_t`
 
-namespace asio = boost::asio;
+//namespace asio = boost::asio;
 
-export namespace telnet {
+export namespace net::telnet {
     /**
      * @brief Class to encapsulate Telnet option data and negotiation logic.
      *
@@ -442,7 +442,7 @@ export namespace telnet {
      *
      * @remark Simplifies runtime `option` creation by forwarding arguments to the `option` constructor.
      */
-} //namespace telnet
+} // export namespace net::telnet
 
 export namespace std {
     /**
@@ -496,4 +496,4 @@ export namespace std {
             }
         } //format(const telnet::option&, FormatContext&)
     }; //class formatter<telnet::option>
-} //namespace std
+} // export namespace std

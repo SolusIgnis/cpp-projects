@@ -1,5 +1,5 @@
 /**
- * @file telnet-protocol_config.cppm
+ * @file net.telnet-protocol_config.cppm
  * @version 0.5.7
  * @release_date October 30, 2025
  *
@@ -18,7 +18,7 @@
  */
  
 // Module partition interface unit
-export module telnet:protocol_config;
+export module net.telnet:protocol_config;
 
 import std; // For std::shared_mutex, std::lock_guard, std::shared_lock, std::function, std::error_code, std::string, std::once_flag 
 
@@ -27,7 +27,7 @@ export import :errors;   ///< @see "telnet-errors.cppm" for `telnet::error` and 
 export import :concepts; ///< @see "telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
 export import :options;  ///< @see "telnet-options.cppm" for `option` and `option::id_num`
 
-export namespace telnet {
+export namespace net::telnet {
     /**
      * @brief Default configuration class for `ProtocolFSM`, encapsulating options and handlers.
      * @remark Provides thread-safe access to static members via `mutex_`.
@@ -191,4 +191,4 @@ export namespace telnet {
      * @remark Initializes `unknown_command_handler_`, `unknown_option_handler_`, and `error_logger_`.
      * @remark Called once by `initialize` under `std::call_once`.
      */
-} // namespace telnet
+} // export namespace net::telnet

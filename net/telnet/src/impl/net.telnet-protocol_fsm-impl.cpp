@@ -1,5 +1,5 @@
 /**
- * @file telnet-protocol_fsm-impl.cpp
+ * @file net.telnet-protocol_fsm-impl.cpp
  * @version 0.5.7
  * @release_date October 30, 2025
  *
@@ -11,10 +11,10 @@
  * @see "telnet-protocol_fsm.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, `:types` for `TelnetCommand` and `NegotiationDirection`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:stream` for FSM usage
  */
 module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
 //Module partition implementation unit
-module telnet:protocol_fsm;
+module net.telnet:protocol_fsm;
 
 import std; // For std::nullopt, std::optional, std::tuple, std::make_tuple, std::make_optional, std::error_code, std::format, std::string_view
 
@@ -23,9 +23,9 @@ import :errors;       ///< @see "telnet-errors.cppm" for `telnet::error` and `te
 import :options;      ///< @see "telnet-options.cppm" for `option` and `option::id_num`
 import :awaitables;   ///< @see "telnet-awaitables.cppm" for `OptionDisablementAwaitable`
 
-namespace asio = boost::asio;
+//namespace asio = boost::asio;
 
-namespace telnet {
+namespace net::telnet {
     /**
      * @internal
      * Selects the `TelnetCommand` corresponding to a given `NegotiationDirection` and enablement state 
@@ -769,4 +769,4 @@ namespace telnet {
             co_return std::make_tuple(opt, {});
         }
     } //handle_status_subnegotiation(const option&, std::vector<byte_t>)
-} //namespace telnet
+} // namespace net::telnet

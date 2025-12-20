@@ -1,5 +1,5 @@
 /**
- * @file telnet-awaitables.cppm
+ * @file net.telnet-awaitables.cppm
  * @version 0.5.7
  * @release_date October 30, 2025
  *
@@ -12,16 +12,16 @@
  * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:protocol_fsm` for handler usage, `:internal` for handler definitions
  */
 module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
-#include <boost/asio/awaitable.hpp>
+#include <asio/awaitable.hpp>
 
 // Module partition interface unit
-export module telnet:awaitables;
+export module net.telnet:awaitables;
 
 import std; // for std::move
 
-namespace asio = boost::asio;
+//namespace asio = boost::asio;
 
-export namespace telnet::awaitables {
+export namespace net::telnet::awaitables {
     /**
      * @brief Wrapper for an awaitable with a semantic tag for type safety.
      * @tparam Tag The semantic tag type.
@@ -107,4 +107,4 @@ export namespace telnet::awaitables {
      * @see `TaggedAwaitable`, `tags::SubnegotiationTag`, `:internal` (`OptionHandlerRegistry`), `:protocol_fsm` (for use)
      */
     using SubnegotiationAwaitable = TaggedAwaitable<tags::SubnegotiationTag, std::tuple<const option&, std::vector<byte_t>>>;
-} // namespace telnet::awaitables
+} // namespace net::telnet::awaitables

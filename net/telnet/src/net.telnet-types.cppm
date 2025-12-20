@@ -1,5 +1,5 @@
 /**
- * @file telnet-types.cppm
+ * @file net.telnet-types.cppm
  * @version 0.5.7
  * @release_date October 30, 2025
  *
@@ -14,18 +14,17 @@
  * @remark This module is fully inline.
  */
 //Module partition interface unit
-export module telnet:types;
+export module net.telnet:types;
 
 import std;        // For std::format, std::string_view, std::format_context
 import std.compat; // For std::uint8_t
 
-export namespace telnet {
+export namespace net::telnet {
     /**
      * @typedef byte_t
      * @brief Type alias for bytes underlying the Telnet stream.
      * @see `:stream` and `:protocol_fsm` for `byte_t` stream processing.
-     * @todo Future Development: Consider switching from `std::uint8_t` to `std::byte` when C++23 support is better.
-     */
+     * @todo Future Development: Consider switching from `std::uint8_t` to `std::byte` when C++23 support is better.     */
     using byte_t = std::uint8_t; 
     
     /**
@@ -52,7 +51,7 @@ export namespace telnet {
         DO   = 0xFD, ///< Sender requests receiver to enable option
         DONT = 0xFE, ///< Sender requests receiver to disable option
         IAC  = 0xFF  ///< Interpret As Command
-    }; //enum class TelnetCommand
+    }; // enum class TelnetCommand
     
     /**
      * @brief Enumeration representing option negotiation directions (i.e., local/remote enablement).
@@ -62,8 +61,8 @@ export namespace telnet {
     enum class NegotiationDirection {
         LOCAL,  ///< Local side ("us", sends WILL/WONT, receives DO/DONT)
         REMOTE  ///< Remote side ("them", sends DO/DONT, receives WILL/WONT)
-    }; //enum class NegotiationDirection
-} //namespace telnet
+    }; // enum class NegotiationDirection
+} // export namespace net::telnet
 
 export namespace std {
     /**
@@ -92,7 +91,7 @@ export namespace std {
                 throw std::format_error("Invalid format specifier for TelnetCommand");
             }
             return it;
-        } //parse(format_parse_context&)
+        } // parse(format_parse_context&)
 
         /**
          * @brief Formats a `TelnetCommand` value.
@@ -136,12 +135,9 @@ export namespace std {
             } else { // 'd' (default: name (0xXX))
                 return std::format_to(ctx.out(), "{} (0x{:02x})", name, std::to_underlying(cmd));
             }
-        } //format(TelnetCommand, FormatContext&)
-    }; //struct formatter<telnet::TelnetCommand>
-} //namespace std
+        } // format(TelnetCommand, FormatContext&)
+    }; // struct formatter<telnet::TelnetCommand>
 
-// Custom formatter for NegotiationDirection
-export namespace std {
     /**
      * @brief Formatter specialization for `telnet::NegotiationDirection` to support `std::format`.
      * @remark Formats `NegotiationDirection` values for use in `ProtocolConfig::log_error` during option negotiation.
@@ -161,7 +157,7 @@ export namespace std {
                 throw format_error("Invalid format specifier for NegotiationDirection");
             }
             return it;
-        } //parse(format_parse_context&)
+        } // parse(format_parse_context&)
 
         /**
          * @brief Formats a `NegotiationDirection` value.
@@ -175,5 +171,5 @@ export namespace std {
             string_view name = dir == telnet::NegotiationDirection::LOCAL ? "local" : "remote";
             return format_to(ctx.out(), "{}", name);
         } //format(NegotiationDirection, FormatContext&)
-    }; //struct formatter<telnet::NegotiationDirection>
-} //namespace std
+    }; // struct formatter<telnet::NegotiationDirection>
+} // export namespace std

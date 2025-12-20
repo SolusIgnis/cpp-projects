@@ -1,33 +1,33 @@
 /**
- * @file telnet-concepts.cppm
+ * @file net.telnet-concepts.cppm
  * @version 0.5.7
  * @release_date October 30, 2025
  *
  * @brief Module partition defining C++20 `concept`s for Telnet module type constraints.
  * @remark Defines concepts to constrain lower-layer stream/socket types for `telnet::stream`, ensuring compatibility with Boost.Asio stream socket requirements.
  * @remark Defines concept to constrain `ProtocolFSM` configurations.
- * @see RFC 854 for Telnet protocol requirements, `boost::asio::ip::tcp::socket` for stream/socket interfaces, `:stream` for `telnet::stream` usage.
+ * @see RFC 854 for Telnet protocol requirements, `asio::ip::tcp::socket` for stream/socket interfaces, `:stream` for `telnet::stream` usage.
  * 
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @see `boost::asio::ip::tcp::socket`, `boost::asio::ssl::stream`, `:stream` for `telnet::stream`
+ * @see `asio::ip::tcp::socket`, `asio::ssl::stream`, `:stream` for `telnet::stream`
  * @todo Future Development: Add concepts for TLS-specific stream requirements (e.g., for `boost::asio::ssl::stream` handshake methods).
  */
 
 module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
 // Module partition interface unit
-export module telnet:concepts;
+export module net.telnet:concepts;
 
-import asio_concepts; // For asio_concepts namespace concept definitions
+import net.asio_concepts; // For asio_concepts namespace concept definitions
 
 import std; // For std::error_code, std::size_t, std::same_as, std::convertible_to
 
-namespace asio = boost::asio;
+//namespace asio = boost::asio;
 
-export namespace telnet::concepts {
+export namespace net::telnet::concepts {
     /**
      * @concept MutableBufferSequence
      * @brief Alias for a type modeling Boost.Asio's "MutableBufferSequence" requirement.
@@ -110,4 +110,4 @@ export namespace telnet::concepts {
             { T::get_ayt_response() } -> std::same_as<std::string_view>;
             { T::set_ayt_response(msg) } -> std::same_as<void>;
         }; // concept ProtocolFSMConfig
-} // export namespace telnet::concepts
+} // export namespace net::telnet::concepts

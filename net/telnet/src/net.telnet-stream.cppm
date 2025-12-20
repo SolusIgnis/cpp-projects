@@ -1,5 +1,5 @@
 /**
- * @file telnet-stream.cppm
+ * @file net.telnet-stream.cppm
  * @version 0.5.7
  * @release_date October 30, 2025
  *
@@ -18,10 +18,10 @@
  * @todo Future Development: Consider using `asio::get_associated_executor(token)` for handler execution in `telnet::stream` to support custom executors.
  */
 module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
 // Module partition interface unit
-export module telnet:stream;
+export module net.telnet:stream;
 
 import std; // For std::error_code, std::size_t, std::vector, std::same_as
 
@@ -32,9 +32,9 @@ export import :options;      ///< @see "telnet-options.cppm" for `option` and `o
 export import :protocol_fsm; ///< @see "telnet-protocol_fsm.cppm" for `ProtocolFSM`
 export import :awaitables;   ///< @see "telnet-awaitables.cppm" for `TaggedAwaitable`
 
-namespace asio = boost::asio;
+//namespace asio = boost::asio;
 
-namespace telnet {
+namespace net::telnet {
     // Non-exported using declarations to simplify template constraints below.
     using concepts::LayerableSocketStream;
     using concepts::MutableBufferSequence;
@@ -42,9 +42,9 @@ namespace telnet {
     using concepts::ReadToken;
     using concepts::WriteToken;
     using concepts::ProtocolFSMConfig; 
-} // namespace telnet
+} // namespace net::telnet
 
-export namespace telnet {
+export namespace net::telnet {
     /**
      * @brief Stream class wrapping a next-layer stream/socket with Telnet protocol handling.
      * @remark Implements a stream interface (read/write) over a layered stream/socket.
@@ -775,4 +775,4 @@ export namespace telnet {
      * @note Used by `async_write_some`, `async_write_command`, `async_write_negotiation`, and `async_write_subnegotiation` to report errors asynchronously.
      * @see :errors for error codes, "telnet-stream-async-impl.cpp" for implementation
      */
-} // namespace telnet
+} // export namespace net::telnet

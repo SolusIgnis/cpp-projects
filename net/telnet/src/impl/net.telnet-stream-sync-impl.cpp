@@ -1,5 +1,5 @@
 /**
- * @file telnet-stream-sync-impl.cpp
+ * @file net.telnet-stream-sync-impl.cpp
  * @version 0.5.7
  * @release_date October 30, 2025
  *
@@ -13,10 +13,10 @@
  * @see "telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
  */
 module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
 // Module partition implementation unit
-module telnet:stream;
+module net.telnet:stream;
 
 import std; // For std::size_t, std::system_error
 
@@ -26,9 +26,9 @@ import :concepts;     ///< @see "telnet-concepts.cppm" for `telnet::concepts::La
 import :options;      ///< @see "telnet-options.cppm" for `option`
 import :protocol_fsm; ///< @see "telnet-protocol_fsm.cppm" for `ProtocolFSM`
 
-namespace asio = boost::asio;
+//namespace asio = boost::asio;
 
-namespace telnet {
+namespace net::telnet {
     //=========================================================================================================
     // Synchronous throwing wrappers use `sync_await` to execute their asynchronous counterparts.
     //=========================================================================================================
@@ -311,4 +311,4 @@ namespace telnet {
             return 0;
         }
     } // stream::send_synch(std::error_code&) noexcept
-} // namespace telnet
+} // namespace net::telnet

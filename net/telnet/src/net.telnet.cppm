@@ -1,5 +1,5 @@
 /**
- * @file telnet.cppm
+ * @file net.telnet.cppm
  * @version 0.5.7
  * @release_date October 30, 2025
  *
@@ -22,12 +22,12 @@
  * @todo Future Development: Clean up exports to ensure types never accessed by external users are not exported. 
  */
 // Primary module interface unit
-export module telnet;
+export module net.telnet;
 
 // Export all partition interfaces
-export import :types;        ///< @see "telnet-types.cppm"
-export import :errors;       ///< @see "telnet-errors.cppm"
-export import :concepts;     ///< @see "telnet-concepts.cppm"
-export import :options;      ///< @see "telnet-options.cppm"
-export import :protocol_fsm; ///< @see "telnet-protocol_fsm.cppm"
-export import :stream;       ///< @see "telnet-stream.cppm"
+export import :types;        ///< @see "net.telnet-types.cppm"
+export import :errors;       ///< @see "net.telnet-errors.cppm"
+export import :concepts;     ///< @see "net.telnet-concepts.cppm"
+export import :options;      ///< @see "net.telnet-options.cppm"
+export import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm"
+export import :stream;       ///< @see "net.telnet-stream.cppm"

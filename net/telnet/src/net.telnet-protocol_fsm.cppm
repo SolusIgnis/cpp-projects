@@ -1,5 +1,5 @@
 /**
- * @file telnet-protocol_fsm.cppm
+ * @file net.telnet-protocol_fsm.cppm
  * @version 0.5.7
  * @release_date October 30, 2025
  *
@@ -18,10 +18,10 @@
  * @todo Phase 6: Add optional half-duplex support (RFC 854) if legacy peer requirements arise.
  */
 module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
 //Module partition interface unit
-export module telnet:protocol_fsm;
+export module net.telnet:protocol_fsm;
 
 import std; // For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec, std::format
 
@@ -34,13 +34,14 @@ export import :awaitables; ///< @see "telnet-awaitables.cppm" for `TaggedAwaitab
 import :internal;          ///< @see "telnet-internal.cppm" for implementation classes
 import :protocol_config;   ///< @see "telnet-protocol_config.cppm" for `DefaultProtocolFSMConfig`
 
-namespace asio = boost::asio;
-namespace telnet {
+//namespace asio = boost::asio;
+
+namespace net::telnet {
     // Non-exported using declarations to simplify template constraints below.
     using concepts::ProtocolFSMConfig;
-} // namespace telnet
+} // namespace net::telnet
 
-export namespace telnet {
+export namespace net::telnet {
     /**
      * @brief Finite State Machine for Telnet protocol processing.
      * @tparam ConfigT Configuration class defining options and handlers (defaults to `DefaultProtocolFSMConfig`).
@@ -373,4 +374,4 @@ export namespace telnet {
      * @remark The returned `SubnegotiationAwaitable` is processed by `InputProcessor` to pass the payload to `stream::async_write_subnegotiation`, which adds `IAC` `SB` `STATUS` ... `IAC` `SE` framing.
      * @see RFC 859, `:internal` for `OptionStatusDB`, `:options` for `option`, `:awaitables` for `SubnegotiationAwaitable`, `:stream` for `async_write_subnegotiation`
      */
-} //namespace telnet
+} // export namespace net::telnet

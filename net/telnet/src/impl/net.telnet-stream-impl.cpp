@@ -1,5 +1,5 @@
 /**
- * @file telnet-stream-impl.cpp
+ * @file net.telnet-stream-impl.cpp
  * @version 0.5.7
  * @release_date October 30, 2025
  *
@@ -12,10 +12,10 @@
  * @see "telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option::id_num`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
  */
 module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
-#include <boost/asio.hpp>
+#include <asio.hpp>
 
 // Module partition implementation unit
-module telnet:stream;
+module net.telnet:stream;
 
 import std; // For std::promise, std::future, std::jthread, std::exception_ptr, std::make_tuple
 
@@ -26,9 +26,9 @@ import :options;      ///< @see "telnet-options.cppm" for `option` and `option::
 import :protocol_fsm; ///< @see "telnet-protocol_fsm.cppm" for `ProtocolFSM`
 import :awaitables;   ///< @see "telnet-awaitables.cppm" for awaitable types
 
-namespace asio = boost::asio;
+//namespace asio = boost::asio;
 
-namespace telnet {
+namespace net::telnet {
     /**
      * @internal
      * Moves the provided `next_layer_stream` into `next_layer_`, default-constructs `fsm_`, and enables SO_OOBINLINE.
@@ -591,4 +591,4 @@ namespace telnet {
             std::forward<Self>(self)
         );
     } // stream::InputProcessor::do_response(TaggedAwaitable<Tag, T, Awaitable>, Self&&)
-} // namespace telnet
+} // namespace net::telnet

@@ -1,5 +1,5 @@
 /**
- * @file telnet-internal.cppm
+ * @file net.telnet-internal.cppm
  * @version 0.5.7
  * @release_date October 30, 2025
  *
@@ -12,11 +12,11 @@
  * @remark Not intended for direct use by external code; serves as an implementation detail for other partitions.
  * @see RFC 855 for Telnet option negotiation, `:types` for `TelnetCommand`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:protocol_fsm` for usage
  */
-module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
-#include <boost/asio.hpp>
+module; //Including Asio in the Global Module Fragment until importable header units are reliable.
+#include <asio.hpp>
 
 //Module partition interface unit
-export module telnet:internal;
+export module net.telnet:internal;
 
 import std;        // For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec
 import std.compat; // For std::uint8_t (needed for bit-field type specifier)
@@ -27,9 +27,9 @@ import :concepts;     ///< @see "telnet-concepts.cppm" for `telnet::concepts::Pr
 import :options;    ///< @see "telnet-options.cppm" for `option` and `option::id_num`
 import :awaitables; ///< @see "telnet-awaitables.cppm" for `TaggedAwaitable`, semantic tags, and type aliases
 
-namespace asio = boost::asio;
+//namespace asio = boost::asio;
 
-export namespace telnet {
+export namespace net::telnet {
     /**
      * @brief Registry for managing Telnet option handlers.
      * @tparam ProtocolConfig Configuration class providing logging and error handling.
@@ -585,4 +585,4 @@ export namespace telnet {
      *
      * @remark Provides read-only access to the status record.
      */
-} //namespace telnet
+} //export namespace net::telnet

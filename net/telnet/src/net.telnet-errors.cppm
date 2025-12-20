@@ -1,5 +1,5 @@
 /**
- * @file telnet-errors.cppm
+ * @file net.telnet-errors.cppm
  * @version 0.5.7
  * @release_date October 30, 2025
  *
@@ -14,11 +14,11 @@
  * @todo Future Development: Define and integrate `std::error_condition` mappings for both `error` and `processing_signal`.
  */
 //Module partition interface unit
-export module telnet:errors;
+export module net.telnet:errors;
 
 import std; // For std::error_category, std::error_code, std::string, std::true_type
 
-export namespace telnet {
+export namespace net::telnet {
     /**
      * @brief Telnet-specific error codes for protocol and stream operations.
      * @see RFC 854 for `protocol_violation`, `:protocol_fsm` for `telnet::error` usage, `:stream` for stream-related errors
@@ -203,7 +203,7 @@ export namespace telnet {
     inline std::error_code make_error_code(processing_signal s) {
         return std::error_code(static_cast<int>(s), telnet_processing_signal_category::instance());
     }
-} //namespace telnet
+} //namespace net::telnet
 
 namespace std {
     /**
