@@ -1,14 +1,16 @@
 /**
  * @file telnet-options.cppm
- * @version 0.2.0
- * @release_date September 19, 2025
+ * @version 0.3.0
+ * @release_date September 29, 2025
+ *
  * @brief Interface for Telnet option handling.
- * @remark Defines option class, option::id_num enumeration, and associated predicates/handlers.
+ * @remark Defines `option` class, `option::id_num` enumeration, and associated predicates/handlers.
+ *
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @remark This module is fully inline. An implementation unit MAY be added in Phase 3 for complex option logic.
- * @see RFC 855 for Telnet option negotiation, telnet:protocol_fsm for option usage, telnet:socket for negotiation operations, telnet:types for Telnet commands
+ * @remark This module is fully inline. An implementation unit MAY be added in Phase 5 for complex option logic.
+ * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage, `:socket` for negotiation operations, `:types` for `TelnetCommand`
  */
 module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
 #include <boost/asio.hpp>
@@ -17,172 +19,203 @@ namespace asio = boost::asio;
 //Module partition interface unit
 export module telnet:options;
 
-import std;        // For std::string, std::vector, std::function, std::optional, std::size_t
-import std.compat; // For std::uint8_t
+import std; // For std::string, std::vector, std::function, std::optional, std::size_t
+
+export import :types; ///< @see telnet-types.cppm for `byte_t`
 
 export namespace telnet {
     /**
      * @brief Class to encapsulate Telnet option data and negotiation logic.
-     * @note Option support is defined by an option instance in ProtocolFSM; subnegotiation support is indicated by a non-null subnegotiation handler.
-     * @remark Comparisons (==, !=, <, >, <=, >=) are based on id_num; implicit conversion to id_num allows mixed comparisons.
-     * @todo Phase 3: Revisit virtual methods (e.g., `option_base` with `handle_subnegotiation`) if custom option handlers require polymorphic behavior.
-     * @todo Phase 3: Consider `std::vector<SubnegotiationHandler>` if distinct, independent actions cannot be combined into a single lambda.
-     * @todo Future Development: Use C++23 reflection to populate option names automatically.
-     * @see RFC 855 for Telnet option negotiation, telnet:protocol_fsm for option usage in the protocol state machine, telnet:socket for negotiation operations, telnet:types for Telnet commands.
+     *
+     * @note Option support is defined by an `option` instance in `ProtocolFSM`; subnegotiation support is indicated by a non-null subnegotiation handler.
+     * @remark Comparisons (==, !=, <, >, <=, >=) are based on `id_num`; implicit conversion to `id_num` allows mixed comparisons.
+     * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage in the protocol state machine, `:socket` for negotiation operations, `:types` for `TelnetCommand`.
+     *
+     * @todo Future Development: Use C++26 reflection to populate option names automatically.
      */
     class option {
     public:
         /**
-         * @brief Nested enumeration of Telnet option IDs as defined in the IANA Telnet Option Registry and MUD-specific extensions.
-         * @note All 256 possible std::uint8_t values are valid for proprietary extensions.
-         * @todo Phase 3: Review options list for completeness.
-         * @todo Phase 3: Review options for potential internal implementation or implementation as a library extension.
-         * @see IANA Telnet Option Registry, RFC 855 for Telnet option negotiation, telnet:protocol_fsm for option processing, telnet:socket for negotiation operations.
+         * @details Nested enumeration of Telnet option IDs as defined in the IANA Telnet Option Registry and MUD-specific extensions.
+         * @note All 256 possible `byte_t` values are valid for proprietary extensions.
+         *
+         * @todo Phase 5: Review options list for completeness.
+         * @todo Phase 5: Review options for potential internal implementation or implementation as a library extension.
          */
-        enum class id_num : std::uint8_t;
-
-        using EnablePredicate = std::function<bool(id_num)>;
-        using SubnegotiationHandler = std::function<void(const id_num, const std::vector<std::uint8_t>&)>;
+        enum class id_num : byte_t;
 
         /**
-         * @brief Constructs an option with the given ID and optional parameters.
-         * @param id The Telnet option ID.
-         * @param name The option name (default empty; populated in Phase 3 with reflection).
-         * @param local_pred Predicate for local support (default rejects).
-         * @param remote_pred Predicate for remote support (default rejects).
-         * @param subneg_handler Handler for subnegotiation data (default nullopt).
-         * @param max_subneg_size Maximum subnegotiation buffer size (<=0 for unlimited; default MAX_SUBNEGOTIATION_SIZE).
+         * @typedef EnablePredicate
+         * @brief Function type for predicates determining local or remote option support.
+         *
+         * @param id The `option::id_num` to evaluate.
+         * @return True if the option is supported, false otherwise.
          */
+        using EnablePredicate = std::function<bool(id_num)>;
+
+        /// @brief Constructs an `option` with the given ID and optional parameters.
         explicit option(id_num id, std::string name = "",
                         EnablePredicate local_pred = always_reject,
                         EnablePredicate remote_pred = always_reject,
-                        std::optional<SubnegotiationHandler> subneg_handler = std::nullopt,
+                        bool subneg_supported = false,
                         size_t max_subneg_size = MAX_SUBNEGOTIATION_SIZE)
             : id_(id), name_(std::move(name)),
               local_predicate_(std::move(local_pred)), remote_predicate_(std::move(remote_pred)),
-              subnegotiation_handler_(std::move(subneg_handler)),
+              supports_subnegotiation_(subneg_supported),
               max_subneg_size_(max_subneg_size) {}
 
-        /**
-         * @brief Factory to create common option instances.
-         * @param id The Telnet option ID byte.
-         * @param name The option name (required for debuggability).
-         * @param local_supported Whether the option is supported locally (default false).
-         * @param remote_supported Whether the option is supported remotely (default false).
-         * @param subneg_handler Handler for subnegotiation data (default nullopt).
-         * @param max_subneg_size Maximum subnegotiation buffer size (default MAX_SUBNEGOTIATION_SIZE).
-         * @return An option instance configured for the given TelOpt number.
-         */
+        /// @brief Factory to create common `option` instances.
         static option make_option(id_num id, std::string name,
-                                 bool local_supported = false, bool remote_supported = false,
-                                 std::optional<SubnegotiationHandler> subneg_handler = std::nullopt,
+                                 bool local_supported = false,
+                                 bool remote_supported = false,
+                                 bool subneg_supported = false,
                                  size_t max_subneg_size = MAX_SUBNEGOTIATION_SIZE) {
             EnablePredicate local_pred = local_supported ? always_accept : always_reject;
             EnablePredicate remote_pred = remote_supported ? always_accept : always_reject;
             return option(id, std::move(name), std::move(local_pred), std::move(remote_pred),
-                          std::move(subneg_handler), max_subneg_size);
+                          subneg_supported, max_subneg_size);
         }
-
-        /**
-         * @brief Implicit conversion to id_num.
-         * @return The option's ID.
-         */
-        operator id_num() const noexcept { return id_; }
-
-        /**
-         * @brief Three-way comparison operator for ordering and equality.
-         * @param other The other option to compare with.
-         * @return The result of comparing id_ values.
-         */
-        auto operator<=>(const option& other) const noexcept {
+        
+        /// @brief Three-way comparison operator for ordering and equality.
+        constexpr auto operator<=>(const option& other) const noexcept {
             return id_ <=> other.id_;
         }
+        
+        /// @brief Three-way comparison operator for ordering and equality.
+        constexpr auto operator<=>(option::id_num other_id) const noexcept {
+        	return id_ <=> other_id;
+        }
+        
+        /// @brief Implicitly converts to `option::id_num`.
+        operator id_num() const noexcept { return id_; }
 
-        /**
-         * @brief Gets the option ID.
-         * @return The Telnet option ID.
-         */
+        /// @brief Gets the Telnet `option::id_num`.
         id_num get_id() const noexcept { return id_; }
 
-        /**
-         * @brief Gets the option name.
-         * @return The user-provided name or empty string.
-         */
+        /// @brief Gets the `option` name.
         const std::string& get_name() const noexcept { return name_; }
 
-        /**
-         * @brief Checks if the option is supported locally.
-         * @return True if the option is supported locally, false otherwise.
-         */
+        /// @brief Evaluates the local predicate to determine if the `option` can be enabled locally.
         bool supports_local() const noexcept { return local_predicate_(id_); }
 
-        /**
-         * @brief Checks if the option is supported remotely.
-         * @return True if the option is supported remotely, false otherwise.
-         */
+        /// @brief Evaluates the remote predicate to determine if the `option` can be enabled remotely.
         bool supports_remote() const noexcept { return remote_predicate_(id_); }
 
-        /**
-         * @brief Handles subnegotiation data if a handler is set.
-         * @param data The subnegotiation data.
-         */
-        void handle_subnegotiation(const std::vector<uint8_t>& data) const noexcept {
-            if (subnegotiation_handler_) {
-                (*subnegotiation_handler_)(id_, data);
-            }
-        }
-
-        /**
-         * @brief Gets the maximum subnegotiation buffer size.
-         * @return The maximum buffer size (<=0 for unlimited).
-         */
+        /// @brief Gets the maximum subnegotiation buffer size.
         size_t max_subnegotiation_size() const noexcept { return max_subneg_size_; }
 
-        /**
-         * @brief Checks if the option supports subnegotiation.
-         * @return True if a non-null subnegotiation handler is set, false otherwise.
-         */
-        bool supports_subnegotiation() const noexcept { return subnegotiation_handler_.has_value(); }
+        /// @brief Checks if the `option` supports subnegotiation.
+        bool supports_subnegotiation() const noexcept { return supports_subnegotiation_; }
 
-        /**
-         * @brief Sets the subnegotiation handler for this option.
-         * @param handler The new subnegotiation handler (nullopt to disable).
-         */
-        void set_subnegotiation_handler(std::optional<SubnegotiationHandler> handler) noexcept {
-            subnegotiation_handler_ = std::move(handler);
-        }
-
-        /**
-         * @brief Predicate that always accepts the option.
-         * @return True.
-         */
+        /// @brief Predicate that always accepts the `option`.
         static bool always_accept(id_num) noexcept { return true; }
 
-        /**
-         * @brief Predicate that always rejects the option.
-         * @return False.
-         */
+        /// @brief Predicate that always rejects the `option`.
         static bool always_reject(id_num) noexcept { return false; }
 
     private:
         static constexpr size_t MAX_SUBNEGOTIATION_SIZE = 1024;
         
-        id_num id_;
-        std::string name_;
+        const id_num id_;
+        const std::string name_;
         
-        EnablePredicate local_predicate_;
-        EnablePredicate remote_predicate_;
+        const EnablePredicate local_predicate_;
+        const EnablePredicate remote_predicate_;
         
-        std::optional<SubnegotiationHandler> subnegotiation_handler_;
+        const bool supports_subnegotiation_;
         
-        size_t max_subneg_size_;
+        const size_t max_subneg_size_;
     }; //class option
-
+    
     /**
-     * @brief Enumeration of Telnet option ID bytes
-     * @see IANA Telnet Option Registry, RFC 855 for Telnet option negotiation, telnet:protocol_fsm for option processing, telnet:socket for negotiation operations.
+     * @fn explicit option::option(id_num id, std::string name, EnablePredicate local_pred, EnablePredicate remote_pred, bool subneg_supported, size_t max_subneg_size)
+     *
+     * @param id The Telnet `option::id_num`.
+     * @param name The option name (default empty; populated in C++26? with reflection).
+     * @param local_pred Predicate for local support (default `always_reject`).
+     * @param remote_pred Predicate for remote support (default `always_reject`).
+     * @param subneg_supported Does the `option` support subnegotiation handler registration (default `false`).
+     * @param max_subneg_size Maximum subnegotiation buffer size (<=0 for unlimited; default `MAX_SUBNEGOTIATION_SIZE`).
      */
-    enum class option::id_num : std::uint8_t {
+    /**
+     * @fn static option option::make_option(id_num id, std::string name, bool local_supported, bool remote_supported, bool subneg_supported, size_t max_subneg_size)
+     *
+     * @param id The Telnet `option::id_num` byte.
+     * @param name The option name (required for debuggability).
+     * @param local_supported Whether the `option` is supported locally (default false).
+     * @param remote_supported Whether the `option` is supported remotely (default false).
+     * @param subneg_supported Whether the `option` supports subnegotiation handlers (default false).
+     * @param max_subneg_size Maximum subnegotiation buffer size (default `MAX_SUBNEGOTIATION_SIZE`).
+     * @return An `option` instance configured for the given `option::id_num`.
+     */
+    /**
+     * @fn constexpr auto option::operator<=>(const option& other) const noexcept
+     *
+     * @param other The other `option` to compare with.
+     * @return The result of comparing `id_` values.
+     */
+    /**
+     * @fn constexpr auto option::operator<=>(option::id_num other_id) const noexcept
+     *
+     * @param other_id The other `option::id_num` to compare with.
+     * @return The result of comparing `id_num` values.
+     */
+    /**
+     * @fn option::operator id_num() const noexcept
+     *
+     * @return The `option`’s ID.
+     *
+     * @remark Enables implicit conversion to `option::id_num` for use in option identification.
+     */
+    /**
+     * @fn id_num option::get_id() const noexcept
+     *
+     * @return The `option`'s ID.
+     */
+    /**
+     * @fn const std::string& option::get_name() const noexcept
+     *
+     * @return The user-provided name or empty string.
+     */
+    /**
+     * @fn bool option::supports_local() const noexcept
+     *
+     * @return True if the `option` can be enabled locally, false otherwise. 
+     */
+    /**
+     * @fn bool option::supports_remote() const noexcept
+     *
+     * @return True if the `option` can be enabled remotely, false otherwise. 
+     */
+    /**
+     * @fn size_t option::max_subnegotiation_size() const noexcept
+     *
+     * @return The maximum subnegotiation buffer size (<=0 for unlimited).
+     */
+    /**
+     * @fn bool option::supports_subnegotiation() const noexcept
+     *
+     * @return True if subnegotiation handlers are allowed, false otherwise.
+     */
+    /**
+     * @fn static bool option::always_accept(id_num) noexcept
+     *
+     * @param id The `option::id_num` to evaluate (unused).
+     * @return True.
+     */
+    /**
+     * @fn static bool option::always_reject(id_num) noexcept
+     *
+     * @param id The `option::id_num` to evaluate (unused).
+     * @return False.
+     */
+    
+    /**
+     * @brief Enumeration of Telnet option ID bytes.
+     *
+     * @see IANA Telnet Option Registry, RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` processing, `:socket` for negotiation operations.
+     */
+    enum class option::id_num : byte_t {
         BINARY                             = 0x00, ///< Binary Transmission (@see RFC 856)
         ECHO                               = 0x01, ///< Echo (@see RFC 857)
         RECONNECTION                       = 0x02, ///< Reconnection (NIC 15391 of 1973)
@@ -245,4 +278,143 @@ export namespace telnet {
         /* Range 0x8D-0xFE Unused per IANA */
         EXTENDED_OPTIONS_LIST              = 0xFF  ///< Extended-Options-List (@see RFC 861)
     }; //enum class option::id_num
+    
+    /**
+     * @brief Thread-safe registry for managing `option` instances in the protocol state machine.
+     * @remark Used by `ProtocolFSM` to store and query supported Telnet options.
+     * @remark The `std::initializer_list` constructor enforces sorted input by `option::id_num` at compile time using `static_assert`, ensuring O(n) `std::set` construction. Unsorted inputs cause compilation failure. All accessor methods are atomic via `std::shared_mutex`, supporting concurrent reads and exclusive writes.
+     * @warning Methods are guaranteed atomic by `std::shared_mutex`, but chaining operations is NOT thread-safe; however `get` followed by `upsert` provides snapshot consistency.
+     * @todo Phase 5: Review likely upper bounds of n (vs theoretical bound of n=256) in light of scalability of `std::set` for large option sets and consider alternative containers (e.g., pre-filled vector) if lookup performance becomes a bottleneck.
+     * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage in the protocol state machine, `:socket` for negotiation operations, `:types` for `TelnetCommand`, `option` for option details.
+     */
+    class option_registry {
+    public:
+        /// @brief Constructs a registry from a sorted initializer list of `option` instances.
+        option_registry(std::initializer_list<option> init) {
+            static_assert(
+                std::is_sorted(init.begin(), init.end(), std::less<>{}),
+                "Initializer list must be sorted by option::id_num"
+            );
+            registry_ = std::set<option, std::less<>>(init.begin(), init.end());
+        } //option_registry(std::initializer_list<option>)
+    
+        /// @brief Constructs a registry from a pre-constructed `std::set` of `option` instances.
+        option_registry(std::set<option, std::less<>>&& init) : registry_(std::move(init)) {}
+
+        /// @brief Retrieves an `option` by its ID.
+        std::optional<option> get(option::id_num opt_id) const noexcept {
+            std::shared_lock<std::shared_mutex> lock(mutex_);
+            auto it = registry_.find(opt_id);
+            if (it != registry_.end()) {
+                return *it;
+            } else {
+                return std::nullopt;
+            }
+        } //get(option::id_num)
+
+        /// @brief Checks if an `option` is present in the registry.
+        bool has(option::id_num opt_id) const noexcept {
+            std::shared_lock<std::shared_mutex> lock(mutex_);
+            return (registry_.find(opt_id) != registry_.end());
+        } //has(option::id_num)
+
+        /// @brief Inserts or updates an `option` in the registry.
+        const option& upsert(const option& opt) {
+            std::lock_guard<std::shared_mutex> lock(mutex_);
+            auto [add_result, success] = registry_.insert(opt);
+            if (success) {
+                return *add_result;
+            } else {
+                // Use iterator from erase as hint to insert new option at same position, optimizing insertion to O(1)
+                auto [replace_result, _] = registry_.insert(registry_.erase(add_result), opt);
+                return *replace_result;
+            }
+        } //upsert(const option&)
+
+        /// @brief Inserts or updates an `option` with error handling.
+        void upsert(const option& opt, std::error_code& ec) noexcept {
+            try {
+                upsert(opt); // the mutex is locked inside this call
+            } catch (const std::system_error& e) {
+                ec = e.code();
+            } catch (std::bad_alloc) {
+                ec = make_error_code(std::errc::not_enough_memory);
+            } catch (...) {
+                ec = make_error_code(error::internal_error);
+            }
+        } //upsert(const option&, std::error_code&)
+
+        /// @brief Inserts or updates an `option` constructed from arguments.
+        template<typename... Args>
+        const option& upsert(option::id_num opt_id, Args&&... args) {
+            return upsert(option{opt_id, std::forward<Args>(args)...});
+        } //upsert(option::id_num, Args...)
+    
+    private:
+        std::set<option, std::less<>> registry_;
+        mutable std::shared_mutex mutex_;
+    }; // class option_registry
+    /**
+     * @fn option_registry::option_registry(std::initializer_list<option> init)
+     *
+     * @param init Initializer list of `option` instances, must be sorted by `option::id_num`.
+     *
+     * @pre `init` Initializer list MUST be sorted by `option::id_num` in ascending order (enforced at compile time by `static_assert`).
+     * @remark Ensures O(n) construction of the internal `std::set` by requiring sorted input.
+     * @remark Unsorted inputs cause compilation failure, guaranteeing performance for compile-time configurations.
+     */
+    /**
+     * @fn option_registry::option_registry(std::set<option, std::less<>>&& init)
+     *
+     * @param init A `std::set` of `option` instances, moved into the registry.
+     *
+     * @remark Allows advanced use cases where options are pre-sorted or dynamically generated before registry creation.
+     */
+    /**
+     * @fn std::optional<option> option_registry::get(option::id_num opt_id) const noexcept
+     *
+     * @param opt_id The `option::id_num` to query.
+     * @return `std::optional` containing the `option` if found, or `std::nullopt` if not.
+     *
+     * @remark Thread-safe via `std::shared_mutex` (shared lock).
+     * @remark Performs O(log n) lookup.
+     */
+    /**
+     * @fn bool option_registry::has(option::id_num opt_id) const noexcept
+     *
+     * @param opt_id The `option::id_num` to check.
+     * @return True if the `option` exists, false otherwise.
+     *
+     * @remark Thread-safe via `std::shared_mutex` (shared lock).
+     * @remark Performs O(log n) lookup.
+     */
+    /**
+     * @fn const option& option_registry::upsert(const option& opt)
+     *
+     * @param opt The `option` to insert or update.
+     * @return Reference to the inserted or updated `option` in the registry.
+     *
+     * @remark Thread-safe via `std::shared_mutex` (exclusive lock).
+     * @remark Performs O(log n) insertion or replacement, using `erase` result iterator as a hint to optimize `insert` performance during replacement.
+     */
+    /**
+     * @overload void option_registry::upsert(const option& opt, std::error_code& ec) noexcept
+     * @copydoc const option& option_registry::upsert(const option& opt)
+     *
+     * @param opt The `option` to insert or update.
+     * @param[out] ec Error code set on failure (e.g., `std::errc::not_enough_memory`).
+     *
+     * @note Catches exceptions and sets appropriate error codes for robust runtime use.
+     */
+    /**
+     * @overload const option& option_registry::upsert(option::id_num opt_id, Args&&... args)
+     * @copydoc const option& option_registry::upsert(const option& opt)
+     *
+     * @tparam Args Types for `args` forwarded to `option` constructor.
+     * @param opt_id The `option::id_num` for the `option`.
+     * @param args Arguments to construct an `option` (forwarded to `option` constructor).
+     * @return Reference to the inserted or updated `option`.
+     *
+     * @remark Simplifies runtime `option` creation by forwarding arguments to the `option` constructor.
+     */
 } //namespace telnet

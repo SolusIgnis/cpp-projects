@@ -1,7 +1,179 @@
 # Changelog.md
+## [0.3.1]
+### Changed
+- Replaced `static_cast<byte_t>()` and `static_cast<std::underlying_type_t<>>()` with C++23's `std::to_underlying()`.
+
+## [0.3.0] - September 29, 2025
+- Refreshed documentation in all files.
+
+### Added
+- **Types Partition**:
+  - Added `byte_t` type alias (`std::uint8_t`) in `telnet-types.cppm` for Telnet stream byte handling.
+- **Errors Partition**
+  - Added new error codes to `telnet::error` enum:
+    - `ignored_go_ahead`: Represents a `Go Ahead` command received and ignored by the implementation, with documentation referencing `telnet:protocol_fsm`.
+    - `user_handler_forbidden`: Indicates an attempt to register a handler for a command or option reserved by the Telnet implementation, with documentation referencing `telnet:protocol_fsm`.
+    - `user_handler_not_found`: Indicates a required handler was not registered by the user, with documentation referencing `telnet:protocol_fsm`.
+  - Added `[[unlikely]]` attribute to the `default` case in `telnet_error_category::message(int)` to optimize for the common case where error codes are valid.
+- Added `ProcessingReturnVariant` type alias in `ProtocolFSM` to define the `std::variant` returned in `process_byte`'s return tuple.
+- **Internal Partition**
+  - Moved `OptionStatusRecord`, `OptionStatusDB`, `OptionHandlerRegistry`, and `CommandHandlerRegistry` from `ProtocolFSM` to unexported `telnet` namespace scope in a new :internal partition.
+  
+### Changed
+- Removed extraneous `import std.compat;` statements as `byte_t` replaced `std::uint8_t` as the name of the type underlying the byte stream.
+- Updated `TelnetCommand` enumeration to use `byte_t` as the underlying type instead of `std::uint8_t`, improving consistency with the new `byte_t` alias.
+- Changed `option::id_num` to use `telnet::byte_t` from `telnet:types` instead of `std::uint8_t` for type consistency.
+- Transitioned `SubnegotiationHandler` to awaitable coroutines invoked by `InputProcessor`
+- Modified `DefaultProtocolFSMConfig` class:
+  - Changed `TelnetCommandHandler` from `std::function<void(TelnetCommand)>` to `std::function<asio::awaitable<void>(TelnetCommand)>` to support asynchronous command handling.
+  - Added `SubnegotiationAwaitable` type alias (`asio::awaitable<void>`) and `SubnegotiationHandler` type alias (`std::function<SubnegotiationAwaitable(option::id_num, std::vector<byte_t>)>`).
+  - Updated `ErrorLogger` to accept additional parameters: `byte_t`, `std::optional<TelnetCommand>`, and `std::optional<option>` for detailed error reporting.
+  - Replaced `std::mutex` with `std::shared_mutex` for thread-safe access, using `std::shared_lock` for getters and `std::lock_guard<std::shared_mutex>` for setters.
+  - Replaced `std::set<option>` with `option_registry` for option storage, leveraging the new `option_registry` class from `telnet:options`.
+  - Removed `register_handler`, `unregister_handler`, and `get_command_handler` methods, deferring command handler management to `ProtocolFSM`.
+  - Added `get_unknown_command_handler` to retrieve the unknown command handler.
+  - Added `get_ayt_response` and `set_ayt_response` to manage the `AYT` (Are You There) response string.
+  - Added `initialize_command_handlers` to return a `std::map<TelnetCommand, TelnetCommandHandler>` with a default `NOP` handler.
+  - Updated `init` method to initialize `option_registry` using `initialize_option_registry` and update default handlers to use `byte_t` and async signatures.
+- Updated `ProtocolFSMConfig` concept to reflect new `DefaultProtocolFSMConfig` interface, including `initialize_command_handlers`, updated `log_error`, and `AYT` response methods.
+- Modified `ProtocolFSM` class:
+  - Updated handler types (`TelnetCommandHandler`, `SubnegotiationAwaitable`, `SubnegotiationHandler`, `ErrorLogger`) to match `DefaultProtocolFSMConfig`.
+  - Changed `process_byte` parameter and return type to use `byte_t` and `ProcessingReturnVariant` (a `std::variant` supporting negotiation responses, AYT responses, command handlers, and subnegotiation awaitables).
+  - Added `CommandHandlerRegistry` inner class to manage command handlers, including `add`, `remove`, `has`, and `get` methods with error handling for forbidden commands (`IAC`, `WILL`, `WONT`, `DO`, `DONT`, `SB`, `SE`, `DM`, `GA`, `AYT`).
+  - Added `OptionHandlerRegistry` inner class to manage subnegotiation handlers, with `handle_subnegotiation` method and subscript operator.
+  - Added `OptionStatusRecord` inner class to track option status (local/remote enabled/pending) with bitfield storage.
+  - Added `OptionStatusDB` inner class to store `OptionStatusRecord` objects in an array indexed by `option::id_num`.
+  - Added methods `register_command_handler`, `unregister_command_handler`, and `is_command_handler_registered` to manage command handlers.
+  - Added `is_enabled(const option&)` method to check option status.
+  - Updated state handler methods (`handle_state_*`) to return `std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>`.
+  - Replaced `local_enabled_` and `remote_enabled_` maps with `option_status_` (`OptionStatusDB`).
+  - Updated `subnegotiation_buffer_` to use `std::vector<byte_t>`.
+  - Updated `process_byte` and state handler methods (`handle_state_*`) to:
+    - Change parameter type from `std::uint8_t` to `telnet::byte_t` for consistency with `telnet:types`.
+    - Changed byte comparisons to use `static_cast<byte_t>(TelnetCommand::*)`.
+    - Change return type from `std::tuple<std::error_code, bool, std::optional<std::tuple<TelnetCommand, option::id_num>>>` to `std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>` to support diverse response types.
+    - Added `[[likely]]` and `[[unlikely]]` attributes for branch optimization.
+    - Used `ProtocolConfig::registered_options.get` and `upsert` for option lookup and memoization.
+    - Added pending state checks (`current_status.local_pending()` and `remote_pending()`) to prevent redundant responses.
+    - Used `current_status.set_enabled_local/remote` for status updates.
+    - Checked `option_status_[*current_option_].is_enabled()` for option enablement.
+  - Updated `socket<NextLayerSocketT, ProtocolConfigT>`:
+    - Updated buffer types from `std::vector<std::uint8_t>` to `std::vector<byte_t>`.
+    - Updated `async_write_command` and `async_write_negotiation` to use `static_cast<byte_t>` instead of `static_cast<std::uint8_t>` for command and option bytes in buffer construction.
+    - Updated `async_write_subnegotiation` and `write_subnegotiation` (both overloads) to change parameter type from `option::id_num` to `option` for consistency with `telnet:options`.
+    - Updated `async_write_subnegotiation` with check for `opt.supports_subnegotiation()`, returning `error::invalid_subnegotiation` if not supported.
+    - Added new methods for raw byte writing:
+      - `async_write_raw`: Asynchronously writes a pre-escaped buffer containing data and raw Telnet commands, requiring RFC 854 compliance (e.g., 0xFF doubled as 0xFF 0xFF, command sequences like IAC GA as 0xFF 0xF9).
+      - `write_raw` (throwing): Synchronously writes a pre-escaped buffer, wrapping `async_write_raw` with `sync_await`.
+      - `write_raw` (non-throwing): Synchronously writes a pre-escaped buffer, converting exceptions to error codes.
+    - Added command handler management methods:
+      - `register_command_handler`: Forwards to `fsm_.register_command_handler` to add a command handler to the FSM’s `CommandHandlerRegistry`.
+      - `unregister_command_handler`: Forwards to `fsm_.unregister_command_handler` to remove a command handler.
+      - `is_command_handler_registered`: Forwards
+  - Updated `InputProcessor::operator()`:
+    - Modified to handle `ProcessingReturnVariant` from `fsm_.process_byte`, replacing the previous `std::tuple<TelnetCommand, option::id_num>` response.
+    - Added `std::visit` to handle different `ProcessingReturnVariant` types:
+      - `std::tuple<TelnetCommand, option::id_num>`: Calls `async_write_negotiation` for negotiation responses.
+      - `std::string`: Calls `async_write_raw` for raw responses (e.g., AYT response).
+      - `std::tuple<TelnetCommand, TelnetCommandHandler>`: Spawns an `asio::awaitable` to execute the command handler.
+      - `SubnegotiationAwaitable`: Spawns an `asio::awaitable` to execute the subnegotiation handler.
+    - Added exception handling in spawned coroutines to propagate `std::system_error` or throw `error::internal_error` for unexpected exceptions.
+    - Added `[[unlikely]]` attributes to `DONE` state checks and default case for branch optimization.
+
+# [0.2.2] - September 24, 2025
+### Added
+- **Option Interface**:
+  - Added `option_registry` class in `telnet-options.cppm` for thread-safe management of `option` instances, with atomic `get`, `has`, and `upsert` methods.
+  - Added `std::initializer_list<option>` constructor with `static_assert(std::is_sorted)` for compile-time sorted initialization (O(n) construction).
+  - Added `operator<=>(option::id_num)` to `option` class for mixed comparisons.
+  - Added optimized `upsert` implementation for runtime modifications using `erase` iterator as insertion hint.
+  - Added `static inline option_registry registered_options` for global access to default options.
+  - Added comprehensive documentation for `option_registry` class and methods, matching `option` class quality.
+  - Added `@warning` clarifying atomicity of `upsert` and snapshot consistency with `get` + `upsert`.
+
+### Changed
+- Updated `DefaultProtocolFSMConfig::initialize_option_registry` to use direct `option` constructor calls in initializer list.
+- Modified `option` class:
+    - Replaced `SubnegotiationHandler` type alias from `std::function<void(id_num, const std::vector<std::uint8_t>&)>` to a commented-out `std::function<asio::awaitable<void>(option::id_num, std::vector<byte_t>)>` to prepare for asynchronous subnegotiation handling in Phase 4.
+    - Replaced `subnegotiation_handler_` member (type `std::optional<SubnegotiationHandler>`) with `supports_subnegotiation_` (type `bool`) to indicate whether the option supports subnegotiation handler registration.
+    - Updated `option` constructor to replace `subneg_handler` parameter (type `std::optional<SubnegotiationHandler>`) with `subneg_supported` (type `bool`, default `false`).
+    - Updated `make_option` factory to replace `subneg_handler` parameter with `subneg_supported` (type `bool`, default `false`).
+    - Removed `handle_subnegotiation` method, as subnegotiation handling is moved to `ProtocolFSM::OptionHandlerRegistry`.
+    - Removed `set_subnegotiation_handler` method, aligning with the removal of `subnegotiation_handler_`.
+    - Added `constexpr` to `operator<=>(const option&)` and new `operator<=>(option::id_num)` for compile-time optimization of comparisons.
+
+## [0.2.1] - September 22, 2025
+### Added
+- **CommandHandlerRegistry**:
+  - Added `ProtocolFSM::CommandHandlerRegistry` to manage command handlers per FSM instance, enabling session-specific data capture in lambdas.
+  - Added `add`, `remove`, `has`, `get` methods to `CommandHandlerRegistry`.
+  - Added `register_command_handler`, `unregister_command_handler`, `is_command_handler_registered` to `ProtocolFSM` public interface.
+  - Added `register_command_handler`, `unregister_command_handler`, `is_command_handler_registered` to `telnet::socket` to expose `CommandHandlerRegistry`
+  - Added `error::user_handler_forbidden` for attempts to register handlers for `IAC`, `WILL`, `WONT`, `DO`, `DONT`, `SB`, `SE`, `DM`, `GA`, `AYT`.
+- **Command Handlers**:
+  - Added internal handling for `DM`, `GA`, `AYT`, `IAC`, `WILL`, `WONT`, `DO`, `DONT`, `SB`, `SE` in `ProtocolFSM::handle_state_iac`.
+  - Added default `NOP` handler in `DefaultProtocolFSMConfig::initialize_command_handlers()`.
+- **Error Logging**:
+  - Enhanced `log_error` to include `std::optional<TelnetCommand>` and `std::optional<option>`.
+- **Future Consideration**:
+  - Added `@todo` for half-duplex support in `telnet-protocol_fsm.cppm`, `telnet-protocol_fsm-impl.cpp`.
+
+### Changed
+- **Breaking Change: Callback Redesign**:
+  - Redefined `TelnetCommandHandler` as `std::function<asio::awaitable<void>(TelnetCommand)>`, removing `Socket` and `CompletionToken`.
+  - Updated `process_byte` to return `std::tuple<TelnetCommand, TelnetCommandHandler>` for delegated commands.
+- **ProtocolFSMConfig**:
+  - Moved handler management to `CommandHandlerRegistry`, retaining `unknown_command_handler_` in `DefaultProtocolFSMConfig`.
+  - Added `initialize_command_handlers()` to `DefaultProtocolFSMConfig`.
+- **ErrorLogger**:
+  - Updated `ErrorLogger` and `log_error` to use `std::optional<TelnetCommand>` and `std::optional<option>`.
+  - Simplified `error_logger_` example in `telnet-protocol_fsm.cppm` header to demonstrate usage without duplicating implementation.
+
 ## [0.2.0] - September 19, 2025
 - Updated `version` across all files to `0.2.0` to mark the official release.
 - Updated `release_date` across all files to September 19, 2025, reflecting the current date of the release.
+
+### Added
+- **Synchronous `write_raw` Methods**:
+  - Added `write_raw` (throwing and `noexcept` versions) to `telnet-socket.cppm` and `telnet-socket-sync-impl.cpp`, mirroring `async_write_raw`. The throwing version uses `sync_await` to wrap `async_write_raw`, returning the number of bytes written and throwing `std::system_error` on error. The `noexcept` version catches exceptions (`std::system_error`, `std::bad_alloc`, others) and sets an `std::error_code` out-parameter, returning `0` on error. Both methods require RFC 854-compliant input (e.g., `IAC` doubled as `0xFF 0xFF`, raw commands like `IAC GA` as `0xFF 0xF9`).
+  - Updated `telnet-socket.cppm` with Doxygen-style documentation for `write_raw`, emphasizing its use for `AYT` responses (e.g., `"[YES]\xFF\xF9"`) and lack of validation, consistent with `async_write_raw`.
+- **Command Handler Registration Query**:
+  - Added `is_registered_command(TelnetCommand cmd)` to `DefaultProtocolFSMConfig` in `telnet-protocol_fsm.cppm` and `telnet-protocol_fsm-impl.cpp`, returning `bool` to indicate if a command has a registered handler. Uses `std::shared_lock` for thread-safe access to `command_handlers_`, completing Phase 3 Task 3.
+  - Updated `ProtocolFSMConfig` concept in `telnet-protocol_fsm.cppm` to require `is_registered_command`, ensuring all configuration classes support command handler queries.
+  - Added `DM` and `GA` handlers in `ProtocolFSM::handle_state_iac` (`telnet-protocol_fsm-impl.cpp`). `DM` is ignored silently, `GA` logged with `error::ignored_go_ahead` due to full-duplex implementation.
+- **Enhanced Error Logging**:
+  - Enhanced `DefaultProtocolFSMConfig::log_error` and `ErrorLogger` to accept `std::optional<TelnetCommand>` and `std::optional<option>` for command and option context. Updated default `error_logger_` to log commands as hex (e.g., `cmd: 0xf9` for `GA`), options as hex ID and name (e.g., `option: 0x0["Binary Transmission"]`), and explicit `"no cmd"` or `"no opt"` when absent. Uses `std::endl` for line flushing. Updated `ProtocolFSM` to pass `current_command_` and `current_option_` to `log_error`, completing Phase 3 Task 5.
+
+### Changed
+- **Breaking Change: Updated `ProtocolFSM::process_byte` Return Type**:
+  - Modified `process_byte` in `telnet-protocol_fsm.cppm` and `telnet-protocol_fsm-impl.cpp` to return `std::tuple<std::error_code, bool, std::optional<std::variant<std::tuple<TelnetCommand, option::id_num>, std::string, std::tuple<TelnetCommand, TelnetCommandHandler>>>` instead of `std::tuple<std::error_code, bool, std::optional<std::tuple<TelnetCommand, option::id_num>>>`. This enables support for `AYT` responses (`std::string`) and custom command handlers (`TelnetCommandHandler`), breaking compatibility with code expecting the previous return type.
+- **Refactored `TelnetCommandHandler`**:
+  - Replaced `std::function<void(TelnetCommand, socket<NLS, PC>&, CompletionHandler&&)>` with a type-erased custom functor for `TelnetCommandHandler` in `telnet-protocol_fsm.cppm`. This improves performance by reducing overhead and allows more flexible handler implementations while maintaining type safety.
+  - Updated `DefaultProtocolFSMConfig` in `telnet-protocol_fsm-impl.cpp` to use the new `TelnetCommandHandler` type for `command_handlers_` and `unknown_command_handler_`.
+- **Shifted Custom Command Handler Invocation**:
+  - Moved invocation of custom `TelnetCommandHandler` from `ProtocolFSM::handle_state_iac` to `InputProcessor::operator()` in `telnet-socket-impl.cpp`. This centralizes response handling in `InputProcessor`, improving modularity and allowing `socket` to manage asynchronous operations for commands like `GA`.
+- **Enhanced `InputProcessor`**:
+  - Updated `InputProcessor::operator()` in `telnet-socket-impl.cpp` to handle all `std::variant` return types from `ProtocolFSM::process_byte` (`std::tuple<TelnetCommand, option::id_num>`, `std::string`, `std::tuple<TelnetCommand, TelnetCommandHandler>`). This fixes the issue where `TelnetCommandHandler` returns were ignored, enabling custom command handlers (e.g., for `GA`) and `AYT` responses (default: `"Telnet system is active."`, custom: `"[YES]\xFF\xF9"`) via `async_write_raw`.
+  - Added manual `++read_it_` increment before async operations (`async_write_negotiation`, `async_write_raw`, or handler invocation) to ensure correct iteration, preventing loop issues when processing resumes.
+  - Added early `State::DONE` check in `InputProcessor::operator()` to prevent reentrancy after completion, enhancing robustness.
+- **Documentation Updates**:
+  - Updated `telnet-socket.cppm` documentation for `async_write_raw` and `socket` class to clarify `AYT` response customization via `ProtocolConfig::set_ayt_response` and the lack of validation in `async_write_raw`.
+  - Ensured `write_raw` documentation aligns with `async_write_raw`, emphasizing RFC 854 compliance and use for `AYT` responses.
+  - Updated `telnet-protocol_fsm.cppm` documentation for `ProtocolFSM::process_byte` to reflect the new return type and handler invocation in `InputProcessor`.
+- **Synchronous Implementation Consistency**:
+  - Confirmed `telnet-socket-sync-impl.cpp` provides synchronous wrappers (`read_some`, `write_some`, `write_command`, `write_negotiation`, `write_subnegotiation`) using `sync_await`, with throwing and `noexcept` versions. Added `write_raw` to complete the set, ensuring consistent API for synchronous operations.
+
+### Fixed
+- Fixed `InputProcessor` to correctly process `TelnetCommandHandler` returns from `ProtocolFSM::process_byte`, ensuring custom handlers (e.g., for `GA`) are invoked and `AYT` responses are sent via `async_write_raw`.
+- Ensured `write_raw` maintains RFC 854 compliance by relying on caller-provided pre-escaped data, consistent with `async_write_raw`.
+
+### Notes
+- The `AYT` handler in `telnet-protocol_fsm-impl.cpp` correctly supports default (`"Telnet system is active."`) and custom (e.g., `"[YES]\xFF\xF9"`) responses via `async_write_raw` and now `write_raw`.
+- The change to `TelnetCommandHandler` as a type-erased functor improves performance but requires updating any custom handler implementations to use the new type.
+- Moving handler invocation to `InputProcessor` aligns with the asynchronous I/O model, reducing `ProtocolFSM` complexity and improving socket integration.
+- Synchronous methods incur `sync_await` overhead (temporary `io_context` and `jthread`), but this is minimal compared to blocking network I/O latency, as noted in `telnet-socket-sync-impl.cpp`.
+- Added tests for `AYT` (default and custom), `TelnetCommandHandler` (e.g., `GA`), and synchronous `write_raw` to verify functionality and RFC 854 compliance.
+- Deferred discussion of `std::string` vs. `TelnetCommandHandler` tradeoffs until further implementation review, as requested.
 
 ## [0.1.8] - September 18, 2025
 ### Changed

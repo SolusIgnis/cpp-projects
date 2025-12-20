@@ -1,18 +1,23 @@
 /**
  * @file telnet.cppm
- * @version 0.2.0
- * @release_date September 19, 2025
+ * @version 0.3.0
+ * @release_date September 29, 2025
+ *
  * @brief Primary module interface for the Telnet library.
  * @details Exports partitions for:
- *   - :types        = Telnet command enumeration.
- *   - :errors       = Telnet-specific error codes.
- *   - :options      = Option management and factory functions.
- *   - :protocol_fsm = Telnet protocol state machine.
- *   - :socket       = Asynchronous and synchronous socket operations filtering Telnet data from the raw socket byte stream.
+ *   - `:types`        = Telnet command enumeration.
+ *   - `:errors`       = Telnet-specific error codes.
+ *   - `:options`      = Option management and factory functions.
+ *   - `:protocol_fsm` = Telnet protocol state machine.
+ *   - `:socket`       = Asynchronous and synchronous socket operations filtering Telnet data from the raw socket byte stream.
+ * @remark Provides a modular, thread-safe, and performance-optimized interface for Telnet protocol operations, supporting compile-time configuration and runtime extensibility.
+ * @note Designed for integration with asynchronous I/O via Boost.Asio.
+ *
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @see RFC 854 for Telnet protocol specification
+ * @see RFC 854 for Telnet protocol specification.
+ * @todo Future Development: Clean up exports to ensure types never accessed by external users are not exported. 
  */
 //Primary module interface unit
 export module telnet;
@@ -22,4 +27,4 @@ export import :types;        ///< @see telnet-types.cppm
 export import :errors;       ///< @see telnet-errors.cppm 
 export import :options;      ///< @see telnet-options.cppm 
 export import :protocol_fsm; ///< @see telnet-protocol_fsm.cppm
-export import :socket;       ///< @see telnet-socket.cppm 
+export import :socket;       ///< @see telnet-socket.cppm
