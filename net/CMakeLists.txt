@@ -3,7 +3,7 @@
 # Embed/Standalone Shim
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   cmake_minimum_required(VERSION 4.0)
-  project(net-telnet VERSION 0.5.7 LANGUAGES CXX)
+  project(net-bundle VERSION 0.0.0 LANGUAGES CXX)
 endif()
 
 # Add the net.asio_concepts library
