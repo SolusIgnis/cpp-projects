@@ -1,6 +1,16 @@
 # Changelog.md
 
 ## [Unreleased] - TBD
+### Changed
+- Updated names to reflect "net" module family:
+  - Namespace `::net::telnet` instead of `::telnet`.
+  - Module name `net.telnet` instead of `telnet`.
+  - Filenames like `net.telnet-partition_name.cppm` or `net.telnet-partition_name-impl.cpp`.
+  - Note similar change from `asio_concepts` to `net.asio_concepts` in import statements. References to namespace `asio_concepts` are unchanged since `::net` is the common parent namespace.
+- Moved implementation unit `.cpp` files from `src/` to `src/impl/`.
+- Changed from Boost.Asio to standalone Asio:
+  - Removed namespace alias from `boost::asio` to `asio`.
+  - Changed `#include` directives from `boost/asio` prefix to `asio` prefix (e.g. `#include <asio.hpp>`).
 
 ## [0.5.7] - October 30, 2025
 ### Changed
