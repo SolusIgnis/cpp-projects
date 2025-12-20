@@ -1,32 +1,32 @@
 /**
- * @file telnet-socket-async-impl.cpp
- * @version 0.5.0
- * @release_date October 17, 2025
+ * @file telnet-stream-async-impl.cpp
+ * @version 0.5.7
+ * @release_date October 30, 2025
  *
- * @brief Implementation of asynchronous Telnet socket operations.
+ * @brief Implementation of asynchronous Telnet stream operations.
  * @remark Contains implementations for `async_read_some`, `async_write_some`, `async_write_raw`, `async_write_command`, `async_write_negotiation`, `async_write_subnegotiation`, `async_write_temp_buffer`, `async_report_error`, `async_request_option`, `async_disable_option`, and `async_send_synch`.
  *
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @see `:socket` for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
+ * @see "telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
  */
 module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
 #include <boost/asio.hpp>
-namespace asio = boost::asio;
 
 // Module partition implementation unit
-module telnet:socket;
+module telnet:stream;
 
 import std; // For std::array, std::vector, std::ignore
 
-import :types;        ///< @see telnet-types.cppm for `TelnetCommand`
-import :errors;       ///< @see telnet-errors.cppm for `telnet::error` codes
-import :options;      ///< @see telnet-options.cppm for `option` and `option::id_num`
-import :protocol_fsm; ///< @see telnet-protocol_fsm.cppm for `ProtocolFSM`
-import :awaitables;   ///< @see telnet-awaitables.cppm for awaitable types
+import :types;        ///< @see "telnet-types.cppm" for `TelnetCommand`
+import :errors;       ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+import :concepts;     ///< @see "telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
+import :options;      ///< @see "telnet-options.cppm" for `option` and `option::id_num`
+import :protocol_fsm; ///< @see "telnet-protocol_fsm.cppm" for `ProtocolFSM`
+import :awaitables;   ///< @see "telnet-awaitables.cppm" for awaitable types
 
-import :socket;       ///< @see telnet-socket.cppm for socket partition interface
+namespace asio = boost::asio;
 
 namespace telnet {
     /**
@@ -39,18 +39,18 @@ namespace telnet {
      */
     template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
     template<typename CompletionToken>
-    auto socket<NLS, PC>::async_request_option(option::id_num opt, NegotiationDirection direction, CompletionToken&& token)
-        -> asio_result_type<CompletionToken> {
+    auto stream<NLS, PC>::async_request_option(option::id_num opt, NegotiationDirection direction, CompletionToken&& token)
+    {
         auto [ec, response] = fsm_.request_option(opt, direction);
         if (ec || !response) return async_report_error(ec, std::forward<CompletionToken>(token));
         else return async_write_negotiation(*response, std::forward<CompletionToken>(token));
-    }
+    } // stream::async_request_option(option::id_num, NegotiationDirection, CompletionToken&&)
 
     /**
      * @internal
      * Implements asynchronous option disablement with FSM state management and optional awaitable handling.
      * @remark Calls `fsm_.disable_option` to obtain error code, optional `NegotiationResponse`, and optional awaitable.
-     * @remark Uses `asio::co_spawn` to manage coroutine lifetime, executing on the socket’s executor.
+     * @remark Uses `asio::co_spawn` to manage coroutine lifetime, executing on the stream’s executor.
      * @remark If a response is present, writes IAC WONT/DONT via `async_write_negotiation` and accumulates bytes transferred.
      * @remark If an awaitable is present, co_awaits it to handle registered disablement callbacks.
      * @remark Catches non-system errors and converts to `telnet::error::internal_error` for consistency.
@@ -58,8 +58,8 @@ namespace telnet {
      */
     template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
     template<typename CompletionToken>
-    auto socket<NLS, PC>::async_disable_option(option::id_num opt, NegotiationDirection direction, CompletionToken&& token)
-        -> asio_result_type<CompletionToken> {
+    auto stream<NLS, PC>::async_disable_option(option::id_num opt, NegotiationDirection direction, CompletionToken&& token)
+    {
         auto [ec, response, awaitable] = fsm_.disable_option(opt, direction);
         if (ec || (!response && !awaitable)) return async_report_error(ec, std::forward<CompletionToken>(token));
         else return asio::co_spawn(
@@ -82,67 +82,63 @@ namespace telnet {
             },
             std::forward<CompletionToken>(token)
         );
-    }
+    } // stream::async_disable_option(option::id_num, NegotiationDirection, CompletionToken&&)
 
     /**
      * @internal
      * Uses `asio::async_compose` to initiate asynchronous read with `InputProcessor`.
-     * @remark Binds the operation to the socket’s executor using `get_executor()`.
+     * @remark Binds the operation to the stream’s executor using `get_executor()`.
      */
-    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC, typename MutableBufferSequence, typename CompletionToken>
-      requires asio::completion_token_for<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>
-    auto socket<NLS, PC>::async_read_some(MutableBufferSequence buffers, CompletionToken&& token)
-        -> typename socket<NLS, PC>::template asio_result_type<CompletionToken>
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    template<MutableBufferSequence MBufSeq, ReadToken CompletionToken> 
+    auto stream<NLS, PC>::async_read_some(const MBufSeq& buffers, CompletionToken&& token)
     {
-        return asio::async_compose<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>(
-            InputProcessor<MutableBufferSequence>(*this, fsm_, input_side_buffer_, output_side_buffer_, deferred_transport_error_, std::move(buffers)),
+        return asio::async_compose<CompletionToken, typename stream<NLS, PC>::asio_completion_signature>(
+            InputProcessor<MBufSeq>(*this, fsm_, context_, std::move(buffers)),
             std::forward<CompletionToken>(token),
             this->get_executor());
-    } // socket::async_read_some(MutableBufferSequence, CompletionToken&&)
+    } // stream::async_read_some(MutableBufferSequence, CompletionToken&&)
 
     /**
      * @internal
      * Escapes input data using `escape_telnet_output` and delegates to `async_write_temp_buffer`.
      * @remark Returns via `async_report_error` if `escape_telnet_output` fails.
      */
-    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC, typename ConstBufferSequence, typename CompletionToken>
-      requires asio::completion_token_for<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>
-    auto socket<NLS, PC>::async_write_some(const ConstBufferSequence& data, CompletionToken&& token)
-        -> typename socket<NLS, PC>::template asio_result_type<CompletionToken>
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    template<ConstBufferSequence CBufSeq, asio::completion_token_for<typename stream<NLS, PC>::asio_completion_signature> CompletionToken>
+    auto stream<NLS, PC>::async_write_some(const CBufSeq& data, CompletionToken&& token)
     {
         auto [ec, escaped_data] = escape_telnet_output(data);
         if (ec) {
             return async_report_error(ec, std::forward<CompletionToken>(token));
         }
         return async_write_temp_buffer(std::move(escaped_data), std::forward<CompletionToken>(token));
-    } // socket::async_write_some(const ConstBufferSequence&, CompletionToken&&)
+    } // stream::async_write_some(const CBufSeq&, CompletionToken&&)
 
     /**
      * @internal
      * Uses `asio::async_write` to write the raw buffer directly to `next_layer_`.
-     * @remark Binds the operation to the socket’s executor using `asio::bind_executor`.
+     * @remark Binds the operation to the stream’s executor using `asio::bind_executor`.
      */
-    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC, typename ConstBufferSequence, typename CompletionToken>
-      requires asio::completion_token_for<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>
-    auto socket<NLS, PC>::async_write_raw(const ConstBufferSequence& data, CompletionToken&& token)
-        -> typename socket<NLS, PC>::template asio_result_type<CompletionToken>
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    template<ConstBufferSequence CBufSeq, asio::completion_token_for<typename stream<NLS, PC>::asio_completion_signature> CompletionToken>
+    auto stream<NLS, PC>::async_write_raw(const CBufSeq& data, CompletionToken&& token)
     {
         return asio::async_write(
             this->next_layer_,
             data,
             asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token))
         );
-    } // socket::async_write_raw(const ConstBufferSequence&, CompletionToken&&)
+    } // stream::async_write_raw(const CBufSeq&, CompletionToken&&)
 
     /**
      * @internal
      * Constructs a 2-byte `std::array` with `{IAC, cmd}` and writes it using `asio::async_write`.
-     * @remark Binds the operation to the socket’s executor using `asio::bind_executor`.
+     * @remark Binds the operation to the stream’s executor using `asio::bind_executor`.
      */
-    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC, typename CompletionToken>
-      requires asio::completion_token_for<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>
-    auto socket<NLS, PC>::async_write_command(TelnetCommand cmd, CompletionToken&& token)
-        -> typename socket<NLS, PC>::template asio_result_type<CompletionToken>
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    template<asio::completion_token_for<typename stream<NLS, PC>::asio_completion_signature> CompletionToken>
+    auto stream<NLS, PC>::async_write_command(TelnetCommand cmd, CompletionToken&& token)
     {
         return asio::async_write(
             this->next_layer_,
@@ -152,7 +148,7 @@ namespace telnet {
             }),
             asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token))
         );
-    } // socket::async_write_command(TelnetCommand, CompletionToken&&)
+    } // stream::async_write_command(TelnetCommand, CompletionToken&&)
 
     /**
      * @internal
@@ -163,10 +159,9 @@ namespace telnet {
      * @remark Catches `std::bad_alloc` to return `std::errc::not_enough_memory` and other exceptions to return `telnet::error::internal_error` via `async_report_error`.
      * @remark Delegates to `async_write_temp_buffer` for writing the constructed buffer.
      */
-    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC, typename CompletionToken>
-      requires asio::completion_token_for<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>
-    auto socket<NLS, PC>::async_write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, CompletionToken&& token)
-        -> typename socket<NLS, PC>::template asio_result_type<CompletionToken>
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    template<asio::completion_token_for<typename stream<NLS, PC>::asio_completion_signature> CompletionToken>
+    auto stream<NLS, PC>::async_write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, CompletionToken&& token)
     {
         if (!opt.supports_subnegotiation()) {
             return async_report_error(std::make_error_code(error::invalid_subnegotiation), std::forward<CompletionToken>(token));
@@ -202,17 +197,16 @@ namespace telnet {
         }
 
         return async_write_temp_buffer(std::move(escaped_buffer), std::forward<CompletionToken>(token));
-    } // socket::async_write_subnegotiation(option, const std::vector<byte_t>&, CompletionToken&&)
+    } // stream::async_write_subnegotiation(option, const std::vector<byte_t>&, CompletionToken&&)
 
     /**
      * @internal
      * Send 3 NULs, middle urgent, then IAC DM.
      * Ensures correct Synch behavior regardless of URG pointer semantics.
      */
-    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC, typename CompletionToken>
-      requires asio::completion_token_for<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>
-    auto socket<NLS, PC>::async_send_synch(CompletionToken&& token)
-        -> typename socket<NLS, PC>::template asio_result_type<CompletionToken>
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    template<asio::completion_token_for<typename stream<NLS, PC>::asio_completion_signature> CompletionToken>
+    auto stream<NLS, PC>::async_send_synch(CompletionToken&& token)
     {
         return asio::async_initiate<CompletionToken, asio_completion_signature>(
             [this](auto&& handler) {
@@ -248,23 +242,22 @@ namespace telnet {
             },
             std::forward<CompletionToken>(token)
         ); // End of async_initiate
-    } // socket::async_send_synch(CompletionToken&&)
+    } // stream::async_send_synch(CompletionToken&&)
 
     /**
      * @internal
      * Holds a static NUL byte and `async_send`s it (with `message_out_of_band` set if urgent).
      */
-    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC, typename CompletionToken>
-      requires asio::completion_token_for<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>
-    auto socket<NLS, PC>::async_send_nul(bool urgent, CompletionToken&& token)
-        -> typename socket<NLS, PC>::template asio_result_type<CompletionToken>
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    template<asio::completion_token_for<typename stream<NLS, PC>::asio_completion_signature> CompletionToken>
+    auto stream<NLS, PC>::async_send_nul(bool urgent, CompletionToken&& token)
     {
         constexpr static byte_t NUL = static_cast<byte_t>('\0');
         
         if (urgent) {
             return this->lowest_layer().async_send(
                 asio::buffer(&NUL, 1),
-                asio::socket_base::message_out_of_band,
+                lowest_layer_type::message_out_of_band,
                 std::forward<CompletionToken>(token)
             );
         } else {
@@ -273,17 +266,16 @@ namespace telnet {
                 std::forward<CompletionToken>(token)
             );
         }
-    } // socket::async_send_nul(bool, CompletionToken&&)
+    } // stream::async_send_nul(bool, CompletionToken&&)
 
     /**
      * @internal
      * @remark Constructs a 3-byte `std::array` with `{IAC, cmd, opt}` and writes it using `asio::async_write` if valid.
-     * @remark Binds the operation to the socket’s executor using `asio::bind_executor`.
+     * @remark Binds the operation to the stream’s executor using `asio::bind_executor`.
      */
-    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC, typename CompletionToken>
-      requires asio::completion_token_for<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>
-    auto socket<NLS, PC>::async_write_negotiation(typename fsm_type::NegotiationResponse response, CompletionToken&& token)
-        -> typename socket<NLS, PC>::template asio_result_type<CompletionToken>
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    template<asio::completion_token_for<typename stream<NLS, PC>::asio_completion_signature> CompletionToken>
+    auto stream<NLS, PC>::async_write_negotiation(typename fsm_type::NegotiationResponse response, CompletionToken&& token)
     {
         auto [NegotiationDirection dir, bool enable, option::id_num opt] = response;
         return asio::async_write(
@@ -295,21 +287,20 @@ namespace telnet {
             }),
             asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token))
         );
-    } // socket::async_write_negotiation(fsm_type::NegotiationResponse, CompletionToken&&)
+    } // stream::async_write_negotiation(fsm_type::NegotiationResponse, CompletionToken&&)
 
     /**
      * @internal
      * Uses `asio::async_initiate` to write `temp_buffer` via `asio::async_write` to `next_layer_`.
      * @remark Moves `temp_buffer` into a lambda to manage its lifetime.
-     * @remark Binds the operation to the socket’s executor using `asio::bind_executor`.
+     * @remark Binds the operation to the stream’s executor using `asio::bind_executor`.
      * @remark Forwards the handler to receive `ec` and `bytes_written`.
      */
-    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC, typename CompletionToken>
-      requires asio::completion_token_for<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>
-    auto socket<NLS, PC>::async_write_temp_buffer(std::vector<byte_t>&& temp_buffer, CompletionToken&& token)
-        -> typename socket<NLS, PC>::template asio_result_type<CompletionToken>
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    template<asio::completion_token_for<typename stream<NLS, PC>::asio_completion_signature> CompletionToken>
+    auto stream<NLS, PC>::async_write_temp_buffer(std::vector<byte_t>&& temp_buffer, CompletionToken&& token)
     {
-        return asio::async_initiate<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>(
+        return asio::async_initiate<CompletionToken, typename stream<NLS, PC>::asio_completion_signature>(
             [this, temp_buffer = std::move(temp_buffer)](auto handler) mutable {
                 asio::async_write(this->next_layer_,
                     asio::buffer(temp_buffer),
@@ -319,20 +310,19 @@ namespace telnet {
                         })
                 );
             }, std::forward<CompletionToken>(token));
-    } // socket::async_write_temp_buffer(std::vector<byte_t>&&, CompletionToken&&)
+    } // stream::async_write_temp_buffer(std::vector<byte_t>&&, CompletionToken&&)
 
     /**
      * @internal
      * Uses `asio::async_initiate` to invoke the handler with `ec` and 0 bytes transferred.
      */
-    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC, typename CompletionToken>
-      requires asio::completion_token_for<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>
-    auto socket<NLS, PC>::async_report_error(std::error_code ec, CompletionToken&& token)
-        -> typename socket<NLS, PC>::template asio_result_type<CompletionToken>
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    template<asio::completion_token_for<typename stream<NLS, PC>::asio_completion_signature> CompletionToken>
+    auto stream<NLS, PC>::async_report_error(std::error_code ec, CompletionToken&& token)
     {
-        return asio::async_initiate<CompletionToken, typename socket<NLS, PC>::asio_completion_signature>(
+        return asio::async_initiate<CompletionToken, typename stream<NLS, PC>::asio_completion_signature>(
             [ec](auto handler) {
                 handler(ec, 0);
             }, std::forward<CompletionToken>(token));
-    } // socket::async_report_error(std::error_code, CompletionToken&&)
+    } // stream::async_report_error(std::error_code, CompletionToken&&)
 } // namespace telnet

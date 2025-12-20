@@ -1,7 +1,7 @@
 /**
  * @file telnet-types.cppm
- * @version 0.5.0
- * @release_date October 17, 2025
+ * @version 0.5.7
+ * @release_date October 30, 2025
  *
  * @brief Partition for Telnet protocol-related types.
  * @remark Defines `byte_t` type alias for the byte stream's underlying type.
@@ -23,16 +23,16 @@ export namespace telnet {
     /**
      * @typedef byte_t
      * @brief Type alias for bytes underlying the Telnet stream.
-     * @see `:socket` and `:protocol_fsm` for `byte_t` stream processing.
+     * @see `:stream` and `:protocol_fsm` for `byte_t` stream processing.
      * @todo Future Development: Consider switching from `std::uint8_t` to `std::byte` when C++23 support is better.
      */
     using byte_t = std::uint8_t; 
     
     /**
      * @brief Enumeration of Telnet commands as defined in RFC 854.
-     * @remark Used in socket operations and protocol state machine to represent Telnet commands.
+     * @remark Used in stream operations and protocol state machine to represent Telnet commands.
      * @see RFC 854 for Telnet protocol specification of command byte values.
-     * @see `:protocol_fsm` for reading `TelnetCommand` from the Telnet incoming byte stream by the protocol state machine and `:socket` for usage in transmitting `TelnetCommand` to a Telnet peer.
+     * @see `:protocol_fsm` for reading `TelnetCommand` from the Telnet incoming byte stream by the protocol state machine and `:stream` for usage in transmitting `TelnetCommand` to a Telnet peer.
      */
     enum class TelnetCommand : byte_t {
         EOR  = 0xEF, ///< End of Record 

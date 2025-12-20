@@ -1,9 +1,9 @@
 /**
  * @file telnet-errors.cppm
- * @version 0.5.0
- * @release_date October 17, 2025
+ * @version 0.5.7
+ * @release_date October 30, 2025
  *
- * @brief Telnet-specific error codes, processing signals, and error categories for protocol and socket operations.
+ * @brief Telnet-specific error codes, processing signals, and error categories for protocol and stream operations.
  * @remark Defines `telnet::error` enumeration for errors and `telnet::processing_signal` for non-error processing signals.
  * @remark Defines `telnet_error_category` and `telnet_processing_signal_category` for use with `std::error_code`.
  * 
@@ -20,14 +20,14 @@ import std; // For std::error_category, std::error_code, std::string, std::true_
 
 export namespace telnet {
     /**
-     * @brief Telnet-specific error codes for protocol and socket operations.
-     * @see RFC 854 for `protocol_violation`, `:protocol_fsm` for `telnet::error` usage, `:socket` for socket-related errors
+     * @brief Telnet-specific error codes for protocol and stream operations.
+     * @see RFC 854 for `protocol_violation`, `:protocol_fsm` for `telnet::error` usage, `:stream` for stream-related errors
      */
     enum class error {
         protocol_violation = 1,  ///< General RFC 854 violation or invalid state transition (@see RFC 854)
-        internal_error,          ///< Unexpected internal error or uncaught exception (@see `:protocol_fsm`, `:socket`)
+        internal_error,          ///< Unexpected internal error or uncaught exception (@see `:protocol_fsm`, `:stream`)
         invalid_command,         ///< Unrecognized command byte after `IAC` (@see `:protocol_fsm`)
-        invalid_negotiation,     ///< Invalid command in negotiation (not `WILL`/`WONT`/`DO`/`DONT`) (@see RFC 854, `:socket`)
+        invalid_negotiation,     ///< Invalid command in negotiation (not `WILL`/`WONT`/`DO`/`DONT`) (@see RFC 854, `:stream`)
         option_not_available,    ///< Option is unsupported, disabled, or not found (@see `:options`, `:protocol_fsm`)
         invalid_subnegotiation,  ///< Invalid or incomplete subnegotiation sequence (@see `:protocol_fsm`)
         subnegotiation_overflow, ///< Subnegotiation buffer exceeds maximum size allowed by `option` (@see `:options`)
@@ -58,7 +58,7 @@ export namespace telnet {
     /**
      * @brief Error category for `telnet::error` codes.
      * @remark Thread-safe singleton providing detailed error messages.
-     * @see `:protocol_fsm` for `telnet::error` usage, `:socket` for socket operations
+     * @see `:protocol_fsm` for `telnet::error` usage, `:stream` for stream operations
      */
     class telnet_error_category : public std::error_category {
     public:
@@ -138,7 +138,7 @@ export namespace telnet {
     /**
      * @brief Error category for `telnet::processing_signal` codes.
      * @remark Thread-safe singleton providing detailed signal messages.
-     * @see `:protocol_fsm` for `telnet::processing_signal` usage, `:socket` for socket operations
+     * @see `:protocol_fsm` for `telnet::processing_signal` usage, `:stream` for stream operations
      */
     class telnet_processing_signal_category : public std::error_category {
     public:

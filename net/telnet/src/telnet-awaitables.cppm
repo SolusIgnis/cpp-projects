@@ -1,7 +1,7 @@
 /**
  * @file telnet-awaitables.cppm
- * @version 0.5.0
- * @release_date October 17, 2025
+ * @version 0.5.7
+ * @release_date October 30, 2025
  *
  * @brief Partition defining tagged awaitable types for type-safe asynchronous operations in the Telnet library.
  * @remark Defines `TaggedAwaitable` and associated semantic tag structs for option negotiation and subnegotiation handlers.
@@ -13,12 +13,13 @@
  */
 module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
 #include <boost/asio/awaitable.hpp>
-namespace asio = boost::asio;
 
 // Module partition interface unit
 export module telnet:awaitables;
 
 import std; // for std::move
+
+namespace asio = boost::asio;
 
 export namespace telnet::awaitables {
     /**

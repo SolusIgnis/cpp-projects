@@ -1,7 +1,7 @@
 /**
  * @file telnet-internal.cppm
- * @version 0.5.0
- * @release_date October 17, 2025
+ * @version 0.5.7
+ * @release_date October 30, 2025
  *
  * @brief Internal partition defining implementation detail data structures for other partitions.
  * @remark Defines record and registry types used by `:protocol_fsm` for managing Telnet options and handlers.
@@ -14,7 +14,6 @@
  */
 module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
 #include <boost/asio.hpp>
-namespace asio = boost::asio;
 
 //Module partition interface unit
 export module telnet:internal;
@@ -22,10 +21,13 @@ export module telnet:internal;
 import std;        // For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec
 import std.compat; // For std::uint8_t (needed for bit-field type specifier)
 
-import :types;      ///< @see telnet-types.cppm for `byte_t` and `TelnetCommand`
-import :errors;     ///< @see telnet-errors.cppm for `telnet::error` codes
-import :options;    ///< @see telnet-options.cppm for `option` and `option::id_num`
-import :awaitables; ///< @see telnet-awaitables.cppm for `TaggedAwaitable`, semantic tags, and type aliases
+import :types;      ///< @see "telnet-types.cppm" for `byte_t` and `TelnetCommand`
+import :errors;     ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+import :concepts;     ///< @see "telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
+import :options;    ///< @see "telnet-options.cppm" for `option` and `option::id_num`
+import :awaitables; ///< @see "telnet-awaitables.cppm" for `TaggedAwaitable`, semantic tags, and type aliases
+
+namespace asio = boost::asio;
 
 export namespace telnet {
     /**
@@ -117,10 +119,6 @@ export namespace telnet {
                 return undefined_subnegotiation_handler<ProtocolConfig>(opt, std::move(data));
             }
         } //handle_subnegotiation(option::id_num, std::vector<byte_t>)
-
-        /// @brief Accesses or creates an `OptionHandlerRecord` for a Telnet option.
-        OptionHandlerRecord& operator[](option::id_num opt) { return handlers_[opt]; }
-
     private:
         /// @brief Default handler for undefined subnegotiation.
         template<typename PC>
@@ -170,13 +168,6 @@ export namespace telnet {
      * @param data The subnegotiation data to process.
      * @return `SubnegotiationAwaitable` representing the asynchronous handling result.
      * @remark Invokes the registered subnegotiation handler if present; otherwise, calls `undefined_subnegotiation_handler`.
-     */
-    /**
-     * @fn OptionHandlerRegistry::OptionHandlerRecord& OptionHandlerRegistry::operator[](option::id_num opt)
-     * @param opt The `option::id_num` of the Telnet option.
-     * @return Reference to the `OptionHandlerRecord` for `opt`, creating it if not present.
-     * @remark Allows modification of the handler record for the specified option.
-     * @deprecated @todo Phase6: Remove if no use cases found. 
      */
     /**
      * @fn static SubnegotiationAwaitable OptionHandlerRegistry::undefined_subnegotiation_handler<PC>(const option& opt, std::vector<byte_t>)

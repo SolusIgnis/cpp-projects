@@ -1,7 +1,7 @@
 /**
  * @file telnet-options.cppm
- * @version 0.5.0
- * @release_date October 17, 2025
+ * @version 0.5.7
+ * @release_date October 30, 2025
  *
  * @brief Interface for Telnet option handling.
  * @remark Defines `option` class, `option::id_num` enumeration, and associated predicates/handlers.
@@ -10,18 +10,19 @@
  * @license See LICENSE file for details
  *
  * @remark This module is fully inline.
- * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage, `:socket` for negotiation operations, `:types` for `TelnetCommand`
+ * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage, `:stream` for negotiation operations, `:types` for `TelnetCommand`
  */
 module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
 #include <boost/asio.hpp>
-namespace asio = boost::asio;
 
 //Module partition interface unit
 export module telnet:options;
 
 import std; // For std::string, std::vector, std::function, std::optional, std::size_t
 
-export import :types; ///< @see telnet-types.cppm for `byte_t`
+export import :types; ///< @see "telnet-types.cppm" for `byte_t`
+
+namespace asio = boost::asio;
 
 export namespace telnet {
     /**
@@ -29,7 +30,7 @@ export namespace telnet {
      *
      * @note Option support is defined by an `option` instance in `ProtocolFSM`; subnegotiation support is indicated by a non-null subnegotiation handler.
      * @remark Comparisons (==, !=, <, >, <=, >=) are based on `id_num`; implicit conversion to `id_num` allows mixed comparisons.
-     * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage in the protocol state machine, `:socket` for negotiation operations, `:types` for `TelnetCommand`.
+     * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage in the protocol state machine, `:stream` for negotiation operations, `:types` for `TelnetCommand`.
      *
      * @todo Future Development: Use C++26 reflection to populate option names automatically.
      */
@@ -219,7 +220,7 @@ export namespace telnet {
     /**
      * @brief Enumeration of Telnet option ID bytes.
      *
-     * @see IANA Telnet Option Registry, RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` processing, `:socket` for negotiation operations.
+     * @see IANA Telnet Option Registry, RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` processing, `:stream` for negotiation operations.
      */
     enum class option::id_num : byte_t {
         BINARY                             = 0x00, ///< Binary Transmission (@see RFC 856)
@@ -309,7 +310,7 @@ export namespace telnet {
      * @remark Used by `ProtocolFSM` to store and query supported Telnet options.
      * @remark The `std::initializer_list` constructor enforces sorted input by `option::id_num` at compile time using `static_assert`, ensuring O(n) `std::set` construction. Unsorted inputs cause compilation failure. All accessor methods are atomic via `std::shared_mutex`, supporting concurrent reads and exclusive writes.
      * @warning Methods are guaranteed atomic by `std::shared_mutex`, but chaining operations is NOT thread-safe; however `get` followed by `upsert` provides snapshot consistency.
-     * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage in the protocol state machine, `:socket` for negotiation operations, `:types` for `TelnetCommand`, `option` for option details.
+     * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage in the protocol state machine, `:stream` for negotiation operations, `:types` for `TelnetCommand`, `option` for option details.
      */
     class option_registry {
     public:

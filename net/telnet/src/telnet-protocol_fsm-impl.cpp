@@ -1,38 +1,37 @@
 /**
  * @file telnet-protocol_fsm-impl.cpp
- * @version 0.5.0
- * @release_date October 17, 2025
+ * @version 0.5.7
+ * @release_date October 30, 2025
  *
  * @brief Implementation of the Telnet protocol finite state machine.
  *
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @see :protocol_fsm for interface, RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, :types for `TelnetCommand`, :options for `option` and `option::id_num`, :errors for error codes, :socket for FSM usage
+ * @see "telnet-protocol_fsm.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, `:types` for `TelnetCommand` and `NegotiationDirection`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:stream` for FSM usage
  */
 module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
 #include <boost/asio.hpp>
-namespace asio = boost::asio;
 
 //Module partition implementation unit
 module telnet:protocol_fsm;
 
 import std; // For std::nullopt, std::optional, std::tuple, std::make_tuple, std::make_optional, std::error_code, std::format, std::string_view
 
-import :types;        ///< @see telnet-types.cppm for `TelnetCommand`, `NegotiationDirection`
-import :errors;       ///< @see telnet-errors.cppm for `telnet::error` codes
-import :options;      ///< @see telnet-options.cppm for `option` and `option::id_num`
-import :awaitables;   ///< @see telnet-awaitables.cppm for `OptionDisablementAwaitable`
+import :types;        ///< @see "telnet-types.cppm" for `TelnetCommand`, `NegotiationDirection`
+import :errors;       ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+import :options;      ///< @see "telnet-options.cppm" for `option` and `option::id_num`
+import :awaitables;   ///< @see "telnet-awaitables.cppm" for `OptionDisablementAwaitable`
 
-import :protocol_fsm; ///< @see telnet-protocol_fsm.cppm for `protocol_fsm` partition interface
+namespace asio = boost::asio;
 
 namespace telnet {
     /**
      * @internal
      * Selects the `TelnetCommand` corresponding to a given `NegotiationDirection` and enablement state 
      */
-    template<typename ConfigT>
-    TelnetCommand ProtocolFSM<ConfigT>::make_negotiation_command(NegotiationDirection direction, bool enable) {
+    template<ProtocolFSMConfig PC>
+    TelnetCommand ProtocolFSM<PC>::make_negotiation_command(NegotiationDirection direction, bool enable) {
         return (
                    (direction == NegotiationDirection::REMOTE)
                    ? (enable ? TelnetCommand::DO   : TelnetCommand::DONT)
@@ -48,10 +47,10 @@ namespace telnet {
      * Transitions to `WANTYES`/`EMPTY` in `NO` state, returning a `NegotiationResponse` to initiate negotiation.
      * Does not invoke an enablement handler, as it initiates negotiation without enabling.
      * Logs errors for unregistered options (`error::option_not_available`), queue failures (`error::negotiation_queue_error`), or invalid states (`error::protocol_violation`).
-     * @see RFC 1143 for Q Method, `:options` for `option::id_num`, `:errors` for error codes, `:types` for `NegotiationDirection`, `:socket` for usage in `async_request_option`
+     * @see RFC 1143 for Q Method, `:options` for `option::id_num`, `:errors` for error codes, `:types` for `NegotiationDirection`, `:stream` for usage in `async_request_option`
      */
-    template<typename ConfigT>
-    std::tuple<std::error_code, std::optional<NegotiationResponse>> ProtocolFSM<ConfigT>::request_option(
+    template<ProtocolFSMConfig PC>
+    std::tuple<std::error_code, std::optional<NegotiationResponse>> ProtocolFSM<PC>::request_option(
         option::id_num opt, NegotiationDirection direction
     ) {
         if (!ProtocolConfig::registered_options.get(opt)) {
@@ -123,11 +122,11 @@ namespace telnet {
      * Enqueues opposite requests in `WANTYES`/`EMPTY` to transition to `WANTYES`/`OPPOSITE`.
      * Transitions to `WANTNO`/`EMPTY` in `YES` state, returning a `NegotiationResponse` and `OptionDisablementAwaitable` via `option_handler_registry_.handle_disablement`.
      * Logs errors for unregistered options (`error::option_not_available`), queue failures (`error::negotiation_queue_error`), or invalid states (`error::protocol_violation`).
-     * @see RFC 1143 for Q Method, `:options` for `option::id_num`, `:errors` for error codes, `:types` for `NegotiationDirection`, `:awaitables` for `OptionDisablementAwaitable`, `:socket` for usage in `async_disable_option`
+     * @see RFC 1143 for Q Method, `:options` for `option::id_num`, `:errors` for error codes, `:types` for `NegotiationDirection`, `:awaitables` for `OptionDisablementAwaitable`, `:stream` for usage in `async_disable_option`
      */
-    template<typename ConfigT>
+    template<ProtocolFSMConfig PC>
     std::tuple<std::error_code, std::optional<NegotiationResponse>, std::optional<awaitables::OptionDisablementAwaitable>>
-    ProtocolFSM<ConfigT>::disable_option(option::id_num opt, NegotiationDirection direction) {
+    ProtocolFSM<PC>::disable_option(option::id_num opt, NegotiationDirection direction) {
         if (!ProtocolConfig::registered_options.get(opt)) {
             ProtocolConfig::log_error(
                 std::make_error_code(error::option_not_available),
@@ -196,8 +195,8 @@ namespace telnet {
      * Transitions `ProtocolFSM`'s state.
      * @note Resets `current_command_`, `current_option_`, and `subnegotiation_buffer_` when transitioning to `ProtocolState::Normal`.
      */
-    template<typename ConfigT>
-    void ProtocolFSM<ConfigT>::change_state(ProtocolState next_state) noexcept {
+    template<ProtocolFSMConfig PC>
+    void ProtocolFSM<PC>::change_state(ProtocolState next_state) noexcept {
         if (next_state == ProtocolState::Normal) {
             current_command_ = std::nullopt;
             current_option_ = std::nullopt;
@@ -212,9 +211,9 @@ namespace telnet {
      * Handles invalid states (e.g., memory corruption) by logging `error::protocol_violation`, resetting to `ProtocolState::Normal`, and returning an error tuple.
      * Uses `[[unlikely]]` for the default case to optimize for valid states.
      */
-    template<typename ConfigT>
+    template<ProtocolFSMConfig PC>
     std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-    ProtocolFSM<ConfigT>::process_byte(byte_t byte) noexcept {
+    ProtocolFSM<PC>::process_byte(byte_t byte) noexcept {
         switch (current_state_) {
             case ProtocolState::Normal:
                 return handle_state_normal(byte);
@@ -250,9 +249,9 @@ namespace telnet {
      * Unless in `BINARY` mode, transitions to `ProtocolState::HasCR` if `byte` is `'\r'` (0x0D), forwarding the byte.
      * For non-`IAC` bytes, retains the byte as data (returns `true` for forward flag) unless it's nul (`'\0'`).
      */
-    template<typename ConfigT>
+    template<ProtocolFSMConfig PC>
     std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-    ProtocolFSM<ConfigT>::handle_state_normal(byte_t byte) noexcept {
+    ProtocolFSM<PC>::handle_state_normal(byte_t byte) noexcept {
         if (byte == std::to_underlying(TelnetCommand::IAC)) {
             change_state(ProtocolState::IAC);
             return {std::error_code(), false, std::nullopt}; //discard IAC byte
@@ -273,9 +272,9 @@ namespace telnet {
      * For all other bytes, retains the byte as data (returns `true` for forward flag) but logs a protocol violation, transitions to `ProtocolState::Normal`, and returns `processing_signal::carriage_return` to buffer the bare CR. 
      * In all cases other than `IAC`, transitions to `ProtocolState::Normal`.
      */
-    template<typename ConfigT>
+    template<ProtocolFSMConfig PC>
     std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-    ProtocolFSM<ConfigT>::handle_state_has_cr(byte_t byte) noexcept {
+    ProtocolFSM<PC>::handle_state_has_cr(byte_t byte) noexcept {
         ProtocolState next_state = ProtocolState::Normal;
 
         std::error_code result_ec;
@@ -321,11 +320,11 @@ namespace telnet {
      * Logs `error::invalid_command` for commands outside of `TelnetCommand`.
      * Discards command bytes (returns `false` for forward flag).
      * Uses `[[likely]]` for valid `current_command_` cases.
-     * @see RFC 854 for command definitions, `:errors` for `processing_signal` and error codes, `:socket` for `InputProcessor` handling
+     * @see RFC 854 for command definitions, `:errors` for `processing_signal` and error codes, `:stream` for `InputProcessor` handling
      */
-    template<typename ConfigT>
+    template<ProtocolFSMConfig PC>
     std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-    ProtocolFSM<ConfigT>::handle_state_iac(byte_t byte) noexcept {
+    ProtocolFSM<PC>::handle_state_iac(byte_t byte) noexcept {
         ProtocolState next_state = ProtocolState::Normal;
         
         std::error_code result_ec;
@@ -433,9 +432,9 @@ namespace telnet {
      * Transitions to `ProtocolState::Normal` and discards the option byte (returns `false` for forward flag).
      * Uses `[[likely]]` for valid `current_command_` cases.
      */
-    template<typename ConfigT>
+    template<ProtocolFSMConfig PC>
     std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-    ProtocolFSM<ConfigT>::handle_state_option_negotiation(byte_t byte) noexcept {
+    ProtocolFSM<PC>::handle_state_option_negotiation(byte_t byte) noexcept {
         std::optional<ProcessingReturnVariant> response = std::nullopt;
         
         if (current_command_) [[likely]] {
@@ -579,9 +578,9 @@ namespace telnet {
      * Reserves `subnegotiation_buffer_` based on `current_option_->max_subnegotiation_size()`.
      * Transitions to `ProtocolState::Subnegotiation` and discards the option byte (returns `false` for forward flag).
      */
-    template<typename ConfigT>
+    template<ProtocolFSMConfig PC>
     std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-    ProtocolFSM<ConfigT>::handle_state_subnegotiation_option(byte_t byte) noexcept {
+    ProtocolFSM<PC>::handle_state_subnegotiation_option(byte_t byte) noexcept {
         option_registry& registry = ProtocolConfig::registered_options;
         current_option_ = registry.get(static_cast<option::id_num>(byte));
         
@@ -616,9 +615,9 @@ namespace telnet {
      * Checks `subnegotiation_buffer_` size against `current_option_->max_subnegotiation_size()` and logs `error::subnegotiation_overflow` if exceeded, transitioning to `ProtocolState::Normal`.
      * Appends non-`IAC` bytes to `subnegotiation_buffer_` and discards them (returns `false` for forward flag).
      */
-    template<typename ConfigT>
+    template<ProtocolFSMConfig PC>
     std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-    ProtocolFSM<ConfigT>::handle_state_subnegotiation(byte_t byte) noexcept {
+    ProtocolFSM<PC>::handle_state_subnegotiation(byte_t byte) noexcept {
         if (!current_option_) {
             ProtocolConfig::log_error(
                 std::make_error_code(error::protocol_violation),
@@ -658,9 +657,9 @@ namespace telnet {
      * Checks `subnegotiation_buffer_` size against `max_subnegotiation_size()` and logs `error::subnegotiation_overflow` if exceeded.
      * Transitions to `ProtocolState::Subnegotiation` for non-`SE` bytes and discards all bytes (returns `false` for forward flag).
      */
-    template<typename ConfigT>
+    template<ProtocolFSMConfig PC>
     std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-    ProtocolFSM<ConfigT>::handle_state_subnegotiation_iac(byte_t byte) noexcept {
+    ProtocolFSM<PC>::handle_state_subnegotiation_iac(byte_t byte) noexcept {
         std::optional<ProcessingReturnVariant> result = std::nullopt;
         if (!current_option_) {
             ProtocolConfig::log_error(
@@ -721,10 +720,10 @@ namespace telnet {
      * For `IAC` `SB` `STATUS` `IS` ... `IAC` `SE`, delegates to a user-provided subnegotiation handler via `OptionHandlerRegistry`.
      * For `IAC` `SB` `STATUS` `SEND` `IAC` `SE`, constructs an `IS` [list] payload using `OptionStatusDB`, `co_return`ing a `SubnegotiationAwaitable`.
      * Iterates over `OptionStatusDB` to build the `SEND` payload with enabled options, excluding `STATUS`, escaping `IAC` (255) and `SE` (240) by doubling.
-     * @see RFC 859, `:internal` for `OptionStatusDB`, `:options` for `option`, `:awaitables` for `SubnegotiationAwaitable`, `:socket` for `async_write_subnegotiation`
+     * @see RFC 859, `:internal` for `OptionStatusDB`, `:options` for `option`, `:awaitables` for `SubnegotiationAwaitable`, `:stream` for `async_write_subnegotiation`
      */
-    template<typename ConfigT>
-    awaitables::SubnegotiationAwaitable ProtocolFSM<ConfigT>::handle_status_subnegotiation(const option& opt, std::vector<byte_t> buffer) {
+    template<ProtocolFSMConfig PC>
+    awaitables::SubnegotiationAwaitable ProtocolFSM<PC>::handle_status_subnegotiation(const option& opt, std::vector<byte_t> buffer) {
         constexpr byte_t IS   = static_cast<byte_t>(0);
         constexpr byte_t SEND = static_cast<byte_t>(1);
 

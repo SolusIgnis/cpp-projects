@@ -1,5 +1,63 @@
 # Changelog.md
 
+## [Unreleased] - TBD
+
+## [0.5.7] - October 30, 2025
+### Changed
+- No changes. After analysis, `spawn_handler` would be counterproductive. Implementation declined.
+
+## [0.5.6] - October 30, 2025
+### Removed
+- Removed deprecated `OptionHandlerRegistry::operator[]`.
+- Confirmed no callers.
+
+## [0.5.5] - October 30, 2025
+### Added
+- Created new module partition `:protocol_config` with `telnet-protocol_config.cppm`
+
+### Changed
+- Moved `ProtocolFSMConfig` constraint to `:concepts`
+- Moved `DefaultProtocolFSMConfig` implementation to `:protocol_config`
+- Updated `telnet-protocol_fsm.cppm` to `export import :concepts` and `import :protocol_config`.
+
+## [0.5.4] - October 29, 2025
+### Added
+- Added new module `asio_concepts` building up Boost.Asio socket concepts.
+  - Implemented C++20 `concept`s for `AsioAsyncReadStream`, `AsioSyncReadStream`, `AsioAsyncWriteStream`, `AsioSyncWriteStream`, `ExecutorProvider`, `LayeredObject`, `EndpointProvider`, as well as several additional helper `concept`s culminating in `AsioSocket`, `AsioStreamSocket`, and `AsioLayerableStreamSocket`.
+  - Implemented C++20 `concept`s for `AsioMutableBufferSequence`, `AsioConstBufferSequence`, and 4 types of `CompletionToken`.
+- Added `:concepts` partition for `telnet::concepts` namespace containing `LayerableSocketStream` (referencing `asio_concepts::AsioLayerableStreamSocket`), `MutableBufferSequence` (referencing `asio_concepts::AsioMutableBufferSequence`), `ConstBufferSequence` (referencing `asio_concepts::AsioConstBufferSequence`), `ReadToken` (referencing `asio_concepts::AsioReadToken`), and `WriteToken` (referencing `asio_concepts::AsioWriteToken`).
+
+### Removed
+- Removed `TelnetSocketConcept` in favor of `telnet::concepts::LayerableSocketStream`.
+
+### Changed
+- Updated `:stream` to use new `telnet::concepts::LayerableSocketStream` as well as buffer and token concepts.
+
+### Fixed
+- Removed trailing return type from all asynchronous `stream` methods as `auto` deduces them correctly.
+
+## [0.5.3] - October 19, 2025
+### Added
+- Created `handle_processor_state_initializing`, `handle_processor_state_reading`, and `handle_processor_state_processing` private helper methods in `InputProcessor` to clarify the `switch` statement in `operator()`.
+- Created `process_write_error` and `process_fsm_signal` private helper methods in `InputProcessor` to simplify the main body of `handle_processor_state_processing`.
+
+## [0.5.2] - October 18, 2025
+### Added
+- Created `do_response` overloaded private methods for each alternative in `ProcessingReturnVariant`.
+- Consolidated `OptionEnablementAwaitable` and `OptionDisablementAwaitable` overloads into a single templated `do_response` using `TaggedAwaitable<Tag, T, Awaitable>` in `telnet-stream.cppm` and `telnet-stream-impl.cpp`.
+
+### Changed
+- Updated `InputProcessor::operator()`'s `std::visit` lambda to dispatch to `do_response`.
+
+## [0.5.1] - October 17, 2025
+### Changed
+- Renamed `:socket` partition to `:stream`, including `telnet-stream.cppm`, `telnet-stream-impl.cpp`, `telnet-stream-async-impl.cpp`, and `telnet-stream-sync-impl.cppm`.
+- Renamed `socket` class to `stream` to clarify its role as a layered protocol stream rather than a transport-layer socket (e.g., TCP).
+- Renamed `stream<NextLayerSocketT>` to `stream<NextLayerT>` to match the new convention.
+
+### Fixed
+- Fixed all out-of-line template function definition-site template expressions.
+
 ## [0.5.0] - October 17, 2025
 ### Removed
 - Removed deprecated `write_negotiation` methods from `telnet::socket`.
