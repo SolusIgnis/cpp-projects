@@ -1,7 +1,7 @@
 /**
  * @file telnet-socket.cppm
- * @version 0.3.0
- * @release_date September 29, 2025
+ * @version 0.4.0
+ * @release_date October 3, 2025
  *
  * @brief Interface for Telnet socket operations.
  * @remark Defines `TelnetSocketConcept` concept to constrain lower-layer socket types.

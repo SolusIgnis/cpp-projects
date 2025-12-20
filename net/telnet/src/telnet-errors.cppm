@@ -1,7 +1,7 @@
 /**
  * @file telnet-errors.cppm
- * @version 0.3.0
- * @release_date September 29, 2025
+ * @version 0.4.0
+ * @release_date October 3, 2025
  *
  * @brief Telnet-specific error codes and error category for protocol and socket operations.
  * @remark Defines `telnet::error` enumeration and `telnet_error_category` for use with `std::error_code`.
@@ -31,7 +31,8 @@ export namespace telnet {
         subnegotiation_overflow, ///< Subnegotiation buffer exceeds `max_subneg_size_` (@see `:options`)
         ignored_go_ahead,        ///< Go Ahead command received and ignored (@see `:protocol_fsm`)
         user_handler_forbidden,  ///< A user tried to register a handler for a command/option reserved to the implementation (@see `:protocol_fsm`) 
-        user_handler_not_found   ///< A needed handler was not registered by the user (@see `:protocol_fsm`)
+        user_handler_not_found,  ///< A needed handler was not registered by the user (@see `:protocol_fsm`)
+        negotiation_queue_error  ///< The negotiation queue bit was set in the wrong `NegotiationState` (@see `:internal`)
     }; //enum class error
 
     /**
@@ -88,6 +89,8 @@ export namespace telnet {
                     return "User attempted to register a handler for a command or option reserved to the Telnet implementation";
                 case error::user_handler_not_found:
                     return "Telnet needed a handler that was not registered by the user";
+                case error::negotiation_queue_error:
+                    return "Telnet: The negotiation queue bit cannot be set unless the NegotiationState is WANTYES or WANTNO.";
                 default:
                     [[unlikely]] //Impossible unless programmer error results in an error code without a defined message 
                     return "Unknown Telnet error";

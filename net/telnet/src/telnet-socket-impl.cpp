@@ -1,7 +1,7 @@
 /**
  * @file telnet-socket-impl.cpp
- * @version 0.3.0
- * @release_date September 29, 2025
+ * @version 0.4.0
+ * @release_date October 3, 2025
  *
  * @brief Implementation of Telnet socket constructor, `InputProcessor`, and utility functions.
  * @remark Contains implementations for `socket` constructor, `InputProcessor`, `sync_await`, and `escape_telnet_output` overloads.

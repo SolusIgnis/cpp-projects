@@ -1,7 +1,7 @@
 /**
  * @file telnet-options.cppm
- * @version 0.3.0
- * @release_date September 29, 2025
+ * @version 0.4.0
+ * @release_date October 3, 2025
  *
  * @brief Interface for Telnet option handling.
  * @remark Defines `option` class, `option::id_num` enumeration, and associated predicates/handlers.
@@ -101,6 +101,9 @@ export namespace telnet {
         /// @brief Evaluates the remote predicate to determine if the `option` can be enabled remotely.
         bool supports_remote() const noexcept { return remote_predicate_(id_); }
 
+        /// @brief Evaluates the predicate for the designated direction to determine if the `option` can be enabled in that direction.
+        bool supports(NegotiationDirection direction) const noexcept { return (direction == NegotiationDirection::REMOTE) ? supports_remote() : supports_local(); }
+
         /// @brief Gets the maximum subnegotiation buffer size.
         size_t max_subnegotiation_size() const noexcept { return max_subneg_size_; }
 
@@ -186,6 +189,12 @@ export namespace telnet {
      * @fn bool option::supports_remote() const noexcept
      *
      * @return True if the `option` can be enabled remotely, false otherwise. 
+     */
+    /**
+     * @fn bool option::supports(NegotiationDirection direction) const noexcept
+     *
+     * @param direction The direction in question for support.
+     * @return True if the `option` can be enabled in the designated direction, false otherwise.
      */
     /**
      * @fn size_t option::max_subnegotiation_size() const noexcept
@@ -418,3 +427,57 @@ export namespace telnet {
      * @remark Simplifies runtime `option` creation by forwarding arguments to the `option` constructor.
      */
 } //namespace telnet
+
+export namespace std {
+    /**
+     * @brief Formatter specialization for `telnet::option` to support `std::format`.
+     * @remark Formats `option` values for use in `ProtocolConfig::log_error` during option negotiation and subnegotiation.
+     * @see `:protocol_fsm` for logging usage.
+     */
+    template<>
+    struct formatter<telnet::option, char> {
+        char presentation = 'd'; ///< Format specifier: 'd' for 0xXX (name), 'n' for name only, 'x' for hex only.
+
+        /**
+         * @brief Parses the format specifier for `option`.
+         * @param ctx The format parse context.
+         * @return Iterator pointing to the end of the parsed format specifier.
+         * @throws std::format_error if the specifier is invalid (not 'd', 'n', or 'x').
+         * @remark Supports 'd' (default: 0xXX (name)), 'n' (name only), and 'x' (hex only, 0xXX).
+         */
+        constexpr auto parse(format_parse_context& ctx) {
+            auto it = ctx.begin();
+            if (it != ctx.end() && (*it == 'n' || *it == 'x' || *it == 'd')) {
+                presentation = *it;
+                ++it;
+            }
+            if (it != ctx.end() && *it != '}') {
+                throw std::format_error("Invalid format specifier for option");
+            }
+            return it;
+        } //parse(format_parse_context&)
+
+        /**
+         * @brief Formats a `telnet::option` value.
+         * @param opt The `option` to format.
+         * @param ctx The format context.
+         * @return Output iterator after formatting.
+         * @details Formats as:
+         * - 'd': "0xXX (name)" (e.g., "0x00 (Binary Transmission)").
+         * - 'n': "name" (e.g., "Binary Transmission" or "unknown" if empty).
+         * - 'x': "0xXX" (e.g., "0x00").
+         */
+        template<typename FormatContext>
+        auto format(const telnet::option& opt, FormatContext& ctx) const {
+            if (presentation == 'n') {
+                return std::format_to(ctx.out(), "{}", opt.get_name().empty() ? "unknown" : opt.get_name());
+            } else if (presentation == 'x') {
+                return std::format_to(ctx.out(), "0x{:02x}", std::to_underlying(opt.get_id()));
+            } else { // 'd' (default: 0xXX (name))
+                return std::format_to(ctx.out(), "0x{:02x} ({})", 
+                    std::to_underlying(opt.get_id()), 
+                    opt.get_name().empty() ? "unknown" : opt.get_name());
+            }
+        } //format(const telnet::option&, FormatContext&)
+    }; //class formatter<telnet::option>
+} //namespace std

@@ -1,5 +1,26 @@
 # Changelog.md
-## [0.3.1]
+## [0.4.0] - October 3, 2025
+- Refreshed documentation to include loggers and formatters.
+
+## [0.3.3] - October 2, 2025
+### Added
+- Added custom formatters for `TelnetCommand` and `NegotiationDirection`.
+- Added custom formatter for `option`.
+
+### Changed
+- Changed `ErrorLogger` to take a `std::string` parameter.
+- Changed `log_error` to use `std::format` to produce a contextual error message for the logger.
+
+## [0.3.2] - October 1, 2025
+### Added
+- Added `NegotiationDirection` enumeration in `:types` to represent local vs remote endpoint.
+
+### Changed
+- Implemented RFC 1143 "The Q Method" for option negotiation. 
+- Refactored `OptionStatusRecord` to store `NegotiationState` for local and remote plus a queue bit each way.
+- Added many methods to `OptionStatusRecord` to query/adjust the state in different directions.
+
+## [0.3.1] - September 30, 2025
 ### Changed
 - Replaced `static_cast<byte_t>()` and `static_cast<std::underlying_type_t<>>()` with C++23's `std::to_underlying()`.
 

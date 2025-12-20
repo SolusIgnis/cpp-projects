@@ -1,7 +1,7 @@
 /**
  * @file telnet-socket-async-impl.cpp
- * @version 0.3.0
- * @release_date September 29, 2025
+ * @version 0.4.0
+ * @release_date October 3, 2025
  *
  * @brief Implementation of asynchronous Telnet socket operations.
  * @remark Contains implementations for `async_read_some`, `async_write_some`, `async_write_raw`, `async_write_command`, `async_write_negotiation`, `async_write_subnegotiation`, `async_write_temp_buffer`, and `async_report_error`.

@@ -1,7 +1,7 @@
 /**
  * @file telnet-protocol_fsm.cppm
- * @version 0.3.0
- * @release_date September 29, 2025
+ * @version 0.4.0
+ * @release_date October 03, 2025
  *
  * @brief Interface for the Telnet protocol finite state machine.
  * @remark Implements basic Telnet protocol (RFC 854) including IAC command processing and stateful negotiation.
@@ -9,14 +9,13 @@
  *   telnet::ProtocolFSM<> fsm; // Uses `DefaultProtocolFSMConfig`
  *   telnet::ProtocolFSM<>::ProtocolConfig::set_unknown_command_handler([](telnet::TelnetCommand cmd) { std::cout << "Custom: " << std::to_underlying(cmd) << "\n"; });
  *   telnet::ProtocolFSM<>::ProtocolConfig::registered_options.upsert(telnet::option::id_num::NEGOTIATE_ABOUT_WINDOW_SIZE, "NAWS", telnet::option::always_accept, telnet::option::always_accept, true, 4);
- *   telnet::ProtocolFSM<>::ProtocolConfig::set_error_logger([](const std::error_code& ec, byte_t byte, std::optional<telnet::TelnetCommand> cmd, std::optional<telnet::option> opt) { std::cout << "Call your logging function here. " << "Error: " << ec.message() << " on byte " << static_cast<std::uint32_t>(byte) << std::endl; });
+ *   telnet::ProtocolFSM<>::ProtocolConfig::set_error_logger([](const std::error_code& ec, std::string msg) { std::cout << "Error: " << ec.message() << " - " << msg << std::endl; });
  *
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
  * @see RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, :types for `TelnetCommand`, :options for `option` and `option::id_num`, :errors for error codes, :socket for FSM usage, :internal for implementation classes
- * @todo Future: Consider optional half-duplex support (RFC 854) if legacy peer requirements arise.
- * @todo Phase 4: Adopt full compliance with RFC 1143 to avoid option negotiation loops.
+ * @todo Future Development: Consider optional half-duplex support (RFC 854) if legacy peer requirements arise.
  * @todo Phase 5: Consider restructuring option negotiation results to call option enablement or disablement handlers if needed.
  * @todo Phase 5: Consider restructuring option negotiation results for internal implementation of some options.
  * @todo Phase 6: Consider moving concept `ProtocolFSMConfig` to a :concepts partition or a :protocol_config partition (with `DefaultProtocolFSMConfig`).
@@ -28,9 +27,9 @@ namespace asio = boost::asio;
 //Module partition interface unit
 export module telnet:protocol_fsm;
 
-import std; // For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec
+import std; // For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec, std::format
 
-export import :types;   ///< @see telnet-types.cppm for `byte_t` and `TelnetCommand`
+export import :types;   ///< @see telnet-types.cppm for `byte_t`, `TelnetCommand`, and `NegotiationDirection`
 export import :errors;  ///< @see telnet-errors.cppm for `telnet::error` codes
 export import :options; ///< @see telnet-options.cppm for `option` and `option::id_num`
 
@@ -46,7 +45,7 @@ export namespace telnet {
      * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, :options for `option` and `option::id_num`, :errors for error codes, :internal for implementation classes
      */
     template<typename T>
-    concept ProtocolFSMConfig = requires(T config, TelnetCommand cmd, option full_opt, option::id_num opt, std::error_code ec, byte_t byte) {
+    concept ProtocolFSMConfig = requires(T config, TelnetCommand cmd, option full_opt, option::id_num opt, std::error_code ec, byte_t byte, std::string msg) {
         typename T::TelnetCommandHandler;
         typename T::UnknownOptionHandler;
         typename T::ErrorLogger;
@@ -57,7 +56,7 @@ export namespace telnet {
         { T::set_error_logger(std::declval<typename T::ErrorLogger>()) } -> std::same_as<void>;
         { T::initialize_command_handlers() } -> std::convertible_to<std::map<TelnetCommand, typename ProtocolFSM<T>::TelnetCommandHandler>>;
         { T::get_unknown_option_handler() } -> std::convertible_to<const typename ProtocolFSM<T>::UnknownOptionHandler&>;
-        { T::log_error(ec, byte, std::declval<std::optional<TelnetCommand>>(), std::declval<std::optional<option>>()) } -> std::same_as<void>;
+        { T::log_error(ec, std::declval<std::string>()) } -> std::same_as<void>;
         { T::registered_options.get(opt) } -> std::convertible_to<std::optional<option>>;
         { T::registered_options.has(opt) } -> std::same_as<bool>;
         { T::registered_options.upsert(opt) } -> std::convertible_to<const option&>;
@@ -115,11 +114,9 @@ export namespace telnet {
          * @brief Function type for logging errors during FSM processing.
          *
          * @param ec The `std::error_code` describing the error.
-         * @param byte The `byte_t` associated with the error.
-         * @param cmd Optional `TelnetCommand` providing context.
-         * @param opt Optional `option` providing context.
+         * @param msg The formatted error message.
          */
-        using ErrorLogger = std::function<void(const std::error_code&, byte_t, std::optional<TelnetCommand>, std::optional<option>)>;
+        using ErrorLogger = std::function<void(const std::error_code&, std::string)>;
 
         /// @brief Initializes the configuration once.
         static void initialize() {
@@ -155,12 +152,13 @@ export namespace telnet {
             std::shared_lock<std::shared_mutex> lock(mutex_);
             return unknown_option_handler_;
         }
-
-        /// @brief Logs an error with the registered error logger.
-        static void log_error(const std::error_code& ec, byte_t byte, std::optional<TelnetCommand> cmd, std::optional<option> opt) {
+        
+        /// @brief Logs an error with the registered error logger using a formatted string.
+        template<typename ...Args>
+        static void log_error(const std::error_code& ec, std::format_string<auto> fmt, Args&&... args) {
             std::shared_lock<std::shared_mutex> lock(mutex_);
             if (error_logger_) {
-                error_logger_(ec, byte, cmd, opt);
+                error_logger_(ec, std::format(fmt, std::forward<Args>(args)...));
             }
         }
         
@@ -213,20 +211,8 @@ export namespace telnet {
                 std::cout << "Unknown option: " << std::to_underlying(opt) << "\n";
                 return;
             };
-            error_logger_ = [](const std::error_code& ec, byte_t byte, std::optional<TelnetCommand> cmd, std::optional<option> opt) {
-                std::cerr << "Telnet FSM error: " << ec.message() << " (byte: 0x"
-                          << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned>(byte);
-                if (cmd) {
-                    std::cerr << ", cmd: 0x" << static_cast<unsigned>(*cmd);
-                } else {
-                    std::cerr << ", no cmd";
-                }
-                if (opt) {
-                    std::cerr << ", option: 0x" << static_cast<unsigned>(opt->get_id()) << "[\"" << opt->get_name() << "\"]";
-                } else {
-                    std::cerr << ", no opt";
-                }
-                std::cerr << ")" << std::dec << std::endl;
+            error_logger_ = [](const std::error_code& ec, std::string msg) {
+                std::cerr << "Telnet FSM error: " << ec.message() << " (" << msg << ")" << std::endl;
             };
         } //init()
 
@@ -280,14 +266,14 @@ export namespace telnet {
      * @remark Thread-safe via `std::shared_lock<std::shared_mutex>`.
      */
     /**
-     * @fn void DefaultProtocolFSMConfig::log_error(const std::error_code& ec, byte_t byte, std::optional<TelnetCommand> cmd, std::optional<option> opt)
+     * @fn template<typename ...Args> void DefaultProtocolFSMConfig::log_error(const std::error_code& ec, std::format_string<auto> fmt, Args&&... args)
      *
+     * @tparam Args Variadic argument type pack.
      * @param ec The error code to log.
-     * @param byte The byte associated with the error.
-     * @param cmd Optional `TelnetCommand` context.
-     * @param opt Optional `option` context.
+     * @param fmt The format string for the error message.
+     * @param args Arguments to format the error message.
      *
-     * @remark Invokes the registered `error_logger_` if set.
+     * @remark Formats the message using std::format and invokes the registered `error_logger_`.
      * @remark Thread-safe via `std::shared_lock<std::shared_mutex>`.
      */
     /**
@@ -325,8 +311,6 @@ export namespace telnet {
      * @remark Called once by `initialize` under `std::call_once`.
      */
      
-     
-
     /**
      * @brief Finite State Machine for Telnet protocol processing.
      * @tparam ConfigT Configuration class defining options and handlers (defaults to `DefaultProtocolFSMConfig`).
@@ -394,11 +378,9 @@ export namespace telnet {
          * @brief Function type for logging errors during FSM processing.
          *
          * @param ec The `std::error_code` describing the error.
-         * @param byte The `byte_t` associated with the error.
-         * @param cmd Optional `TelnetCommand` providing context.
-         * @param opt Optional `option` providing context.
+         * @param msg The formatted error message.
          */
-        using ErrorLogger = std::function<void(const std::error_code&, byte_t, std::optional<TelnetCommand>, std::optional<option>)>;
+        using ErrorLogger = std::function<void(const std::error_code&, std::string)>;
 
         /**
          * @typedef ProcessingReturnVariant
@@ -441,6 +423,9 @@ export namespace telnet {
         bool is_enabled(const option& opt) { return option_status_[opt].is_enabled(); }
 
     private:
+        /// @brief Makes a negotiation response tuple
+        std::tuple<TelnetCommand, option::id_num> make_negotiation(NegotiationDirection direction, bool enable, option::id_num opt) noexcept;
+    
         /// @brief Changes the FSM state.
         void change_state(ProtocolState next_state) noexcept;
 
@@ -527,6 +512,14 @@ export namespace telnet {
      * @return True if `opt` is enabled locally or remotely, false otherwise.
      *
      * @remark Queries `OptionStatusDB` for the option’s status.
+     */
+    /**
+     * @fn std::tuple<TelnetCommand, option::id_num> make_negotiation(NegotiationDirection direction, bool enable, option::id_num opt) noexcept
+     *
+     * @param direction Negotiate local (DO/DONT) or remote (WILL/WONT) option?
+     * @param enable Negotiate to enable?
+     * @param opt The `option::id_num` to negotiate.
+     * @return The {`TelnetCommand`, `option::id_num`} tuple representing the desired negotiation.
      */
     /**
      * @fn void ProtocolFSM::change_state(ProtocolState next_state) noexcept

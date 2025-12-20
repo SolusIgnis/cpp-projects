@@ -1,7 +1,7 @@
 /**
  * @file telnet-socket-sync-impl.cpp
- * @version 0.3.0
- * @release_date September 29, 2025
+ * @version 0.4.0
+ * @release_date October 3, 2025
  *
  * @brief Implementation of synchronous Telnet socket operations.
  * @remark Contains `read_some`, `write_some`, `write_raw`, `write_command`, `write_negotiation`, and `write_subnegotiation`, wrapping asynchronous counterparts.
