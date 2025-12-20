@@ -1,4 +1,133 @@
 # Changelog.md
+## [0.2.0] - September 19, 2025
+- Updated `version` across all files to `0.2.0` to mark the official release.
+- Updated `release_date` across all files to September 19, 2025, reflecting the current date of the release.
+
+## [0.1.8] - September 18, 2025
+### Changed
+- Refactored `InputProcessor` with `async_compose`, using `State` enum (`INITIALIZING`, `READING`, `PROCESSING`, `DONE`).
+- Added `complete` helper in `InputProcessor` to ensure single completion and `State::DONE` safety.
+- Added `ProtocolConfigT` template parameter with default `DefaultProtocolFSMConfig` to `socket` class across all files.
+- Added private `async_write_temp_buffer` and `async_report_error` methods to the `socket` class in `telnet-socket.cppm`, with implementations in `telnet-socket-async-impl.cpp`.
+- Refactored `async_read_some` and `async_write_*` to use new `InputProcessor` and helper methods. 
+- Updated `telnet-socket-sync-impl.cpp` to include `ProtocolConfigT` and use pass-by-value for `TelnetCommand` and `option::id_num` in `write_command`, `write_negotiation`, and `write_subnegotiation`.
+- Added private `asio_completion_signature` type alias (`void(std::error_code, std::size_t)`) in `telnet-socket.cppm` to simplify Boost.Asio completion handler signatures in `TelnetSocketConcept` and `socket` class methods.
+- Added private template type alias `asio_result_type<CompletionToken> = asio::async_result_t<std::decay_t<CompletionToken>, asio_completion_signature>` to the `socket` class in `telnet-socket.cppm` to simplify asynchronous method return types.
+- Enhanced `ProtocolFSM` with `option::id_num`, updated `SubnegotiationHandler`, added `option::make_option`, and implemented `InputProcessor` with `async_compose`.
+- Shortened template parameter names in `telnet-socket-async-impl.cpp` and `telnet-socket-impl.cpp` to `NLS` and `PC`.
+- Simplified template syntax in `telnet-socket-async-impl.cpp` and `telnet-socket-impl.cpp` using `template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>`.
+
+
+## [0.1.7] - September 17, 2025
+### Changed
+- Replaced `TelnetOption` with `option::id_num` across all interface and implementation files for consistency and type safety.
+- Updated `SubnegotiationHandler` to use unary signature (`std::function<void(const std::vector<uint8_t>&)>`) in `telnet-options.cppm` and `telnet-protocol_fsm-impl.cpp`.
+- Added `option::make_option` factory with `name` parameter for option construction in `telnet-options.cppm` and `telnet-protocol_fsm-impl.cpp`.
+- Implemented implicit conversion for `option::id_num` in map lookups and used lambda-based `std::find_if` for option lookups in `telnet-protocol_fsm-impl.cpp`.
+- Enhanced `ProtocolFSM` to register default options for unregistered `option::id_num` values during subnegotiation.
+- Added checks for `!current_option_` in `ProtocolFSM::process_byte` to return `error::protocol_violation` for invalid state transitions.
+- Reordered IAC check in `ProtocolFSM::process_byte` for efficiency.
+- Updated all files (`telnet-options.cppm`, `telnet-protocol_fsm-impl.cpp`, `telnet-socket.cppm`, `telnet-socket-impl.cpp`, `telnet-socket-async-impl.cpp`, `telnet-socket-sync-impl.cpp`) to version **0.1.11** and release date **September 17, 2025**.
+- Updated comments to reflect `option::id_num` and `ProtocolFSM` behavior (e.g., default option registration).
+- Preserved `@todo` notes for Phase 2 tasks (refactor `InputProcessor` to use `async_compose`, review writers for `async_initiate` usage).
+
+## [0.1.6] - September 16, 2025
+### Changed
+- Replaced generic error codes (`asio::error::operation_aborted`, `asio::error::invalid_argument`, `std::errc::invalid_argument`, `std::errc::not_enough_memory`) with `telnet::error` codes (`protocol_violation`, `invalid_command`, `option_not_available`, `invalid_subnegotiation`, `subnegotiation_overflow`, `input_processor_already_initialized`, `invalid_negotiation`, `internal_error`) across all Telnet module files for improved error specificity.
+- Retained `std::errc::not_enough_memory` for `std::bad_alloc` exceptions in synchronous socket methods (`telnet-socket-sync-impl.cpp`) to maintain consistency with existing behavior.
+- Updated all files to version 0.1.11 and release date to 2025-09-16.
+- Added `import :errors;` to relevant files to access `telnet::error` codes.
+
+## [0.1.5] - September 16, 2025
+### Added
+- **Subnegotiation Option State**:
+  - Added `ProtocolState::SubnegotiationOption` to validate the option byte after `IAC SB` as a `TelnetOption` per RFC 854.
+  - Stores the full `Option` object in `current_option_` (changed from `std::optional<TelnetOption>` to `std::optional<Option>`).
+  - Validates option via `ProtocolConfig::get_option`; if unregistered, invokes `unknown_option_handler_` and creates a default `Option` with `MAX_SUBNEGOTIATION_SIZE`.
+- **Per-Option Subnegotiation Buffer Limits**:
+  - Added `max_subneg_size_` to `Option` (default `MAX_SUBNEGOTIATION_SIZE = 1024`, <=0 for unlimited).
+  - Updated `Option` constructor and `register_option` to accept `max_subneg_size`.
+  - Modified `handle_state_subnegotiation` and `handle_state_subnegotiation_iac` to use `current_option_->max_subneg_size_` for buffer checks, falling back to `MAX_SUBNEGOTIATION_SIZE` for default `Option`.
+- **Subnegotiation Warning Handler**:
+  - Added `SubnegotiationWarningHandler` type (`std::function<void(TelnetOption, size_t, size_t)>`) to `DefaultProtocolFSMConfig`.
+  - Added `set_subnegotiation_warning_handler` and `warn_subnegotiation_buffer` to trigger warnings at 80% of `max_subneg_size`.
+  - Updated `ProtocolFSMConfig` concept to require `SubnegotiationWarningHandler` and related methods.
+- Completes Phase 2 task: make subnegotiation buffer size configurable (Task 4).
+
+### Changed
+- **Breaking Change**: Changed `ProtocolFSM::current_option_` from `std::optional<TelnetOption>` to `std::optional<Option>` to store the full `Option` object during subnegotiation, avoiding repeated lookups.
+- Updated `handle_state_option_negotiation` to set `current_option_` using `ProtocolConfig::get_option`.
+- Restored all comments from **0.1.9** to maintain documentation integrity.
+
+### Notes
+- Default `max_subneg_size` is 1024 for backward compatibility and safety for unknown options.
+- Warning handler triggers at 80% of `max_subneg_size` (configurable via `set_subnegotiation_warning_handler`).
+- `SubnegotiationOption` state ensures RFC 854 compliance by validating the option byte after `IAC SB`.
+- Completes all Phase 2 tasks (Task 2, Task 3, Task 4).
+- Compatible with existing `InputProcessor` and `async_read_some` semantics.
+- Storing `Option` in `current_option_` improves performance by avoiding repeated `get_option` calls (O(n) for `std::set<Option>`).
+
+## [0.1.4] - September 15, 2025
+### Added
+- **Refined ProtocolFSMConfig concept**:
+  - Added requirements for nested types `TelnetCommandHandler`, `UnknownOptionHandler`, and `ErrorLogger` in `ProtocolConfig`.
+  - Constrained these types to be convertible to `ProtocolFSM<ConfigT>::TelnetCommandHandler`, `ProtocolFSM<ConfigT>::UnknownOptionHandler`, and `ProtocolFSM<ConfigT>::ErrorLogger`, respectively, using `std::convertible_to`.
+  - Updated method constraints to use `ProtocolFSM<ConfigT>`'s handler types, ensuring type consistency for custom `ProtocolConfig` implementations.
+- **Default error logging**:
+  - Implemented default `error_logger_` in `DefaultProtocolFSMConfig::initialize` to log errors to `std::cerr` with error code and byte in hexadecimal.
+  - Added error logging in `ProtocolFSM::process_byte` for invalid states (`operation_aborted`), `handle_state_iac` for invalid commands (`invalid_argument`), `handle_state_option_negotiation` for invalid commands/options (`invalid_argument`), and `handle_state_subnegotiation_iac` for missing subnegotiation handlers (`invalid_argument`).
+  - Updated `ProtocolFSM::process_byte`, `handle_state_iac`, `handle_state_option_negotiation`, and `handle_state_subnegotiation_iac` to call `ProtocolConfig::log_error` for invalid states (`operation_aborted`), invalid commands/options (`invalid_argument`), and buffer overflows (`message_size`).
+  - Updated `ProtocolFSMConfig` concept to require `log_error` instead of `get_error_logger`.
+  - Completes Phase 2 task: implement error logging in `process_byte`.
+  
+## [0.1.3] - September 15, 2025
+### Added
+- **Refined `DefaultProtocolFSMConfig::get_command_handler`**:
+  - Updated `get_command_handler(TelnetCommand)` to return `unknown_command_handler_` if no specific handler is found in `command_handlers_`, reducing the need for explicit `get_unknown_command_handler` calls.
+  - Removed `get_unknown_command_handler` from `DefaultProtocolFSMConfig` as it’s now encapsulated in `get_command_handler`.
+  - Simplified `ProtocolFSM::handle_state_iac` to use only `get_command_handler`.
+  - Updated `ProtocolFSMConfig` concept to remove `get_unknown_command_handler` requirement.
+- **Improved `ProtocolFSM` configuration access**:
+  - Added `DefaultProtocolFSMConfig::get_command_handler(TelnetCommand)` and `get_option(TelnetOption)` returning `std::optional` for direct, encapsulated access to handlers and options.
+  - Removed `get_command_handlers()` and `get_option_registry()` to hide collection types (encapsulates `std::map` and `std::set`).
+  - Updated `ProtocolFSM` to use new getters, simplifying `handle_state_iac`, `handle_state_option_negotiation`, and `handle_state_subnegotiation_iac`.
+  - Updated `ProtocolFSMConfig` concept to require `get_command_handler` and `get_option`.
+- **Templated `ProtocolFSM` on a configuration class**:
+  - Introduced `DefaultProtocolFSMConfig` as a class to encapsulate options, handlers, and thread safety primitives.
+  - Templated `ProtocolFSM` on `ConfigT`, defaulting to `DefaultProtocolFSMConfig`.
+  - Added public nested `ProtocolConfig` type alias for `ConfigT`, enabling clean API (e.g., `ProtocolFSM::ProtocolConfig::set_unknown_command_handler`, `ProtocolFSM::ProtocolConfig::set_error_logger`).
+  - Moved configuration-related static members (`command_handlers_`, `option_registry_`, `error_logger_`, etc.) to `DefaultProtocolFSMConfig`.
+  - Added static getters in `DefaultProtocolFSMConfig` for encapsulated, thread-safe access using `std::shared_lock`.
+  - Removed forwarding methods from `ProtocolFSM`, relying on `ProtocolConfig` for configuration management.
+  - Moved `set_error_logger` to `DefaultProtocolFSMConfig` with a getter, preparing for future error logging implementation.
+  - Added C++20 concept `ProtocolFSMConfig` to constrain configuration types.
+  - Updated `socket` to use `ProtocolFSM<DefaultProtocolFSMConfig>` by default.
+  - Removed `@todo Phase2: template ProtocolFSM on a configuration class to register options and handlers`.
+  - Removed `@todo Phase2: add std::shared_lock around ConfigT member reads in process_byte` as getters provide thread-safe access.
+  - Removed `@todo Phase2: implement error logging with detailed context` as `set_error_logger` is now in `DefaultProtocolFSMConfig`, with implementation deferred.
+
+## [0.1.2] - September 15, 2025
+### Changed
+- **Refactored `ProtocolFSM::process_byte` for improved maintainability**:
+  - Split the large `switch` statement into helper methods (`handle_state_normal`, `handle_state_iac`, `handle_state_option_negotiation`, `handle_state_subnegotiation`, `handle_state_subnegotiation_iac`) to handle each protocol state.
+  - Added `change_state` method to centralize state transitions and ensure `current_command_`, `current_option_`, and `subnegotiation_buffer_` are cleared when transitioning to `ProtocolState::Normal`.
+  - Removed `@todo Phase2: consider refactoring with helper methods` from `telnet-protocol_fsm.cppm` as the task is complete.
+  - Maintained `noexcept` and tuple return type for compatibility with `InputProcessor` and `async_read_some`.
+- Updated file headers to reflect version `0.1.2`.
+
+## [0.1.1] - September 14, 2025
+### Changed
+- Reorganized `telnet/telnet-socket-sync-impl.cpp` methods, grouping throwing overloads and noexcept overloads with implementation comments.
+- Refactored `telnet/telnet.cppm` to only export partitions (`:types`, `:options`, `:protocol_fsm`, `:socket`).
+- Created new `telnet:types` partition for `TelnetCommand`.
+- Moved `TelnetOption` to `telnet:options` and `TelnetSocketConcept` to `telnet:socket`.
+- Added global module fragments with `#include <boost/asio.hpp>` and `namespace asio = boost::asio;` in all module units.
+- Changed `telnet:socket` to use `export import :types;` and `export import :options;` to make `TelnetCommand` and `TelnetOption` visible in its public interface.
+- Added explicit `import telnet:<partition>; // module partition interface unit` in implementation units (`telnet-protocol_fsm-impl.cpp`, `telnet-socket-impl.cpp`, `telnet-socket-async-impl.cpp`, `telnet-socket-sync-impl.cpp`) for portability and clarity.
+- Renamed partition `telnet:telnet_socket` to `telnet:socket` for simplicity.
+
+### Fixed
+- Corrected reference parameters in `telnet:socket` for rvalues/lvalues and const-ness.
 
 ## [0.1.0] - September 14, 2025
 ### Changed
@@ -212,4 +341,4 @@
 ## [0.0.1] - TBD
 - Initial skeleton of the `telnet` module.
 - Defined `TelnetCommand` and `TelnetOption` enumerations.
-- Created basic structure for `ProtocolFSM` class.
+- Created basic structure for `ProtocolFSM` class. for `ProtocolFSM` class.
