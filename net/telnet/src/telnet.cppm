@@ -1,7 +1,7 @@
 /**
  * @file telnet.cppm
- * @version 0.4.0
- * @release_date October 3, 2025
+ * @version 0.5.0
+ * @release_date October 17, 2025
  *
  * @brief Primary module interface for the Telnet library.
  * @details Exports partitions for:
@@ -17,7 +17,7 @@
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @see RFC 854 for Telnet protocol specification.
+ * @see RFC 854 for Telnet protocol specification, RFC 1123 for evolution thereof, and RFC 1143 for option negotiation states.
  * @todo Future Development: Clean up exports to ensure types never accessed by external users are not exported. 
  */
 //Primary module interface unit

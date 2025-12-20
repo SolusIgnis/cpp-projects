@@ -1,16 +1,16 @@
 /**
  * @file telnet-socket-sync-impl.cpp
- * @version 0.4.0
- * @release_date October 3, 2025
+ * @version 0.5.0
+ * @release_date October 17, 2025
  *
  * @brief Implementation of synchronous Telnet socket operations.
- * @remark Contains `read_some`, `write_some`, `write_raw`, `write_command`, `write_negotiation`, and `write_subnegotiation`, wrapping asynchronous counterparts.
+ * @remark Contains `read_some`, `write_some`, `write_raw`, `write_command`, `write_negotiation`, `write_subnegotiation`, `send_synch`, `request_option`, and `disable_option`, wrapping asynchronous counterparts.
  *
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
  * @note Synchronous I/O operations incur overhead from `sync_await`, which creates a new `io_context` and thread per call, and scale poorly compared to asynchronous methods. However, this overhead is minimal compared to blocking network I/O latency.
- * @see telnet-socket.cppm for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, :types for `TelnetCommand`, :options for `option`, :errors for error codes, :protocol_fsm for `ProtocolFSM`
+ * @see telnet-socket.cppm for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
  */
 module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
 #include <boost/asio.hpp>
@@ -32,6 +32,35 @@ namespace telnet {
     //=========================================================================================================
     // Synchronous throwing wrappers use `sync_await` to execute their asynchronous counterparts.
     //=========================================================================================================
+
+    /**
+     * @internal
+     * Wraps awaitable `async_request_option` in `sync_await`, forwarding the option and direction.
+     * @see `async_request_option` in `telnet-socket-async-impl.cpp`.
+     */
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    std::size_t socket<NLS, PC>::request_option(option::id_num opt, NegotiationDirection direction) {
+        auto [ec, bytes] = sync_await(async_request_option(opt, direction, asio::use_awaitable));
+        if (ec) {
+            throw std::system_error(ec);
+        }
+        return bytes;
+    } // socket::request_option(option::id_num, NegotiationDirection)
+
+    /**
+     * @internal
+     * Wraps awaitable `async_disable_option` in `sync_await`, forwarding the option and direction.
+     * @see `async_disable_option` in `telnet-socket-async-impl.cpp`.
+     */
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    std::size_t socket<NLS, PC>::disable_option(option::id_num opt, NegotiationDirection direction) {
+        auto [ec, bytes] = sync_await(async_disable_option(opt, direction, asio::use_awaitable));
+        if (ec) {
+            throw std::system_error(ec);
+        }
+        return bytes;
+    } // socket::disable_option(option::id_num, NegotiationDirection)
+
     /**
      * @internal
      * Wraps awaitable `async_read_some` in `sync_await` with perfect forwarding of the buffer sequence.
@@ -77,16 +106,6 @@ namespace telnet {
 
     /**
      * @internal
-     * Wraps awaitable `async_write_negotiation` in `sync_await`, forwarding the command and option.
-     * @see `async_write_negotiation` in `telnet-socket-async-impl.cpp`.
-     */
-    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
-    std::size_t socket<NLS, PC>::write_negotiation(TelnetCommand cmd, option::id_num opt) {
-        return sync_await(async_write_negotiation(cmd, opt, asio::use_awaitable));
-    } // socket::write_negotiation(TelnetCommand, option::id_num)
-
-    /**
-     * @internal
      * Wraps awaitable `async_write_subnegotiation` in `sync_await`, forwarding the option and buffer.
      * @see `async_write_subnegotiation` in `telnet-socket-async-impl.cpp`.
      */
@@ -95,9 +114,60 @@ namespace telnet {
         return sync_await(async_write_subnegotiation(opt, subnegotiation_buffer, asio::use_awaitable));
     } // socket::write_subnegotiation(option, const std::vector<byte_t>&)
 
+    /**
+     * @internal
+     * Wraps awaitable `async_send_synch` in `sync_await`, forwarding the command and option.
+     * @see `async_send_synch` in `telnet-socket-async-impl.cpp`.
+     */
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    std::size_t socket<NLS, PC>::send_synch() {
+        return sync_await(async_send_synch(asio::use_awaitable));
+    } // socket::send_synch()
+
     //=========================================================================================================
     // Synchronous `noexcept` wrappers call their throwing counterparts and convert exceptions to error codes.
     //=========================================================================================================
+
+    /**
+     * @internal
+     * Calls the throwing `request_option`, catching exceptions to set `ec` to `std::system_error`’s code or `telnet::error::internal_error`.
+     * @see `request_option` for throwing version, `async_request_option` in `telnet-socket-async-impl.cpp` for async implementation, `telnet-socket.cppm` for interface
+     */
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    std::size_t socket<NLS, PC>::request_option(option::id_num opt, NegotiationDirection direction, std::error_code& ec) noexcept {
+        try {
+            return request_option(opt, direction);
+        }
+        catch (const std::system_error& e) {
+            ec = e.code();
+            return 0;
+        }
+        catch (...) {
+            ec = std::make_error_code(error::internal_error);
+            return 0;
+        }
+    } // socket::request_option(option::id_num, NegotiationDirection, std::error_code&) noexcept
+
+    /**
+     * @internal
+     * Calls the throwing `disable_option`, catching exceptions to set `ec` to `std::system_error`’s code or `telnet::error::internal_error`.
+     * @see `disable_option` for throwing version, `async_disable_option` in `telnet-socket-async-impl.cpp` for async implementation, `telnet-socket.cppm` for interface
+     */
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    std::size_t socket<NLS, PC>::disable_option(option::id_num opt, NegotiationDirection direction, std::error_code& ec) noexcept {
+        try {
+            return disable_option(opt, direction);
+        }
+        catch (const std::system_error& e) {
+            ec = e.code();
+            return 0;
+        }
+        catch (...) {
+            ec = std::make_error_code(error::internal_error);
+            return 0;
+        }
+    } // socket::disable_option(option::id_num, NegotiationDirection, std::error_code&) noexcept
+
     /**
      * @internal
      * Calls the throwing `read_some`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
@@ -199,30 +269,6 @@ namespace telnet {
 
     /**
      * @internal
-     * Calls the throwing `write_negotiation`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
-     * @see `write_negotiation` for throwing version, `async_write_negotiation` in `telnet-socket-async-impl.cpp` for async implementation, `telnet-socket.cppm` for interface
-     */
-    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
-    std::size_t socket<NLS, PC>::write_negotiation(TelnetCommand cmd, option::id_num opt, std::error_code& ec) noexcept {
-        try {
-            return write_negotiation(cmd, opt);
-        }
-        catch (const std::system_error& e) {
-            ec = e.code();
-            return 0;
-        }
-        catch (const std::bad_alloc& e) {
-            ec = std::make_error_code(std::errc::not_enough_memory);
-            return 0;
-        }
-        catch (...) {
-            ec = std::make_error_code(error::internal_error);
-            return 0;
-        }
-    } // socket::write_negotiation(TelnetCommand, option::id_num, std::error_code&) noexcept
-
-    /**
-     * @internal
      * Calls the throwing `write_subnegotiation`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
      * @see `write_subnegotiation` for throwing version, `async_write_subnegotiation` in `telnet-socket-async-impl.cpp` for async implementation, `telnet-socket.cppm` for interface
      */
@@ -244,4 +290,28 @@ namespace telnet {
             return 0;
         }
     } // socket::write_subnegotiation(option, const std::vector<byte_t>&, std::error_code&) noexcept
+    
+    /**
+     * @internal
+     * Calls the throwing `send_synch`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
+     * @see `send_synch` for throwing version, `async_send_synch` in `telnet-socket-async-impl.cpp` for async implementation, `telnet-socket.cppm` for interface
+     */
+    template<TelnetSocketConcept NLS, ProtocolFSMConfig PC>
+    std::size_t socket<NLS, PC>::send_synch(std::error_code& ec) noexcept {
+        try {
+            return send_synch();
+        }
+        catch (const std::system_error& e) {
+            ec = e.code();
+            return 0;
+        }
+        catch (const std::bad_alloc& e) {
+            ec = std::make_error_code(std::errc::not_enough_memory);
+            return 0;
+        }
+        catch (...) {
+            ec = std::make_error_code(error::internal_error);
+            return 0;
+        }
+    } // socket::send_synch(std::error_code&) noexcept
 } // namespace telnet

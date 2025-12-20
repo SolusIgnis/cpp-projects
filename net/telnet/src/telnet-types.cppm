@@ -1,7 +1,7 @@
 /**
  * @file telnet-types.cppm
- * @version 0.4.0
- * @release_date October 03, 2025
+ * @version 0.5.0
+ * @release_date October 17, 2025
  *
  * @brief Partition for Telnet protocol-related types.
  * @remark Defines `byte_t` type alias for the byte stream's underlying type.
@@ -35,6 +35,7 @@ export namespace telnet {
      * @see `:protocol_fsm` for reading `TelnetCommand` from the Telnet incoming byte stream by the protocol state machine and `:socket` for usage in transmitting `TelnetCommand` to a Telnet peer.
      */
     enum class TelnetCommand : byte_t {
+        EOR  = 0xEF, ///< End of Record 
         SE   = 0xF0, ///< Subnegotiation End
         NOP  = 0xF1, ///< No Operation
         DM   = 0xF2, ///< Data Mark
@@ -108,6 +109,7 @@ export namespace std {
         auto format(telnet::TelnetCommand cmd, FormatContext& ctx) const {
             string_view name;
             switch (cmd) {
+                case telnet::TelnetCommand::EOR:  name = "EOR";  break;
                 case telnet::TelnetCommand::SE:   name = "SE";   break;
                 case telnet::TelnetCommand::NOP:  name = "NOP";  break;
                 case telnet::TelnetCommand::DM:   name = "DM";   break;

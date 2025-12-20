@@ -1,4 +1,151 @@
 # Changelog.md
+
+## [0.5.0] - October 17, 2025
+### Removed
+- Removed deprecated `write_negotiation` methods from `telnet::socket`.
+
+## [0.4.14] - October 17, 2025
+### Added
+- Implemented RFC 859-compliant `ProtocolFSM::handle_status_subnegotiation` in `telnet-protocol_fsm-impl.cpp`, supporting `SEND` (1) and `IS` (0) subcommands with proper enablement checks (`local_enabled()` for `SEND`, `remote_enabled()` for `IS`).
+- Added payload construction for `IAC` `SB` `STATUS` `SEND` `IAC` `SE` sequences, generating an `IS` [list] with `WILL` (251) and `DO` (252) for enabled options, excluding `STATUS`, and escaping `IAC` (255) and `SE` (240).
+- Added delegation of `IAC` `SB` `STATUS` `IS` ... `IAC` `SE` sequences to user-provided handlers via `OptionHandlerRegistry`.
+
+### Changed
+- Updated `ProtocolFSM::handle_state_subnegotiation_iac` in `telnet-protocol_fsm-impl.cpp` to invoke `handle_status_subnegotiation` for `STATUS` subnegotiation, ensuring RFC 859 compliance.
+- Updated `awaitables::SubnegotiationAwaitable` to yield a `std::tuple<option, std::vector<byte_t>>` so that handlers can return a subnegotiation buffer to write subnegotiation responses.
+- Updated `InputProcessor`'s visitor code to call `socket::async_write_subnegotiation` to write the response returned when processing the `SubnegotiationHandler`.
+- Updated `DefaultProtocolFSMConfig::initialize_option_registry` to support `BINARY` (bidirectional), `SUPPRESS_GO_AHEAD` (bidirectional), and `STATUS` (local w/ subnegotiation) as supported by internal implementations. 
+
+## [0.4.13] - October 16, 2025
+### Added
+- Implemented `ProtocolFSM::request_option` and `ProtocolFSM::disable_option` for synchronous option negotiation.
+- Added `socket::async_request_option` and `async_disable_option` for asynchronous negotiation in `telnet-socket-async-impl.cpp`.
+- Added synchronous `socket::request_option` and `disable_option` overloads (throwing and noexcept) using `sync_await` in `telnet-socket-sync-impl.cpp`.
+
+### Fixed
+- Updated `async_write_negotiation` signature in `telnet-socket.cppm` to use `fsm_type::NegotiationResponse`.
+
+## [0.4.12] - October 15, 2025
+- No changes as this milestone was implicitly completed by previous efforts.
+
+## [0.4.11] - October 15, 2025
+### Changed
+- Updated `ProcessingReturnVariant` to use tuples for `OptionEnablementAwaitable`/`OptionDisablementAwaitable` with optional `NegotiationResponse`.
+- Updated `InputProcessor::operator()` to handle tuple variants sequentially in a coroutine, writing `NegotiationResponse` before invoking the handler to ensure protocol consistency.
+- Modified `handle_state_option_negotiation` to invoke `handle_enablement` for transitions into `YES` and `handle_disablement` for transitions out of `YES`.
+
+## [0.4.10] - October 14, 2025
+### Added
+- Added `OptionEnablementHandler` and `OptionDisablementHandler` type aliases in `telnet-protocol_fsm.cppm` for handling `WILL`/`DO` and `WONT`/`DONT` events.
+- Added `enablement_handler` and `disablement_handler` to `OptionHandlerRecord` in `telnet-internal.cppm` to store handlers for each option.
+- Added `OptionHandlerRegistry` methods in `telnet-internal.cppm`: `register_handlers`, `unregister_handlers`, `handle_enablement`, `handle_disablement`, `handle_subnegotiation`.
+- Added `register_option_handlers` and `unregister_option_handlers` in `ProtocolFSM` (`telnet-protocol_fsm.cppm`) to manage handlers via `option::id_num`.
+- Added `telnet::socket` methods in `telnet-socket.cppm` for `register_option_handlers` and `unregister_option_handlers`, supporting `option::id_num` with implicit conversion from `option`.
+
+### Changed
+- Updated `ProtocolFSM::handle_state_option_negotiation` in `telnet-protocol_fsm-impl.cpp` to use `OptionStatusDB` for state tracking, ensuring RFC 1143 compliance.
+- Updated `ProtocolFSM::handle_state_subnegotiation_iac` to return `SubnegotiationAwaitable` via `OptionHandlerRegistry::handle_subnegotiation`.
+- Marked `OptionHandlerRegistry` and `OptionStatusDB` as single-threaded with `@remark` in `telnet-internal.cppm`.
+
+## [0.4.9] - October 14, 2025
+### Added
+- Added `:awaitables` partition in `telnet-awaitables.cppm` for type-safe asynchronous handler responses.
+- Added `TaggedAwaitable<Tag, T, Awaitable>` template in `telnet-awaitables.cppm`, wrapping `asio::awaitable<T>` (or another awaitable type) with implicit conversion and `co_await` support.
+- Added tag structs: `OptionEnablementTag`, `OptionDisablementTag`, `SubnegotiationTag`.
+- Added type aliases: `OptionEnablementAwaitable`, `OptionDisablementAwaitable`, `SubnegotiationAwaitable` as `TaggedAwaitable<Tag, void, asio::awaitable<void>>`.
+
+## [0.4.8] - October 12, 2025
+### Added
+- Added `out_of_band_inline` option on `lowest_layer()` in `socket` constructor (`telnet-socket-impl.cpp`) using non-throwing `set_option` with `std::error_code&`, logging errors via `ProtocolConfig::log_error` (RFC 854, TCP urgent data support).
+- Added `std::atomic<bool> waiting_for_urgent_data` to `socket::context_type` in `telnet-socket.cppm` for tracking active OOB waits.
+- Added `urgent_data_tracker` class in `socket::context_type` with `UrgentDataState` enum (`NO_URGENT_DATA`, `HAS_URGENT_DATA`, `UNEXPECTED_DATA_MARK`) and `std::atomic<UrgentDataState>` to track Synch mode.
+- Added `launch_wait_for_urgent_data` in `socket` to call `async_receive` with `message_out_of_band` on `lowest_layer()` in order to wait for the RFC 854 Synch signal.
+- Added `async_send_synch` in `socket` to send Telnet Synch (three NUL bytes, one as OOB, followed by IAC DM).
+- Added `async_send_nul` helper to send a single NUL byte, with optional OOB flag.
+- Added `deferred_processing_signal` member to `context_type` to store a `processing_signal` `error_code` object while waiting for a response to complete asynchronously. 
+
+### Changed
+- Refactored `:socket` to include `context_type` struct for `input_side_buffer`, `output_side_buffer`, `deferred_transport_error`, `urgent_flag`, and `waiting_for_urgent_data`.
+- Updated `InputProcessor::operator()` to discard non-IAC bytes in Synch mode, clear `urgent_flag` on `DM`, and relaunch OOB wait.
+- Updated `InputProcessor::operator()` to clear `output_side_buffer` and call `async_send_synch` on `abort_output`, deferring `processing_signal::abort_output` for reporting upon completion of `async_send_synch`.
+- Updated `ProtocolFSM::handle_state_iac` to return `processing_signal::data_mark` for `DM` (RFC 854).
+
+## [0.4.7] - October 10, 2025
+### Added
+- Added `default_error_condition` to `telnet::error_category` in `telnet-errors.cppm`, mapping `telnet::error` codes to `std::errc` (e.g., `invalid_command`, `invalid_subnegotiation`, `invalid_negotiation`, `protocol_violation` to `protocol_error`; `user_handler_not_found`, `ignored_go_ahead` to `operation_not_supported`; `user_handler_forbidden`, `negotiation_queue_error` to `operation_not_permitted`).
+
+### Changed
+- Updated `ProtocolFSM::handle_state_iac` to log `error::invalid_command` for unrecognized commands in `telnet-protocol_fsm-impl.cpp`.
+- Refactored `input_side_buffer_`, `output_side_buffer_`, and `deferred_transport_error_` into a new `context_type` struct and `context_` member to coordinate contextual state between instances of `InputProcessor`.
+
+### Removed
+- Removed `command_handler_registry_` from `ProtocolFSM::handle_state_iac` in `telnet-protocol_fsm-impl.cpp`.
+- Removed `CommandHandlerRegistry` and its awaitable from `:internal` and all partitions, including `InputProcessor::operator()` in `telnet-socket-impl.cpp`.
+
+## [0.4.6] - October 10, 2025
+### Changed 
+- Updated `InputProcessor::operator()` with handling for `erase_line` (empty the user's uncommitted buffer since EOL commits the buffer) and `erase_character` (backs up the write position by one character) if the user's buffer has uncommitted data. If there is no uncommitted data, it propagates the `error_code` so that the application layer can handle it.
+- Updated `InputProcessor::operator()` with handling for `abort_output` (empty the `output_side_buffer_`) but propagates the `error_code` for secondary application-level notification (i.e. so the user doesn't try to write more data).
+
+## [0.4.5] - October 9, 2025
+### Added
+- Added `processing_signal` enumeration to `:errors` to represent non-erroneous processing signals returned from `ProtocolFSM` that nonetheless create "short reads" higher in the async_read call stack:
+  - `processing_signal::end_of_line` for `\r\n` sequences (RFC 854).
+  - `processing_signal::end_of_record` for IAC EOR (RFC 885).
+  - `processing_signal::go_ahead` for IAC GA (RFC 854).
+  - Added signals: `carriage_return`, `erase_character`, `erase_line`, `abort_output`, `interrupt_process`, `telnet_break`, and `data_mark`.
+  - Signals are defined per RFC 854 (except `end_of_record`, per RFC 885) and act as "soft EOF" for pausing reads in `InputProcessor`.
+- Added `telnet_processing_signal_category`:
+  - Implemented `telnet_processing_signal_category` in `telnet-errors.cppm`, a thread-safe singleton for `telnet::processing_signal` codes.
+  - Provided detailed message strings for each signal (e.g., "Telnet encountered Carriage-Return sequence in the byte stream requiring special handling").
+  - Added `make_error_code(processing_signal)` overload to create `std::error_code` objects with the new category.
+  - Specialized `std::is_error_code_enum<telnet::processing_signal>` for seamless integration with `std::error_code`.
+
+### Changed
+- Removed "Soft EOF" Codes from `telnet::error`:
+  - Removed `end_of_line`, `end_of_record`, and `go_ahead` from `telnet::error` enum in `telnet-errors.cppm` to separate error conditions from processing signals.
+  - Updated `telnet_error_category::message` to reflect the reduced set of error codes.
+- Updated `ProtocolFSM` for Signal Handling:
+  - Modified `handle_state_has_cr` in `telnet-protocol_fsm-impl.cpp` to use `processing_signal::end_of_line` for CR LF sequences and `processing_signal::carriage_return` for CR NUL or invalid CR sequences, enabling `InputProcessor` to insert `\r` into the buffer.
+  - Updated `handle_state_iac` to handle `GA`, `EOR`, `EC`, `EL`, `AO`, `IP`, `BRK`, and `DM` with `processing_signal` codes (`go_ahead`, `end_of_record`, `erase_character`, `erase_line`, `abort_output`, `interrupt_process`, `telnet_break`, `data_mark`).
+- Updated `InputProcessor` (in `telnet-socket-impl.cpp`) to handle `processing_signal::carriage_return` by inserting `\r` into the input buffer and clearing the signal.
+- Enhanced `error_code` reporting from `InputProcessor` for `next_layer` read errors, response write errors, and internal errors by deferring transport errors until the buffer has been processed.
+
+## [0.4.4] - October 7, 2025
+### Added
+- Added new error codes in `:errors` (telnet-errors.cppm):
+  - `error::end_of_line` for `\r\n` sequences (RFC 854).
+  - `error::end_of_record` for IAC EOR (RFC 885).
+  - `error::go_ahead` for IAC GA (RFC 854).
+  
+### Changed
+- Modified `InputProcessor` in "telnet-socket-impl.cpp" to propagate soft EOF codes from `ProtocolFSM::process_byte`, enabling early completion of `async_read_some` before exhausting the input side buffer.
+- Modified `ProtocolFSM` in "telnet-protocol_fsm-impl.cpp":
+  - `handle_state_has_cr`: Signals `end_of_line` for `\r\n`, always active, forwards LF to user buffer.
+  - `handle_state_iac`: Signals `end_of_record` if `END_OF_RECORD` enabled (discards EOR byte); signals `go_ahead` if `SUPPRESS_GO_AHEAD` not enabled (discards GA byte).
+
+## [0.4.3] - October 6, 2025
+### Added
+- Added `side_buffer_type` (asio::streambuf) typedef and `input_side_buffer_`, `output_side_buffer_` members to `socket` for internal buffering.
+- Added `make_negotiation_command` in `ProtocolFSM` for generating negotiation commands from direction and enable state.
+
+### Changed
+- Updated `InputProcessor` constructor and `operator()` to integrate side buffers: prepare/commit/consume for reads, guarded forwarding to user buffer, and consume before response pausing.
+- Updated `async_write_negotiation` and synchronous `write_negotiation` to accept `NegotiationResponse` tuple from `ProtocolFSM`.
+- Updated `handle_state_option_negotiation` to return `NegotiationResponse` tuple for responses.
+- Updated `handle_state_iac` for EOR fallthrough to default handler if enabled.
+
+## [0.4.2] - October 4, 2025
+### Added
+- Added `ProtocolState::HasCR` and `handle_state_has_cr` to process "\r\n", "\r\0" sequences and log malformed CR X sequences.
+
+### Changed
+- Updated `handle_state_normal` to recognize CR ('\r') and enter `ProtocolState::HasCR` unless in `option::id_num::BINARY` mode for the remote endpoint (i.e. when the peer is transmitting in `BINARY` mode).
+
+## [0.4.1] - October 3, 2025
+### Changed
+- Updated `option:id_num` enumeration to comprehensively list known Telnet option numbers.
+
 ## [0.4.0] - October 3, 2025
 - Refreshed documentation to include loggers and formatters.
 

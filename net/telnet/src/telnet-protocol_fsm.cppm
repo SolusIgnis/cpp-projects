@@ -1,7 +1,7 @@
 /**
  * @file telnet-protocol_fsm.cppm
- * @version 0.4.0
- * @release_date October 03, 2025
+ * @version 0.5.0
+ * @release_date October 17, 2025
  *
  * @brief Interface for the Telnet protocol finite state machine.
  * @remark Implements basic Telnet protocol (RFC 854) including IAC command processing and stateful negotiation.
@@ -15,9 +15,7 @@
  * @license See LICENSE file for details
  *
  * @see RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, :types for `TelnetCommand`, :options for `option` and `option::id_num`, :errors for error codes, :socket for FSM usage, :internal for implementation classes
- * @todo Future Development: Consider optional half-duplex support (RFC 854) if legacy peer requirements arise.
- * @todo Phase 5: Consider restructuring option negotiation results to call option enablement or disablement handlers if needed.
- * @todo Phase 5: Consider restructuring option negotiation results for internal implementation of some options.
+ * @todo Phase 6: Add optional half-duplex support (RFC 854) if legacy peer requirements arise.
  * @todo Phase 6: Consider moving concept `ProtocolFSMConfig` to a :concepts partition or a :protocol_config partition (with `DefaultProtocolFSMConfig`).
  */
 module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
@@ -29,11 +27,12 @@ export module telnet:protocol_fsm;
 
 import std; // For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec, std::format
 
-export import :types;   ///< @see telnet-types.cppm for `byte_t`, `TelnetCommand`, and `NegotiationDirection`
-export import :errors;  ///< @see telnet-errors.cppm for `telnet::error` codes
-export import :options; ///< @see telnet-options.cppm for `option` and `option::id_num`
+export import :types;      ///< @see telnet-types.cppm for `byte_t`, `TelnetCommand`, and `NegotiationDirection`
+export import :errors;     ///< @see telnet-errors.cppm for `telnet::error` codes
+export import :options;    ///< @see telnet-options.cppm for `option` and `option::id_num`
+export import :awaitables; ///< @see telnet-awaitables.cppm for `TaggedAwaitable`, semantic tags, and type aliases
 
-import :internal;       ///< @see telnet-internal.cppm for implementation classes
+import :internal;          ///< @see telnet-internal.cppm for implementation classes
 
 export namespace telnet {
     //Forward declaration referenced in the concept definition.
@@ -46,15 +45,11 @@ export namespace telnet {
      */
     template<typename T>
     concept ProtocolFSMConfig = requires(T config, TelnetCommand cmd, option full_opt, option::id_num opt, std::error_code ec, byte_t byte, std::string msg) {
-        typename T::TelnetCommandHandler;
         typename T::UnknownOptionHandler;
         typename T::ErrorLogger;
         { T::initialize() } -> std::same_as<void>;
-        { T::set_unknown_command_handler(std::declval<typename T::TelnetCommandHandler>()) } -> std::same_as<void>;
-        { T::get_unknown_command_handler() } -> std::same_as<std::optional<typename T::TelnetCommandHandler>>;
         { T::set_unknown_option_handler(std::declval<typename T::UnknownOptionHandler>()) } -> std::same_as<void>;
         { T::set_error_logger(std::declval<typename T::ErrorLogger>()) } -> std::same_as<void>;
-        { T::initialize_command_handlers() } -> std::convertible_to<std::map<TelnetCommand, typename ProtocolFSM<T>::TelnetCommandHandler>>;
         { T::get_unknown_option_handler() } -> std::convertible_to<const typename ProtocolFSM<T>::UnknownOptionHandler&>;
         { T::log_error(ec, std::declval<std::string>()) } -> std::same_as<void>;
         { T::registered_options.get(opt) } -> std::convertible_to<std::optional<option>>;
@@ -64,7 +59,6 @@ export namespace telnet {
         { T::registered_options.upsert(full_opt) } -> std::convertible_to<const option&>;
         { T::get_ayt_response() } -> std::same_as<std::string_view>;
         { T::set_ayt_response(std::declval<std::string>()) } -> std::same_as<void>;
-        requires std::convertible_to<typename T::TelnetCommandHandler, typename ProtocolFSM<T>::TelnetCommandHandler>;
         requires std::convertible_to<typename T::UnknownOptionHandler, typename ProtocolFSM<T>::UnknownOptionHandler>;
         requires std::convertible_to<typename T::ErrorLogger, typename ProtocolFSM<T>::ErrorLogger>;
     }; //concept ProtocolFSMConfig
@@ -77,34 +71,8 @@ export namespace telnet {
     class DefaultProtocolFSMConfig {
     public:
         /**
-         * @typedef TelnetCommandHandler
-         * @brief Function type for handling `TelnetCommand` instances.
-         *
-         * @param cmd The `TelnetCommand` to process.
-         * @return `asio::awaitable<void>` for asynchronous command handling.
-         */
-        using TelnetCommandHandler = std::function<asio::awaitable<void>(TelnetCommand)>;
-
-        /**
-         * @typedef SubnegotiationAwaitable
-         * @brief Awaitable type for subnegotiation handlers.
-         */
-        using SubnegotiationAwaitable = asio::awaitable<void>;
-
-        /**
-         * @typedef SubnegotiationHandler
-         * @brief Function type for processing subnegotiation data.
-         *
-         * @param id The `option::id_num` identifying the option.
-         * @param data The `std::vector<byte_t>` containing subnegotiation data.
-         * @return `SubnegotiationAwaitable` for asynchronous subnegotiation handling.
-         */
-        using SubnegotiationHandler = std::function<SubnegotiationAwaitable(option::id_num, std::vector<byte_t>)>;
-
-        /**
          * @typedef UnknownOptionHandler
          * @brief Function type for handling unknown option negotiation attempts.
-         *
          * @param id The `option::id_num` of the unknown option.
          */
         using UnknownOptionHandler = std::function<void(option::id_num)>;
@@ -112,7 +80,6 @@ export namespace telnet {
         /**
          * @typedef ErrorLogger
          * @brief Function type for logging errors during FSM processing.
-         *
          * @param ec The `std::error_code` describing the error.
          * @param msg The formatted error message.
          */
@@ -121,18 +88,6 @@ export namespace telnet {
         /// @brief Initializes the configuration once.
         static void initialize() {
             std::call_once(initialization_flag_, &init);
-        }
-
-        /// @brief Sets the handler for unknown `TelnetCommand` instances.
-        static void set_unknown_command_handler(TelnetCommandHandler handler) {
-            std::lock_guard<std::shared_mutex> lock(mutex_);
-            unknown_command_handler_ = std::move(handler);
-        }
-
-        /// @brief Gets the handler for unknown `TelnetCommand` instances.
-        static std::optional<TelnetCommandHandler> get_unknown_command_handler() {
-            std::shared_lock<std::shared_mutex> lock(mutex_);
-            return unknown_command_handler_ ? unknown_command_handler_ : std::nullopt;
         }
 
         /// @brief Sets the handler for unknown option negotiation attempts.
@@ -173,13 +128,6 @@ export namespace telnet {
             std::lock_guard<std::shared_mutex> lock(mutex_);
             ayt_response_ = std::move(response);
         }
-    
-        /// @brief Initializes the command handler map.
-        static std::map<TelnetCommand, TelnetCommandHandler> initialize_command_handlers() {
-            std::map<TelnetCommand, TelnetCommandHandler> handlers;
-            handlers[TelnetCommand::NOP] = [](TelnetCommand) { co_return; };
-            return handlers;
-        }
         
         static inline option_registry registered_options = initialize_option_registry();
 
@@ -187,26 +135,15 @@ export namespace telnet {
         /// @brief Initializes the option registry with default options.
         static option_registry initialize_option_registry() {
             return {
-                option{option::id_num::BINARY,                      "Binary Transmission"},
-                option{option::id_num::ECHO,                        "Echo",
-                    [](option::id_num o) { return o == option::id_num::ECHO; },
-                    option::always_reject},
-                option{option::id_num::SUPPRESS_GO_AHEAD,           "Suppress Go-Ahead", 
-                    option::always_accept,
-                    option::always_reject},
-                option{option::id_num::NEGOTIATE_ABOUT_WINDOW_SIZE, "Negotiate About Window Size",
-                    option::always_accept,
-                    option::always_accept, false, 4}
+                option{option::id_num::BINARY,            "Binary Transmission", option::always_accept, option::always_accept},
+                option{option::id_num::SUPPRESS_GO_AHEAD, "Suppress Go-Ahead",   option::always_accept, option::always_accept},
+                option{option::id_num::STATUS,            "Status",              option::always_accept, option::always_reject, true}           
             };
         } //initialize_option_registry()
 
         /// @brief Performs initialization for `initialize`.
         static void init() {
             std::lock_guard<std::shared_mutex> lock(mutex_);
-            unknown_command_handler_ = [](TelnetCommand cmd) {
-                std::cout << "Unknown command: " << std::to_underlying(cmd) << "\n";
-                co_return;
-            };
             unknown_option_handler_ = [](option::id_num opt) {
                 std::cout << "Unknown option: " << std::to_underlying(opt) << "\n";
                 return;
@@ -216,7 +153,6 @@ export namespace telnet {
             };
         } //init()
 
-        static inline TelnetCommandHandler unknown_command_handler_;
         static inline UnknownOptionHandler unknown_option_handler_;
         static inline ErrorLogger error_logger_;
         static inline std::string ayt_response_ = "Telnet system is active."; /// Default AYT response
@@ -229,20 +165,6 @@ export namespace telnet {
      *
      * @remark Initializes static members using `init` under a `std::once_flag`.
      * @remark Thread-safe via `std::call_once`.
-     */
-    /**
-     * @fn void DefaultProtocolFSMConfig::set_unknown_command_handler(TelnetCommandHandler handler)
-     *
-     * @param handler The `TelnetCommandHandler` to set for unknown `TelnetCommand` instances.
-     *
-     * @remark Thread-safe via `std::lock_guard<std::shared_mutex>`.
-     */
-    /**
-     * @fn std::optional<TelnetCommandHandler> DefaultProtocolFSMConfig::get_unknown_command_handler()
-     *
-     * @return `std::optional` containing the `TelnetCommandHandler` if set, or `std::nullopt`.
-     *
-     * @remark Thread-safe via `std::shared_lock<std::shared_mutex>`.
      */
     /**
      * @fn void DefaultProtocolFSMConfig::set_unknown_option_handler(UnknownOptionHandler handler)
@@ -291,18 +213,12 @@ export namespace telnet {
      * @remark Thread-safe via `std::lock_guard<std::shared_mutex>`.
      */
     /**
-     * @fn std::map<TelnetCommand, TelnetCommandHandler> DefaultProtocolFSMConfig::initialize_command_handlers()
-     *
-     * @return `std::map` of `TelnetCommand` to `TelnetCommandHandler` with default handlers.
-     *
-     * @remark Initializes a handler for `TelnetCommand::NOP` as a no-op.
-     */
-    /**
      * @fn option_registry DefaultProtocolFSMConfig::initialize_option_registry()
      *
      * @return `option_registry` with default `option` instances.
      *
-     * @remark Initializes options for `BINARY`, `ECHO`, `SUPPRESS_GO_AHEAD`, and `NEGOTIATE_ABOUT_WINDOW_SIZE`.
+     * @remark Initializes options for `BINARY`, `SUPPRESS_GO_AHEAD`, and `STATUS` to support default implementations.
+     * @note `STATUS` is supported locally but not remotely by default as the core implementation can send a status report but will not request one and cannot understand receipt of one.
      */
     /**
      * @fn void DefaultProtocolFSMConfig::init()
@@ -328,47 +244,35 @@ export namespace telnet {
         using ProtocolConfig = ConfigT;
 
         /**
-         * @brief States for the Telnet protocol FSM.
-         * @see RFC 854 for state transition details
+         * @typedef OptionEnablementHandler
+         * @brief Function type for handling option enablement.
+         * @param id The `option::id_num` being enabled.
+         * @param direction The negotiation direction (`local` or `remote`).
+         * @return `OptionEnablementAwaitable` representing the asynchronous handling result.
          */
-        enum class ProtocolState { 
-            Normal,               ///< Default state for data processing
-            IAC,                  ///< Processing IAC command byte
-            OptionNegotiation,    ///< Processing option ID after WILL/WONT/DO/DONT
-            SubnegotiationOption, ///< Processing option ID after SB
-            Subnegotiation,       ///< Processing subnegotiation data
-            SubnegotiationIAC     ///< Processing IAC during subnegotiation
-        };
+        using OptionEnablementHandler = std::function<awaitables::OptionEnablementAwaitable(option::id_num, NegotiationDirection)>;
 
         /**
-         * @typedef TelnetCommandHandler
-         * @brief Function type for handling `TelnetCommand` instances.
-         *
-         * @param cmd The `TelnetCommand` to process.
-         * @return `asio::awaitable<void>` for asynchronous command handling.
+         * @typedef OptionDisablementHandler
+         * @brief Function type for handling option disablement.
+         * @param id The `option::id_num` being disabled.
+         * @param direction The negotiation direction (`local` or `remote`).
+         * @return `OptionDisablementAwaitable` representing the asynchronous handling result.
          */
-        using TelnetCommandHandler = std::function<asio::awaitable<void>(TelnetCommand)>;
-
-        /**
-         * @typedef SubnegotiationAwaitable
-         * @brief Awaitable type for subnegotiation handlers.
-         */
-        using SubnegotiationAwaitable = asio::awaitable<void>;
+        using OptionDisablementHandler = std::function<awaitables::OptionDisablementAwaitable(option::id_num, NegotiationDirection)>;
 
         /**
          * @typedef SubnegotiationHandler
          * @brief Function type for processing subnegotiation data.
-         *
          * @param id The `option::id_num` identifying the option.
          * @param data The `std::vector<byte_t>` containing subnegotiation data.
          * @return `SubnegotiationAwaitable` for asynchronous subnegotiation handling.
          */
-        using SubnegotiationHandler = std::function<SubnegotiationAwaitable(option::id_num, std::vector<byte_t>)>;
+        using SubnegotiationHandler = std::function<awaitables::SubnegotiationAwaitable(const option&, std::vector<byte_t>)>;
 
         /**
          * @typedef UnknownOptionHandler
          * @brief Function type for handling unknown option negotiation attempts.
-         *
          * @param id The `option::id_num` of the unknown option.
          */
         using UnknownOptionHandler = std::function<void(option::id_num)>;
@@ -376,23 +280,29 @@ export namespace telnet {
         /**
          * @typedef ErrorLogger
          * @brief Function type for logging errors during FSM processing.
-         *
          * @param ec The `std::error_code` describing the error.
          * @param msg The formatted error message.
          */
         using ErrorLogger = std::function<void(const std::error_code&, std::string)>;
 
         /**
+         * @typedef NegotiationResponse
+         * @brief Tuple type representing an option negotiation.
+         * @remark Holds the `NegotiationDirection`, enablement state, and `option::id_num`.
+         */
+        using NegotiationResponse = std::tuple<NegotiationDirection, bool, option::id_num>;
+
+        /**
          * @typedef ProcessingReturnVariant
          * @brief Variant type for return values from byte processing.
-         *
-         * @remark Holds either a negotiation response (`std::tuple<TelnetCommand, option::id_num>`), direct socket write (`std::string`), command handler tuple (`std::tuple<TelnetCommand, TelnetCommandHandler>`), or subnegotiation result (`SubnegotiationAwaitable`).
+         * @remark Holds either a `NegotiationResponse`, direct socket write (`std::string`), handler awaitable (`OptionEnablementAwaitable` or `OptionDisablementAwaitable`) paired with an optional `NegotiationResponse`, or subnegotiation awaitable (`SubnegotiationAwaitable`).
          */
         using ProcessingReturnVariant = std::variant<
-            std::tuple<TelnetCommand, option::id_num>,       // Negotiation response
-            std::string,                                     // Direct socket write
-            std::tuple<TelnetCommand, TelnetCommandHandler>, // Handler with command context
-            SubnegotiationAwaitable                          // Subnegotiation result
+            NegotiationResponse,
+            std::string,
+            std::tuple<OptionEnablementAwaitable, std::optional<NegotiationResponse>>,
+            std::tuple<OptionDisablementAwaitable, std::optional<NegotiationResponse>>,
+            SubnegotiationAwaitable
         >;
 
         /// @brief Constructs the FSM, initializing `ProtocolConfig` once.
@@ -400,38 +310,52 @@ export namespace telnet {
             ConfigT::initialize();
         }
 
+        /// @brief Registers handlers for option enablement, disablement, and subnegotiation.
+        void register_option_handlers(option::id_num opt, std::optional<OptionEnablementHandler> enable_handler, std::optional<OptionDisablementHandler> disable_handler, std::optional<SubnegotiationHandler> subneg_handler = std::nullopt) { option_handler_registry_.register_handlers(opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler)); }
+
+        /// @brief Unregisters handlers for an option.
+        void unregister_option_handlers(option::id_num opt) { option_handler_registry_.unregister_handlers(opt); }
+
         /// @brief Processes a single byte of Telnet input.
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
         process_byte(byte_t byte) noexcept;
 
-        /// @brief Registers a handler for a `TelnetCommand`.
-        std::error_code register_command_handler(TelnetCommand cmd, TelnetCommandHandler handler) {
-            return command_handler_registry_.add(cmd, handler);
-        }
-        
-        /// @brief Removes a handler for a `TelnetCommand`.
-        void unregister_command_handler(TelnetCommand cmd) {
-            command_handler_registry_.remove(cmd);
-        }
-        
-        /// @brief Checks if a handler is registered for a `TelnetCommand`.
-        bool is_command_handler_registered(TelnetCommand cmd) const {
-            return command_handler_registry_.has(cmd);
-        }
-        
         /// @brief Checks if an option is enabled locally or remotely.
-        bool is_enabled(const option& opt) { return option_status_[opt].is_enabled(); }
+        bool is_enabled(option::id_num opt) { return option_status_[opt].is_enabled(); }
+        
+        /// @brief Checks if an option is enabled in a specified direction.
+        bool is_enabled(option::id_num opt, NegotiationDirection dir) { return option_status_[opt].enabled(dir); }
+
+        /// @brief Makes a negotiation response command
+        static TelnetCommand make_negotiation_command(NegotiationDirection direction, bool enable) noexcept;
+
+        /// @brief Requests an option to be enabled (WILL/DO), synchronously updating OptionStatusDB and returning a negotiation response.
+        std::tuple<std::error_code, std::optional<NegotiationResponse>> request_option(option::id_num opt, NegotiationDirection direction);
+
+        /// @brief Disables an option (WONT/DONT), synchronously updating OptionStatusDB and returning a negotiation response and optional disablement awaitable.
+        std::tuple<std::error_code, std::optional<NegotiationResponse>, std::optional<awaitables::OptionDisablementAwaitable>> disable_option(option::id_num opt, NegotiationDirection direction);
 
     private:
-        /// @brief Makes a negotiation response tuple
-        std::tuple<TelnetCommand, option::id_num> make_negotiation(NegotiationDirection direction, bool enable, option::id_num opt) noexcept;
-    
+        enum class ProtocolState { 
+            Normal,               ///< Default state for data processing
+            HasCR,                ///< Processing the byte after '\r'
+            IAC,                  ///< Processing IAC command byte
+            OptionNegotiation,    ///< Processing option ID after WILL/WONT/DO/DONT
+            SubnegotiationOption, ///< Processing option ID after SB
+            Subnegotiation,       ///< Processing subnegotiation data
+            SubnegotiationIAC     ///< Processing IAC during subnegotiation
+        };
+
         /// @brief Changes the FSM state.
         void change_state(ProtocolState next_state) noexcept;
 
         /// @brief Handles bytes in the `Normal` state (data or IAC).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
         handle_state_normal(byte_t byte) noexcept;
+
+        /// @brief Handles bytes immediately after '\r' ('\0', '\n', or error)
+        std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
+        handle_state_has_cr(byte_t byte) noexcept;
 
         /// @brief Handles bytes after IAC (commands like WILL, DO, SB, etc.).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
@@ -453,8 +377,11 @@ export namespace telnet {
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
         handle_state_subnegotiation_iac(byte_t byte) noexcept;
 
-        CommandHandlerRegistry<ProtocolConfig, TelnetCommandHandler> command_handler_registry_;
-        OptionHandlerRegistry<ProtocolConfig, SubnegotiationAwaitable, SubnegotiationHandler> option_handler_registry_;
+        /// @brief Handles STATUS subnegotiation (RFC 859), returning an awaitable with the IS [list] payload or user-handled result.
+        auto handle_status_subnegotiation(const option& opt, std::vector<byte_t> buffer) -> awaitables::SubnegotiationAwaitable;
+
+        // Data Members
+        OptionHandlerRegistry<ProtocolConfig, OptionEnablementHandler, OptionDisablementHandler, SubnegotiationHandler> option_handler_registry_;
         OptionStatusDB option_status_;
         
         ProtocolState current_state_ = ProtocolState::Normal;
@@ -469,6 +396,23 @@ export namespace telnet {
      * @remark Initializes `ProtocolConfig` using `ConfigT::initialize`.
      */
     /**
+     * @fn void ProtocolFSM::register_option_handlers(option::id_num opt, std::optional<OptionEnablementHandler> enable_handler, std::optional<OptionDisablementHandler> disable_handler, std::optional<SubnegotiationHandler> subneg_handler)
+     *
+     * @param opt The `option::id_num` for which to register handlers.
+     * @param enable_handler Optional `OptionEnablementHandler` to handle option enablement.
+     * @param disable_handler Optional `OptionDisablementHandler` to handle option disablement.
+     * @param subneg_handler Optional `SubnegotiationHandler` to handle subnegotiation data (defaults to `std::nullopt`).
+     *
+     * @remark Forwards to `OptionHandlerRegistry::register_handlers`.
+     */
+    /**
+     * @fn void ProtocolFSM::unregister_option_handlers(option::id_num opt)
+     *
+     * @param opt The `option::id_num` for which to unregister handlers.
+     *
+     * @remark Forwards to `OptionHandlerRegistry::unregister_handlers`.
+     */
+    /**
      * @fn std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>> ProtocolFSM::process_byte(byte_t byte) noexcept
      *
      * @param byte The byte to process.
@@ -479,47 +423,54 @@ export namespace telnet {
      * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, :errors for error codes
      */
     /**
-     * @fn std::error_code ProtocolFSM::register_command_handler(TelnetCommand cmd, TelnetCommandHandler handler)
-     *
-     * @param cmd The `TelnetCommand` to register a handler for.
-     * @param handler The `TelnetCommandHandler` to associate with `cmd`.
-     * @return `std::error_code` indicating success or failure (e.g., `error::user_handler_forbidden` for reserved commands).
-     *
-     * @remark Delegates to `CommandHandlerRegistry::add`.
-     * @remark Thread-safe via `CommandHandlerRegistry` synchronization.
-     */
-    /**
-     * @fn void ProtocolFSM::unregister_command_handler(TelnetCommand cmd)
-     *
-     * @param cmd The `TelnetCommand` whose handler is to be removed.
-     *
-     * @remark Delegates to `CommandHandlerRegistry::remove`.
-     * @remark Thread-safe via `CommandHandlerRegistry` synchronization.
-     */
-    /**
-     * @fn bool ProtocolFSM::is_command_handler_registered(TelnetCommand cmd) const
-     *
-     * @param cmd The `TelnetCommand` to check.
-     * @return True if a handler is registered for `cmd`, false otherwise.
-     *
-     * @remark Delegates to `CommandHandlerRegistry::has`.
-     * @remark Thread-safe via `CommandHandlerRegistry` synchronization.
-     */
-    /**
      * @fn bool ProtocolFSM::is_enabled(const option& opt)
      *
-     * @param opt The `option` to check.
-     * @return True if `opt` is enabled locally or remotely, false otherwise.
+     * @param opt The `option::id_num` to check.
+     * @return True if `opt` is enabled either locally or remotely, false otherwise.
      *
      * @remark Queries `OptionStatusDB` for the option’s status.
      */
     /**
-     * @fn std::tuple<TelnetCommand, option::id_num> make_negotiation(NegotiationDirection direction, bool enable, option::id_num opt) noexcept
+     * @overload bool ProtocolFSM::is_enabled(option::id_num opt, NegotiationDirection dir)
+     *
+     * @param opt The `option::id_num` to check.
+     * @param dir The `NegotiationDirection` to check.
+     * @return True if `opt` is enabled in the designated direction, false otherwise.
+     *
+     * @remark Queries `OptionStatusDB` for the option’s status.
+     */
+    /**
+     * @fn TelnetCommand make_negotiation_command(NegotiationDirection direction, bool enable) noexcept
      *
      * @param direction Negotiate local (DO/DONT) or remote (WILL/WONT) option?
      * @param enable Negotiate to enable?
-     * @param opt The `option::id_num` to negotiate.
-     * @return The {`TelnetCommand`, `option::id_num`} tuple representing the desired negotiation.
+     * @return The `TelnetCommand` representing the desired negotiation.
+     */
+    /**
+     * @fn std::tuple<std::error_code, std::optional<NegotiationResponse>> ProtocolFSM::request_option(option::id_num opt, NegotiationDirection direction)
+     *
+     * @param opt The Telnet option (`option::id_num`) to request.
+     * @param direction The negotiation direction (`LOCAL` or `REMOTE`).
+     * @return std::tuple<std::error_code, std::optional<NegotiationResponse>> with error code and optional response (true for enable, false for disable).
+     *
+     * @remark Validates option registration and state per RFC 1143 Q Method, handling six states: YES, WANTYES/EMPTY, WANTYES/OPPOSITE, WANTNO/EMPTY, WANTNO/OPPOSITE, NO.
+     * @remark Enqueues opposite request in WANTNO/EMPTY; treats redundant requests (YES, WANTYES/EMPTY, WANTNO/OPPOSITE) as idempotent successes, logging warnings.
+     * @remark Does not invoke an enablement handler, as it initiates negotiation without enabling.
+     * @throws None; errors returned via error_code (e.g., `error::option_not_available`, `error::negotiation_queue_error`, `error::protocol_violation`).
+     * @see RFC 1143 for Q Method, :options for `option::id_num`, :errors for error codes, :types for `NegotiationDirection`, :socket for usage in async_request_option
+     */
+    /**
+     * @fn std::tuple<std::error_code, std::optional<NegotiationResponse>, std::optional<awaitables::OptionDisablementAwaitable>> ProtocolFSM::disable_option(option::id_num opt, NegotiationDirection direction)
+     *
+     * @param opt The Telnet option (`option::id_num`) to disable.
+     * @param direction The negotiation direction (`LOCAL` or `REMOTE`).
+     * @return std::tuple<std::error_code, std::optional<NegotiationResponse>, std::optional<awaitables::OptionDisablementAwaitable>> with error code, optional response, and optional disablement awaitable.
+     *
+     * @remark Validates option registration and state per RFC 1143 Q Method, handling six states: NO, WANTNO/EMPTY, WANTNO/OPPOSITE, WANTYES/EMPTY, WANTYES/OPPOSITE, YES.
+     * @remark Enqueues opposite request in WANTYES/EMPTY; treats redundant disablements (NO, WANTNO/EMPTY, WANTYES/OPPOSITE) as idempotent successes, logging warnings.
+     * @remark Returns `OptionDisablementAwaitable` in YES state via `OptionHandlerRegistry::handle_disablement` (no-op if unregistered).
+     * @throws None; errors returned via error_code (e.g., `error::option_not_available`, `error::negotiation_queue_error`, `error::protocol_violation`).
+     * @see RFC 1143 for Q Method, :options for `option::id_num`, :errors for error codes, :types for `NegotiationDirection`, :awaitables for `OptionDisablementAwaitable`, :socket for usage in async_disable_option
      */
     /**
      * @fn void ProtocolFSM::change_state(ProtocolState next_state) noexcept
@@ -539,10 +490,19 @@ export namespace telnet {
      * @see RFC 854 for Normal state behavior, :types for `TelnetCommand`
      */
     /**
+     * @fn std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>> ProtocolFSM::handle_state_has_cr(byte_t byte) noexcept
+     *
+     * @param byte The byte to process.
+     * @return Tuple of error code, forward flag (true for data bytes), and optional negotiation response.
+     *
+     * @remark Processes data bytes or IAC in the `HasCR` state.
+     * @see RFC 854 for CR NUL or CR LF state behavior, :types for `TelnetCommand`
+     */
+    /**
      * @fn std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>> ProtocolFSM::handle_state_iac(byte_t byte) noexcept
      *
      * @param byte The byte to process.
-     * @return Tuple of error code, forward flag (true for escaped IAC), and optional response (`std::tuple<TelnetCommand, option::id_num>`, `std::string`, or `std::tuple<TelnetCommand, TelnetCommandHandler>`).
+     * @return Tuple of error code, forward flag (true for escaped IAC), and optional response (`ProcessingReturnVariant`)
      *
      * @remark Processes commands like `WILL`, `DO`, `SB`, etc., after IAC.
      * @see RFC 854 for IAC command processing, :types for `TelnetCommand`, :errors for error codes
@@ -581,9 +541,22 @@ export namespace telnet {
      * @param byte The byte to process.
      * @return Tuple of error code, forward flag (false), and optional negotiation response (`SubnegotiationAwaitable`).
      *
+     * @note Relies on `OptionHandlerRegistry::handle_subnegotiation` to log `error::user_handler_not_found` when no handler is registered for the option.
      * @note Logs `error::protocol_violation` if no current option is set.
      * @note Logs `error::invalid_command` for invalid commands (not `SE` or `IAC`).
      * @see RFC 855 for subnegotiation, :options for `option::id_num`, :errors for error codes
      * @todo Phase 6: Review `subnegotiation_overflow` handling for custom error handlers
+     */
+    /**
+     * @fn ProtocolFSM::handle_status_subnegotiation(const option& opt, std::vector<byte_t> buffer)
+     * @param opt The `STATUS` option being negotiated (expected to be `option::id_num::STATUS`)
+     * @param buffer The subnegotiation input data (expected to contain `SEND` (1) or `IS` (0))
+     * @return `SubnegotiationAwaitable` yielding `std::tuple<const option&, std::vector<byte_t>>` containing the `STATUS` option and the `IS` [list] payload for `SEND`, or user-defined result for `IS`
+     * @remark For `SEND` (1), validates that `STATUS` is locally enabled; constructs a payload starting with `IS` (0), followed by pairs of [`WILL` (251), opt] for locally enabled options and [`DO` (252), opt] for remotely enabled options, with `IAC` (255) and `SE` (240) option codes escaped by doubling.
+     * @remark For `IS` (0), validates that `STATUS` is remotely enabled and delegates to the user-provided subnegotiation handler via `OptionHandlerRegistry`.
+     * @remark Logs `telnet::error::option_not_available` and returns an empty payload if `STATUS` is not enabled in the required direction.
+     * @remark Logs `telnet::error::invalid_subnegotiation` for invalid subcommands.
+     * @remark The returned `SubnegotiationAwaitable` is processed by `InputProcessor` to pass the payload to `socket::async_write_subnegotiation`, which adds `IAC` `SB` `STATUS` ... `IAC` `SE` framing.
+     * @see RFC 859, `:internal` for `OptionStatusDB`, `:options` for `option`, `:awaitables` for `SubnegotiationAwaitable`, `:socket` for `async_write_subnegotiation`
      */
 } //namespace telnet

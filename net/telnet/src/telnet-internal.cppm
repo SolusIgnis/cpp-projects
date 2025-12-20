@@ -1,17 +1,16 @@
 /**
  * @file telnet-internal.cppm
- * @version 0.4.0
- * @release_date October 3, 2025
+ * @version 0.5.0
+ * @release_date October 17, 2025
  *
  * @brief Internal partition defining implementation detail data structures for other partitions.
- * @remark Defines record and registry types used by `:protocol_fsm` for managing Telnet command and option handlers.
+ * @remark Defines record and registry types used by `:protocol_fsm` for managing Telnet options and handlers.
  *
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
  * @remark Not intended for direct use by external code; serves as an implementation detail for other partitions.
  * @see RFC 855 for Telnet option negotiation, `:types` for `TelnetCommand`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:protocol_fsm` for usage
- * @todo Phase 5: Consider adding option enablement and disablement handlers to `OptionHandlerRecord`.
  */
 module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
 #include <boost/asio.hpp>
@@ -23,133 +22,91 @@ export module telnet:internal;
 import std;        // For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec
 import std.compat; // For std::uint8_t (needed for bit-field type specifier)
 
-import :types;   ///< @see telnet-types.cppm for `byte_t` and `TelnetCommand`
-import :errors;  ///< @see telnet-errors.cppm for `telnet::error` codes
-import :options; ///< @see telnet-options.cppm for `option` and `option::id_num`
+import :types;      ///< @see telnet-types.cppm for `byte_t` and `TelnetCommand`
+import :errors;     ///< @see telnet-errors.cppm for `telnet::error` codes
+import :options;    ///< @see telnet-options.cppm for `option` and `option::id_num`
+import :awaitables; ///< @see telnet-awaitables.cppm for `TaggedAwaitable`, semantic tags, and type aliases
 
 export namespace telnet {
     /**
-     * @brief Registry for managing Telnet command handlers.
-     * @tparam ProtocolConfig Configuration class providing initialization and fallback handlers (e.g., `ProtocolConfig::initialize_command_handlers`).
-     * @tparam TelnetCommandHandler Handler type for processing `TelnetCommand` instances.
-     * @remark Used by `:protocol_fsm` to store and query command handlers.
-     * @remark Thread-safe by std::shared_mutex.
-     * @see `:protocol_fsm` for handler usage, `:types` for `TelnetCommand`, `:errors` for error codes
-     */
-    template<typename ProtocolConfig, typename TelnetCommandHandler>
-    class CommandHandlerRegistry {
-    public:
-        /// @brief Default Constructor @details Constructs a registry with handlers initialized by `ProtocolConfig`.
-        CommandHandlerRegistry() : command_handlers_(ProtocolConfig::initialize_command_handlers()) {}
-        
-        /// @brief Registers a handler for a `TelnetCommand`.
-        std::error_code add(TelnetCommand cmd, TelnetCommandHandler handler) {
-            std::lock_guard<std::shared_mutex> lock(mutex_);
-            switch (cmd) {
-                case TelnetCommand::IAC:  [[fallthrough]];
-                case TelnetCommand::WILL: [[fallthrough]];
-                case TelnetCommand::WONT: [[fallthrough]];
-                case TelnetCommand::DO:   [[fallthrough]];
-                case TelnetCommand::DONT: [[fallthrough]];
-                case TelnetCommand::SB:   [[fallthrough]];
-                case TelnetCommand::SE:   [[fallthrough]];
-                case TelnetCommand::DM:   [[fallthrough]];
-                case TelnetCommand::GA:   [[fallthrough]];
-                case TelnetCommand::AYT:  
-                    return std::make_error_code(error::user_handler_forbidden);
-                default: 
-                    command_handlers_[cmd] = std::move(handler);
-                    return {};
-            }
-        } //add(TelnetCommand, TelnetCommandHandler)
-
-        /// @brief Removes a registered handler for a `TelnetCommand`.
-        void remove(TelnetCommand cmd) {
-            std::lock_guard<std::shared_mutex> lock(mutex_);
-            command_handlers_.erase(cmd);
-        } //remove(TelnetCommand)
-        
-        /// @brief Checks if a `TelnetCommand` has a registered handler.
-        bool has(TelnetCommand cmd) const {
-            std::shared_lock<std::shared_mutex> lock(mutex_);
-            return command_handlers_.contains(cmd);
-        } //has(TelnetCommand)
-        
-        /// @brief Retrieves a handler for a `TelnetCommand` or the default unknown handler.
-        std::optional<TelnetCommandHandler> get(TelnetCommand cmd) const {
-            std::shared_lock<std::shared_mutex> lock(mutex_);
-            auto it = command_handlers_.find(cmd);
-            if (it == command_handlers_.end()) {
-                return ProtocolConfig::get_unknown_command_handler();
-            } else {
-                return std::make_optional(it->second);
-            }
-        } //get(TelnetCommand)
-
-    private:
-        std::map<TelnetCommand, TelnetCommandHandler> command_handlers_;
-        mutable std::shared_mutex mutex_;
-    }; //class CommandHandlerRegistry
-
-    /**
-     * @fn std::error_code CommandHandlerRegistry::add(TelnetCommand cmd, TelnetCommandHandler handler)
-     *
-     * @param cmd The `TelnetCommand` to register a handler for.
-     * @param handler The `TelnetCommandHandler` to associate with `cmd`.
-     * @return `std::error_code` indicating success or failure (e.g., `error::user_handler_forbidden` for reserved commands).
-     *
-     * @remark Fails with `error::user_handler_forbidden` for reserved commands (`IAC`, `WILL`, `WONT`, `DO`, `DONT`, `SB`, `SE`, `DM`, `GA`, `AYT`).
-     */
-    /**
-     * @fn void CommandHandlerRegistry::remove(TelnetCommand cmd)
-     *
-     * @param cmd The `TelnetCommand` whose handler is to be removed.
-     *
-     * @remark Removes the handler if present; no-op if not found.
-     * @remark Performs O(log n) search to remove.
-     */
-    /**
-     * @fn bool CommandHandlerRegistry::has(TelnetCommand cmd) const
-     *
-     * @param cmd The `TelnetCommand` to check.
-     * @return True if a handler is registered for `cmd`, false otherwise.
-     *
-     * @remark Performs O(log n) lookup.
-     */
-    /**
-     * @fn std::optional<TelnetCommandHandler> CommandHandlerRegistry::get(TelnetCommand cmd) const
-     *
-     * @param cmd The `TelnetCommand` to retrieve a handler for.
-     * @return `std::optional` containing the handler if found, or `ProtocolConfig::get_unknown_command_handler()` if not.
-     *
-     * @remark Performs O(log n) lookup.
-     * @remark Falls back to `ProtocolConfig::get_unknown_command_handler` for unregistered commands.
-     */
-
-
-
-    /**
      * @brief Registry for managing Telnet option handlers.
      * @tparam ProtocolConfig Configuration class providing logging and error handling.
-     * @tparam SubnegotiationAwaitable Awaitable type for subnegotiation handlers.
+     * @tparam OptionEnablementHandler Handler type for option enablement.
+     * @tparam OptionDisablementHandler Handler type for option disablement.
      * @tparam SubnegotiationHandler Handler type for processing subnegotiation data.
-     * @remark Used by `:protocol_fsm` to manage subnegotiation handlers for Telnet options.
+     * @remark Used by `:protocol_fsm` to manage handlers for Telnet options.
+     * @remark Instantiated per-`ProtocolFSM` and used in a single thread/strand.
      * @see `:protocol_fsm` for handler usage, `:options` for `option::id_num`, `:errors` for error codes
-     * @todo Phase 5: Add a `shared_mutex` to `OptionHandlerRegistry` if registration is not confined to initialization time.
      */
-    template<typename ProtocolConfig, typename SubnegotiationAwaitable, typename SubnegotiationHandler>
+    template<typename ProtocolConfig, typename OptionEnablementHandler, typename OptionDisablementHandler, typename SubnegotiationHandler>
     class OptionHandlerRegistry {
-    private:    
+    private:
+        using awaitables::OptionEnablementAwaitable;
+        using awaitables::OptionDisablementAwaitable;
+        using awaitables::SubnegotiationAwaitable;
+        
         /**
          * @brief Record for handlers registered to a single Telnet option.
-         * @details Stores an optional subnegotiation handler for processing option-specific data.
+         * @details Stores an optional enablement handler, an optional disablement handler, and an optional subnegotiation handler for processing option-specific data.
          * @see `:options` for `option::id_num`, `:protocol_fsm` for usage
          */
         struct OptionHandlerRecord {
-            std::optional<SubnegotiationHandler> subnegotiation_handler;
+            std::optional<OptionEnablementHandler>  enablement_handler;
+            std::optional<OptionDisablementHandler> disablement_handler;
+            std::optional<SubnegotiationHandler>    subnegotiation_handler;
         }; //struct OptionHandlerRecord
 
     public:
+        /**
+         * @brief Registers handlers for a Telnet option.
+         * @param opt The `option::id_num` to register handlers for.
+         * @param enablement_handler Optional handler for option enablement.
+         * @param disablement_handler Optional handler for option disablement.
+         * @param subnegotiation_handler Optional handler for subnegotiation (defaults to `std::nullopt`).
+         * @remark Overwrites existing handlers for the specified option.
+         * @see `:options` for `option::id_num`, `:awaitables` for handler return types
+         */
+        void register_handlers(option::id_num opt,
+                              std::optional<OptionEnablementHandler> enablement_handler,
+                              std::optional<OptionDisablementHandler> disablement_handler,
+                              std::optional<SubnegotiationHandler> subnegotiation_handler = std::nullopt) {
+            handlers_[opt] = OptionHandlerRecord{
+                std::move(enablement_handler),
+                std::move(disablement_handler),
+                std::move(subnegotiation_handler)
+            };
+        } // register_handlers(option::id_num, std::optional<OptionEnablementHandler>, std::optional<OptionDisablementHandler>, std::optional<SubnegotiationHandler>)
+
+        /**
+         * @brief Unregisters all handlers for a Telnet option.
+         * @param opt The `option::id_num` to unregister handlers for.
+         * @remark Removes the handler record from the registry.
+         * @see `:options` for `option::id_num`
+         */
+        void unregister_handlers(option::id_num opt) {
+            handlers_.erase(opt);
+        } // unregister_handlers(option::id_num)
+
+        /// @brief Handles enablement for a Telnet option.
+        OptionEnablementAwaitable handle_enablement(const option& opt, NegotiationDirection direction) {
+            auto it = handlers_.find(opt);
+            if ((it != handlers_.end()) && it->second.enablement_handler) {
+                auto& handler = *(it->second.enablement_handler);
+                return handler(opt, direction);
+            }
+            co_return;
+        } // handle_enablement(const option&, NegotiationDirection)
+   
+        /// @brief Handles disablement for a Telnet option.
+        OptionDisablementAwaitable handle_disablement(const option& opt, NegotiationDirection direction) {
+            auto it = handlers_.find(opt);
+            if ((it != handlers_.end()) && it->second.disablement_handler) {
+                auto& handler = *(it->second.disablement_handler);
+                return handler(opt, direction);
+            }
+            co_return;
+        } // handle_disablement(const option&, NegotiationDirection)
+        
         /// @brief Handles subnegotiation for a Telnet option.
         SubnegotiationAwaitable handle_subnegotiation(const option& opt, std::vector<byte_t> data) {
             auto it = handlers_.find(opt);
@@ -157,20 +114,18 @@ export namespace telnet {
                 auto& handler = *(it->second.subnegotiation_handler);
                 return handler(opt, std::move(data));
             } else {
-                return undefined_subnegotiation_handler(opt, std::move(data));
+                return undefined_subnegotiation_handler<ProtocolConfig>(opt, std::move(data));
             }
         } //handle_subnegotiation(option::id_num, std::vector<byte_t>)
 
         /// @brief Accesses or creates an `OptionHandlerRecord` for a Telnet option.
         OptionHandlerRecord& operator[](option::id_num opt) { return handlers_[opt]; }
 
-        /// @brief Retrieves an `OptionHandlerRecord` for a Telnet option.
-        const OptionHandlerRecord& operator[](option::id_num opt) const { return handlers_[opt]; }
-
     private:
         /// @brief Default handler for undefined subnegotiation.
+        template<typename PC>
         static SubnegotiationAwaitable undefined_subnegotiation_handler(const option& opt, std::vector<byte_t>) {
-            ProtocolConfig::log_error(
+            PC::log_error(
                 std::make_error_code(error::user_handler_not_found),
                 "cmd: {}, option: {}",
                 TelnetCommand::SE,
@@ -183,49 +138,61 @@ export namespace telnet {
     }; //class OptionHandlerRegistry
 
     /**
-     * @fn SubnegotiationAwaitable OptionHandlerRegistry::handle_subnegotiation(option::id_num opt, std::vector<byte_t> data)
-     *
+     * @fn void OptionHandlerRegistry::register_handlers(option::id_num opt, std::optional<OptionEnablementHandler> enablement_handler, std::optional<OptionDisablementHandler> disablement_handler, std::optional<SubnegotiationHandler> subnegotiation_handler)
+     * @param opt The `option::id_num` to register handlers for.
+     * @param enablement_handler Optional handler for option enablement.
+     * @param disablement_handler Optional handler for option disablement.
+     * @param subnegotiation_handler Optional handler for subnegotiation (defaults to `std::nullopt`).
+     * @remark Overwrites existing handlers for the specified option.
+     */
+    /**
+     * @fn void OptionHandlerRegistry::unregister_handlers(option::id_num opt)
+     * @param opt The `option::id_num` to unregister handlers for.
+     * @remark Removes the handler record from the registry.
+     */
+    /**
+     * @fn OptionEnablementAwaitable OptionHandlerRegistry::handle_enablement(const option& opt, NegotiationDirection direction)
+     * @param opt The `option::id_num` of the Telnet option.
+     * @param direction The negotiation direction (`local` or `remote`).
+     * @return `OptionEnablementAwaitable` representing the asynchronous handling result.
+     * @remark Invokes the registered enablement handler if present; otherwise, returns an empty awaitable.
+     */
+    /**
+     * @fn OptionDisablementAwaitable OptionHandlerRegistry::handle_disablement(const option& opt, NegotiationDirection direction)
+     * @param opt The `option::id_num` of the Telnet option.
+     * @param direction The negotiation direction (`local` or `remote`).
+     * @return `OptionDisablementAwaitable` representing the asynchronous handling result.
+     * @remark Invokes the registered disablement handler if present; otherwise, returns an empty awaitable.
+     */
+    /**
+     * @fn SubnegotiationAwaitable OptionHandlerRegistry::handle_subnegotiation(const option& opt, std::vector<byte_t> data)
      * @param opt The `option::id_num` of the Telnet option.
      * @param data The subnegotiation data to process.
      * @return `SubnegotiationAwaitable` representing the asynchronous handling result.
-     *
      * @remark Invokes the registered subnegotiation handler if present; otherwise, calls `undefined_subnegotiation_handler`.
      */
     /**
      * @fn OptionHandlerRegistry::OptionHandlerRecord& OptionHandlerRegistry::operator[](option::id_num opt)
-     *
      * @param opt The `option::id_num` of the Telnet option.
      * @return Reference to the `OptionHandlerRecord` for `opt`, creating it if not present.
-     *
      * @remark Allows modification of the handler record for the specified option.
      * @deprecated @todo Phase6: Remove if no use cases found. 
      */
     /**
-     * @fn const OptionHandlerRegistry::OptionHandlerRecord& OptionHandlerRegistry::operator[](option::id_num opt) const
-     *
-     * @param opt The `option::id_num` of the Telnet option.
-     * @return Const reference to the `OptionHandlerRecord` for `opt`.
-     *
-     * @remark Provides read-only access to the handler record.
-     * @deprecated @todo Phase 6: Remove if no use cases found.
-     */
-    /**
-     * @fn static SubnegotiationAwaitable OptionHandlerRegistry::undefined_subnegotiation_handler(option::id_num opt, std::vector<byte_t>)
-     *
+     * @fn static SubnegotiationAwaitable OptionHandlerRegistry::undefined_subnegotiation_handler<PC>(const option& opt, std::vector<byte_t>)
+     * @tparam PC The `ProtocolConfig` type for logging.
      * @param opt The `option::id_num` of the Telnet option.
      * @param data The subnegotiation data (unused).
      * @return `SubnegotiationAwaitable` representing an empty asynchronous result.
-     *
-     * @remark Logs an `error::user_handler_not_found` error via `ProtocolConfig::log_error`.
+     * @remark Logs an `error::user_handler_not_found` error via `PC::log_error`.
      * @note Used as a fallback when no subnegotiation handler is registered.
      */
-
-
 
     /**
      * @brief Record for tracking the status of a single Telnet option.
      * @remark Optimized with bit-fields packed into a single byte for memory efficiency.
      * @note Implements RFC 1143 Q Method with 4-state FSMs plus queue bits for local (us) and remote (him) sides.
+     * @remark Instantiated per-`ProtocolFSM` and used in a single thread/strand.
      * @see `:types` for `NegotiationDirection`, `:options` for `option::id_num`, `:protocol_fsm` for usage
      */
     class OptionStatusRecord {
@@ -538,7 +505,7 @@ export namespace telnet {
      */
     /**
      * @fn void OptionStatusRecord::enqueue(NegotiationDirection direction) noexcept
-     * @param direction The negotiation direction (LOCAL or REMOTE).
+     * @param direction The navigation direction (LOCAL or REMOTE).
      * @brief Marks a user request as queued (OPPOSITE state) in the designated direction.
      * @remark Delegates to `enqueue_local()` or `enqueue_remote()` based on direction (usq or himq in RFC 1143).
      */
@@ -587,12 +554,12 @@ export namespace telnet {
      * @remark Ensures `local_queue_` and `remote_queue_` are false unless respective states are WANTNO or WANTYES. [Optional]
      */
 
-
   
     /**
      * @brief Collection of `OptionStatusRecord` objects for tracking Telnet option statuses.
      * @remark Provides array-based access to option statuses by `option::id_num`.
      * @remark Used by `:protocol_fsm` to manage the state of Telnet options.
+     * @remark Instantiated per-`ProtocolFSM` and used in a single thread/strand.
      * @see `:options` for `option::id_num`, `:protocol_fsm` for usage, `OptionStatusRecord` for status details
      */
     class OptionStatusDB {

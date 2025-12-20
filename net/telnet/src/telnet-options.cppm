@@ -1,7 +1,7 @@
 /**
  * @file telnet-options.cppm
- * @version 0.4.0
- * @release_date October 3, 2025
+ * @version 0.5.0
+ * @release_date October 17, 2025
  *
  * @brief Interface for Telnet option handling.
  * @remark Defines `option` class, `option::id_num` enumeration, and associated predicates/handlers.
@@ -9,7 +9,7 @@
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @remark This module is fully inline. An implementation unit MAY be added in Phase 5 for complex option logic.
+ * @remark This module is fully inline.
  * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage, `:socket` for negotiation operations, `:types` for `TelnetCommand`
  */
 module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
@@ -38,9 +38,6 @@ export namespace telnet {
         /**
          * @details Nested enumeration of Telnet option IDs as defined in the IANA Telnet Option Registry and MUD-specific extensions.
          * @note All 256 possible `byte_t` values are valid for proprietary extensions.
-         *
-         * @todo Phase 5: Review options list for completeness.
-         * @todo Phase 5: Review options for potential internal implementation or implementation as a library extension.
          */
         enum class id_num : byte_t;
 
@@ -249,7 +246,7 @@ export namespace telnet {
         SUPDUP                             = 0x15, ///< SUPDUP (@see RFC 736, RFC 734)
         SUPDUP_OUTPUT                      = 0x16, ///< SUPDUP Output (@see RFC 749)
         SEND_LOCATION                      = 0x17, ///< Send Location (@see RFC 779)
-        TERMINAL_TYPE                      = 0x18, ///< Terminal Type (@see RFC 1091)
+        TERMINAL_TYPE                      = 0x18, ///< Terminal Type (@see RFC 1091) (Extended by "MTTS" MUD Terminal Type Standard)
         END_OF_RECORD                      = 0x19, ///< End of Record (@see RFC 885)
         TACACS_USER_IDENTIFICATION         = 0x1A, ///< TACACS User Identification (@see RFC 927)
         OUTPUT_MARKING                     = 0x1B, ///< Output Marking (@see RFC 933)
@@ -262,9 +259,9 @@ export namespace telnet {
         LINEMODE                           = 0x22, ///< Linemode (@see RFC 1184)
         X_DISPLAY_LOCATION                 = 0x23, ///< X Display Location (@see RFC 1096)
         ENVIRONMENT_OPTION                 = 0x24, ///< Environment Option (@see RFC 1408)
-        AUTHENTICATION_OPTION              = 0x25, ///< Authentication Option (@see RFC 2941)
-        ENCRYPTION_OPTION                  = 0x26, ///< Encryption Option (@see RFC 2946)
-        NEW_ENVIRONMENT_OPTION             = 0x27, ///< New Environment Option (@see RFC 1572)
+        AUTHENTICATION                     = 0x25, ///< Authentication Option (@see RFC 2941)
+        ENCRYPT_DEPRECATED                 = 0x26, ///< Encryption Option (@see RFC 2946) (Deprecated in favor of TLS)
+        NEW_ENVIRONMENT_OPTION             = 0x27, ///< New Environment Option (@see RFC 1572) (Extended by "MNES" MUD New Environment Standard)
         TN3270E                            = 0x28, ///< TN3270E (@see RFC 2355)
         XAUTH                              = 0x29, ///< XAUTH (Rob Earhart)
         CHARSET                            = 0x2A, ///< CHARSET (@see RFC 2066)
@@ -277,14 +274,33 @@ export namespace telnet {
         FORWARD_X                          = 0x31, ///< FORWARD_X (Jeffrey Altman)
         /* Range 0x32-0x44 Unused per IANA */
         MSDP                               = 0x45, ///< MUD Server Data Protocol
-        /* Range 0x46-0x54 Unused per IANA */
+        MSSP                               = 0x46, ///< MUD Server Status Protocol
+        /* Range 0x47-0x4E Unused per IANA */
+        GSSAPI                             = 0x4F, ///< Generic Security Service API (@see RFC 2942)
+        /* Range 0x50-0x54 Unused per IANA */
         MCCP1                              = 0x55, ///< MUD Client Compression Protocol v.1
         MCCP2                              = 0x56, ///< MUD Client Compression Protocol v.2
-        /* Range 0x57-0x89 Unused per IANA */
+        MCCP3                              = 0x57, ///< MUD Client Compression Protocol v.3
+        /* Range 0x58-0x59 Unused per IANA */
+        MSP                                = 0x5A, ///< MUD Sound Protocol
+        MXP                                = 0x5B, ///< MUD eXtension Protocol
+        /* Option 0x5C Unused per IANA */
+        ZMP                                = 0x5D, ///< Zenith MUD Protocol
+        PUEBLO                             = 0x5E, ///< Pueblo Protocol (1998)
+        /* Range 0x5F-0x65 Unused per IANA */
+        AARDWOLF_102                       = 0x66, ///< Aardwolf MUD Channel 102 Protocol
+        /* Range 0x67-0x89 Unused per IANA */
         TELOPT_PRAGMA_LOGON                = 0x8A, ///< TELOPT PRAGMA LOGON (Steve McGregory)
         TELOPT_SSPI_LOGON                  = 0x8B, ///< TELOPT SSPI LOGON (Steve McGregory)
         TELOPT_PRAGMA_HEARTBEAT            = 0x8C, ///< TELOPT PRAGMA HEARTBEAT (Steve McGregory)
-        /* Range 0x8D-0xFE Unused per IANA */
+        /* Range 0x8D-0x90 Unused per IANA */
+        SSL_DEPRECATED                     = 0x91, ///< SSL Legacy Implementation (Deprecated in favor of TLS)
+        /* Range 0x92-0x9F Unused per IANA */
+        MCP                                = 0xA0, ///< MUD Client Protocol (2002)
+        /* Range 0xA1-0xC7 Unused per IANA */
+        ATCP                               = 0xC8, ///< Achaea Telnet Communication Protocol
+        GMCP                               = 0xC9, ///< Generic MUD Communication Protocol (aka ATCP2)
+        /* Range 0xCA-0xFE Unused per IANA */        
         EXTENDED_OPTIONS_LIST              = 0xFF  ///< Extended-Options-List (@see RFC 861)
     }; //enum class option::id_num
     
@@ -293,7 +309,6 @@ export namespace telnet {
      * @remark Used by `ProtocolFSM` to store and query supported Telnet options.
      * @remark The `std::initializer_list` constructor enforces sorted input by `option::id_num` at compile time using `static_assert`, ensuring O(n) `std::set` construction. Unsorted inputs cause compilation failure. All accessor methods are atomic via `std::shared_mutex`, supporting concurrent reads and exclusive writes.
      * @warning Methods are guaranteed atomic by `std::shared_mutex`, but chaining operations is NOT thread-safe; however `get` followed by `upsert` provides snapshot consistency.
-     * @todo Phase 5: Review likely upper bounds of n (vs theoretical bound of n=256) in light of scalability of `std::set` for large option sets and consider alternative containers (e.g., pre-filled vector) if lookup performance becomes a bottleneck.
      * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage in the protocol state machine, `:socket` for negotiation operations, `:types` for `TelnetCommand`, `option` for option details.
      */
     class option_registry {
