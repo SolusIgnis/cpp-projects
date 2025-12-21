@@ -17,13 +17,14 @@
  * @todo Future Development: Monitor `asio::async_result_t` compatibility with evolving Boost.Asio and `std::execution` for potential transition to awaitable or standard async frameworks.
  * @todo Future Development: Consider using `asio::get_associated_executor(token)` for handler execution in `telnet::stream` to support custom executors.
  */
-module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
+
+module; //Including Asio in the Global Module Fragment until importable header units are reliable.
 #include <asio.hpp>
 
-// Module partition interface unit
+//Module partition interface unit
 export module net.telnet:stream;
 
-import std; // For std::error_code, std::size_t, std::vector, std::same_as
+import std; //For std::error_code, std::size_t, std::vector, std::same_as
 
 export import :types;        ///< @see "telnet-types.cppm" for `byte_t` and `TelnetCommand`
 export import :errors;       ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
@@ -35,14 +36,14 @@ export import :awaitables;   ///< @see "telnet-awaitables.cppm" for `TaggedAwait
 //namespace asio = boost::asio;
 
 namespace net::telnet {
-    // Non-exported using declarations to simplify template constraints below.
+    //Non-exported using declarations to simplify template constraints below.
     using concepts::LayerableSocketStream;
     using concepts::MutableBufferSequence;
     using concepts::ConstBufferSequence;
     using concepts::ReadToken;
     using concepts::WriteToken;
     using concepts::ProtocolFSMConfig; 
-} // namespace net::telnet
+} //namespace net::telnet
 
 export namespace net::telnet {
     /**
@@ -104,118 +105,118 @@ export namespace net::telnet {
          */
         using fsm_type = ProtocolFSM<ProtocolConfigT>;
 
-        /// @brief Constructs a stream with a next-layer stream.
+        ///@brief Constructs a stream with a next-layer stream.
         explicit stream(next_layer_type&& next_layer_stream);
 
-        /// @brief Gets the executor associated with the stream.
+        ///@brief Gets the executor associated with the stream.
         executor_type get_executor() noexcept { return next_layer_.get_executor(); }
 
-        /// @brief Gets a reference to the lowest layer stream.
+        ///@brief Gets a reference to the lowest layer stream.
         lowest_layer_type& lowest_layer() noexcept { return next_layer_.lowest_layer(); }
 
-        /// @brief Gets a reference to the next layer stream.
+        ///@brief Gets a reference to the next layer stream.
         next_layer_type& next_layer() noexcept { return next_layer_; }
 
-        /// @brief Registers handlers for option enablement, disablement, and subnegotiation.
+        ///@brief Registers handlers for option enablement, disablement, and subnegotiation.
         void register_option_handlers(option::id_num opt, std::optional<fsm_type::OptionEnablementHandler> enable_handler, std::optional<fsm_type::OptionDisablementHandler> disable_handler, std::optional<fsm_type::SubnegotiationHandler> subneg_handler = std::nullopt) { fsm_.register_option_handlers(opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler)); }
 
-        /// @brief Unregisters handlers for an option.
+        ///@brief Unregisters handlers for an option.
         void unregister_option_handlers(option::id_num opt) { fsm_.unregister_option_handlers(opt); }
 
-        /// @brief Asynchronously requests or offers an option, sending IAC WILL/DO.
+        ///@brief Asynchronously requests or offers an option, sending IAC WILL/DO.
         template<typename CompletionToken>
         auto async_request_option(option::id_num opt, NegotiationDirection direction, CompletionToken&& token;
 
-        /// @brief Synchronously requests or offers an option, sending IAC WILL/DO.
+        ///@brief Synchronously requests or offers an option, sending IAC WILL/DO.
         std::size_t request_option(option::id_num opt, NegotiationDirection direction);
 
-        /// @brief Synchronously requests or offers an option, sending IAC WILL/DO.
+        ///@brief Synchronously requests or offers an option, sending IAC WILL/DO.
         std::size_t request_option(option::id_num opt, NegotiationDirection direction, std::error_code& ec) noexcept;
 
-        /// @brief Asynchronously disables an option, sending IAC WONT/DONT.
+        ///@brief Asynchronously disables an option, sending IAC WONT/DONT.
         template<typename CompletionToken>
         auto async_disable_option(option::id_num opt, NegotiationDirection direction, CompletionToken&& token;
 
-        /// @brief Synchronously disables an option, sending IAC WONT/DONT.
+        ///@brief Synchronously disables an option, sending IAC WONT/DONT.
         std::size_t disable_option(option::id_num opt, NegotiationDirection direction);
 
-        /// @brief Synchronously disables an option, sending IAC WONT/DONT.
+        ///@brief Synchronously disables an option, sending IAC WONT/DONT.
         std::size_t disable_option(option::id_num opt, NegotiationDirection direction, std::error_code& ec) noexcept;
 
-        /// @brief Asynchronously reads some data with Telnet processing.
+        ///@brief Asynchronously reads some data with Telnet processing.
         template<MutableBufferSequence MBufSeq, ReadToken CompletionToken>
         auto async_read_some(const MBufSeq& buffers, CompletionToken&& token);
 
-        /// @brief Synchronously reads some data with Telnet processing.
+        ///@brief Synchronously reads some data with Telnet processing.
         template<MutableBufferSequence MBufSeq>
         std::size_t read_some(MBufSeq&& buffers);
 
-        /// @brief Synchronously reads some data with Telnet processing.
+        ///@brief Synchronously reads some data with Telnet processing.
         template<MutableBufferSequence MBufSeq>
         std::size_t read_some(MBufSeq&& buffers, std::error_code& ec) noexcept;
 
-        /// @brief Asynchronously writes some data with Telnet-specific IAC escaping.
+        ///@brief Asynchronously writes some data with Telnet-specific IAC escaping.
         template<ConstBufferSequence CBufSeq, WriteToken CompletionToken>
         auto async_write_some(const CBufSeq& data, CompletionToken&& token;
 
-        /// @brief Synchronously writes some data with Telnet-specific IAC escaping.
+        ///@brief Synchronously writes some data with Telnet-specific IAC escaping.
         template<ConstBufferSequence CBufSeq>
         std::size_t write_some(const CBufSeq& data);
 
-        /// @brief Synchronously writes some data with Telnet-specific IAC escaping.
+        ///@brief Synchronously writes some data with Telnet-specific IAC escaping.
         template<ConstBufferSequence CBufSeq>
         std::size_t write_some(const CBufSeq& data, std::error_code& ec) noexcept;
 
-        /// @brief Asynchronously writes a pre-escaped buffer containing data and raw Telnet commands.
+        ///@brief Asynchronously writes a pre-escaped buffer containing data and raw Telnet commands.
         template<ConstBufferSequence CBufSeq, typename CompletionToken> requires asio::completion_token_for<CompletionToken, typename stream<NextLayerT, ProtocolConfigT>::asio_completion_signature>
         auto async_write_raw(const CBufSeq& data, CompletionToken&& token;
 
-        /// @brief Synchronously writes a pre-escaped buffer containing data and raw Telnet commands.
+        ///@brief Synchronously writes a pre-escaped buffer containing data and raw Telnet commands.
         template<ConstBufferSequence CBufSeq>
           requires asio::const_buffer_sequence<ConstBufferSequence>
         std::size_t write_raw(const CBufSeq& data);
 
-        /// @brief Synchronously writes a pre-escaped buffer containing data and raw Telnet commands.
+        ///@brief Synchronously writes a pre-escaped buffer containing data and raw Telnet commands.
         template<ConstBufferSequence CBufSeq>
           requires asio::const_buffer_sequence<ConstBufferSequence>
         std::size_t write_raw(const CBufSeq& data, std::error_code& ec) noexcept;
 
-        /// @brief Asynchronously writes a Telnet command.
+        ///@brief Asynchronously writes a Telnet command.
         template<WriteToken CompletionToken>
         auto async_write_command(TelnetCommand cmd, CompletionToken&& token;
 
-        /// @brief Synchronously writes a Telnet command.
+        ///@brief Synchronously writes a Telnet command.
         std::size_t write_command(TelnetCommand cmd);
 
-        /// @brief Synchronously writes a Telnet command.
+        ///@brief Synchronously writes a Telnet command.
         std::size_t write_command(TelnetCommand cmd, std::error_code& ec) noexcept;
 
-        /// @todo Future Development: make this private
-        /// @brief Asynchronously writes a Telnet negotiation command with an option.
+        ///@todo Future Development: make this private
+        ///@brief Asynchronously writes a Telnet negotiation command with an option.
         template<WriteToken CompletionToken>
         auto async_write_negotiation(typename fsm_type::NegotiationResponse response, CompletionToken&& token;
 
-        /// @brief Synchronously writes a Telnet negotiation command with an option.
+        ///@brief Synchronously writes a Telnet negotiation command with an option.
         std::size_t write_negotiation(typename fsm_type::NegotiationResponse response);
 
-        /// @brief Synchronously writes a Telnet negotiation command with an option.
+        ///@brief Synchronously writes a Telnet negotiation command with an option.
         std::size_t write_negotiation(typename fsm_type::NegotiationResponse response, std::error_code& ec) noexcept;
 
-        /// @brief Asynchronously writes a Telnet subnegotiation command.
+        ///@brief Asynchronously writes a Telnet subnegotiation command.
         template<WriteToken CompletionToken>
         auto async_write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, CompletionToken&& token;
 
-        /// @brief Asynchronously sends Telnet Synch sequence (NUL bytes and IAC DM).
+        ///@brief Asynchronously sends Telnet Synch sequence (NUL bytes and IAC DM).
         template<WriteToken CompletionToken>
         auto async_send_synch(CompletionToken&& token;
 
-        /// @brief Synchronously sends Telnet Synch sequence (NUL bytes and IAC DM).
+        ///@brief Synchronously sends Telnet Synch sequence (NUL bytes and IAC DM).
         std::size_t send_synch();
 
-        /// @brief Synchronously sends Telnet Synch sequence (NUL bytes and IAC DM).
+        ///@brief Synchronously sends Telnet Synch sequence (NUL bytes and IAC DM).
         std::size_t send_synch(std::error_code& ec) noexcept;
 
-        /// @brief Asynchronously waits (via 0-byte receive) for notification that OOB data is in the stream.
+        ///@brief Asynchronously waits (via 0-byte receive) for notification that OOB data is in the stream.
         void launch_wait_for_urgent_data();
 
     private:
@@ -229,19 +230,19 @@ export namespace net::telnet {
              */
             class urgent_data_tracker {
             private:
-                /// @typedef ProtocolConfig @brief Aliases `fsm_type::ProtocolConfig` to access the error logger.
+                ///@typedef ProtocolConfig @brief Aliases `fsm_type::ProtocolConfig` to access the error logger.
                 using ProtocolConfig = fsm_type::ProtocolConfig;
-                /// @brief Scoped enumeration for the urgent data tracking state.
+                ///@brief Scoped enumeration for the urgent data tracking state.
                 enum class UrgentDataState : std::byte { NO_URGENT_DATA, HAS_URGENT_DATA, UNEXPECTED_DATA_MARK };
                 std::atomic<UrgentDataState> state_{UrgentDataState::NO_URGENT_DATA};
             public:
-                /// @brief Updates the state when the OOB notification arrives.
+                ///@brief Updates the state when the OOB notification arrives.
                 void saw_urgent();
-                /// @brief Updates the state when the `TelnetCommand::DM` arrives.
+                ///@brief Updates the state when the `TelnetCommand::DM` arrives.
                 void saw_data_mark();
-                /// @brief Reports if the urgent notification is currently active.
+                ///@brief Reports if the urgent notification is currently active.
                 bool has_urgent_data() const noexcept { return (state_.load(std::memory_order_relaxed) == UrgentDataState::HAS_URGENT_DATA); }
-                /// @brief Implicitly converts to bool reporting if the urgent notification is currently active.
+                ///@brief Implicitly converts to bool reporting if the urgent notification is currently active.
                 operator bool() const noexcept { return has_urgent_data(); }
             };
         public:
@@ -251,7 +252,7 @@ export namespace net::telnet {
             std::error_code     deferred_processing_signal;
             urgent_data_tracker urgent_data_state;
             std::atomic<bool>   waiting_for_urgent_data{false};
-        }; // struct context_type
+        }; //struct context_type
     
         /**
          * @brief A private nested class template for processing Telnet input asynchronously.
@@ -261,37 +262,37 @@ export namespace net::telnet {
         template<MutableBufferSequence MBufSeq>
         class InputProcessor {
         public:
-            /// @brief Constructs an `InputProcessor` with the parent stream, FSM, and buffers.
+            ///@brief Constructs an `InputProcessor` with the parent stream, FSM, and buffers.
             InputProcessor(stream& parent_stream, stream::fsm_type& fsm, context_type& context, MutableBufferSequence buffers);
 
-            /// @brief Asynchronous operation handler for processing Telnet input.
+            ///@brief Asynchronous operation handler for processing Telnet input.
             template<typename Self>
             void operator()(Self& self, std::error_code ec = {}, std::size_t bytes_transferred = 0);
 
         private:
-            /// @brief Completes the asynchronous operation with error code and bytes transferred.
+            ///@brief Completes the asynchronous operation with error code and bytes transferred.
             template<typename Self>
             void complete(Self& self, const std::error_code& ec, std::size_t bytes_transferred);
             
-            /// @brief Defers write errors for later reporting and logs multi-error pile-ups.
+            ///@brief Defers write errors for later reporting and logs multi-error pile-ups.
             void process_write_error(std::error_code `ec`);
             
-            /// @brief Handles processing_signal error codes from fsm_.process_byte, modifying the user buffer or urgent data state.
+            ///@brief Handles processing_signal error codes from fsm_.process_byte, modifying the user buffer or urgent data state.
             void process_fsm_signals(std::error_code& `signal_ec`);
 
-            /// @brief Handle a `NegotiationResponse` by initiating an async write of the negotiation.
+            ///@brief Handle a `NegotiationResponse` by initiating an async write of the negotiation.
             template<typename Self>
             void do_response(typename stream::fsm_type::NegotiationResponse response, Self&& self);
     
-            /// @brief Handle a `std::string` by initiating an async write of raw data.
+            ///@brief Handle a `std::string` by initiating an async write of raw data.
             template<typename Self>
             void do_response(std::string response, Self&& self);
     
-            /// @brief Handle a `SubnegotiationAwaitable` by spawning a coroutine to process it.
+            ///@brief Handle a `SubnegotiationAwaitable` by spawning a coroutine to process it.
             template<typename Self>
             void do_response(awaitables::SubnegotiationAwaitable awaitable, Self&& self);
     
-            /// @brief Handle any `TaggedAwaitable` with optional `NegotiationResponse`.
+            ///@brief Handle any `TaggedAwaitable` with optional `NegotiationResponse`.
             template<typename Self, typename Tag, typename T, typename Awaitable>
             void do_response(std::tuple<awaitables::TaggedAwaitable<Tag, T, Awaitable>, std::optional<typename stream::fsm_type::NegotiationResponse>> response, Self&& self);
     
@@ -310,34 +311,34 @@ export namespace net::telnet {
             enum class State { INITIALIZING, READING, PROCESSING, DONE } state_;
         }; //class InputProcessor
 
-        /// @brief Asynchronously sends a single NUL byte, optionally as OOB.
+        ///@brief Asynchronously sends a single NUL byte, optionally as OOB.
         template<WriteToken CompletionToken>
         auto async_send_nul(bool out_of_band, CompletionToken&& token;
 
-        /// @brief Synchronously awaits the completion of an awaitable operation.
+        ///@brief Synchronously awaits the completion of an awaitable operation.
         template<typename Awaitable>
         static auto sync_await(Awaitable&& a);
 
-        /// @brief Escapes Telnet output data by duplicating 0xFF (IAC) bytes into a provided vector.
+        ///@brief Escapes Telnet output data by duplicating 0xFF (IAC) bytes into a provided vector.
         template<ConstBufferSequence CBufSeq>
         std::tuple<std::error_code, std::vector<byte_t>&> escape_telnet_output(std::vector<byte_t>& escaped_data, const CBufSeq& data) const noexcept;
 
-        /// @brief Escapes Telnet output data by duplicating 0xFF (IAC) bytes.
+        ///@brief Escapes Telnet output data by duplicating 0xFF (IAC) bytes.
         template<ConstBufferSequence CBufSeq>
         std::tuple<std::error_code, std::vector<byte_t>> escape_telnet_output(const CBufSeq& data) const noexcept;
 
-        /// @brief Asynchronously writes a temporary buffer to the next layer.
+        ///@brief Asynchronously writes a temporary buffer to the next layer.
         template<WriteToken CompletionToken> 
         auto async_write_temp_buffer(std::vector<byte_t>&& temp_buffer, CompletionToken&& token;
 
-        /// @brief Asynchronously reports an error via the completion token.
+        ///@brief Asynchronously reports an error via the completion token.
         template<WriteToken CompletionToken>
         auto async_report_error(std::error_code ec, CompletionToken&& token;
 
         next_layer_type next_layer_;
-        fsm_type fsm_; // FSM member to maintain state
+        fsm_type fsm_; //FSM member to maintain state
         context_type context_;
-    }; // class stream
+    }; //class stream
 
     /**
      * @fn explicit stream::stream(next_layer_type&& next_layer_stream)
@@ -775,4 +776,4 @@ export namespace net::telnet {
      * @note Used by `async_write_some`, `async_write_command`, `async_write_negotiation`, and `async_write_subnegotiation` to report errors asynchronously.
      * @see :errors for error codes, "telnet-stream-async-impl.cpp" for implementation
      */
-} // export namespace net::telnet
+} //export namespace net::telnet

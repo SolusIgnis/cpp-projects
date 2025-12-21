@@ -12,13 +12,14 @@
  * @note Synchronous I/O operations incur overhead from `sync_await`, which creates a new `io_context` and thread per call, and scale poorly compared to asynchronous methods. However, this overhead is minimal compared to blocking network I/O latency.
  * @see "telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
  */
-module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
+
+module; //Including Asio in the Global Module Fragment until importable header units are reliable.
 #include <asio.hpp>
 
-// Module partition implementation unit
+//Module partition implementation unit
 module net.telnet:stream;
 
-import std; // For std::size_t, std::system_error
+import std; //For std::size_t, std::system_error
 
 import :types;        ///< @see "telnet-types.cppm" for `TelnetCommand`
 import :errors;       ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
@@ -30,7 +31,7 @@ import :protocol_fsm; ///< @see "telnet-protocol_fsm.cppm" for `ProtocolFSM`
 
 namespace net::telnet {
     //=========================================================================================================
-    // Synchronous throwing wrappers use `sync_await` to execute their asynchronous counterparts.
+    //Synchronous throwing wrappers use `sync_await` to execute their asynchronous counterparts.
     //=========================================================================================================
 
     /**
@@ -45,7 +46,7 @@ namespace net::telnet {
             throw std::system_error(ec);
         }
         return bytes;
-    } // stream::request_option(option::id_num, NegotiationDirection)
+    } //stream::request_option(option::id_num, NegotiationDirection)
 
     /**
      * @internal
@@ -59,7 +60,7 @@ namespace net::telnet {
             throw std::system_error(ec);
         }
         return bytes;
-    } // stream::disable_option(option::id_num, NegotiationDirection)
+    } //stream::disable_option(option::id_num, NegotiationDirection)
 
     /**
      * @internal
@@ -69,7 +70,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC, MutableBufferSequence MBufSeq>
     std::size_t stream<NLS, PC>::read_some(MBufSeq&& buffers) {
         return sync_await(async_read_some(std::forward<MBufSeq>(buffers), asio::use_awaitable));
-    } // stream::read_some(MBufSeq&&)
+    } //stream::read_some(MBufSeq&&)
 
     /**
      * @internal
@@ -79,7 +80,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC, ConstBufferSequence CBufSeq>
     std::size_t stream<NLS, PC>::write_some(const CBufSeq& data) {
         return sync_await(async_write_some(data, asio::use_awaitable));
-    } // stream::write_some(const CBufSeq&)
+    } //stream::write_some(const CBufSeq&)
 
     /**
      * @internal
@@ -89,7 +90,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC, ConstBufferSequence CBufSeq>
     std::size_t stream<NLS, PC>::write_raw(const CBufSeq& data) {
         return sync_await(async_write_raw(data, asio::use_awaitable));
-    } // stream::write_raw(const CBufSeq&)
+    } //stream::write_raw(const CBufSeq&)
     
     /**
      * @internal
@@ -99,7 +100,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     std::size_t stream<NLS, PC>::write_command(TelnetCommand cmd) {
         return sync_await(async_write_command(cmd, asio::use_awaitable));
-    } // stream::write_command(TelnetCommand)
+    } //stream::write_command(TelnetCommand)
 
     /**
      * @internal
@@ -109,7 +110,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     std::size_t stream<NLS, PC>::write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer) {
         return sync_await(async_write_subnegotiation(opt, subnegotiation_buffer, asio::use_awaitable));
-    } // stream::write_subnegotiation(option, const std::vector<byte_t>&)
+    } //stream::write_subnegotiation(option, const std::vector<byte_t>&)
 
     /**
      * @internal
@@ -119,10 +120,10 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     std::size_t stream<NLS, PC>::send_synch() {
         return sync_await(async_send_synch(asio::use_awaitable));
-    } // stream::send_synch()
+    } //stream::send_synch()
 
     //=========================================================================================================
-    // Synchronous `noexcept` wrappers call their throwing counterparts and convert exceptions to error codes.
+    //Synchronous `noexcept` wrappers call their throwing counterparts and convert exceptions to error codes.
     //=========================================================================================================
 
     /**
@@ -143,7 +144,7 @@ namespace net::telnet {
             ec = std::make_error_code(error::internal_error);
             return 0;
         }
-    } // stream::request_option(option::id_num, NegotiationDirection, std::error_code&) noexcept
+    } //stream::request_option(option::id_num, NegotiationDirection, std::error_code&) noexcept
 
     /**
      * @internal
@@ -163,7 +164,7 @@ namespace net::telnet {
             ec = std::make_error_code(error::internal_error);
             return 0;
         }
-    } // stream::disable_option(option::id_num, NegotiationDirection, std::error_code&) noexcept
+    } //stream::disable_option(option::id_num, NegotiationDirection, std::error_code&) noexcept
 
     /**
      * @internal
@@ -188,7 +189,7 @@ namespace net::telnet {
             ec = std::make_error_code(error::internal_error);
             return 0;
         }
-    } // stream::read_some(MutableBufferSequence&&, std::error_code&) noexcept
+    } //stream::read_some(MutableBufferSequence&&, std::error_code&) noexcept
 
     /**
      * @internal
@@ -213,7 +214,7 @@ namespace net::telnet {
             ec = std::make_error_code(error::internal_error);
             return 0;
         }
-    } // stream::write_some(const CBufSeq&, std::error_code&) noexcept
+    } //stream::write_some(const CBufSeq&, std::error_code&) noexcept
 
     /**
      * @internal
@@ -238,7 +239,7 @@ namespace net::telnet {
             ec = std::make_error_code(error::internal_error);
             return 0;
         }
-    } // stream::write_raw(const CBufSeq&, std::error_code&) noexcept
+    } //stream::write_raw(const CBufSeq&, std::error_code&) noexcept
     
     /**
      * @internal
@@ -262,7 +263,7 @@ namespace net::telnet {
             ec = std::make_error_code(error::internal_error);
             return 0;
         }
-    } // stream::write_command(TelnetCommand, std::error_code&) noexcept
+    } //stream::write_command(TelnetCommand, std::error_code&) noexcept
 
     /**
      * @internal
@@ -286,7 +287,7 @@ namespace net::telnet {
             ec = std::make_error_code(error::internal_error);
             return 0;
         }
-    } // stream::write_subnegotiation(option, const std::vector<byte_t>&, std::error_code&) noexcept
+    } //stream::write_subnegotiation(option, const std::vector<byte_t>&, std::error_code&) noexcept
     
     /**
      * @internal
@@ -310,5 +311,5 @@ namespace net::telnet {
             ec = std::make_error_code(error::internal_error);
             return 0;
         }
-    } // stream::send_synch(std::error_code&) noexcept
-} // namespace net::telnet
+    } //stream::send_synch(std::error_code&) noexcept
+} //namespace net::telnet

@@ -4,7 +4,7 @@
  * @release_date October 30, 2025
  *
  * @brief Telnet-specific error codes, processing signals, and error categories for protocol and stream operations.
- * @remark Defines `telnet::error` enumeration for errors and `telnet::processing_signal` for non-error processing signals.
+ * @remark Defines `::net::telnet::error` enumeration for errors and `::net::telnet::processing_signal` for non-error processing signals.
  * @remark Defines `telnet_error_category` and `telnet_processing_signal_category` for use with `std::error_code`.
  * 
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
@@ -13,10 +13,11 @@
  * @remark This module is fully inline.
  * @todo Future Development: Define and integrate `std::error_condition` mappings for both `error` and `processing_signal`.
  */
+ 
 //Module partition interface unit
 export module net.telnet:errors;
 
-import std; // For std::error_category, std::error_code, std::string, std::true_type
+import std; //For std::error_category, std::error_code, std::string, std::true_type
 
 export namespace net::telnet {
     /**
@@ -207,16 +208,16 @@ export namespace net::telnet {
 
 namespace std {
     /**
-     * @brief Specializes `std::is_error_code_enum` for `telnet::error`.
-     * @see `telnet::error` for error codes
+     * @brief Specializes `std::is_error_code_enum` for `::net::telnet::error`.
+     * @see `::net::telnet::error` for error codes
      */
     template <>
-    struct is_error_code_enum<telnet::error> : std::true_type {};
+    struct is_error_code_enum<::net::telnet::error> : std::true_type {};
 
     /**
-     * @brief Specializes `std::is_error_code_enum` for `telnet::processing_signal`.
-     * @see `telnet::processing_signal` for signal codes
+     * @brief Specializes `std::is_error_code_enum` for `::net::telnet::processing_signal`.
+     * @see `::net::telnet::processing_signal` for signal codes
      */
     template <>
-    struct is_error_code_enum<telnet::processing_signal> : std::true_type {};
+    struct is_error_code_enum<::net::telnet::processing_signal> : std::true_type {};
 } //namespace std

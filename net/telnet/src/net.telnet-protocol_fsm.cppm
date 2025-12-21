@@ -6,7 +6,7 @@
  * @brief Interface for the Telnet protocol finite state machine.
  * @remark Implements basic Telnet protocol (RFC 854) including IAC command processing and stateful negotiation.
  * @example
- *   telnet::ProtocolFSM<> fsm; // Uses `DefaultProtocolFSMConfig` from `:protocol_config`
+ *   telnet::ProtocolFSM<> fsm; //Uses `DefaultProtocolFSMConfig` from `:protocol_config`
  *   telnet::ProtocolFSM<>::ProtocolConfig::set_unknown_command_handler([](telnet::TelnetCommand cmd) { std::cout << "Custom: " << std::to_underlying(cmd) << "\n"; });
  *   telnet::ProtocolFSM<>::ProtocolConfig::registered_options.upsert(telnet::option::id_num::NEGOTIATE_ABOUT_WINDOW_SIZE, "NAWS", telnet::option::always_accept, telnet::option::always_accept, true, 4);
  *   telnet::ProtocolFSM<>::ProtocolConfig::set_error_logger([](const std::error_code& ec, std::string msg) { std::cout << "Error: " << ec.message() << " - " << msg << std::endl; });
@@ -17,13 +17,14 @@
  * @see RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, `:types` for `TelnetCommand` and `NegotiationDirection`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:stream` for FSM usage, `:internal` for implementation classes, , `:protocol_config` for `DefaultProtocolFSMConfig`, and `:concepts` for `ProtocolFSMConfig`
  * @todo Phase 6: Add optional half-duplex support (RFC 854) if legacy peer requirements arise.
  */
-module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
+
+module; //Including Asio in the Global Module Fragment until importable header units are reliable.
 #include <asio.hpp>
 
 //Module partition interface unit
 export module net.telnet:protocol_fsm;
 
-import std; // For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec, std::format
+import std; //For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec, std::format
 
 export import :types;      ///< @see "telnet-types.cppm" for `byte_t`, `TelnetCommand`, and `NegotiationDirection`
 export import :errors;     ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
@@ -37,9 +38,9 @@ import :protocol_config;   ///< @see "telnet-protocol_config.cppm" for `DefaultP
 //namespace asio = boost::asio;
 
 namespace net::telnet {
-    // Non-exported using declarations to simplify template constraints below.
+    //Non-exported using declarations to simplify template constraints below.
     using concepts::ProtocolFSMConfig;
-} // namespace net::telnet
+} //namespace net::telnet
 
 export namespace net::telnet {
     /**
@@ -120,34 +121,34 @@ export namespace net::telnet {
             SubnegotiationAwaitable
         >;
 
-        /// @brief Constructs the FSM, initializing `ProtocolConfig` once.
+        ///@brief Constructs the FSM, initializing `ProtocolConfig` once.
         ProtocolFSM() {
             ConfigT::initialize();
         }
 
-        /// @brief Registers handlers for option enablement, disablement, and subnegotiation.
+        ///@brief Registers handlers for option enablement, disablement, and subnegotiation.
         void register_option_handlers(option::id_num opt, std::optional<OptionEnablementHandler> enable_handler, std::optional<OptionDisablementHandler> disable_handler, std::optional<SubnegotiationHandler> subneg_handler = std::nullopt) { option_handler_registry_.register_handlers(opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler)); }
 
-        /// @brief Unregisters handlers for an option.
+        ///@brief Unregisters handlers for an option.
         void unregister_option_handlers(option::id_num opt) { option_handler_registry_.unregister_handlers(opt); }
 
-        /// @brief Processes a single byte of Telnet input.
+        ///@brief Processes a single byte of Telnet input.
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
         process_byte(byte_t byte) noexcept;
 
-        /// @brief Checks if an option is enabled locally or remotely.
+        ///@brief Checks if an option is enabled locally or remotely.
         bool is_enabled(option::id_num opt) { return option_status_[opt].is_enabled(); }
         
-        /// @brief Checks if an option is enabled in a specified direction.
+        ///@brief Checks if an option is enabled in a specified direction.
         bool is_enabled(option::id_num opt, NegotiationDirection dir) { return option_status_[opt].enabled(dir); }
 
-        /// @brief Makes a negotiation response command
+        ///@brief Makes a negotiation response command
         static TelnetCommand make_negotiation_command(NegotiationDirection direction, bool enable) noexcept;
 
-        /// @brief Requests an option to be enabled (WILL/DO), synchronously updating OptionStatusDB and returning a negotiation response.
+        ///@brief Requests an option to be enabled (WILL/DO), synchronously updating OptionStatusDB and returning a negotiation response.
         std::tuple<std::error_code, std::optional<NegotiationResponse>> request_option(option::id_num opt, NegotiationDirection direction);
 
-        /// @brief Disables an option (WONT/DONT), synchronously updating OptionStatusDB and returning a negotiation response and optional disablement awaitable.
+        ///@brief Disables an option (WONT/DONT), synchronously updating OptionStatusDB and returning a negotiation response and optional disablement awaitable.
         std::tuple<std::error_code, std::optional<NegotiationResponse>, std::optional<awaitables::OptionDisablementAwaitable>> disable_option(option::id_num opt, NegotiationDirection direction);
 
     private:
@@ -161,41 +162,41 @@ export namespace net::telnet {
             SubnegotiationIAC     ///< Processing IAC during subnegotiation
         };
 
-        /// @brief Changes the FSM state.
+        ///@brief Changes the FSM state.
         void change_state(ProtocolState next_state) noexcept;
 
-        /// @brief Handles bytes in the `Normal` state (data or IAC).
+        ///@brief Handles bytes in the `Normal` state (data or IAC).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
         handle_state_normal(byte_t byte) noexcept;
 
-        /// @brief Handles bytes immediately after '\r' ('\0', '\n', or error)
+        ///@brief Handles bytes immediately after '\r' ('\0', '\n', or error)
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
         handle_state_has_cr(byte_t byte) noexcept;
 
-        /// @brief Handles bytes after IAC (commands like WILL, DO, SB, etc.).
+        ///@brief Handles bytes after IAC (commands like WILL, DO, SB, etc.).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
         handle_state_iac(byte_t byte) noexcept;
 
-        /// @brief Handles bytes in the `OptionNegotiation` state (option ID after WILL/WONT/DO/DONT).
+        ///@brief Handles bytes in the `OptionNegotiation` state (option ID after WILL/WONT/DO/DONT).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
         handle_state_option_negotiation(byte_t byte) noexcept;
 
-        /// @brief Handles bytes in the `SubnegotiationOption` state (option ID after IAC SB).
+        ///@brief Handles bytes in the `SubnegotiationOption` state (option ID after IAC SB).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
         handle_state_subnegotiation_option(byte_t byte) noexcept;
 
-        /// @brief Handles bytes in the `Subnegotiation` state (data after option ID).
+        ///@brief Handles bytes in the `Subnegotiation` state (data after option ID).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
         handle_state_subnegotiation(byte_t byte) noexcept;
 
-        /// @brief Handles bytes in the `SubnegotiationIAC` state (IAC in subnegotiation data).
+        ///@brief Handles bytes in the `SubnegotiationIAC` state (IAC in subnegotiation data).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
         handle_state_subnegotiation_iac(byte_t byte) noexcept;
 
-        /// @brief Handles STATUS subnegotiation (RFC 859), returning an awaitable with the IS [list] payload or user-handled result.
+        ///@brief Handles STATUS subnegotiation (RFC 859), returning an awaitable with the IS [list] payload or user-handled result.
         auto handle_status_subnegotiation(const option& opt, std::vector<byte_t> buffer) -> awaitables::SubnegotiationAwaitable;
 
-        // Data Members
+        //Data Members
         OptionHandlerRegistry<ProtocolConfig, OptionEnablementHandler, OptionDisablementHandler, SubnegotiationHandler> option_handler_registry_;
         OptionStatusDB option_status_;
         
@@ -374,4 +375,4 @@ export namespace net::telnet {
      * @remark The returned `SubnegotiationAwaitable` is processed by `InputProcessor` to pass the payload to `stream::async_write_subnegotiation`, which adds `IAC` `SB` `STATUS` ... `IAC` `SE` framing.
      * @see RFC 859, `:internal` for `OptionStatusDB`, `:options` for `option`, `:awaitables` for `SubnegotiationAwaitable`, `:stream` for `async_write_subnegotiation`
      */
-} // export namespace net::telnet
+} //export namespace net::telnet

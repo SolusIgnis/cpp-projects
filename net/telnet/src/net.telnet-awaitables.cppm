@@ -11,13 +11,14 @@
  *
  * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:protocol_fsm` for handler usage, `:internal` for handler definitions
  */
-module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
+
+module; //Including Asio in the Global Module Fragment until importable header units are reliable.
 #include <asio/awaitable.hpp>
 
 // Module partition interface unit
 export module net.telnet:awaitables;
 
-import std; // for std::move
+import std; //for std::move
 
 //namespace asio = boost::asio;
 
@@ -38,37 +39,37 @@ export namespace net::telnet::awaitables {
         awaitable_type awaitable_; ///< The wrapped awaitable
     
     public:
-        /// @brief Default constructor.
+        ///@brief Default constructor.
         TaggedAwaitable() = default;
     
-        /// @brief Constructs from an awaitable.
+        ///@brief Constructs from an awaitable.
         TaggedAwaitable(awaitable_type awaitable) noexcept
             : awaitable_(std::move(awaitable)) {}
     
-        /// @brief Implicit conversion to underlying awaitable (lvalue).
+        ///@brief Implicit conversion to underlying awaitable (lvalue).
         operator awaitable_type&() noexcept { return awaitable_; }
     
-        /// @brief Implicit conversion to underlying awaitable (const lvalue).
+        ///@brief Implicit conversion to underlying awaitable (const lvalue).
         operator const awaitable_type&() const noexcept { return awaitable_; }
     
-        /// @brief Implicit conversion to underlying awaitable (rvalue).
+        ///@brief Implicit conversion to underlying awaitable (rvalue).
         operator awaitable_type&&() noexcept { return std::move(awaitable_); }
     
-        /// @brief Supports co_await for lvalue.
+        ///@brief Supports co_await for lvalue.
         auto operator co_await() & noexcept {
             return awaitable_.operator co_await();
         }
     
-        /// @brief Supports co_await for const lvalue.
+        ///@brief Supports co_await for const lvalue.
         auto operator co_await() const & noexcept {
             return awaitable_.operator co_await();
         }
     
-        /// @brief Supports co_await for rvalue.
+        ///@brief Supports co_await for rvalue.
         auto operator co_await() && noexcept {
             return std::move(awaitable_).operator co_await();
         }
-    }; // class TaggedAwaitable
+    }; //class TaggedAwaitable
     /**
      * @fn TaggedAwaitable::TaggedAwaitable(awaitable_type awaitable) noexcept
      * @param awaitable The awaitable to wrap.
@@ -85,7 +86,7 @@ export namespace net::telnet::awaitables {
         
         /// @brief Tag to specialize `TaggedAwaitable` for subnegotiation handlers. @see `TaggedAwaitable`
         struct SubnegotiationTag {};
-    } // namespace tags
+    } //namespace tags
     
     /**
      * @typedef OptionEnablementAwaitable
@@ -107,4 +108,4 @@ export namespace net::telnet::awaitables {
      * @see `TaggedAwaitable`, `tags::SubnegotiationTag`, `:internal` (`OptionHandlerRegistry`), `:protocol_fsm` (for use)
      */
     using SubnegotiationAwaitable = TaggedAwaitable<tags::SubnegotiationTag, std::tuple<const option&, std::vector<byte_t>>>;
-} // namespace net::telnet::awaitables
+} //namespace net::telnet::awaitables

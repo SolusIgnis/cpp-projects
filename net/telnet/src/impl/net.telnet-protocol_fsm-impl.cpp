@@ -10,13 +10,14 @@
  *
  * @see "telnet-protocol_fsm.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, `:types` for `TelnetCommand` and `NegotiationDirection`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:stream` for FSM usage
  */
-module; //Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
+
+module; //Including Asio in the Global Module Fragment until importable header units are reliable.
 #include <asio.hpp>
 
 //Module partition implementation unit
 module net.telnet:protocol_fsm;
 
-import std; // For std::nullopt, std::optional, std::tuple, std::make_tuple, std::make_optional, std::error_code, std::format, std::string_view
+import std; //For std::nullopt, std::optional, std::tuple, std::make_tuple, std::make_optional, std::error_code, std::format, std::string_view
 
 import :types;        ///< @see "telnet-types.cppm" for `TelnetCommand`, `NegotiationDirection`
 import :errors;       ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
@@ -63,27 +64,27 @@ namespace net::telnet {
             return {std::make_error_code(error::option_not_available), std::nullopt};
         }
         auto& status = option_status_[opt];
-        // Six states: YES, WANTYES/EMPTY, WANTYES/OPPOSITE, WANTNO/EMPTY, WANTNO/OPPOSITE, NO
-        if (status.enabled(direction)) { // YES
+        //Six states: YES, WANTYES/EMPTY, WANTYES/OPPOSITE, WANTNO/EMPTY, WANTNO/OPPOSITE, NO
+        if (status.enabled(direction)) { //YES
             ProtocolConfig::log_error(
                 std::make_error_code(error::invalid_negotiation),
                 "Redundant request for option {} in YES state, direction: {}",
                 std::to_underlying(opt),
                 direction
             );
-            return {std::error_code{}, std::nullopt}; // Idempotent success
-        } else if (status.pending_enable(direction) && !status.queued(direction)) { // WANTYES/EMPTY
+            return {std::error_code{}, std::nullopt}; //Idempotent success
+        } else if (status.pending_enable(direction) && !status.queued(direction)) { //WANTYES/EMPTY
             ProtocolConfig::log_error(
                 std::make_error_code(error::invalid_negotiation),
                 "Redundant request for option {} in WANTYES/EMPTY state, direction: {}",
                 std::to_underlying(opt),
                 direction
             );
-            return {std::error_code{}, std::nullopt}; // Idempotent success
-        } else if (status.pending_enable(direction) && status.queued(direction)) { // WANTYES/OPPOSITE
+            return {std::error_code{}, std::nullopt}; //Idempotent success
+        } else if (status.pending_enable(direction) && status.queued(direction)) { //WANTYES/OPPOSITE
             status.dequeue(direction);
             return {std::error_code{}, std::nullopt};
-        } else if (status.pending_disable(direction) && !status.queued(direction)) { // WANTNO/EMPTY
+        } else if (status.pending_disable(direction) && !status.queued(direction)) { //WANTNO/EMPTY
             if (auto ec = status.enqueue(direction); ec) {
                 ProtocolConfig::log_error(
                     ec,
@@ -94,15 +95,15 @@ namespace net::telnet {
                 return {ec, std::nullopt};
             }
             return {std::error_code{}, std::nullopt};
-        } else if (status.pending_disable(direction) && status.queued(direction)) { // WANTNO/OPPOSITE
+        } else if (status.pending_disable(direction) && status.queued(direction)) { //WANTNO/OPPOSITE
             ProtocolConfig::log_error(
                 std::make_error_code(error::invalid_negotiation),
                 "Redundant request for option {} in WANTNO/OPPOSITE state, direction: {}",
                 std::to_underlying(opt),
                 direction
             );
-            return {std::error_code{}, std::nullopt}; // Idempotent success
-        } else if (status.disabled(direction)) { // NO
+            return {std::error_code{}, std::nullopt}; //Idempotent success
+        } else if (status.disabled(direction)) { //NO
             status.pend_enable(direction);
             return {std::error_code{}, NegotiationResponse{direction, true, opt}};
         }
@@ -137,27 +138,27 @@ namespace net::telnet {
             return {std::make_error_code(error::option_not_available), std::nullopt, std::nullopt};
         }
         auto& status = option_status_[opt];
-        // Six states: NO, WANTNO/EMPTY, WANTNO/OPPOSITE, WANTYES/EMPTY, WANTYES/OPPOSITE, YES
-        if (status.disabled(direction)) { // NO
+        //Six states: NO, WANTNO/EMPTY, WANTNO/OPPOSITE, WANTYES/EMPTY, WANTYES/OPPOSITE, YES
+        if (status.disabled(direction)) { //NO
             ProtocolConfig::log_error(
                 std::make_error_code(error::invalid_negotiation),
                 "Redundant disable for option {} in NO state, direction: {}",
                 std::to_underlying(opt),
                 direction
             );
-            return {std::error_code{}, std::nullopt, std::nullopt}; // Idempotent success
-        } else if (status.pending_disable(direction) && !status.queued(direction)) { // WANTNO/EMPTY
+            return {std::error_code{}, std::nullopt, std::nullopt}; //Idempotent success
+        } else if (status.pending_disable(direction) && !status.queued(direction)) { //WANTNO/EMPTY
             ProtocolConfig::log_error(
                 std::make_error_code(error::invalid_negotiation),
                 "Redundant disable for option {} in WANTNO/EMPTY state, direction: {}",
                 std::to_underlying(opt),
                 direction
             );
-            return {std::error_code{}, std::nullopt, std::nullopt}; // Idempotent success
-        } else if (status.pending_disable(direction) && status.queued(direction)) { // WANTNO/OPPOSITE
+            return {std::error_code{}, std::nullopt, std::nullopt}; //Idempotent success
+        } else if (status.pending_disable(direction) && status.queued(direction)) { //WANTNO/OPPOSITE
             status.dequeue(direction);
             return {std::error_code{}, std::nullopt, std::nullopt};
-        } else if (status.pending_enable(direction) && !status.queued(direction)) { // WANTYES/EMPTY
+        } else if (status.pending_enable(direction) && !status.queued(direction)) { //WANTYES/EMPTY
             if (auto ec = status.enqueue(direction); ec) {
                 ProtocolConfig::log_error(
                     ec,
@@ -168,15 +169,15 @@ namespace net::telnet {
                 return {ec, std::nullopt, std::nullopt};
             }
             return {std::error_code{}, std::nullopt, std::nullopt};
-        } else if (status.pending_enable(direction) && status.queued(direction)) { // WANTYES/OPPOSITE
+        } else if (status.pending_enable(direction) && status.queued(direction)) { //WANTYES/OPPOSITE
             ProtocolConfig::log_error(
                 std::make_error_code(error::invalid_negotiation),
                 "Redundant disable for option {} in WANTYES/OPPOSITE state, direction: {}",
                 std::to_underlying(opt),
                 direction
             );
-            return {std::error_code{}, std::nullopt, std::nullopt}; // Idempotent success
-        } else if (status.enabled(direction)) { // YES
+            return {std::error_code{}, std::nullopt, std::nullopt}; //Idempotent success
+        } else if (status.enabled(direction)) { //YES
             status.pend_disable(direction);
             auto awaitable = option_handler_registry_.handle_disablement(opt, direction);
             return {std::error_code{}, NegotiationResponse{direction, false, opt}, std::move(awaitable)};
@@ -281,20 +282,20 @@ namespace net::telnet {
         bool result_forward = false;
         
         if (byte == static_cast<byte_t>('\n')) {
-            // valid Telnet End-of-Line sequence
+            //valid Telnet End-of-Line sequence
             result_ec = std::make_error_code(processing_signal::end_of_line);
-            result_forward = true; // retain LF byte
+            result_forward = true; //retain LF byte
         } else if (byte == static_cast<byte_t>('\0')) {
-            // valid Telnet Carriage-Return sequence
+            //valid Telnet Carriage-Return sequence
             result_ec = std::make_error_code(processing_signal::carriage_return);
-            result_forward = false; // discard NUL byte
+            result_forward = false; //discard NUL byte
         } else if (byte == std::to_underlying(TelnetCommand::IAC)) {
             ProtocolConfig::log_error(
                 std::make_error_code(error::protocol_violation),
                 "Invalid CR IAC sequence. Retained bare CR and transitioned to `ProtocolState::IAC`."
             );
             result_ec = std::make_error_code(processing_signal::carriage_return);
-            result_forward = false; // discard IAC byte
+            result_forward = false; //discard IAC byte
             next_state = ProtocolState::IAC;
         } else { //any other sequence is invalid
             ProtocolConfig::log_error(
@@ -303,7 +304,7 @@ namespace net::telnet {
                 byte
             );
             result_ec = std::make_error_code(processing_signal::carriage_return);
-            result_forward = true; // retain data byte
+            result_forward = true; //retain data byte
         }
         
         change_state(next_state);
@@ -332,7 +333,7 @@ namespace net::telnet {
         std::optional<ProcessingReturnVariant> result = std::nullopt;
         
         if (byte == std::to_underlying(TelnetCommand::IAC)) {
-            result_forward = true; // retain 0xFF as data (escaped IAC)
+            result_forward = true; //retain 0xFF as data (escaped IAC)
         } else {
             current_command_ = static_cast<TelnetCommand>(byte);
             if (current_command_) [[likely]] {
@@ -347,7 +348,7 @@ namespace net::telnet {
                         next_state = ProtocolState::SubnegotiationOption;
                         break;
                     case TelnetCommand::SE:
-                        // SE outside subnegotiation is a protocol-level error. Log it, ignore it and move on.
+                        //SE outside subnegotiation is a protocol-level error. Log it, ignore it and move on.
                         ProtocolConfig::log_error(
                             std::make_error_code(error::invalid_subnegotiation),
                             "byte: 0x{:02x}, cmd: {}, opt: {}",
@@ -361,7 +362,7 @@ namespace net::telnet {
                         break;
                     case TelnetCommand::GA:
                         if (option_status_[option::id_num::SUPPRESS_GO_AHEAD].enabled(NegotiationDirection::REMOTE)) {
-                            // Log GA if SGA is active, but ultimately ignore it.
+                            //Log GA if SGA is active, but ultimately ignore it.
                             ProtocolConfig::log_error(
                                 std::make_error_code(error::ignored_go_ahead),
                                 "byte: 0x{:02x}, cmd: {}, opt: N/A",
@@ -369,7 +370,7 @@ namespace net::telnet {
                                 TelnetCommand::GA
                             );
                         } else {
-                            // Absent SGA, signal early completion on Go-Ahead.
+                            //Absent SGA, signal early completion on Go-Ahead.
                             result_ec = std::make_error_code(processing_signal::go_ahead);
                         }
                         break;
@@ -380,10 +381,10 @@ namespace net::telnet {
                         if (option_status_[option::id_num::END_OF_RECORD].enabled(NegotiationDirection::REMOTE)) {
                             result_ec = std::make_error_code(processing_signal::end_of_record); //signal early completion on End-of-Record
                         }
-                        // If EOR is inactive, it's a no-op.
+                        //If EOR is inactive, it's a no-op.
                         break;
                     case TelnetCommand::NOP:
-                        // No-Op
+                        //No-Op
                         break;
                     case TelnetCommand::EC:
                         result_ec = std::make_error_code(processing_signal::erase_character);
@@ -409,7 +410,7 @@ namespace net::telnet {
                             current_option_.value_or("N/A"_sv)
                         );
                         break;
-                } // switch(*current_command_)
+                } //switch(*current_command_)
             } else [[unlikely]] { //Impossible unless memory has been corrupted.
                 ProtocolConfig::log_error(
                     std::make_error_code(error::invalid_command),
@@ -418,7 +419,7 @@ namespace net::telnet {
                     current_option_.value_or("N/A"_sv)
                 );
             }
-        } // if (byte == ...)
+        } //if (byte == ...)
         change_state(next_state);
         return {result_ec, result_forward, result}; //discard command byte
     } //handle_state_iac(byte_t)
@@ -449,7 +450,7 @@ namespace net::telnet {
                 
                 if ((request_to_enable && current_status.enabled(direction)) ||
                     (!request_to_enable && current_status.disabled(direction))) {
-                    // Redundant WILL/DO in YES or WONT/DONT in NO: ignore
+                    //Redundant WILL/DO in YES or WONT/DONT in NO: ignore
                     ProtocolConfig::log_error(
                         std::make_error_code(error::invalid_negotiation),
                         "byte: 0x{:02x}, cmd: {}, opt: {}, dir: {}",
@@ -462,12 +463,12 @@ namespace net::telnet {
                     if (current_status.pending_enable(direction)) {
                         //WANTYES
                         if (current_status.queued(direction)) {
-                            // WANTYES with OPPOSITE queue bit.
+                            //WANTYES with OPPOSITE queue bit.
                             current_status.dequeue(direction);
                             current_status.pend_disable(direction);
                             response = NegotiationResponse{direction, false, *current_option_};
                         } else {
-                            // WILL/DO in WANTYES with EMPTY queue bit: complete negotiation.
+                            //WILL/DO in WANTYES with EMPTY queue bit: complete negotiation.
                             current_status.enable(direction);
                             response = std::tuple{
                                 option_handler_registry_.handle_enablement(*current_option_, direction),
@@ -477,7 +478,7 @@ namespace net::telnet {
                     } else if (current_status.pending_disable(direction)) {
                         //WANTNO
                         if (current_status.queued(direction)) {
-                            // WANTNO with OPPOSITE queue bit. Invalid Negotiation, but we're now in agreement, so accept gracefully.
+                            //WANTNO with OPPOSITE queue bit. Invalid Negotiation, but we're now in agreement, so accept gracefully.
                             current_status.dequeue(direction);
                             current_status.enable(direction);
                             response = std::tuple{
@@ -485,7 +486,7 @@ namespace net::telnet {
                                 std::nullopt
                             };
                         } else {
-                            // WANTNO with EMPTY queue bit. Invalid Negotiation.
+                            //WANTNO with EMPTY queue bit. Invalid Negotiation.
                             ProtocolConfig::log_error(
                                 std::make_error_code(error::invalid_negotiation),
                                 "byte: 0x{:02x}, cmd: {}, opt: {}, dir: {}",
@@ -497,40 +498,40 @@ namespace net::telnet {
                             current_status.disable(direction);
                         }
                     } else if (current_option_->supports(direction)) {
-                        // WILL/DO in NO: accept if supported.
+                        //WILL/DO in NO: accept if supported.
                         current_status.enable(direction);
                         response = std::tuple{
                             option_handler_registry_.handle_enablement(*current_option_, direction),
                             NegotiationResponse{direction, true, *current_option_}
                         };
                     }achat else {
-                        // Unsupported option
+                        //Unsupported option
                         response = NegotiationResponse{direction, false, *current_option_};
                     }
                 } else { //WONT/DONT
                     if (current_status.pending_disable(direction)) {
                         //WANTNO
                         if (current_status.queued(direction)) {
-                            // WANTNO with OPPOSITE queue bit.
+                            //WANTNO with OPPOSITE queue bit.
                             current_status.dequeue(direction);
                             current_status.pend_enable(direction);
                             response = NegotiationResponse{direction, true, *current_option_};
                         } else {
-                            // WONT/DONT in WANTNO with EMPTY queue bit: complete negotiation.
+                            //WONT/DONT in WANTNO with EMPTY queue bit: complete negotiation.
                             current_status.disable(direction);
                         }
                     } else if (current_status.pending_enable(direction)) {
                         //WANTYES
                         if (current_status.queued(direction)) {
-                            // WANTYES with OPPOSITE queue bit: we now agree with rejection.
+                            //WANTYES with OPPOSITE queue bit: we now agree with rejection.
                             current_status.dequeue(direction);
                             current_status.disable(direction);
                         } else {
-                            // WONT/DONT in WANTYES: disable.
+                            //WONT/DONT in WANTYES: disable.
                             current_status.disable(direction);
                         }
                     } else { //YES
-                        // WONT/DONT in YES: disable.
+                        //WONT/DONT in YES: disable.
                         current_status.disable(direction);
                         response = std::tuple{
                             option_handler_registry_.handle_disablement(*current_option_, direction),
@@ -585,7 +586,7 @@ namespace net::telnet {
         current_option_ = registry.get(static_cast<option::id_num>(byte));
         
         if (!current_option_) {
-            // Memoize a defaulted option object (automatic rejection) to avoid lookup failures on repeated bad requests.
+            //Memoize a defaulted option object (automatic rejection) to avoid lookup failures on repeated bad requests.
             current_option_ = registry.upsert(static_cast<option::id_num>(byte));
             ProtocolConfig::log_error(
                 std::make_error_code(error::invalid_subnegotiation),
@@ -731,7 +732,7 @@ namespace net::telnet {
             ProtocolConfig::log_error(error::invalid_subnegotiation, "Invalid STATUS subnegotiation: no data between IAC SB STATUS and IAC SE");
         } else if (buffer[0] == IS) {
             if (option_status_[option::id_num::STATUS].remote_enabled()) {
-                // Delegate processing of subcommand IS to user-provided handler.
+                //Delegate processing of subcommand IS to user-provided handler.
                 co_return co_await option_handler_registry_.handle_subnegotiation(opt, std::move(buffer))
             } else {
                 ProtocolConfig::log_error(error::option_not_available, "STATUS subnegotiation IS received, but STATUS option is not remotely enabled.");
@@ -739,21 +740,21 @@ namespace net::telnet {
             }
         } else if (buffer[0] == SEND) {
             if (option_status_[option::id_num::STATUS].local_enabled()) {        
-                std::vector<byte_t> payload = {IS}; // IS
+                std::vector<byte_t> payload = {IS}; //IS
                 for (std::size_t i = 0; i < OptionStatusDB::MAX_OPTION_COUNT; ++i) {
                     auto id = static_cast<option::id_num>(i);
                     
                     const auto& status = option_status_[id];
                     if (status.local_enabled()) {
                         payload.push_back(std::to_underlying(TelnetCommand::WILL));
-                        if (std::to_underlying(id) == std::to_underlying(TelnetCommand::IAC) || std::to_underlying(id) == std::to_underlying(TelnetCommand::SE)) { // Escape IAC or SE
+                        if (std::to_underlying(id) == std::to_underlying(TelnetCommand::IAC) || std::to_underlying(id) == std::to_underlying(TelnetCommand::SE)) { //Escape IAC or SE
                             payload.push_back(std::to_underlying(id));
                         }
                         payload.push_back(std::to_underlying(id));
                     }
                     if (status.remote_enabled()) {
                         payload.push_back(std::to_underlying(TelnetCommand::DO));
-                        if (std::to_underlying(id) == std::to_underlying(TelnetCommand::IAC) || std::to_underlying(id) == std::to_underlying(TelnetCommand::SE)) { // Escape IAC or SE
+                        if (std::to_underlying(id) == std::to_underlying(TelnetCommand::IAC) || std::to_underlying(id) == std::to_underlying(TelnetCommand::SE)) { //Escape IAC or SE
                             payload.push_back(std::to_underlying(id));
                         }
                         payload.push_back(std::to_underlying(id));
@@ -769,4 +770,4 @@ namespace net::telnet {
             co_return std::make_tuple(opt, {});
         }
     } //handle_status_subnegotiation(const option&, std::vector<byte_t>)
-} // namespace net::telnet
+} //namespace net::telnet

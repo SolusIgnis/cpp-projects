@@ -13,18 +13,20 @@
  *
  * @remark This module is fully inline.
  */
+ 
 //Module partition interface unit
 export module net.telnet:types;
 
-import std;        // For std::format, std::string_view, std::format_context
-import std.compat; // For std::uint8_t
+import std;        //For std::format, std::string_view, std::format_context
+import std.compat; //For std::uint8_t
 
 export namespace net::telnet {
     /**
      * @typedef byte_t
      * @brief Type alias for bytes underlying the Telnet stream.
      * @see `:stream` and `:protocol_fsm` for `byte_t` stream processing.
-     * @todo Future Development: Consider switching from `std::uint8_t` to `std::byte` when C++23 support is better.     */
+     * @todo Future Development: Consider switching from `std::uint8_t` to `std::byte` when C++23 support is better.
+     */
     using byte_t = std::uint8_t; 
     
     /**
@@ -51,7 +53,7 @@ export namespace net::telnet {
         DO   = 0xFD, ///< Sender requests receiver to enable option
         DONT = 0xFE, ///< Sender requests receiver to disable option
         IAC  = 0xFF  ///< Interpret As Command
-    }; // enum class TelnetCommand
+    }; //enum class TelnetCommand
     
     /**
      * @brief Enumeration representing option negotiation directions (i.e., local/remote enablement).
@@ -61,17 +63,17 @@ export namespace net::telnet {
     enum class NegotiationDirection {
         LOCAL,  ///< Local side ("us", sends WILL/WONT, receives DO/DONT)
         REMOTE  ///< Remote side ("them", sends DO/DONT, receives WILL/WONT)
-    }; // enum class NegotiationDirection
+    }; //enum class NegotiationDirection
 } // export namespace net::telnet
 
 export namespace std {
     /**
-     * @brief Formatter specialization for `telnet::TelnetCommand` to support `std::format`.
+     * @brief Formatter specialization for `::net::telnet::TelnetCommand` to support `std::format`.
      * @remark Formats `TelnetCommand` values for use in `ProtocolConfig::log_error` and other logging contexts.
      * @see `:protocol_fsm` for logging usage.
      */
     template<>
-    struct formatter<telnet::TelnetCommand, char> {
+    struct formatter<::net::telnet::TelnetCommand, char> {
         char presentation = 'd'; ///< Format specifier: 'd' for name (0xXX), 'n' for name only, 'x' for hex only.
 
         /**
@@ -91,7 +93,7 @@ export namespace std {
                 throw std::format_error("Invalid format specifier for TelnetCommand");
             }
             return it;
-        } // parse(format_parse_context&)
+        } //parse(format_parse_context&)
 
         /**
          * @brief Formats a `TelnetCommand` value.
@@ -105,26 +107,26 @@ export namespace std {
          * - Unknown commands format as "UNKNOWN" ('n') or "0xXX" ('x').
          */
         template<typename FormatContext>
-        auto format(telnet::TelnetCommand cmd, FormatContext& ctx) const {
+        auto format(::net::telnet::TelnetCommand cmd, FormatContext& ctx) const {
             string_view name;
             switch (cmd) {
-                case telnet::TelnetCommand::EOR:  name = "EOR";  break;
-                case telnet::TelnetCommand::SE:   name = "SE";   break;
-                case telnet::TelnetCommand::NOP:  name = "NOP";  break;
-                case telnet::TelnetCommand::DM:   name = "DM";   break;
-                case telnet::TelnetCommand::BRK:  name = "BRK";  break;
-                case telnet::TelnetCommand::IP:   name = "IP";   break;
-                case telnet::TelnetCommand::AO:   name = "AO";   break;
-                case telnet::TelnetCommand::AYT:  name = "AYT";  break;
-                case telnet::TelnetCommand::EC:   name = "EC";   break;
-                case telnet::TelnetCommand::EL:   name = "EL";   break;
-                case telnet::TelnetCommand::GA:   name = "GA";   break;
-                case telnet::TelnetCommand::SB:   name = "SB";   break;
-                case telnet::TelnetCommand::WILL: name = "WILL"; break;
-                case telnet::TelnetCommand::WONT: name = "WONT"; break;
-                case telnet::TelnetCommand::DO:   name = "DO";   break;
-                case telnet::TelnetCommand::DONT: name = "DONT"; break;
-                case telnet::TelnetCommand::IAC:  name = "IAC";  break;
+                case ::net::telnet::TelnetCommand::EOR:  name = "EOR";  break;
+                case ::net::telnet::TelnetCommand::SE:   name = "SE";   break;
+                case ::net::telnet::TelnetCommand::NOP:  name = "NOP";  break;
+                case ::net::telnet::TelnetCommand::DM:   name = "DM";   break;
+                case ::net::telnet::TelnetCommand::BRK:  name = "BRK";  break;
+                case ::net::telnet::TelnetCommand::IP:   name = "IP";   break;
+                case ::net::telnet::TelnetCommand::AO:   name = "AO";   break;
+                case ::net::telnet::TelnetCommand::AYT:  name = "AYT";  break;
+                case ::net::telnet::TelnetCommand::EC:   name = "EC";   break;
+                case ::net::telnet::TelnetCommand::EL:   name = "EL";   break;
+                case ::net::telnet::TelnetCommand::GA:   name = "GA";   break;
+                case ::net::telnet::TelnetCommand::SB:   name = "SB";   break;
+                case ::net::telnet::TelnetCommand::WILL: name = "WILL"; break;
+                case ::net::telnet::TelnetCommand::WONT: name = "WONT"; break;
+                case ::net::telnet::TelnetCommand::DO:   name = "DO";   break;
+                case ::net::telnet::TelnetCommand::DONT: name = "DONT"; break;
+                case ::net::telnet::TelnetCommand::IAC:  name = "IAC";  break;
                 default:                          name = "UNKNOWN"; break;
             }
             
@@ -135,16 +137,16 @@ export namespace std {
             } else { // 'd' (default: name (0xXX))
                 return std::format_to(ctx.out(), "{} (0x{:02x})", name, std::to_underlying(cmd));
             }
-        } // format(TelnetCommand, FormatContext&)
-    }; // struct formatter<telnet::TelnetCommand>
+        } //format(TelnetCommand, FormatContext&)
+    }; //struct formatter<::net::telnet::TelnetCommand>
 
     /**
-     * @brief Formatter specialization for `telnet::NegotiationDirection` to support `std::format`.
+     * @brief Formatter specialization for `::net::telnet::NegotiationDirection` to support `std::format`.
      * @remark Formats `NegotiationDirection` values for use in `ProtocolConfig::log_error` during option negotiation.
      * @see `:protocol_fsm` for logging usage.
      */
     template<>
-    struct formatter<telnet::NegotiationDirection, char> {
+    struct formatter<::net::telnet::NegotiationDirection, char> {
         /**
          * @brief Parses the format specifier for `NegotiationDirection`.
          * @param ctx The format parse context.
@@ -157,7 +159,7 @@ export namespace std {
                 throw format_error("Invalid format specifier for NegotiationDirection");
             }
             return it;
-        } // parse(format_parse_context&)
+        } //parse(format_parse_context&)
 
         /**
          * @brief Formats a `NegotiationDirection` value.
@@ -167,9 +169,9 @@ export namespace std {
          * @details Formats as "local" for `LOCAL` or "remote" for `REMOTE`.
          */
         template<typename FormatContext>
-        auto format(telnet::NegotiationDirection dir, FormatContext& ctx) const {
-            string_view name = dir == telnet::NegotiationDirection::LOCAL ? "local" : "remote";
+        auto format(::net::telnet::NegotiationDirection dir, FormatContext& ctx) const {
+            string_view name = dir == ::net::telnet::NegotiationDirection::LOCAL ? "local" : "remote";
             return format_to(ctx.out(), "{}", name);
         } //format(NegotiationDirection, FormatContext&)
-    }; // struct formatter<telnet::NegotiationDirection>
-} // export namespace std
+    }; //struct formatter<::net::telnet::NegotiationDirection>
+} //export namespace std

@@ -15,17 +15,22 @@
  * @todo Future Development: Add concepts for TLS-specific stream requirements (e.g., for `boost::asio::ssl::stream` handshake methods).
  */
 
-module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
+module; //Including Asio in the Global Module Fragment until importable header units are reliable.
 #include <asio.hpp>
 
-// Module partition interface unit
+//Module partition interface unit
 export module net.telnet:concepts;
 
-import net.asio_concepts; // For asio_concepts namespace concept definitions
+import net.asio_concepts; //For asio_concepts namespace concept definitions
 
-import std; // For std::error_code, std::size_t, std::same_as, std::convertible_to
+import std; //For std::error_code, std::size_t, std::same_as, std::convertible_to
 
 //namespace asio = boost::asio;
+
+namespace net::telnet {
+    //Forward declaration referenced in a following concept definition.
+    template<typename ConfigT> class ProtocolFSM;
+} //namespace net::telnet
 
 export namespace net::telnet::concepts {
     /**
@@ -79,10 +84,6 @@ export namespace net::telnet::concepts {
     template<typename T>
     concept LayerableSocketStream = asio_concepts::AsioLayerableStreamSocket<T>;
     
-    
-    //Forward declaration referenced in the following concept definition.
-    template<typename ConfigT> class ProtocolFSM;
-    
     /**
      * @concept ProtocolFSMConfig
      * @brief Constraint on configuration types for `ProtocolFSM`.
@@ -109,5 +110,5 @@ export namespace net::telnet::concepts {
             { T::registered_options.upsert(full_opt) } -> std::convertible_to<const option&>;
             { T::get_ayt_response() } -> std::same_as<std::string_view>;
             { T::set_ayt_response(msg) } -> std::same_as<void>;
-        }; // concept ProtocolFSMConfig
-} // export namespace net::telnet::concepts
+        }; //concept ProtocolFSMConfig
+} //export namespace net::telnet::concepts

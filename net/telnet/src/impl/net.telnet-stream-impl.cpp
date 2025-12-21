@@ -11,13 +11,14 @@
  *
  * @see "telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option::id_num`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
  */
-module; // Including Boost.Asio in the Global Module Fragment until importable header units are reliable.
+
+module; //Including Asio in the Global Module Fragment until importable header units are reliable.
 #include <asio.hpp>
 
-// Module partition implementation unit
+//Module partition implementation unit
 module net.telnet:stream;
 
-import std; // For std::promise, std::future, std::jthread, std::exception_ptr, std::make_tuple
+import std; //For std::promise, std::future, std::jthread, std::exception_ptr, std::make_tuple
 
 import :types;        ///< @see "telnet-types.cppm" for `byte_t` and `TelnetCommand`
 import :errors;       ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
@@ -42,7 +43,7 @@ namespace net::telnet {
         if (ec) {
             ProtocolConfig::log_error(ec, "Failed to enable out_of_band_inline on socket: {}", ec.message());
         }
-    } // stream::stream(next_layer_type&&)
+    } //stream::stream(next_layer_type&&)
 
     /**
      * @internal
@@ -72,12 +73,12 @@ namespace net::telnet {
                         promise.set_value(std::get<0>(std::make_tuple(result...)));
                     }
                 }
-            } // lambda
-        ); // co_spawn
+            } //lambda
+        ); //co_spawn
 
         std::jthread runner_thread([&temp_ctx]{ temp_ctx.run(); });
         return future.get();
-    } // stream::sync_await(Awaitable&&)
+    } //stream::sync_await(Awaitable&&)
 
     /**
      * @internal
@@ -92,13 +93,13 @@ namespace net::telnet {
         try {
             for (auto iter = asio::buffers_begin(data), end = asio::buffers_end(data); iter != end; ++iter) {
                 if ((*iter == static_cast<byte_t>('\n')) && !fsm_.enabled(option::id_num::BINARY, NegotiationDirection::LOCAL)) {
-                    escaped_data.push_back('\r'); // prepend CR before LF (LF -> CR LF)
+                    escaped_data.push_back('\r'); //prepend CR before LF (LF -> CR LF)
                 }
                 escaped_data.push_back(*iter);
                 if (*iter == std::to_underlying(TelnetCommand::IAC)) {
-                    escaped_data.push_back(*iter); // double IAC (IAC -> IAC IAC)
+                    escaped_data.push_back(*iter); //double IAC (IAC -> IAC IAC)
                 } else if ((*iter == static_cast<byte_t>('\r')) && !fsm_.enabled(option::id_num::BINARY, NegotiationDirection::LOCAL)) {
-                    escaped_data.push_back('\0'); // append NUL after CR (CR -> CR NUL)
+                    escaped_data.push_back('\0'); //append NUL after CR (CR -> CR NUL)
                 }
             }
             return {std::error_code(), escaped_data};
@@ -109,7 +110,7 @@ namespace net::telnet {
             escaped_data.clear();
             return {std::make_error_code(error::internal_error), escaped_data};
         }
-    } // stream::escape_telnet_output(std::vector<byte_t>&, const ConstBufferSequence&) const noexcept
+    } //stream::escape_telnet_output(std::vector<byte_t>&, const ConstBufferSequence&) const noexcept
 
     /**
      * @internal
@@ -130,7 +131,7 @@ namespace net::telnet {
         } catch (...) {
             return {std::make_error_code(error::internal_error), std::vector<byte_t>()};
         }
-    } // stream::escape_telnet_output(const ConstBufferSequence&) const noexcept
+    } //stream::escape_telnet_output(const ConstBufferSequence&) const noexcept
 
     /**
      * @internal
@@ -154,13 +155,13 @@ namespace net::telnet {
                             fsm_type::ProtocolConfig::log_error(ec, "OOB wait failed: {}", ec.message());
                             if (!this->context_.deferred_transport_error) {
                                 this->context_.deferred_transport_error = ec;
-                            } // If there is already a transport error deferred, ignore this one as it’s likely redundant.
+                            } //If there is already a transport error deferred, ignore this one as it’s likely redundant.
                         }
-                    } // [this](std::error_code, std::size_t)
+                    } //[this](std::error_code, std::size_t)
                 )
             );
         }
-    } // stream::launch_urgent_wait()
+    } //stream::launch_urgent_wait()
 
     /**
      * @internal
@@ -176,33 +177,33 @@ namespace net::telnet {
         bool success = false;
     
         do {
-            // Load the current state
+            //Load the current state
             expected = state_.load(std::memory_order_relaxed);
     
             if (expected == UrgentDataState::NO_URGENT_DATA) {
-                // The OOB notification arrived first.
+                //The OOB notification arrived first.
                 desired = UrgentDataState::HAS_URGENT_DATA;
             } else if (expected == UrgentDataState::UNEXPECTED_DATA_MARK) {
-                // The DM arrived first; this is the delayed notification. Reset.
+                //The DM arrived first; this is the delayed notification. Reset.
                 ProtocolConfig::log_error(processing_signal::data_mark, "DM already arrived before current TCP urgent notification. Assuming Synch is already complete.");
                 desired = UrgentDataState::NO_URGENT_DATA;
             } else {
-                // CANT HAPPEN: State is `HAS_URGENT_DATA`. This means another saw_urgent fired without saw_data_mark in between, or a logic error.
-                // We cannot transition and must exit.
+                //CANT HAPPEN: State is `HAS_URGENT_DATA`. This means another saw_urgent fired without saw_data_mark in between, or a logic error.
+                //We cannot transition and must exit.
                 ProtocolConfig::log_error(error::internal_error, "Invalid state in saw_urgent: HAS_URGENT_DATA already set; implies launch_wait_for_urgent_data was called while urgent data was already in the byte stream.");
                 return;
             }
     
-            // Atomically attempt the transition
+            //Atomically attempt the transition
             success = state_.compare_exchange_strong(
                 expected, 
                 desired,
-                std::memory_order_release, // Ensure subsequent reads see the change
+                std::memory_order_release, //Ensure subsequent reads see the change
                 std::memory_order_relaxed
             );
     
         } while (!success);
-    } // stream::context_type::urgent_data_tracker::saw_urgent()
+    } //stream::context_type::urgent_data_tracker::saw_urgent()
 
     /**
      * @internal
@@ -217,33 +218,33 @@ namespace net::telnet {
         bool success = false;
     
         do {
-            // Load the current state
+            //Load the current state
             expected = state_.load(std::memory_order_relaxed);
     
             if (expected == UrgentDataState::HAS_URGENT_DATA) {
-                // The DM arrived as expected. Reset.
+                //The DM arrived as expected. Reset.
                 desired = UrgentDataState::NO_URGENT_DATA;
             } else if (expected == UrgentDataState::NO_URGENT_DATA) {
-                // The DM arrived before the OOB notification arrived.
+                //The DM arrived before the OOB notification arrived.
                 desired = UrgentDataState::UNEXPECTED_DATA_MARK;
                 ProtocolConfig::log_error(processing_signal::data_mark, "DM arrived without/before TCP urgent.");
             } else {
-                // State is `UNEXPECTED_DATA_MARK`. This means another `saw_data_mark` fired without `saw_urgent` in between, or a logic error. The peer likely sent 2 data marks in quick succession, but this is safe.
-                // We cannot transition and must exit.
+                //State is `UNEXPECTED_DATA_MARK`. This means another `saw_data_mark` fired without `saw_urgent` in between, or a logic error. The peer likely sent 2 data marks in quick succession, but this is safe.
+                //We cannot transition and must exit.
                 ProtocolConfig::log_error(processing_signal::data_mark, "Subsequent DM received while expecting TCP urgent.");
                 return;
             }
     
-            // Atomically attempt the transition
+            //Atomically attempt the transition
             success = state_.compare_exchange_strong(
                 expected, 
                 desired,
-                std::memory_order_release, // Ensure subsequent reads see the change
+                std::memory_order_release, //Ensure subsequent reads see the change
                 std::memory_order_relaxed
             );
     
         } while (!success);
-    } // stream::context_type::urgent_data_tracker::saw_data_mark()
+    } //stream::context_type::urgent_data_tracker::saw_data_mark()
 
     /**
      * @internal
@@ -271,7 +272,7 @@ namespace net::telnet {
     template<typename Self>
     void stream<NLS, PC>::InputProcessor<MBS>::operator()(Self& self, std::error_code ec_in, std::size_t bytes_transferred) {
         if (state_ == State::DONE) [[unlikely]] {
-            return; // complete has already been called; unsafe to do anything else
+            return; //complete has already been called; unsafe to do anything else
         }
         
         switch (state_) {
@@ -284,9 +285,9 @@ namespace net::telnet {
             case State::DONE: [[fallthrough]];
             default:
                 [[unlikely]]
-                break; // Unreachable due to early check
-        } // switch (state_)
-    } // stream::InputProcessor::operator(Self&, std::error_code, std::size_t)
+                break; //Unreachable due to early check
+        } //switch (state_)
+    } //stream::InputProcessor::operator(Self&, std::error_code, std::size_t)
 
     /**
      * @internal
@@ -300,7 +301,7 @@ namespace net::telnet {
         state_ = State::READING;
         if (context_.input_side_buffer.size() == 0) {
             if (context_.deferred_transport_error) {
-                // Immediately propagate a deferred error without attempting the next read.
+                //Immediately propagate a deferred error without attempting the next read.
                 complete(self, std::exchange(context_.deferred_transport_error, {}), 0);
                 return;
             }
@@ -312,11 +313,11 @@ namespace net::telnet {
                 read_buffer,
                 asio::bind_executor(parent_stream_.get_executor(), std::move(self))
             );
-            return; // Wait for next_layer async_read_some to complete.
+            return; //Wait for next_layer async_read_some to complete.
         }
-        // If the buffer already has data, there is no need to wait for a network read.
+        //If the buffer already has data, there is no need to wait for a network read.
         return handle_processor_state_reading(self);
-    } // stream::InputProcessor::handle_processor_state_initializing(Self&)
+    } //stream::InputProcessor::handle_processor_state_initializing(Self&)
 
     /**
      * @internal
@@ -330,25 +331,25 @@ namespace net::telnet {
         context_.input_side_buffer.commit(bytes_transferred);
         
         if (context_.input_side_buffer.size() == 0) {
-            // If there is no data to process, we can complete, propagating any read error. 
+            //If there is no data to process, we can complete, propagating any read error. 
             complete(self, ec_in, 0);
             return;
         }
         
         if (ec_in) {
-            // If we had a deferred error, we skipped the read in State::INITIALIZING.
-            // If we have a read error, defer it.
+            //If we had a deferred error, we skipped the read in State::INITIALIZING.
+            //If we have a read error, defer it.
             context_.deferred_transport_error = ec_in;
         }
         
-        // Set up private member iterators into the provided buffer.
+        //Set up private member iterators into the provided buffer.
         user_buf_begin_ = asio::buffers_begin(buffers_);
         user_buf_end_   = asio::buffers_end(buffers_);
         write_it_       = user_buf_begin_;
         
         state_ = State::PROCESSING;
         return handle_processor_state_processing(self);
-    } // stream::InputProcessor::handle_processor_state_reading(Self&, std::error_code, std::size_t)
+    } //stream::InputProcessor::handle_processor_state_reading(Self&, std::error_code, std::size_t)
 
     /**
      * @internal
@@ -363,7 +364,7 @@ namespace net::telnet {
     template<MutableBufferSequence MBS>
     template<typename Self>
     void stream<NLS, PC>::InputProcessor<MBS>::handle_processor_state_processing(Self& self, std::error_code ec_in = {}) {
-        if (ec_in) { // This has to be a write error.
+        if (ec_in) { //This has to be a write error.
             process_write_error(ec_in);
         }
         
@@ -382,58 +383,58 @@ namespace net::telnet {
                 auto [proc_ec, forward, response] = fsm_.process_byte(static_cast<byte_t>(*read_it));
 
                 if (proc_ec == processing_signal::abort_output) {
-                    // AO clears the output side buffer.
+                    //AO clears the output side buffer.
                     context_.output_side_buffer.consume(context_.output_side_buffer.size());
                     
-                    // Defer the AO processing signal for application-level notification after the `async_send_synch` completes.
+                    //Defer the AO processing signal for application-level notification after the `async_send_synch` completes.
                     context_.deferred_processing_signal = proc_ec;
                     
-                    // Consume the bytes currently processed from the buffer INCLUDING this one
-                    // MUST call now because we `move(self)` while handling `response` and lose access to `context_.input_side_buffer`
+                    //Consume the bytes currently processed from the buffer INCLUDING this one
+                    //MUST call now because we `move(self)` while handling `response` and lose access to `context_.input_side_buffer`
                     bytes_consumed = std::distance(buf_begin, read_it) + 1;
                     context_.input_side_buffer.consume(bytes_consumed);
                     
                     parent_stream_.async_send_synch(std::move(self));
-                    return; // Wait for the asynchronous operation to complete.
-                } else if (proc_ec) { // proc_ec will be cleared for non-terminal signals handled internally.
+                    return; //Wait for the asynchronous operation to complete.
+                } else if (proc_ec) { //proc_ec will be cleared for non-terminal signals handled internally.
                     process_fsm_signal(proc_ec);
                 }
                 
-                // Write a `forward`ed byte into the user's buffer.
+                //Write a `forward`ed byte into the user's buffer.
                 if (forward && !context_.urgent_data_state) {
                     *write_it_++ = *read_it;
                 }
-                if (proc_ec) { // Terminal signal or error
-                    // Consume the bytes currently processed from the buffer INCLUDING this one
+                if (proc_ec) { //Terminal signal or error
+                    //Consume the bytes currently processed from the buffer INCLUDING this one
                     bytes_consumed = std::distance(buf_begin, read_it) + 1;
                     result_ec = proc_ec; //Propagate the processing error_code 
-                    break; // Complete the operation.
+                    break; //Complete the operation.
                 }
                 if (response) {
-                    // Consume the bytes currently processed from the buffer INCLUDING this one
-                    // MUST call now because we `move(self)` while handling `response` and lose access to `context_.input_side_buffer`
+                    //Consume the bytes currently processed from the buffer INCLUDING this one
+                    //MUST call now because we `move(self)` while handling `response` and lose access to `context_.input_side_buffer`
                     bytes_consumed = std::distance(buf_begin, read_it) + 1;
                     context_.input_side_buffer.consume(bytes_consumed);
 
                     std::visit([this, self = std::move(self)](auto&& arg) mutable {
                         this->do_response(std::forward<decltype(arg)>(arg), std::move(self));
                     }, *response);
-                    return; // Wait for async operation to complete
-                } // if (response)
-            } // for
+                    return; //Wait for async operation to complete
+                } //if (response)
+            } //for
             if (!result_ec) {
-                // SUCCESS: We either reached the end of the read data or filled the user's buffer.
+                //SUCCESS: We either reached the end of the read data or filled the user's buffer.
                 bytes_consumed = std::distance(buf_begin, read_it);
                 
-                // Since there is no current error, swap in any deferred error to report it.
+                //Since there is no current error, swap in any deferred error to report it.
                 std::swap(context_.deferred_transport_error, result_ec);
-            } // if (!result_ec) late check
-        } // if (!result_ec) early check
+            } //if (!result_ec) late check
+        } //if (!result_ec) early check
         
         bytes_to_transfer = std::distance(user_buf_begin_, write_it_);
         context_.input_side_buffer.consume(bytes_consumed);
         complete(self, result_ec, bytes_to_transfer);
-    } // stream::InputProcessor::handle_processor_state_processing(Self&, std::error_code)
+    } //stream::InputProcessor::handle_processor_state_processing(Self&, std::error_code)
 
     /**
      * @internal
@@ -445,7 +446,7 @@ namespace net::telnet {
     void stream<NLS, PC>::InputProcessor<MBS>::complete(Self& self, const std::error_code& ec, std::size_t bytes_transferred) {
         state_ = State::DONE;
         self.complete(ec, bytes_transferred);
-    } // stream::InputProcessor::complete(Self&, const std::error_code&, std::size_t)
+    } //stream::InputProcessor::complete(Self&, const std::error_code&, std::size_t)
 
     /**
      * @internal
@@ -455,18 +456,18 @@ namespace net::telnet {
     template<MutableBufferSequence MBS>
     void stream<NLS, PC>::InputProcessor<MBS>::process_write_error(std::error_code ec) {
         if (context_.deferred_transport_error) {
-            // We have a new write error on top of a previously deferred error.
-            // Log it and attempt to continue processing the buffered byte stream.
+            //We have a new write error on top of a previously deferred error.
+            //Log it and attempt to continue processing the buffered byte stream.
             decltype(fsm_)::ProtocolConfig::log_error(
                 ec,
                 "Error writing Telnet response with error {} previously deferred for reporting after processing the buffered byte stream.",
                 context_.deferred_transport_error
             );
         } else {
-            // Defer the write error.
+            //Defer the write error.
             context_.deferred_transport_error = ec;
         }
-    } // stream::InputProcessor::process_write_error(std::error_code)
+    } //stream::InputProcessor::process_write_error(std::error_code)
 
     /*
      * @internal
@@ -476,29 +477,29 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     void stream<NLS, PC>::InputProcessor<MBS>::process_fsm_signals(std::error_code& signal_ec) {
-        // Handle `processing_signal`s that modify the buffer directly.
+        //Handle `processing_signal`s that modify the buffer directly.
         if (signal_ec == processing_signal::carriage_return) {
-            // A previously discarded '\r' byte must be inserted into the user's buffer.
+            //A previously discarded '\r' byte must be inserted into the user's buffer.
             *write_it_++ = '\r';
-            signal_ec.clear(); // Further processing is clear to continue.
+            signal_ec.clear(); //Further processing is clear to continue.
         } else if ((signal_ec == processing_signal::erase_character)
                 && (write_it_ != user_buf_begin_)) {
-            // If the user buffer has data, EC backs up the write position by one character.
-            // Otherwise, it propagates to the caller.
+            //If the user buffer has data, EC backs up the write position by one character.
+            //Otherwise, it propagates to the caller.
             --write_it_;
-            signal_ec.clear(); // Further processing is clear to continue.
+            signal_ec.clear(); //Further processing is clear to continue.
         } else if ((signal_ec == processing_signal::erase_line)
                 && (write_it_ != user_buf_begin_)) {
-            // If the user buffer has data, EL resets the write position to the beginning of the buffer.
-            // Otherwise, it propagates to the caller.
+            //If the user buffer has data, EL resets the write position to the beginning of the buffer.
+            //Otherwise, it propagates to the caller.
             write_it_ = user_buf_begin_;
-            signal_ec.clear(); // Further processing is clear to continue.
+            signal_ec.clear(); //Further processing is clear to continue.
         } else if (signal_ec == processing_signal::data_mark) {
             context_.urgent_data_state.saw_data_mark();
             parent_stream_.launch_wait_for_urgent_data();
-            signal_ec.clear(); // Further processing is clear to continue.
+            signal_ec.clear(); //Further processing is clear to continue.
         }
-    } // stream::InputProcessor::process_fsm_signal(std::error_code)
+    } //stream::InputProcessor::process_fsm_signal(std::error_code)
 
     /**
      * @internal
@@ -513,7 +514,7 @@ namespace net::telnet {
             response,
             std::forward<Self>(self)
         );
-    } // stream::InputProcessor::do_response(NegotiationResponse, Self&&)
+    } //stream::InputProcessor::do_response(NegotiationResponse, Self&&)
 
     /**
      * @internal
@@ -529,7 +530,7 @@ namespace net::telnet {
             asio::buffer(std::make_shared<std::string>(std::move(response))),
             std::forward<Self>(self)
         );
-    } // stream::InputProcessor::do_response(std::string, Self&&)
+    } //stream::InputProcessor::do_response(std::string, Self&&)
 
     /**
      * @internal
@@ -559,7 +560,7 @@ namespace net::telnet {
             },
             std::forward<Self>(self)
         );
-    } // stream::InputProcessor::do_response(awaitables::SubnegotiationAwaitable, Self&&)
+    } //stream::InputProcessor::do_response(awaitables::SubnegotiationAwaitable, Self&&)
     
     /**
      * @internal
@@ -590,5 +591,5 @@ namespace net::telnet {
             },
             std::forward<Self>(self)
         );
-    } // stream::InputProcessor::do_response(TaggedAwaitable<Tag, T, Awaitable>, Self&&)
-} // namespace net::telnet
+    } //stream::InputProcessor::do_response(TaggedAwaitable<Tag, T, Awaitable>, Self&&)
+} //namespace net::telnet

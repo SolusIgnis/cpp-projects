@@ -12,18 +12,19 @@
  * @remark Not intended for direct use by external code; serves as an implementation detail for other partitions.
  * @see RFC 855 for Telnet option negotiation, `:types` for `TelnetCommand`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:protocol_fsm` for usage
  */
+
 module; //Including Asio in the Global Module Fragment until importable header units are reliable.
 #include <asio.hpp>
 
 //Module partition interface unit
 export module net.telnet:internal;
 
-import std;        // For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec
-import std.compat; // For std::uint8_t (needed for bit-field type specifier)
+import std;        //For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec
+import std.compat; //For std::uint8_t (needed for bit-field type specifier)
 
 import :types;      ///< @see "telnet-types.cppm" for `byte_t` and `TelnetCommand`
 import :errors;     ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-import :concepts;     ///< @see "telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
+import :concepts;   ///< @see "telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
 import :options;    ///< @see "telnet-options.cppm" for `option` and `option::id_num`
 import :awaitables; ///< @see "telnet-awaitables.cppm" for `TaggedAwaitable`, semantic tags, and type aliases
 
@@ -77,7 +78,7 @@ export namespace net::telnet {
                 std::move(disablement_handler),
                 std::move(subnegotiation_handler)
             };
-        } // register_handlers(option::id_num, std::optional<OptionEnablementHandler>, std::optional<OptionDisablementHandler>, std::optional<SubnegotiationHandler>)
+        } //register_handlers(option::id_num, std::optional<OptionEnablementHandler>, std::optional<OptionDisablementHandler>, std::optional<SubnegotiationHandler>)
 
         /**
          * @brief Unregisters all handlers for a Telnet option.
@@ -87,9 +88,9 @@ export namespace net::telnet {
          */
         void unregister_handlers(option::id_num opt) {
             handlers_.erase(opt);
-        } // unregister_handlers(option::id_num)
+        } //unregister_handlers(option::id_num)
 
-        /// @brief Handles enablement for a Telnet option.
+        ///@brief Handles enablement for a Telnet option.
         OptionEnablementAwaitable handle_enablement(const option& opt, NegotiationDirection direction) {
             auto it = handlers_.find(opt);
             if ((it != handlers_.end()) && it->second.enablement_handler) {
@@ -97,9 +98,9 @@ export namespace net::telnet {
                 return handler(opt, direction);
             }
             co_return;
-        } // handle_enablement(const option&, NegotiationDirection)
+        } //handle_enablement(const option&, NegotiationDirection)
    
-        /// @brief Handles disablement for a Telnet option.
+        ///@brief Handles disablement for a Telnet option.
         OptionDisablementAwaitable handle_disablement(const option& opt, NegotiationDirection direction) {
             auto it = handlers_.find(opt);
             if ((it != handlers_.end()) && it->second.disablement_handler) {
@@ -107,9 +108,9 @@ export namespace net::telnet {
                 return handler(opt, direction);
             }
             co_return;
-        } // handle_disablement(const option&, NegotiationDirection)
+        } //handle_disablement(const option&, NegotiationDirection)
         
-        /// @brief Handles subnegotiation for a Telnet option.
+        ///@brief Handles subnegotiation for a Telnet option.
         SubnegotiationAwaitable handle_subnegotiation(const option& opt, std::vector<byte_t> data) {
             auto it = handlers_.find(opt);
             if ((it != handlers_.end()) && it->second.subnegotiation_handler) {
@@ -120,7 +121,7 @@ export namespace net::telnet {
             }
         } //handle_subnegotiation(option::id_num, std::vector<byte_t>)
     private:
-        /// @brief Default handler for undefined subnegotiation.
+        ///@brief Default handler for undefined subnegotiation.
         template<typename PC>
         static SubnegotiationAwaitable undefined_subnegotiation_handler(const option& opt, std::vector<byte_t>) {
             PC::log_error(
@@ -190,126 +191,122 @@ export namespace net::telnet {
     public:
         enum class NegotiationState : std::uint8_t { NO = 0, YES = 1, WANTNO = 2, WANTYES = 3 };
 
-        // Local state queries (us)
-        /// @brief Checks if the option is enabled locally.
+        //Local state queries (us)
+        ///@brief Checks if the option is enabled locally.
         bool local_enabled() const noexcept { return local_state_ == std::to_underlying(NegotiationState::YES); }
-        /// @brief Checks if the option is fully disabled locally. @note NOT equivalent to !local_enabled()
+        ///@brief Checks if the option is fully disabled locally. @note NOT equivalent to !local_enabled()
         bool local_disabled() const noexcept { return local_state_ == std::to_underlying(NegotiationState::NO); }
-        /// @brief Checks if a local enablement request is pending.
+        ///@brief Checks if a local enablement request is pending.
         bool local_pending_enable() const noexcept { return local_state_ == std::to_underlying(NegotiationState::WANTYES); }
-        /// @brief Checks if a local disablement request is pending.
+        ///@brief Checks if a local disablement request is pending.
         bool local_pending_disable() const noexcept { return local_state_ == std::to_underlying(NegotiationState::WANTNO); }
-        /// @brief Checks if local negotiation is pending (WANTNO or WANTYES).
+        ///@brief Checks if local negotiation is pending (WANTNO or WANTYES).
         bool local_pending() const noexcept { return local_pending_enable() || local_pending_disable(); }
 
-        // Remote state queries (him)
-        /// @brief Checks if the option is enabled remotely.
+        //Remote state queries (him)
+        ///@brief Checks if the option is enabled remotely.
         bool remote_enabled() const noexcept { return remote_state_ == std::to_underlying(NegotiationState::YES); }
-        /// @brief Checks if the option is fully disabled remotely. @note NOT equivalent to !remote_enabled()
+        ///@brief Checks if the option is fully disabled remotely. @note NOT equivalent to !remote_enabled()
         bool remote_disabled() const noexcept { return remote_state_ == std::to_underlying(NegotiationState::NO); }
-        /// @brief Checks if a remote enablement request is pending.
+        ///@brief Checks if a remote enablement request is pending.
         bool remote_pending_enable() const noexcept { return remote_state_ == std::to_underlying(NegotiationState::WANTYES); }
-        /// @brief Checks if a remote disablement request is pending.
+        ///@brief Checks if a remote disablement request is pending.
         bool remote_pending_disable() const noexcept { return remote_state_ == std::to_underlying(NegotiationState::WANTNO); }
-        /// @brief Checks if remote negotiation is pending (WANTNO or WANTYES).
+        ///@brief Checks if remote negotiation is pending (WANTNO or WANTYES).
         bool remote_pending() const noexcept { return remote_pending_enable() || remote_pending_disable(); }
 
-        // Bidirectional state queries
-        /// @brief Checks if the option is enabled in the designated direction.
+        //Bidirectional state queries
+        ///@brief Checks if the option is enabled in the designated direction.
         bool enabled(NegotiationDirection direction)  const noexcept { return (direction == NegotiationDirection::REMOTE) ? remote_enabled()  : local_enabled();  }
-        /// @brief Checks if the option is disabled in the designated direction. @note NOT equivalent to !enabled(direction)
+        ///@brief Checks if the option is disabled in the designated direction. @note NOT equivalent to !enabled(direction)
         bool disabled(NegotiationDirection direction) const noexcept { return (direction == NegotiationDirection::REMOTE) ? remote_disabled() : local_disabled(); }
-        /// @brief Checks if an enablement request is pending in the designated direction.
+        ///@brief Checks if an enablement request is pending in the designated direction.
         bool pending_enable(NegotiationDirection direction) const noexcept { return (direction == NegotiationDirection::REMOTE) ? remote_pending_enable() : local_pending_enable(); }
-        /// @brief Checks if a disablement request is pending in the designated direction.
+        ///@brief Checks if a disablement request is pending in the designated direction.
         bool pending_disable(NegotiationDirection direction) const noexcept { return (direction == NegotiationDirection::REMOTE) ? remote_pending_disable() : local_pending_disable(); }
-        /// @brief Checks if a negotiation is pending (WANTNO or WANTYES) in the designated direction.
+        ///@brief Checks if a negotiation is pending (WANTNO or WANTYES) in the designated direction.
         bool pending(NegotiationDirection direction) const noexcept { return (direction == NegotiationDirection::REMOTE) ? remote_pending() : local_pending(); }
 
-        // Combined state query
-        /// @brief Checks if the option is enabled locally or remotely.
+        //Combined state query
+        ///@brief Checks if the option is enabled locally or remotely.
         bool is_enabled() const noexcept { return local_enabled() || remote_enabled(); }
 
-        // Queue queries (usq, himq)
-        /// @brief Checks if a local user request is queued (OPPOSITE state).
+        //Queue queries (usq, himq)
+        ///@brief Checks if a local user request is queued (OPPOSITE state).
         bool local_queued() const noexcept { return local_queue_; }
-        /// @brief Checks if a remote user request is queued (OPPOSITE state).
+        ///@brief Checks if a remote user request is queued (OPPOSITE state).
         bool remote_queued() const noexcept { return remote_queue_; }
-        /// @brief Checks if a user request is queued (OPPOSITE state) in the designated direction.
+        ///@brief Checks if a user request is queued (OPPOSITE state) in the designated direction.
         bool queued(NegotiationDirection direction) const noexcept { return (direction == NegotiationDirection::REMOTE) ? remote_queued() : local_queued(); }
-        /// @brief Checks if any user request is queued (local or remote). [Optional]
+        ///@brief Checks if any user request is queued (local or remote). [Optional]
         bool has_queued_request() const noexcept { return local_queued() || remote_queued(); }
 
-        // Local state setters (us)
-        /// @brief Enables the option locally.
+        //Local state setters (us)
+        ///@brief Enables the option locally.
         void enable_local() noexcept { local_state_ = std::to_underlying(NegotiationState::YES); }
-        /// @brief Disables the option locally.
+        ///@brief Disables the option locally.
         void disable_local() noexcept { local_state_ = std::to_underlying(NegotiationState::NO); }
-        /// @brief Marks a local enablement request as pending.
+        ///@brief Marks a local enablement request as pending.
         void pend_enable_local() noexcept { local_state_ = std::to_underlying(NegotiationState::WANTYES); }
-        /// @brief Marks a local disablement request as pending.
+        ///@brief Marks a local disablement request as pending.
         void pend_disable_local() noexcept { local_state_ = std::to_underlying(NegotiationState::WANTNO); }
 
-        // Remote state setters (him)
-        /// @brief Enables the option remotely.
+        //Remote state setters (him)
+        ///@brief Enables the option remotely.
         void enable_remote() noexcept { remote_state_ = std::to_underlying(NegotiationState::YES); }
-        /// @brief Disables the option remotely.
+        ///@brief Disables the option remotely.
         void disable_remote() noexcept { remote_state_ = std::to_underlying(NegotiationState::NO); }
-        /// @brief Marks a remote enablement request as pending.
+        ///@brief Marks a remote enablement request as pending.
         void pend_enable_remote() noexcept { remote_state_ = std::to_underlying(NegotiationState::WANTYES); }
-        /// @brief Marks a remote disablement request as pending.
+        ///@brief Marks a remote disablement request as pending.
         void pend_disable_remote() noexcept { remote_state_ = std::to_underlying(NegotiationState::WANTNO); }
 
-        // Bidirectional state setters
-        /// @brief Enables the option in the designated direction.
+        //Bidirectional state setters
+        ///@brief Enables the option in the designated direction.
         void enable(NegotiationDirection direction) noexcept { if (direction == NegotiationDirection::REMOTE) { enable_remote(); } else { enable_local(); } }
-        /// @brief Disables the option in the designated direction.
+        ///@brief Disables the option in the designated direction.
         void disable(NegotiationDirection direction) noexcept { if (direction == NegotiationDirection::REMOTE) { disable_remote(); } else { disable_local(); } }
-        /// @brief Marks an enablement request as pending in the designated direction.
+        ///@brief Marks an enablement request as pending in the designated direction.
         void pend_enable(NegotiationDirection direction) noexcept { if (direction == NegotiationDirection::REMOTE) { pend_enable_remote(); } else { pend_enable_local(); } }
-        /// @brief Marks a disablement request as pending in the designated direction.
+        ///@brief Marks a disablement request as pending in the designated direction.
         void pend_disable(NegotiationDirection direction) noexcept { if (direction == NegotiationDirection::REMOTE) { pend_disable_remote(); } else { pend_disable_local(); } }
 
-        // Queue setters (usq, himq)
-        /// @brief Sets a local user request as queued (OPPOSITE state).
+        //Queue setters (usq, himq)
+        ///@brief Sets a local user request as queued (OPPOSITE state).
         std::error_code enqueue_local()  noexcept { if (local_enabled()  || local_disabled())  { return std::make_error_code(error::negotiation_queue_error); } else { local_queue_  = true; return {}; } }
-        /// @brief Sets a remote user request as queued (OPPOSITE state).
+        ///@brief Sets a remote user request as queued (OPPOSITE state).
         std::error_code enqueue_remote() noexcept { if (remote_enabled() || remote_disabled()) { return std::make_error_code(error::negotiation_queue_error); } else { remote_queue_ = true; return {}; } }
-        /// @brief Sets a user request as queued (OPPOSITE state) in the designated direction.
+        ///@brief Sets a user request as queued (OPPOSITE state) in the designated direction.
         std::error_code enqueue(NegotiationDirection direction) noexcept { if (direction == NegotiationDirection::REMOTE) { return enqueue_remote(); } else { return enqueue_local(); } }
-        /// @brief Clears a queued local user request.
+        ///@brief Clears a queued local user request.
         void dequeue_local() noexcept { local_queue_ = false; }
-        /// @brief Clears a queued remote user request.
+        ///@brief Clears a queued remote user request.
         void dequeue_remote() noexcept { remote_queue_ = false; }
-        /// @brief Clears a queued user request in the designated direction.
+        ///@brief Clears a queued user request in the designated direction.
         void dequeue(NegotiationDirection direction) noexcept { if (direction == NegotiationDirection::REMOTE) { dequeue_remote(); } else { dequeue_local(); } }
-        /// @brief Clears all queued requests.
+        ///@brief Clears all queued requests.
         void clear_queued_requests() noexcept { local_queue_ = remote_queue_ = false; }
 
-        // Utility
-        /// @brief Resets all state to initial values (NO, no queued requests).
+        //Utility
+        ///@brief Resets all state to initial values (NO, no queued requests).
         void reset() noexcept {
             local_state_ = std::to_underlying(NegotiationState::NO);
             remote_state_ = std::to_underlying(NegotiationState::NO);
             local_queue_ = remote_queue_ = false;
         }
-        /// @brief Checks if either local or remote negotiation is pending. [Optional]
+        ///@brief Checks if either local or remote negotiation is pending. [Optional]
         bool is_negotiating() const noexcept { return local_pending() || remote_pending(); }
-        /// @brief Validates state consistency (e.g., queue flags false when not pending). [Optional]
+        ///@brief Validates state consistency (e.g., queue flags false when not pending). [Optional]
         bool is_valid() const noexcept {
             return (!local_queue_ || local_pending()) && (!remote_queue_ || remote_pending());
         }
-        /// @brief Gets the raw local negotiation state (for debugging).
-        // NegotiationState local_state() const noexcept { return static_cast<NegotiationState>(local_state_); }
-        /// @brief Gets the raw remote negotiation state (for debugging).
-        // NegotiationState remote_state() const noexcept { return static_cast<NegotiationState>(remote_state_); }
 
     private:
-        // Pack these 4 fields into 1 byte (6 bits used, 2 unused).
-        std::uint8_t local_state_  : 2 = std::to_underlying(NegotiationState::NO); // us
-        std::uint8_t remote_state_ : 2 = std::to_underlying(NegotiationState::NO); // him
-        std::uint8_t local_queue_  : 1 = false; // usq (EMPTY=false, OPPOSITE=true)
-        std::uint8_t remote_queue_ : 1 = false; // himq (EMPTY=false, OPPOSITE=true)
+        //Pack these 4 fields into 1 byte (6 bits used, 2 unused).
+        std::uint8_t local_state_  : 2 = std::to_underlying(NegotiationState::NO); //us
+        std::uint8_t remote_state_ : 2 = std::to_underlying(NegotiationState::NO); //him
+        std::uint8_t local_queue_  : 1 = false; //usq (EMPTY=false, OPPOSITE=true)
+        std::uint8_t remote_queue_ : 1 = false; //himq (EMPTY=false, OPPOSITE=true)
     };
 
     /**
@@ -555,14 +552,14 @@ export namespace net::telnet {
      */
     class OptionStatusDB {
     public:
-        /// @brief Accesses or creates an `OptionStatusRecord` for a Telnet option.
+        ///@brief Accesses or creates an `OptionStatusRecord` for a Telnet option.
         OptionStatusRecord& operator[](option::id_num opt) { return status_records_[std::to_underlying(opt)]; }
 
-        /// @brief Retrieves an `OptionStatusRecord` for a Telnet option.
+        ///@brief Retrieves an `OptionStatusRecord` for a Telnet option.
         const OptionStatusRecord& operator[](option::id_num opt) const { return status_records_[std::to_underlying(opt)]; }
 
     private:
-        /// @brief The number of possible `option::id_num` values.
+        ///@brief The number of possible `option::id_num` values.
         static inline constexpr size_t MAX_OPTION_COUNT = (1 << std::numeric_limits<std::underlying_type_t<option::id_num>>::digits);
 
         //Byte array of Status Record bit-fields.

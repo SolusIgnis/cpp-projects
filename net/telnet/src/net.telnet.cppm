@@ -21,10 +21,11 @@
  * @see RFC 854 for Telnet protocol specification, RFC 1123 for evolution thereof, and RFC 1143 for option negotiation states.
  * @todo Future Development: Clean up exports to ensure types never accessed by external users are not exported. 
  */
-// Primary module interface unit
+ 
+//Primary module interface unit
 export module net.telnet;
 
-// Export all partition interfaces
+//Export all partition interfaces
 export import :types;        ///< @see "net.telnet-types.cppm"
 export import :errors;       ///< @see "net.telnet-errors.cppm"
 export import :concepts;     ///< @see "net.telnet-concepts.cppm"
