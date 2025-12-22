@@ -1,0 +1,10 @@
+/home/solo/development/cpp-projects/CMakeFiles/edit_cache.dir
+/home/solo/development/cpp-projects/CMakeFiles/rebuild_cache.dir
+/home/solo/development/cpp-projects/net/CMakeFiles/edit_cache.dir
+/home/solo/development/cpp-projects/net/CMakeFiles/rebuild_cache.dir
+/home/solo/development/cpp-projects/net/asio_concepts/CMakeFiles/net.asio_concepts.dir
+/home/solo/development/cpp-projects/net/asio_concepts/CMakeFiles/edit_cache.dir
+/home/solo/development/cpp-projects/net/asio_concepts/CMakeFiles/rebuild_cache.dir
+/home/solo/development/cpp-projects/net/telnet/CMakeFiles/net.telnet.dir
+/home/solo/development/cpp-projects/net/telnet/CMakeFiles/edit_cache.dir
+/home/solo/development/cpp-projects/net/telnet/CMakeFiles/rebuild_cache.dir
