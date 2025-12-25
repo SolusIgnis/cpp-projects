@@ -16,6 +16,14 @@ cmake_install.cmake
 compile_commands.json
 CTestTestfile.cmake
 *.cmake.user
+.cmake/
+
+# ===============================
+# Ninja generated files
+# ===============================
+build.ninja
+.ninja_deps
+.ninja_log
 
 # ===============================
 # C++ object files and libraries
