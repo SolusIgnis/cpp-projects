@@ -15,8 +15,8 @@
 module; //Including Asio in the Global Module Fragment until importable header units are reliable.
 #include <asio.hpp>
 
-//Module partition implementation unit
-module net.telnet:stream;
+//Module implementation unit
+module net.telnet;
 
 import std; //For std::promise, std::future, std::jthread, std::exception_ptr, std::make_tuple
 

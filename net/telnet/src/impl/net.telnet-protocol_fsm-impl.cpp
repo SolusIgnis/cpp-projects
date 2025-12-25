@@ -14,8 +14,8 @@
 module; //Including Asio in the Global Module Fragment until importable header units are reliable.
 #include <asio.hpp>
 
-//Module partition implementation unit
-module net.telnet:protocol_fsm;
+//Module implementation unit
+module net.telnet;
 
 import std; //For std::nullopt, std::optional, std::tuple, std::make_tuple, std::make_optional, std::error_code, std::format, std::string_view
 
