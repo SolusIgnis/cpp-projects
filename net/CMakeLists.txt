@@ -1,10 +1,10 @@
 # net/CMakeLists.txt
 
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 4.1.2)
 
 # Handle Embed/Standalone
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-  set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD ON)
+  set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "d0edc3af-4c50-42ea-a356-e2862fe7a444")
   project(net-bundle
     LANGUAGES CXX
   )
