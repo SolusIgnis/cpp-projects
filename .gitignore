@@ -19,6 +19,11 @@ CTestTestfile.cmake
 .cmake/
 
 # ===============================
+# CMake per-developer files
+# ===============================
+CMakeUserPresets.json
+
+# ===============================
 # Ninja generated files
 # ===============================
 build.ninja
