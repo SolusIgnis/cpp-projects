@@ -3,9 +3,6 @@
 
   "configurePresets": [
 
-    // ============================
-    // LLVM / Clang + libc++
-    // ============================
     {
       "name": "clang-base",
       "hidden": true,
@@ -14,7 +11,7 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_CXX_FLAGS": "-stdlib=libc++ -Wall -Wextra"
+        "CMAKE_CXX_FLAGS": "-stdlib=libc++ -Wall -Wextra -fcolor-diagnostics"
       }
     },
     {
@@ -32,9 +29,6 @@
       }
     },
 
-    // ============================
-    // GNU / g++ + libstdc++
-    // ============================
     {
       "name": "gcc-base",
       "hidden": true,
@@ -61,9 +55,6 @@
       }
     },
 
-    // ============================
-    // MSVC / Ninja + MS STL
-    // ============================
     {
       "name": "msvc-base",
       "hidden": true,
