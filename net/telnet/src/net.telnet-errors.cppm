@@ -134,6 +134,7 @@ export namespace net::telnet {
                 default:
                     return std::error_condition();
             }
+        } //default_error_condition(int) const noexcept
     }; //class telnet_error_category
 
     /**
