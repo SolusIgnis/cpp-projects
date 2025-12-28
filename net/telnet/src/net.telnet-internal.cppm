@@ -22,11 +22,11 @@ export module net.telnet:internal;
 import std;        //For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec
 import std.compat; //For std::uint8_t (needed for bit-field type specifier)
 
-import :types;      ///< @see "telnet-types.cppm" for `byte_t` and `TelnetCommand`
-import :errors;     ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-import :concepts;   ///< @see "telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
-import :options;    ///< @see "telnet-options.cppm" for `option` and `option::id_num`
-import :awaitables; ///< @see "telnet-awaitables.cppm" for `TaggedAwaitable`, semantic tags, and type aliases
+import :types;      ///< @see "net.telnet-types.cppm" for `byte_t` and `TelnetCommand`
+import :errors;     ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+import :concepts;   ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
+import :options;    ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
+import :awaitables; ///< @see "net.telnet-awaitables.cppm" for `TaggedAwaitable`, semantic tags, and type aliases
 
 //namespace asio = boost::asio;
 

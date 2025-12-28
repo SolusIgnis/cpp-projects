@@ -22,10 +22,10 @@ export module net.telnet:protocol_config;
 
 import std; //For std::shared_mutex, std::lock_guard, std::shared_lock, std::function, std::error_code, std::string, std::once_flag 
 
-export import :types;    ///< @see "telnet-types.cppm" for `byte_t` and `TelnetCommand`
-export import :errors;   ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-export import :concepts; ///< @see "telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
-export import :options;  ///< @see "telnet-options.cppm" for `option` and `option::id_num`
+export import :types;    ///< @see "net.telnet-types.cppm" for `byte_t` and `TelnetCommand`
+export import :errors;   ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+export import :concepts; ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
+export import :options;  ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
 
 export namespace net::telnet {
     /**

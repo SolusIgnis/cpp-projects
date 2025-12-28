@@ -9,7 +9,7 @@
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @see "telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
+ * @see "net.telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
  */
 
 module; //Including Asio in the Global Module Fragment until importable header units are reliable.
@@ -20,12 +20,14 @@ module net.telnet;
 
 import std; //For std::array, std::vector, std::ignore
 
-import :types;        ///< @see "telnet-types.cppm" for `TelnetCommand`
-import :errors;       ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-import :concepts;     ///< @see "telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
-import :options;      ///< @see "telnet-options.cppm" for `option` and `option::id_num`
-import :protocol_fsm; ///< @see "telnet-protocol_fsm.cppm" for `ProtocolFSM`
-import :awaitables;   ///< @see "telnet-awaitables.cppm" for awaitable types
+import :types;        ///< @see "net.telnet-types.cppm" for `TelnetCommand`
+import :errors;       ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+import :concepts;     ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
+import :options;      ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
+import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for `ProtocolFSM`
+import :awaitables;   ///< @see "net.telnet-awaitables.cppm" for awaitable types
+
+import :stream;       ///< @see "net.telnet-stream.cppm" for the partition being implemented.
 
 //namespace asio = boost::asio;
 

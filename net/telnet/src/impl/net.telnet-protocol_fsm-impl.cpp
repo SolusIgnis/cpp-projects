@@ -8,7 +8,7 @@
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @see "telnet-protocol_fsm.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, `:types` for `TelnetCommand` and `NegotiationDirection`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:stream` for FSM usage
+ * @see "net.telnet-protocol_fsm.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, `:types` for `TelnetCommand` and `NegotiationDirection`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:stream` for FSM usage
  */
 
 module; //Including Asio in the Global Module Fragment until importable header units are reliable.
@@ -19,10 +19,12 @@ module net.telnet;
 
 import std; //For std::nullopt, std::optional, std::tuple, std::make_tuple, std::make_optional, std::error_code, std::format, std::string_view
 
-import :types;        ///< @see "telnet-types.cppm" for `TelnetCommand`, `NegotiationDirection`
-import :errors;       ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-import :options;      ///< @see "telnet-options.cppm" for `option` and `option::id_num`
-import :awaitables;   ///< @see "telnet-awaitables.cppm" for `OptionDisablementAwaitable`
+import :types;        ///< @see "net.telnet-types.cppm" for `TelnetCommand`, `NegotiationDirection`
+import :errors;       ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+import :options;      ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
+import :awaitables;   ///< @see "net.telnet-awaitables.cppm" for `OptionDisablementAwaitable`
+
+import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for the partition being implemented.
 
 //namespace asio = boost::asio;
 

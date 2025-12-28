@@ -21,7 +21,7 @@ export module net.telnet:options;
 
 import std; //For std::string, std::vector, std::function, std::optional, std::size_t
 
-export import :types; ///< @see "telnet-types.cppm" for `byte_t`
+export import :types; ///< @see "net.telnet-types.cppm" for `byte_t`
 
 //namespace asio = boost::asio;
 

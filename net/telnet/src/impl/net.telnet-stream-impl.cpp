@@ -9,7 +9,7 @@
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @see "telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option::id_num`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
+ * @see "net.telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option::id_num`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
  */
 
 module; //Including Asio in the Global Module Fragment until importable header units are reliable.
@@ -20,12 +20,14 @@ module net.telnet;
 
 import std; //For std::promise, std::future, std::jthread, std::exception_ptr, std::make_tuple
 
-import :types;        ///< @see "telnet-types.cppm" for `byte_t` and `TelnetCommand`
-import :errors;       ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-import :concepts;     ///< @see "telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
-import :options;      ///< @see "telnet-options.cppm" for `option` and `option::id_num`
-import :protocol_fsm; ///< @see "telnet-protocol_fsm.cppm" for `ProtocolFSM`
-import :awaitables;   ///< @see "telnet-awaitables.cppm" for awaitable types
+import :types;        ///< @see "net.telnet-types.cppm" for `byte_t` and `TelnetCommand`
+import :errors;       ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+import :concepts;     ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
+import :options;      ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
+import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for `ProtocolFSM`
+import :awaitables;   ///< @see "net.telnet-awaitables.cppm" for awaitable types
+
+import :stream;       ///< @see "net.telnet-stream.cppm" for the partition being implemented.
 
 //namespace asio = boost::asio;
 
@@ -504,7 +506,7 @@ namespace net::telnet {
     /**
      * @internal
      * Initiates an asynchronous write of a `NegotiationResponse` using `async_write_negotiation`.
-     * @see "telnet-stream.cppm" for interface, `:protocol_fsm` for `NegotiationResponse`, `:errors` for error codes, RFC 855 for negotiation
+     * @see "net.telnet-stream.cppm" for interface, `:protocol_fsm` for `NegotiationResponse`, `:errors` for error codes, RFC 855 for negotiation
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
@@ -520,7 +522,7 @@ namespace net::telnet {
      * @internal
      * Initiates an asynchronous write of raw data using `async_write_raw`.
      * @remark Wraps the `std::string` in a `std::shared_ptr<std::string>` for lifetime management and forwards it to `async_write_raw`.
-     * @see "telnet-stream.cppm" for interface, `:errors` for error codes, RFC 854 for IAC escaping
+     * @see "net.telnet-stream.cppm" for interface, `:errors` for error codes, RFC 854 for IAC escaping
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
@@ -536,7 +538,7 @@ namespace net::telnet {
      * @internal
      * Spawns a coroutine to process a `SubnegotiationAwaitable`, writing the result via `async_write_subnegotiation` if non-empty.
      * @remark Uses `asio::co_spawn` to execute the awaitable, handling potential exceptions by throwing `std::system_error` with `telnet::error::internal_error` for non-system errors.
-     * @see "telnet-stream.cppm" for interface, `:awaitables` for `SubnegotiationAwaitable`, `:errors` for error codes, RFC 855 for subnegotiation
+     * @see "net.telnet-stream.cppm" for interface, `:awaitables` for `SubnegotiationAwaitable`, `:errors` for error codes, RFC 855 for subnegotiation
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
@@ -566,7 +568,7 @@ namespace net::telnet {
      * @internal
      * Spawns a coroutine to process a `TaggedAwaitable`, optionally writing a `NegotiationResponse` via `async_write_negotiation`.
      * @remark Uses `asio::co_spawn` to execute the awaitable, followed by an optional negotiation write, handling exceptions by throwing `std::system_error` with `telnet::error::internal_error` for non-system errors.
-     * @see "telnet-stream.cppm" for interface, `:awaitables` for `TaggedAwaitable`, `:protocol_fsm` for `NegotiationResponse`, `:errors` for error codes, RFC 855 for negotiation
+     * @see "net.telnet-stream.cppm" for interface, `:awaitables` for `TaggedAwaitable`, `:protocol_fsm` for `NegotiationResponse`, `:errors` for error codes, RFC 855 for negotiation
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>

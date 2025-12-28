@@ -26,14 +26,14 @@ export module net.telnet:protocol_fsm;
 
 import std; //For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec, std::format
 
-export import :types;      ///< @see "telnet-types.cppm" for `byte_t`, `TelnetCommand`, and `NegotiationDirection`
-export import :errors;     ///< @see "telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-export import :concepts;   ///< @see "telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
-export import :options;    ///< @see "telnet-options.cppm" for `option` and `option::id_num`
-export import :awaitables; ///< @see "telnet-awaitables.cppm" for `TaggedAwaitable`, semantic tags, and type aliases
+export import :types;      ///< @see "net.telnet-types.cppm" for `byte_t`, `TelnetCommand`, and `NegotiationDirection`
+export import :errors;     ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+export import :concepts;   ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
+export import :options;    ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
+export import :awaitables; ///< @see "net.telnet-awaitables.cppm" for `TaggedAwaitable`, semantic tags, and type aliases
 
-import :internal;          ///< @see "telnet-internal.cppm" for implementation classes
-import :protocol_config;   ///< @see "telnet-protocol_config.cppm" for `DefaultProtocolFSMConfig`
+import :internal;          ///< @see "net.telnet-internal.cppm" for implementation classes
+import :protocol_config;   ///< @see "net.telnet-protocol_config.cppm" for `DefaultProtocolFSMConfig`
 
 //namespace asio = boost::asio;
 
