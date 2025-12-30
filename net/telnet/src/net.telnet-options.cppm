@@ -21,7 +21,8 @@ export module net.telnet:options;
 
 import std; //For std::string, std::vector, std::function, std::optional, std::size_t
 
-export import :types; ///< @see "net.telnet-types.cppm" for `byte_t`
+export import :types;  ///< @see "net.telnet-types.cppm" for `byte_t`
+export import :errors; ///< @see "net.telnet-errors.cppm" for `error` enum
 
 //namespace asio = boost::asio;
 
@@ -224,14 +225,14 @@ export namespace net::telnet {
      * @see IANA Telnet Option Registry, RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` processing, `:stream` for negotiation operations.
      */
     enum class option::id_num : byte_t {
-        BINARY                             = 0x00, ///< Binary Transmission (@see RFC 856)
-        ECHO                               = 0x01, ///< Echo (@see RFC 857)
-        RECONNECTION                       = 0x02, ///< Reconnection (NIC 15391 of 1973)
-        SUPPRESS_GO_AHEAD                  = 0x03, ///< Suppress Go Ahead (@see RFC 858)
-        APPROX_MESSAGE_SIZE_NEGOTIATION    = 0x04, ///< Approx Message Size Negotiation (NIC 15393 of 1973)
-        STATUS                             = 0x05, ///< Status (@see RFC 859)
-        TIMING_MARK                        = 0x06, ///< Timing Mark (@see RFC 860)
-        REMOTE_CONTROLLED_TRANS_AND_ECHO   = 0x07, ///< Remote Controlled Trans and Echo (@see RFC 726)
+        binary                             = 0x00, ///< Binary Transmission (@see RFC 856)
+        echo                               = 0x01, ///< Echo (@see RFC 857)
+        reconnection                       = 0x02, ///< Reconnection (NIC 15391 of 1973)
+        suppress_go_ahead                  = 0x03, ///< Suppress Go Ahead (@see RFC 858)
+        approx_message_size_negotiation    = 0x04, ///< Approx Message Size Negotiation (NIC 15393 of 1973)
+        status                             = 0x05, ///< Status (@see RFC 859)
+        timing_mark                        = 0x06, ///< Timing Mark (@see RFC 860)
+        remote_controlled_trans_and_echo   = 0x07, ///< Remote Controlled Trans and Echo (@see RFC 726)
         OUTPUT_LINE_WIDTH                  = 0x08, ///< Output Line Width (NIC 20196 of August 1978)
         OUTPUT_PAGE_SIZE                   = 0x09, ///< Output Page Size (NIC 20197 of August 1978)
         OUTPUT_CARRIAGE_RETURN_DISPOSITION = 0x0A, ///< Output Carriage-Return Disposition (@see RFC 652)
@@ -317,10 +318,11 @@ export namespace net::telnet {
     public:
         ///@brief Constructs a registry from a sorted initializer list of `option` instances.
         option_registry(std::initializer_list<option> init) {
-            static_assert(
-                std::is_sorted(init.begin(), init.end(), std::less<>{}),
-                "Initializer list must be sorted by option::id_num"
-            );
+            ///@todo Figure out if this can be done as a constant expression.
+            //static_assert(
+            //    std::is_sorted(init.begin(), init.end(), std::less<>{}),
+            //    "Initializer list must be sorted by option::id_num"
+            //);
             registry_ = std::set<option, std::less<>>(init.begin(), init.end());
         } //option_registry(std::initializer_list<option>)
     
@@ -352,7 +354,7 @@ export namespace net::telnet {
                 return *add_result;
             } else {
                 //Use iterator from erase as hint to insert new option at same position, optimizing insertion to O(1)
-                auto [replace_result, _] = registry_.insert(registry_.erase(add_result), opt);
+                auto replace_result = registry_.insert(registry_.erase(add_result), opt);
                 return *replace_result;
             }
         } //upsert(const option&)
@@ -366,7 +368,7 @@ export namespace net::telnet {
             } catch (std::bad_alloc) {
                 ec = make_error_code(std::errc::not_enough_memory);
             } catch (...) {
-                ec = make_error_code(error::internal_error);
+                ec = make_error_code(telnet::error::internal_error);
             }
         } //upsert(const option&, std::error_code&)
 
