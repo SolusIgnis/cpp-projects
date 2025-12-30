@@ -8,7 +8,7 @@
  * @example
  *   telnet::ProtocolFSM<> fsm; //Uses `DefaultProtocolFSMConfig` from `:protocol_config`
  *   telnet::ProtocolFSM<>::ProtocolConfig::set_unknown_command_handler([](telnet::TelnetCommand cmd) { std::cout << "Custom: " << std::to_underlying(cmd) << "\n"; });
- *   telnet::ProtocolFSM<>::ProtocolConfig::registered_options.upsert(telnet::option::id_num::NEGOTIATE_ABOUT_WINDOW_SIZE, "NAWS", telnet::option::always_accept, telnet::option::always_accept, true, 4);
+ *   telnet::ProtocolFSM<>::ProtocolConfig::registered_options.upsert(telnet::option::id_num::negotiate_about_window_size, "NAWS", telnet::option::always_accept, telnet::option::always_accept, true, 4);
  *   telnet::ProtocolFSM<>::ProtocolConfig::set_error_logger([](const std::error_code& ec, std::string msg) { std::cout << "Error: " << ec.message() << " - " << msg << std::endl; });
  *
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
@@ -365,14 +365,14 @@ export namespace net::telnet {
      */
     /**
      * @fn ProtocolFSM::handle_status_subnegotiation(const option& opt, std::vector<byte_t> buffer)
-     * @param opt The `STATUS` option being negotiated (expected to be `option::id_num::STATUS`)
+     * @param opt The `status` option being negotiated (expected to be `option::id_num::status`)
      * @param buffer The subnegotiation input data (expected to contain `SEND` (1) or `IS` (0))
-     * @return `SubnegotiationAwaitable` yielding `std::tuple<const option&, std::vector<byte_t>>` containing the `STATUS` option and the `IS` [list] payload for `SEND`, or user-defined result for `IS`
+     * @return `SubnegotiationAwaitable` yielding `std::tuple<const option&, std::vector<byte_t>>` containing the `status` option and the `IS` [list] payload for `SEND`, or user-defined result for `IS`
      * @remark For `SEND` (1), validates that `STATUS` is locally enabled; constructs a payload starting with `IS` (0), followed by pairs of [`WILL` (251), opt] for locally enabled options and [`DO` (252), opt] for remotely enabled options, with `IAC` (255) and `SE` (240) option codes escaped by doubling.
      * @remark For `IS` (0), validates that `STATUS` is remotely enabled and delegates to the user-provided subnegotiation handler via `OptionHandlerRegistry`.
-     * @remark Logs `telnet::error::option_not_available` and returns an empty payload if `STATUS` is not enabled in the required direction.
+     * @remark Logs `telnet::error::option_not_available` and returns an empty payload if `status` is not enabled in the required direction.
      * @remark Logs `telnet::error::invalid_subnegotiation` for invalid subcommands.
-     * @remark The returned `SubnegotiationAwaitable` is processed by `InputProcessor` to pass the payload to `stream::async_write_subnegotiation`, which adds `IAC` `SB` `STATUS` ... `IAC` `SE` framing.
+     * @remark The returned `SubnegotiationAwaitable` is processed by `InputProcessor` to pass the payload to `stream::async_write_subnegotiation`, which adds `IAC` `SB` `status` ... `IAC` `SE` framing.
      * @see RFC 859, `:internal` for `OptionStatusDB`, `:options` for `option`, `:awaitables` for `SubnegotiationAwaitable`, `:stream` for `async_write_subnegotiation`
      */
 } //export namespace net::telnet

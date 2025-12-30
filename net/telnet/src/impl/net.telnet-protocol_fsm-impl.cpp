@@ -258,7 +258,7 @@ namespace net::telnet {
         if (byte == std::to_underlying(TelnetCommand::IAC)) {
             change_state(ProtocolState::IAC);
             return {std::error_code(), false, std::nullopt}; //discard IAC byte
-        } else if ((byte == static_cast<byte_t>('\r')) && (!option_status_[option::id_num::BINARY].enabled(NegotiationDirection::REMOTE))) {
+        } else if ((byte == static_cast<byte_t>('\r')) && (!option_status_[option::id_num::binary].enabled(NegotiationDirection::REMOTE))) {
             change_state(ProtocolState::HasCR);
             return {std::error_code(), false, std::nullopt}; //discard CR byte
         } else if (byte == static_cast<byte_t>('\0')) {
@@ -363,7 +363,7 @@ namespace net::telnet {
                         result_ec = std::make_error_code(processing_signal::data_mark);
                         break;
                     case TelnetCommand::GA:
-                        if (option_status_[option::id_num::SUPPRESS_GO_AHEAD].enabled(NegotiationDirection::REMOTE)) {
+                        if (option_status_[option::id_num::suppress_go_ahead].enabled(NegotiationDirection::REMOTE)) {
                             //Log GA if SGA is active, but ultimately ignore it.
                             ProtocolConfig::log_error(
                                 std::make_error_code(error::ignored_go_ahead),
@@ -380,7 +380,7 @@ namespace net::telnet {
                         result = ProtocolConfig::get_ayt_response();
                         break;
                     case TelnetCommand::EOR:
-                        if (option_status_[option::id_num::END_OF_RECORD].enabled(NegotiationDirection::REMOTE)) {
+                        if (option_status_[option::id_num::end_of_record].enabled(NegotiationDirection::REMOTE)) {
                             result_ec = std::make_error_code(processing_signal::end_of_record); //signal early completion on End-of-Record
                         }
                         //If EOR is inactive, it's a no-op.
@@ -678,7 +678,7 @@ namespace net::telnet {
             //Subnegotiation sequence completed, so pass the buffer to the handler if supported. 
             //If subnegotiation is not supported or the option is not enabled, the error was logged at the beginning of subnegotiation, so just discard the buffer.
             if (current_option_->supports_subnegotiation() && option_status_[*current_option_].is_enabled()) {
-                if (*current_option_ == option::id_num::STATUS) {
+                if (*current_option_ == option::id_num::status) {
                     result = handle_status_subnegotiation(*current_option_, std::move(subnegotiation_buffer_));
                 } else {
                     result = option_handler_registry_.handle_subnegotiation(*current_option_, std::move(subnegotiation_buffer_));
@@ -733,7 +733,7 @@ namespace net::telnet {
         if (buffer.empty()) {
             ProtocolConfig::log_error(error::invalid_subnegotiation, "Invalid STATUS subnegotiation: no data between IAC SB STATUS and IAC SE");
         } else if (buffer[0] == IS) {
-            if (option_status_[option::id_num::STATUS].remote_enabled()) {
+            if (option_status_[option::id_num::status].remote_enabled()) {
                 //Delegate processing of subcommand IS to user-provided handler.
                 co_return co_await option_handler_registry_.handle_subnegotiation(opt, std::move(buffer))
             } else {
@@ -741,7 +741,7 @@ namespace net::telnet {
                 co_return std::make_tuple(opt, {});
             }
         } else if (buffer[0] == SEND) {
-            if (option_status_[option::id_num::STATUS].local_enabled()) {        
+            if (option_status_[option::id_num::status].local_enabled()) {        
                 std::vector<byte_t> payload = {IS}; //IS
                 for (std::size_t i = 0; i < OptionStatusDB::MAX_OPTION_COUNT; ++i) {
                     auto id = static_cast<option::id_num>(i);

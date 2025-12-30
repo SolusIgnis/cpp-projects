@@ -94,13 +94,13 @@ namespace net::telnet {
     std::tuple<std::error_code, std::vector<byte_t>&> stream<NLS, PC>::escape_telnet_output(std::vector<byte_t>& escaped_data, const ConstBufferSequence& data) const noexcept {
         try {
             for (auto iter = asio::buffers_begin(data), end = asio::buffers_end(data); iter != end; ++iter) {
-                if ((*iter == static_cast<byte_t>('\n')) && !fsm_.enabled(option::id_num::BINARY, NegotiationDirection::LOCAL)) {
+                if ((*iter == static_cast<byte_t>('\n')) && !fsm_.enabled(option::id_num::binary, NegotiationDirection::LOCAL)) {
                     escaped_data.push_back('\r'); //prepend CR before LF (LF -> CR LF)
                 }
                 escaped_data.push_back(*iter);
                 if (*iter == std::to_underlying(TelnetCommand::IAC)) {
                     escaped_data.push_back(*iter); //double IAC (IAC -> IAC IAC)
-                } else if ((*iter == static_cast<byte_t>('\r')) && !fsm_.enabled(option::id_num::BINARY, NegotiationDirection::LOCAL)) {
+                } else if ((*iter == static_cast<byte_t>('\r')) && !fsm_.enabled(option::id_num::binary, NegotiationDirection::LOCAL)) {
                     escaped_data.push_back('\0'); //append NUL after CR (CR -> CR NUL)
                 }
             }

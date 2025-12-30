@@ -100,9 +100,9 @@ export namespace net::telnet {
         ///@brief Initializes the option registry with default options.
         static option_registry initialize_option_registry() {
             return {
-                option{option::id_num::BINARY,            "Binary Transmission", option::always_accept, option::always_accept},
-                option{option::id_num::SUPPRESS_GO_AHEAD, "Suppress Go-Ahead",   option::always_accept, option::always_accept},
-                option{option::id_num::STATUS,            "Status",              option::always_accept, option::always_reject, true}           
+                option{option::id_num::binary,            "Binary Transmission", option::always_accept, option::always_accept},
+                option{option::id_num::suppress_go_ahead, "Suppress Go-Ahead",   option::always_accept, option::always_accept},
+                option{option::id_num::status,            "Status",              option::always_accept, option::always_reject, true}           
             };
         } //initialize_option_registry()
 
