@@ -10,7 +10,7 @@
  * @license See LICENSE file for details
  *
  * @remark Not intended for direct use by external code; serves as an implementation detail for other partitions.
- * @see RFC 855 for Telnet option negotiation, `:types` for `TelnetCommand`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:protocol_fsm` for usage
+ * @see RFC 855 for Telnet option negotiation, `:types` for `telnet::command`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:protocol_fsm` for usage
  */
 
 module; //Including Asio in the Global Module Fragment until importable header units are reliable.
@@ -22,7 +22,7 @@ export module net.telnet:internal;
 import std;        //For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec
 import std.compat; //For std::uint8_t (needed for bit-field type specifier)
 
-import :types;      ///< @see "net.telnet-types.cppm" for `byte_t` and `TelnetCommand`
+import :types;      ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
 import :errors;     ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
 import :concepts;   ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
 import :options;    ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
@@ -91,24 +91,24 @@ export namespace net::telnet {
         } //unregister_handlers(option::id_num)
 
         ///@brief Handles enablement for a Telnet option.
-        OptionEnablementAwaitable handle_enablement(const option& opt, NegotiationDirection direction) {
+        OptionEnablementAwaitable handle_enablement(const option& opt, negotiation_direction direction) {
             auto it = handlers_.find(opt);
             if ((it != handlers_.end()) && it->second.enablement_handler) {
                 auto& handler = *(it->second.enablement_handler);
                 return handler(opt, direction);
             }
             co_return;
-        } //handle_enablement(const option&, NegotiationDirection)
+        } //handle_enablement(const option&, negotiation_direction)
    
         ///@brief Handles disablement for a Telnet option.
-        OptionDisablementAwaitable handle_disablement(const option& opt, NegotiationDirection direction) {
+        OptionDisablementAwaitable handle_disablement(const option& opt, negotiation_direction direction) {
             auto it = handlers_.find(opt);
             if ((it != handlers_.end()) && it->second.disablement_handler) {
                 auto& handler = *(it->second.disablement_handler);
                 return handler(opt, direction);
             }
             co_return;
-        } //handle_disablement(const option&, NegotiationDirection)
+        } //handle_disablement(const option&, negotiation_direction)
         
         ///@brief Handles subnegotiation for a Telnet option.
         SubnegotiationAwaitable handle_subnegotiation(const option& opt, std::vector<byte_t> data) {
@@ -127,7 +127,7 @@ export namespace net::telnet {
             PC::log_error(
                 std::make_error_code(error::user_handler_not_found),
                 "cmd: {}, option: {}",
-                TelnetCommand::SE,
+                command::SE,
                 opt
             );
             co_return;
@@ -150,14 +150,14 @@ export namespace net::telnet {
      * @remark Removes the handler record from the registry.
      */
     /**
-     * @fn OptionEnablementAwaitable OptionHandlerRegistry::handle_enablement(const option& opt, NegotiationDirection direction)
+     * @fn OptionEnablementAwaitable OptionHandlerRegistry::handle_enablement(const option& opt, negotiation_direction direction)
      * @param opt The `option::id_num` of the Telnet option.
      * @param direction The negotiation direction (`local` or `remote`).
      * @return `OptionEnablementAwaitable` representing the asynchronous handling result.
      * @remark Invokes the registered enablement handler if present; otherwise, returns an empty awaitable.
      */
     /**
-     * @fn OptionDisablementAwaitable OptionHandlerRegistry::handle_disablement(const option& opt, NegotiationDirection direction)
+     * @fn OptionDisablementAwaitable OptionHandlerRegistry::handle_disablement(const option& opt, negotiation_direction direction)
      * @param opt The `option::id_num` of the Telnet option.
      * @param direction The negotiation direction (`local` or `remote`).
      * @return `OptionDisablementAwaitable` representing the asynchronous handling result.
@@ -185,7 +185,7 @@ export namespace net::telnet {
      * @remark Optimized with bit-fields packed into a single byte for memory efficiency.
      * @note Implements RFC 1143 Q Method with 4-state FSMs plus queue bits for local (us) and remote (him) sides.
      * @remark Instantiated per-`ProtocolFSM` and used in a single thread/strand.
-     * @see `:types` for `NegotiationDirection`, `:options` for `option::id_num`, `:protocol_fsm` for usage
+     * @see `:types` for `negotiation_direction`, `:options` for `option::id_num`, `:protocol_fsm` for usage
      */
     class OptionStatusRecord {
     public:
@@ -217,15 +217,15 @@ export namespace net::telnet {
 
         //Bidirectional state queries
         ///@brief Checks if the option is enabled in the designated direction.
-        bool enabled(NegotiationDirection direction)  const noexcept { return (direction == NegotiationDirection::REMOTE) ? remote_enabled()  : local_enabled();  }
+        bool enabled(negotiation_direction direction)  const noexcept { return (direction == negotiation_direction::remote) ? remote_enabled()  : local_enabled();  }
         ///@brief Checks if the option is disabled in the designated direction. @note NOT equivalent to !enabled(direction)
-        bool disabled(NegotiationDirection direction) const noexcept { return (direction == NegotiationDirection::REMOTE) ? remote_disabled() : local_disabled(); }
+        bool disabled(negotiation_direction direction) const noexcept { return (direction == negotiation_direction::remote) ? remote_disabled() : local_disabled(); }
         ///@brief Checks if an enablement request is pending in the designated direction.
-        bool pending_enable(NegotiationDirection direction) const noexcept { return (direction == NegotiationDirection::REMOTE) ? remote_pending_enable() : local_pending_enable(); }
+        bool pending_enable(negotiation_direction direction) const noexcept { return (direction == negotiation_direction::remote) ? remote_pending_enable() : local_pending_enable(); }
         ///@brief Checks if a disablement request is pending in the designated direction.
-        bool pending_disable(NegotiationDirection direction) const noexcept { return (direction == NegotiationDirection::REMOTE) ? remote_pending_disable() : local_pending_disable(); }
+        bool pending_disable(negotiation_direction direction) const noexcept { return (direction == negotiation_direction::remote) ? remote_pending_disable() : local_pending_disable(); }
         ///@brief Checks if a negotiation is pending (WANTNO or WANTYES) in the designated direction.
-        bool pending(NegotiationDirection direction) const noexcept { return (direction == NegotiationDirection::REMOTE) ? remote_pending() : local_pending(); }
+        bool pending(negotiation_direction direction) const noexcept { return (direction == negotiation_direction::remote) ? remote_pending() : local_pending(); }
 
         //Combined state query
         ///@brief Checks if the option is enabled locally or remotely.
@@ -237,7 +237,7 @@ export namespace net::telnet {
         ///@brief Checks if a remote user request is queued (OPPOSITE state).
         bool remote_queued() const noexcept { return remote_queue_; }
         ///@brief Checks if a user request is queued (OPPOSITE state) in the designated direction.
-        bool queued(NegotiationDirection direction) const noexcept { return (direction == NegotiationDirection::REMOTE) ? remote_queued() : local_queued(); }
+        bool queued(negotiation_direction direction) const noexcept { return (direction == negotiation_direction::remote) ? remote_queued() : local_queued(); }
         ///@brief Checks if any user request is queued (local or remote). [Optional]
         bool has_queued_request() const noexcept { return local_queued() || remote_queued(); }
 
@@ -263,13 +263,13 @@ export namespace net::telnet {
 
         //Bidirectional state setters
         ///@brief Enables the option in the designated direction.
-        void enable(NegotiationDirection direction) noexcept { if (direction == NegotiationDirection::REMOTE) { enable_remote(); } else { enable_local(); } }
+        void enable(negotiation_direction direction) noexcept { if (direction == negotiation_direction::remote) { enable_remote(); } else { enable_local(); } }
         ///@brief Disables the option in the designated direction.
-        void disable(NegotiationDirection direction) noexcept { if (direction == NegotiationDirection::REMOTE) { disable_remote(); } else { disable_local(); } }
+        void disable(negotiation_direction direction) noexcept { if (direction == negotiation_direction::remote) { disable_remote(); } else { disable_local(); } }
         ///@brief Marks an enablement request as pending in the designated direction.
-        void pend_enable(NegotiationDirection direction) noexcept { if (direction == NegotiationDirection::REMOTE) { pend_enable_remote(); } else { pend_enable_local(); } }
+        void pend_enable(negotiation_direction direction) noexcept { if (direction == negotiation_direction::remote) { pend_enable_remote(); } else { pend_enable_local(); } }
         ///@brief Marks a disablement request as pending in the designated direction.
-        void pend_disable(NegotiationDirection direction) noexcept { if (direction == NegotiationDirection::REMOTE) { pend_disable_remote(); } else { pend_disable_local(); } }
+        void pend_disable(negotiation_direction direction) noexcept { if (direction == negotiation_direction::remote) { pend_disable_remote(); } else { pend_disable_local(); } }
 
         //Queue setters (usq, himq)
         ///@brief Sets a local user request as queued (OPPOSITE state).
@@ -277,13 +277,13 @@ export namespace net::telnet {
         ///@brief Sets a remote user request as queued (OPPOSITE state).
         std::error_code enqueue_remote() noexcept { if (remote_enabled() || remote_disabled()) { return std::make_error_code(error::negotiation_queue_error); } else { remote_queue_ = true; return {}; } }
         ///@brief Sets a user request as queued (OPPOSITE state) in the designated direction.
-        std::error_code enqueue(NegotiationDirection direction) noexcept { if (direction == NegotiationDirection::REMOTE) { return enqueue_remote(); } else { return enqueue_local(); } }
+        std::error_code enqueue(negotiation_direction direction) noexcept { if (direction == negotiation_direction::remote) { return enqueue_remote(); } else { return enqueue_local(); } }
         ///@brief Clears a queued local user request.
         void dequeue_local() noexcept { local_queue_ = false; }
         ///@brief Clears a queued remote user request.
         void dequeue_remote() noexcept { remote_queue_ = false; }
         ///@brief Clears a queued user request in the designated direction.
-        void dequeue(NegotiationDirection direction) noexcept { if (direction == NegotiationDirection::REMOTE) { dequeue_remote(); } else { dequeue_local(); } }
+        void dequeue(negotiation_direction direction) noexcept { if (direction == negotiation_direction::remote) { dequeue_remote(); } else { dequeue_local(); } }
         ///@brief Clears all queued requests.
         void clear_queued_requests() noexcept { local_queue_ = remote_queue_ = false; }
 
@@ -360,32 +360,32 @@ export namespace net::telnet {
      * @remark Derived from `remote_state_` (him in RFC 1143).
      */
     /**
-     * @fn bool OptionStatusRecord::enabled(NegotiationDirection direction) const noexcept
-     * @param direction The negotiation direction (LOCAL or REMOTE).
+     * @fn bool OptionStatusRecord::enabled(negotiation_direction direction) const noexcept
+     * @param direction The negotiation direction (local or remote).
      * @return True if the option is enabled in the designated direction, false otherwise.
      * @remark Delegates to `local_enabled()` or `remote_enabled()` based on direction (us or him in RFC 1143).
      */
     /**
-     * @fn bool OptionStatusRecord::disabled(NegotiationDirection direction) const noexcept
-     * @param direction The negotiation direction (LOCAL or REMOTE).
+     * @fn bool OptionStatusRecord::disabled(negotiation_direction direction) const noexcept
+     * @param direction The negotiation direction (local or remote).
      * @return True if the option is fully disabled in the designated direction, false otherwise.
      * @remark Delegates to `local_disabled()` or `remote_disabled()` based on direction (us or him in RFC 1143). Not equivalent to !enabled(direction).
      */
     /**
-     * @fn bool OptionStatusRecord::pending_enable(NegotiationDirection direction) const noexcept
-     * @param direction The negotiation direction (LOCAL or REMOTE).
+     * @fn bool OptionStatusRecord::pending_enable(negotiation_direction direction) const noexcept
+     * @param direction The negotiation direction (local or remote).
      * @return True if an enablement request is pending in the designated direction (state is WANTYES), false otherwise.
      * @remark Delegates to `local_pending_enable()` or `remote_pending_enable()` based on direction (us or him in RFC 1143).
      */
     /**
-     * @fn bool OptionStatusRecord::pending_disable(NegotiationDirection direction) const noexcept
-     * @param direction The negotiation direction (LOCAL or REMOTE).
+     * @fn bool OptionStatusRecord::pending_disable(negotiation_direction direction) const noexcept
+     * @param direction The negotiation direction (local or remote).
      * @return True if a disablement request is pending in the designated direction (state is WANTNO), false otherwise.
      * @remark Delegates to `local_pending_disable()` or `remote_pending_disable()` based on direction (us or him in RFC 1143).
      */
     /**
-     * @fn bool OptionStatusRecord::pending(NegotiationDirection direction) const noexcept
-     * @param direction The negotiation direction (LOCAL or REMOTE).
+     * @fn bool OptionStatusRecord::pending(negotiation_direction direction) const noexcept
+     * @param direction The negotiation direction (local or remote).
      * @return True if a negotiation is pending (WANTYES or WANTNO) in the designated direction, false otherwise.
      * @remark Delegates to `local_pending()` or `remote_pending()` based on direction (us or him in RFC 1143).
      */
@@ -405,8 +405,8 @@ export namespace net::telnet {
      * @remark Accesses `remote_queue_` (himq in RFC 1143).
      */
     /**
-     * @fn bool OptionStatusRecord::queued(NegotiationDirection direction) const noexcept
-     * @param direction The negotiation direction (LOCAL or REMOTE).
+     * @fn bool OptionStatusRecord::queued(negotiation_direction direction) const noexcept
+     * @param direction The negotiation direction (local or remote).
      * @return True if a user request is queued (OPPOSITE state) in the designated direction, false otherwise.
      * @remark Delegates to `local_queued()` or `remote_queued()` based on direction (usq or himq in RFC 1143).
      */
@@ -456,26 +456,26 @@ export namespace net::telnet {
      * @remark Updates `remote_state_` (him in RFC 1143).
      */
     /**
-     * @fn void OptionStatusRecord::enable(NegotiationDirection direction) noexcept
-     * @param direction The negotiation direction (LOCAL or REMOTE).
+     * @fn void OptionStatusRecord::enable(negotiation_direction direction) noexcept
+     * @param direction The negotiation direction (local or remote).
      * @brief Sets the state to YES (enabled) in the designated direction.
      * @remark Delegates to `enable_local()` or `enable_remote()` based on direction (us or him in RFC 1143).
      */
     /**
-     * @fn void OptionStatusRecord::disable(NegotiationDirection direction) noexcept
-     * @param direction The negotiation direction (LOCAL or REMOTE).
+     * @fn void OptionStatusRecord::disable(negotiation_direction direction) noexcept
+     * @param direction The negotiation direction (local or remote).
      * @brief Sets the state to NO (disabled) in the designated direction.
      * @remark Delegates to `disable_local()` or `disable_remote()` based on direction (us or him in RFC 1143).
      */
     /**
-     * @fn void OptionStatusRecord::pend_enable(NegotiationDirection direction) noexcept
-     * @param direction The negotiation direction (LOCAL or REMOTE).
+     * @fn void OptionStatusRecord::pend_enable(negotiation_direction direction) noexcept
+     * @param direction The negotiation direction (local or remote).
      * @brief Sets the state to WANTYES (pending enablement) in the designated direction.
      * @remark Delegates to `pend_enable_local()` or `pend_enable_remote()` based on direction (us or him in RFC 1143).
      */
     /**
-     * @fn void OptionStatusRecord::pend_disable(NegotiationDirection direction) noexcept
-     * @param direction The negotiation direction (LOCAL or REMOTE).
+     * @fn void OptionStatusRecord::pend_disable(negotiation_direction direction) noexcept
+     * @param direction The negotiation direction (local or remote).
      * @brief Sets the state to WANTNO (pending disablement) in the designated direction.
      * @remark Delegates to `pend_disable_local()` or `pend_disable_remote()` based on direction (us or him in RFC 1143).
      */
@@ -492,8 +492,8 @@ export namespace net::telnet {
      * @remark Sets `remote_queue_` to true (himq in RFC 1143) if `remote_state_` is WANT*.
      */
     /**
-     * @fn void OptionStatusRecord::enqueue(NegotiationDirection direction) noexcept
-     * @param direction The navigation direction (LOCAL or REMOTE).
+     * @fn void OptionStatusRecord::enqueue(negotiation_direction direction) noexcept
+     * @param direction The navigation direction (local or remote).
      * @brief Marks a user request as queued (OPPOSITE state) in the designated direction.
      * @remark Delegates to `enqueue_local()` or `enqueue_remote()` based on direction (usq or himq in RFC 1143).
      */
@@ -508,8 +508,8 @@ export namespace net::telnet {
      * @remark Sets `remote_queue_` to false (himq in RFC 1143).
      */
     /**
-     * @fn void OptionStatusRecord::dequeue(NegotiationDirection direction) noexcept
-     * @param direction The negotiation direction (LOCAL or REMOTE).
+     * @fn void OptionStatusRecord::dequeue(negotiation_direction direction) noexcept
+     * @param direction The negotiation direction (local or remote).
      * @brief Clears a queued user request in the designated direction.
      * @remark Delegates to `dequeue_local()` or `dequeue_remote()` based on direction (usq or himq in RFC 1143).
      */

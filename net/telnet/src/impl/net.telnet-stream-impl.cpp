@@ -9,7 +9,7 @@
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @see "net.telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option::id_num`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
+ * @see "net.telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `telnet::command`, `:options` for `option::id_num`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
  */
 
 module; //Including Asio in the Global Module Fragment until importable header units are reliable.
@@ -20,7 +20,7 @@ module net.telnet;
 
 import std; //For std::promise, std::future, std::jthread, std::exception_ptr, std::make_tuple
 
-import :types;        ///< @see "net.telnet-types.cppm" for `byte_t` and `TelnetCommand`
+import :types;        ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
 import :errors;       ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
 import :concepts;     ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
 import :options;      ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
@@ -94,13 +94,13 @@ namespace net::telnet {
     std::tuple<std::error_code, std::vector<byte_t>&> stream<NLS, PC>::escape_telnet_output(std::vector<byte_t>& escaped_data, const ConstBufferSequence& data) const noexcept {
         try {
             for (auto iter = asio::buffers_begin(data), end = asio::buffers_end(data); iter != end; ++iter) {
-                if ((*iter == static_cast<byte_t>('\n')) && !fsm_.enabled(option::id_num::binary, NegotiationDirection::LOCAL)) {
+                if ((*iter == static_cast<byte_t>('\n')) && !fsm_.enabled(option::id_num::binary, negotiation_direction::local)) {
                     escaped_data.push_back('\r'); //prepend CR before LF (LF -> CR LF)
                 }
                 escaped_data.push_back(*iter);
-                if (*iter == std::to_underlying(TelnetCommand::IAC)) {
+                if (*iter == std::to_underlying(telnet::command::iac)) {
                     escaped_data.push_back(*iter); //double IAC (IAC -> IAC IAC)
-                } else if ((*iter == static_cast<byte_t>('\r')) && !fsm_.enabled(option::id_num::binary, NegotiationDirection::LOCAL)) {
+                } else if ((*iter == static_cast<byte_t>('\r')) && !fsm_.enabled(option::id_num::binary, negotiation_direction::local)) {
                     escaped_data.push_back('\0'); //append NUL after CR (CR -> CR NUL)
                 }
             }

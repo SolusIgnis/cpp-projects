@@ -11,7 +11,7 @@
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:protocol_fsm` for `ProtocolFSM`, `:types` for `TelnetCommand`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:internal` for implementation classes
+ * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:protocol_fsm` for `ProtocolFSM`, `:types` for `telnet::command`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:internal` for implementation classes
  * @todo Phase 6: Hand-tune next-layer stream constraints to exactly match Boost.Asio stream sockets.
  * @todo Phase 6: Add concept for TLS-aware next-layer stream to implement conditional TLS support.
  * @todo Future Development: Monitor `asio::async_result_t` compatibility with evolving Boost.Asio and `std::execution` for potential transition to awaitable or standard async frameworks.
@@ -26,7 +26,7 @@ export module net.telnet:stream;
 
 import std; //For std::error_code, std::size_t, std::vector, std::same_as
 
-export import :types;        ///< @see "net.telnet-types.cppm" for `byte_t` and `TelnetCommand`
+export import :types;        ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
 export import :errors;       ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
 export import :concepts;     ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
 export import :options;      ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
@@ -49,7 +49,7 @@ export namespace net::telnet {
     /**
      * @brief Stream class wrapping a next-layer stream/socket with Telnet protocol handling.
      * @remark Implements a stream interface (read/write) over a layered stream/socket.
-     * @see `:protocol_fsm` for `ProtocolFSM`, `:types` for `TelnetCommand`, `:options` for `option` and `option::id_num`, `:errors` for error codes
+     * @see `:protocol_fsm` for `ProtocolFSM`, `:types` for `telnet::command`, `:options` for `option` and `option::id_num`, `:errors` for error codes
      */
     template<LayerableSocketStream NextLayerT, ProtocolFSMConfig ProtocolConfigT = DefaultProtocolFSMConfig>
     class stream {
@@ -125,23 +125,23 @@ export namespace net::telnet {
 
         ///@brief Asynchronously requests or offers an option, sending IAC WILL/DO.
         template<typename CompletionToken>
-        auto async_request_option(option::id_num opt, NegotiationDirection direction, CompletionToken&& token;
+        auto async_request_option(option::id_num opt, negotiation_direction direction, CompletionToken&& token;
 
         ///@brief Synchronously requests or offers an option, sending IAC WILL/DO.
-        std::size_t request_option(option::id_num opt, NegotiationDirection direction);
+        std::size_t request_option(option::id_num opt, negotiation_direction direction);
 
         ///@brief Synchronously requests or offers an option, sending IAC WILL/DO.
-        std::size_t request_option(option::id_num opt, NegotiationDirection direction, std::error_code& ec) noexcept;
+        std::size_t request_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously disables an option, sending IAC WONT/DONT.
         template<typename CompletionToken>
-        auto async_disable_option(option::id_num opt, NegotiationDirection direction, CompletionToken&& token;
+        auto async_disable_option(option::id_num opt, negotiation_direction direction, CompletionToken&& token;
 
         ///@brief Synchronously disables an option, sending IAC WONT/DONT.
-        std::size_t disable_option(option::id_num opt, NegotiationDirection direction);
+        std::size_t disable_option(option::id_num opt, negotiation_direction direction);
 
         ///@brief Synchronously disables an option, sending IAC WONT/DONT.
-        std::size_t disable_option(option::id_num opt, NegotiationDirection direction, std::error_code& ec) noexcept;
+        std::size_t disable_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously reads some data with Telnet processing.
         template<MutableBufferSequence MBufSeq, ReadToken CompletionToken>
@@ -183,13 +183,13 @@ export namespace net::telnet {
 
         ///@brief Asynchronously writes a Telnet command.
         template<WriteToken CompletionToken>
-        auto async_write_command(TelnetCommand cmd, CompletionToken&& token;
+        auto async_write_command(telnet::command cmd, CompletionToken&& token;
 
         ///@brief Synchronously writes a Telnet command.
-        std::size_t write_command(TelnetCommand cmd);
+        std::size_t write_command(telnet::command cmd);
 
         ///@brief Synchronously writes a Telnet command.
-        std::size_t write_command(TelnetCommand cmd, std::error_code& ec) noexcept;
+        std::size_t write_command(telnet::command cmd, std::error_code& ec) noexcept;
 
         ///@todo Future Development: make this private
         ///@brief Asynchronously writes a Telnet negotiation command with an option.
@@ -226,7 +226,7 @@ export namespace net::telnet {
         struct context_type {
         private:
             /**
-             * @brief A private nested class to track the state of the TCP urgent notification and receipt of `TelnetCommand::DM`.
+             * @brief A private nested class to track the state of the TCP urgent notification and receipt of `telnet::command::DM`.
              */
             class urgent_data_tracker {
             private:
@@ -238,7 +238,7 @@ export namespace net::telnet {
             public:
                 ///@brief Updates the state when the OOB notification arrives.
                 void saw_urgent();
-                ///@brief Updates the state when the `TelnetCommand::DM` arrives.
+                ///@brief Updates the state when the `telnet::command::dm` arrives.
                 void saw_data_mark();
                 ///@brief Reports if the urgent notification is currently active.
                 bool has_urgent_data() const noexcept { return (state_.load(std::memory_order_relaxed) == UrgentDataState::HAS_URGENT_DATA); }
@@ -380,7 +380,7 @@ export namespace net::telnet {
      * @see `:protocol_fsm` for `ProtocolFSM`, `:options` for `option`, "net.telnet-stream-impl.cpp" for implementation
      */
     /**
-     * @fn auto stream::async_request_option(option::id_num opt, NegotiationDirection direction, CompletionToken&& token)
+     * @fn auto stream::async_request_option(option::id_num opt, negotiation_direction direction, CompletionToken&& token)
      * @tparam CompletionToken The type of completion token.
      * @param opt The `option::id_num` to request or offer.
      * @param direction The negotiation direction (`LOCAL` for WILL, `REMOTE` for DO).
@@ -388,29 +388,29 @@ export namespace net::telnet {
      * @return Result type deduced from the completion token.
      * @remark Uses RFC 1143 Q Method via `fsm_.request_option` to validate state and set pending flags, sending `IAC WILL` or `IAC DO` via `async_write_negotiation` if needed.
      * @throws System errors (e.g., `telnet::error::internal_error`) via `async_report_error`.
-     * @see RFC 1143, :protocol_fsm for `request_option`, :options for `option::id_num`, :errors for error codes, :types for `NegotiationDirection`, "net.telnet-stream-async-impl.cpp" for implementation
+     * @see RFC 1143, :protocol_fsm for `request_option`, :options for `option::id_num`, :errors for error codes, :types for `negotiation_direction`, "net.telnet-stream-async-impl.cpp" for implementation
      */
     /**
-     * @fn std::size_t stream::request_option(option::id_num opt, NegotiationDirection direction)
+     * @fn std::size_t stream::request_option(option::id_num opt, negotiation_direction direction)
      * @param opt The `option::id_num` to request or offer.
      * @param direction The negotiation direction (`LOCAL` for WILL, `REMOTE` for DO).
      * @return The number of bytes written (typically 3 for IAC WILL/DO + option).
      * @throws std::system_error If an error occurs (e.g., `telnet::error::internal_error`, `telnet::error::option_not_available`).
      * @remark Uses RFC 1143 Q Method via `fsm_.request_option` to validate state and set pending flags, sending `IAC WILL` or `IAC DO` via `sync_await` on `async_request_option`.
-     * @see RFC 1143, :protocol_fsm for `request_option`, :options for `option::id_num`, :errors for error codes, :types for `NegotiationDirection`, "net.telnet-stream-sync-impl.cpp" for implementation
+     * @see RFC 1143, :protocol_fsm for `request_option`, :options for `option::id_num`, :errors for error codes, :types for `negotiation_direction`, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
-     * @overload std::size_t stream::request_option(option::id_num opt, NegotiationDirection direction, std::error_code& ec) noexcept
+     * @overload std::size_t stream::request_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept
      * @param opt The `option::id_num` to request or offer.
      * @param direction The negotiation direction (`LOCAL` for WILL, `REMOTE` for DO).
      * @param[out] ec The error code to set on failure (e.g., `telnet::error::internal_error`, `telnet::error::option_not_available`).
      * @return The number of bytes written (typically 3 for IAC WILL/DO + option), or 0 on error.
      * @remark Wraps the throwing `request_option` overload, catching exceptions to set `ec` with appropriate error codes.
      * @remark Uses RFC 1143 Q Method via `fsm_.request_option` and `sync_await` on `async_request_option`.
-     * @see RFC 1143, :protocol_fsm for `request_option`, :options for `option::id_num`, :errors for error codes, :types for `NegotiationDirection`, "net.telnet-stream-sync-impl.cpp" for implementation
+     * @see RFC 1143, :protocol_fsm for `request_option`, :options for `option::id_num`, :errors for error codes, :types for `negotiation_direction`, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
-     * @fn auto stream::async_disable_option(option::id_num opt, NegotiationDirection direction, CompletionToken&& token)
+     * @fn auto stream::async_disable_option(option::id_num opt, negotiation_direction direction, CompletionToken&& token)
      * @tparam CompletionToken The type of completion token.
      * @param opt The `option::id_num` to disable.
      * @param direction The negotiation direction (`LOCAL` for WONT, `REMOTE` for DONT).
@@ -418,26 +418,26 @@ export namespace net::telnet {
      * @return Result type deduced from the completion token.
      * @remark Uses RFC 1143 Q Method via `fsm_.disable_option` to validate state and set pending flags, sending `IAC WONT` or `IAC DONT` via `async_write_negotiation` if needed, and awaiting disablement handlers if registered.
      * @throws System errors (e.g., `telnet::error::internal_error`) via `async_report_error`.
-     * @see RFC 1143, :protocol_fsm for `disable_option`, :options for `option::id_num`, :errors for error codes, :types for `NegotiationDirection`, :awaitables for `OptionDisablementAwaitable`, "net.telnet-stream-async-impl.cpp" for implementation
+     * @see RFC 1143, :protocol_fsm for `disable_option`, :options for `option::id_num`, :errors for error codes, :types for `negotiation_direction`, :awaitables for `OptionDisablementAwaitable`, "net.telnet-stream-async-impl.cpp" for implementation
      */
     /**
-     * @fn std::size_t stream::disable_option(option::id_num opt, NegotiationDirection direction)
+     * @fn std::size_t stream::disable_option(option::id_num opt, negotiation_direction direction)
      * @param opt The `option::id_num` to disable.
      * @param direction The negotiation direction (`LOCAL` for WONT, `REMOTE` for DONT).
      * @return The number of bytes written (typically 3 for IAC WONT/DONT + option).
      * @throws std::system_error If an error occurs (e.g., `telnet::error::internal_error`, `telnet::error::option_not_available`).
      * @remark Uses RFC 1143 Q Method via `fsm_.disable_option` to validate state and set pending flags, sending `IAC WONT` or `IAC DONT` via `sync_await` on `async_disable_option`, awaiting disablement handlers if registered.
-     * @see RFC 1143, :protocol_fsm for `disable_option`, :options for `option::id_num`, :errors for error codes, :types for `NegotiationDirection`, :awaitables for `OptionDisablementAwaitable`, "net.telnet-stream-sync-impl.cpp" for implementation
+     * @see RFC 1143, :protocol_fsm for `disable_option`, :options for `option::id_num`, :errors for error codes, :types for `negotiation_direction`, :awaitables for `OptionDisablementAwaitable`, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
-     * @overload std::size_t stream::disable_option(option::id_num opt, NegotiationDirection direction, std::error_code& ec) noexcept
+     * @overload std::size_t stream::disable_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept
      * @param opt The `option::id_num` to disable.
      * @param direction The negotiation direction (`LOCAL` for WONT, `REMOTE` for DONT).
      * @param[out] ec The error code to set on failure (e.g., `telnet::error::internal_error`, `telnet::error::option_not_available`).
      * @return The number of bytes written (typically 3 for IAC WONT/DONT + option), or 0 on error.
      * @remark Wraps the throwing `disable_option` overload, catching exceptions to set `ec` with appropriate error codes.
      * @remark Uses RFC 1143 Q Method via `fsm_.disable_option` and `sync_await` on `async_disable_option`, awaiting disablement handlers if registered.
-     * @see RFC 1143, :protocol_fsm for `disable_option`, :options for `option::id_num`, :errors for error codes, :types for `NegotiationDirection`, :awaitables for `OptionDisablementAwaitable`, "net.telnet-stream-sync-impl.cpp" for implementation
+     * @see RFC 1143, :protocol_fsm for `disable_option`, :options for `option::id_num`, :errors for error codes, :types for `negotiation_direction`, :awaitables for `OptionDisablementAwaitable`, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
      * @fn auto stream::async_read_some(const MBufSeq& buffers, CompletionToken&& token)
@@ -534,30 +534,30 @@ export namespace net::telnet {
      * @see `write_raw` for throwing version, `async_write_raw` for async implementation, `:errors` for error codes, RFC 854 for IAC escaping, `:protocol_fsm` for AYT response configuration via `set_ayt_response`, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
-     * @fn auto stream::async_write_command(TelnetCommand cmd, CompletionToken&& token)
+     * @fn auto stream::async_write_command(telnet::command cmd, CompletionToken&& token)
      * @tparam CompletionToken The type of completion token.
-     * @param cmd The `TelnetCommand` to send.
+     * @param cmd The `telnet::command` to send.
      * @param token The completion token.
      * @return Result type deduced from the completion token.
      * @remark Constructs a 2-byte buffer with `{IAC, std::to_underlying(cmd)}` and writes it to `next_layer_` using `asio::async_write`.
      * @remark Binds the operation to the stream’s executor using `asio::bind_executor`.
-     * @see `:types` for `TelnetCommand`, `:errors` for error codes, RFC 854 for command structure, "net.telnet-stream-async-impl.cpp" for implementation
+     * @see `:types` for `telnet::command`, `:errors` for error codes, RFC 854 for command structure, "net.telnet-stream-async-impl.cpp" for implementation
      */
     /**
-     * @fn std::size_t stream::write_command(TelnetCommand cmd)
-     * @param cmd The `TelnetCommand` to send.
+     * @fn std::size_t stream::write_command(telnet::command cmd)
+     * @param cmd The `telnet::command` to send.
      * @return The number of bytes written.
      * @throws std::system_error If an error occurs, with the error code from the operation.
      * @remark Directly returns the result of `sync_await` on the asynchronous `async_write_command` operation.
-     * @see `sync_await` for synchronous operation, :types for `TelnetCommand`, :errors for error codes, "net.telnet-stream-sync-impl.cpp" for implementation
+     * @see `sync_await` for synchronous operation, :types for `telnet::command`, :errors for error codes, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
-     * @overload std::size_t stream::write_command(TelnetCommand cmd, std::error_code& ec) noexcept
-     * @param cmd The `TelnetCommand` to send.
+     * @overload std::size_t stream::write_command(telnet::command cmd, std::error_code& ec) noexcept
+     * @param cmd The `telnet::command` to send.
      * @param ec The error code to set on failure.
      * @return The number of bytes written, or 0 on error.
      * @remark Wraps the throwing `write_command` overload, catching exceptions to set `ec` with appropriate error codes (e.g., `std::system_error`, `not_enough_memory`, `internal_error`).
-     * @see `sync_await` for synchronous operation, :types for `TelnetCommand`, :errors for error codes, "net.telnet-stream-sync-impl.cpp" for implementation
+     * @see `sync_await` for synchronous operation, :types for `telnet::command`, :errors for error codes, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
      * @fn auto stream::async_write_negotiation(typename fsm_type::NegotiationResponse response, CompletionToken&& token)
@@ -568,7 +568,7 @@ export namespace net::telnet {
      * @remark Constructs a 3-byte buffer with `{IAC, std::to_underlying(cmd), std::to_underlying(opt)}` and writes it to `next_layer_` using `asio::async_write` if `cmd` is `WILL`, `WONT`, `DO`, or `DONT`.
      * @remark Returns `telnet::error::invalid_negotiation` via `async_report_error` if `cmd` is not `WILL`, `WONT`, `DO`, or `DONT`.
      * @remark Binds the operation to the stream’s executor using `asio::bind_executor`.
-     * @see :types for `TelnetCommand`, :options for `option::id_num`, :errors for `invalid_negotiation`, RFC 855 for negotiation, "net.telnet-stream-async-impl.cpp" for implementation
+     * @see :types for `telnet::command`, :options for `option::id_num`, :errors for `invalid_negotiation`, RFC 855 for negotiation, "net.telnet-stream-async-impl.cpp" for implementation
      */
     /**
      * @fn auto stream::async_write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, CompletionToken&& token)
@@ -615,7 +615,7 @@ export namespace net::telnet {
      * @remark Sends a Telnet Synch sequence (three NUL bytes, one as OOB, followed by IAC DM) to `next_layer_` using `async_send_nul` and `async_write_command`, as per RFC 854.
      * @remark Binds the operation to the stream’s executor using `asio::bind_executor`.
      * @note Used in response to `abort_output` to flush output and signal urgency, supporting client/server symmetry.
-     * @see `async_send_nul` for OOB sending, `async_write_command` for command writing, :types for `TelnetCommand`, :errors for error codes, RFC 854 for Synch procedure, "net.telnet-stream-async-impl.cpp" for implementation
+     * @see `async_send_nul` for OOB sending, `async_write_command` for command writing, :types for `telnet::command`, :errors for error codes, RFC 854 for Synch procedure, "net.telnet-stream-async-impl.cpp" for implementation
      */
     /**
      * @fn std::size_t stream::send_synch()
@@ -623,7 +623,7 @@ export namespace net::telnet {
      * @throws std::system_error If an error occurs, with the error code from the operation.
      * @remark Directly returns the result of `sync_await` on the asynchronous `async_send_synch` operation.
      * @note Used in response to `abort_output` to flush output and signal urgency, supporting client/server symmetry.
-     * @see `async_send_synch` for async implementation, `sync_await` for synchronous operation, :types for `TelnetCommand`, :errors for error codes, RFC 854 for Synch procedure, "net.telnet-stream-sync-impl.cpp" for implementation
+     * @see `async_send_synch` for async implementation, `sync_await` for synchronous operation, :types for `telnet::command`, :errors for error codes, RFC 854 for Synch procedure, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
      * @overload std::size_t stream::send_synch(std::error_code& ec) noexcept
@@ -631,7 +631,7 @@ export namespace net::telnet {
      * @return The number of bytes written, or 0 on error.
      * @remark Wraps the throwing `send_synch` overload, catching exceptions to set `ec` with appropriate error codes (e.g., `asio::error::operation_not_supported`, `std::errc::not_enough_memory`, `telnet::error::internal_error`).
      * @note Used in response to `abort_output` to flush output and signal urgency, supporting client/server symmetry.
-     * @see `async_send_synch` for async implementation, `sync_await` for synchronous operation, :types for `TelnetCommand`, :errors for error codes, RFC 854 for Synch procedure, "net.telnet-stream-sync-impl.cpp" for implementation
+     * @see `async_send_synch` for async implementation, `sync_await` for synchronous operation, :types for `telnet::command`, :errors for error codes, RFC 854 for Synch procedure, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
      * @fn stream::InputProcessor::InputProcessor(stream& parent_stream, stream::fsm_type& fsm, context_type& context, MutableBufferSequence buffers)

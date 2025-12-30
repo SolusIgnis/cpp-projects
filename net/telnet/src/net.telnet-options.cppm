@@ -10,7 +10,7 @@
  * @license See LICENSE file for details
  *
  * @remark This module is fully inline.
- * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage, `:stream` for negotiation operations, `:types` for `TelnetCommand`
+ * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage, `:stream` for negotiation operations, `:types` for `telnet::command`
  */
 
 module; //Including Asio in the Global Module Fragment until importable header units are reliable.
@@ -32,7 +32,7 @@ export namespace net::telnet {
      *
      * @note Option support is defined by an `option` instance in `ProtocolFSM`; subnegotiation support is indicated by a non-null subnegotiation handler.
      * @remark Comparisons (==, !=, <, >, <=, >=) are based on `id_num`; implicit conversion to `id_num` allows mixed comparisons.
-     * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage in the protocol state machine, `:stream` for negotiation operations, `:types` for `TelnetCommand`.
+     * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage in the protocol state machine, `:stream` for negotiation operations, `:types` for `telnet::command`.
      *
      * @todo Future Development: Use C++26 reflection to populate option names automatically.
      */
@@ -102,7 +102,7 @@ export namespace net::telnet {
         bool supports_remote() const noexcept { return remote_predicate_(id_); }
 
         ///@brief Evaluates the predicate for the designated direction to determine if the `option` can be enabled in that direction.
-        bool supports(NegotiationDirection direction) const noexcept { return (direction == NegotiationDirection::REMOTE) ? supports_remote() : supports_local(); }
+        bool supports(negotiation_direction direction) const noexcept { return (direction == negotiation_direction::remote) ? supports_remote() : supports_local(); }
 
         ///@brief Gets the maximum subnegotiation buffer size.
         size_t max_subnegotiation_size() const noexcept { return max_subneg_size_; }
@@ -191,7 +191,7 @@ export namespace net::telnet {
      * @return True if the `option` can be enabled remotely, false otherwise. 
      */
     /**
-     * @fn bool option::supports(NegotiationDirection direction) const noexcept
+     * @fn bool option::supports(negotiation_direction direction) const noexcept
      *
      * @param direction The direction in question for support.
      * @return True if the `option` can be enabled in the designated direction, false otherwise.
@@ -312,7 +312,7 @@ export namespace net::telnet {
      * @remark Used by `ProtocolFSM` to store and query supported Telnet options.
      * @remark The `std::initializer_list` constructor enforces sorted input by `option::id_num` at compile time using `static_assert`, ensuring O(n) `std::set` construction. Unsorted inputs cause compilation failure. All accessor methods are atomic via `std::shared_mutex`, supporting concurrent reads and exclusive writes.
      * @warning Methods are guaranteed atomic by `std::shared_mutex`, but chaining operations is NOT thread-safe; however `get` followed by `upsert` provides snapshot consistency.
-     * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage in the protocol state machine, `:stream` for negotiation operations, `:types` for `TelnetCommand`, `option` for option details.
+     * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage in the protocol state machine, `:stream` for negotiation operations, `:types` for `telnet::command`, `option` for option details.
      */
     class option_registry {
     public:

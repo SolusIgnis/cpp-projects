@@ -10,7 +10,7 @@
  * @license See LICENSE file for details
  *
  * @note Synchronous I/O operations incur overhead from `sync_await`, which creates a new `io_context` and thread per call, and scale poorly compared to asynchronous methods. However, this overhead is minimal compared to blocking network I/O latency.
- * @see "net.telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `TelnetCommand`, `:options` for `option`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
+ * @see "net.telnet-stream.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:types` for `telnet::command`, `:options` for `option`, `:errors` for error codes, `:protocol_fsm` for `ProtocolFSM`
  */
 
 module; //Including Asio in the Global Module Fragment until importable header units are reliable.
@@ -21,7 +21,7 @@ module net.telnet;
 
 import std; //For std::size_t, std::system_error
 
-import :types;        ///< @see "net.telnet-types.cppm" for `TelnetCommand`
+import :types;        ///< @see "net.telnet-types.cppm" for `telnet::command`
 import :errors;       ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
 import :concepts;     ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
 import :options;      ///< @see "net.telnet-options.cppm" for `option`
@@ -42,13 +42,13 @@ namespace net::telnet {
      * @see `async_request_option` in "net.telnet-stream-async-impl.cpp".
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::request_option(option::id_num opt, NegotiationDirection direction) {
+    std::size_t stream<NLS, PC>::request_option(option::id_num opt, negotiation_direction direction) {
         auto [ec, bytes] = sync_await(async_request_option(opt, direction, asio::use_awaitable));
         if (ec) {
             throw std::system_error(ec);
         }
         return bytes;
-    } //stream::request_option(option::id_num, NegotiationDirection)
+    } //stream::request_option(option::id_num, negotiation_direction)
 
     /**
      * @internal
@@ -56,13 +56,13 @@ namespace net::telnet {
      * @see `async_disable_option` in "net.telnet-stream-async-impl.cpp".
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::disable_option(option::id_num opt, NegotiationDirection direction) {
+    std::size_t stream<NLS, PC>::disable_option(option::id_num opt, negotiation_direction direction) {
         auto [ec, bytes] = sync_await(async_disable_option(opt, direction, asio::use_awaitable));
         if (ec) {
             throw std::system_error(ec);
         }
         return bytes;
-    } //stream::disable_option(option::id_num, NegotiationDirection)
+    } //stream::disable_option(option::id_num, negotiation_direction)
 
     /**
      * @internal
@@ -100,9 +100,9 @@ namespace net::telnet {
      * @see `async_write_command` in "net.telnet-stream-async-impl.cpp".
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::write_command(TelnetCommand cmd) {
+    std::size_t stream<NLS, PC>::write_command(telnet::command cmd) {
         return sync_await(async_write_command(cmd, asio::use_awaitable));
-    } //stream::write_command(TelnetCommand)
+    } //stream::write_command(telnet::command)
 
     /**
      * @internal
@@ -134,7 +134,7 @@ namespace net::telnet {
      * @see `request_option` for throwing version, `async_request_option` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::request_option(option::id_num opt, NegotiationDirection direction, std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::request_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept {
         try {
             return request_option(opt, direction);
         }
@@ -146,7 +146,7 @@ namespace net::telnet {
             ec = std::make_error_code(error::internal_error);
             return 0;
         }
-    } //stream::request_option(option::id_num, NegotiationDirection, std::error_code&) noexcept
+    } //stream::request_option(option::id_num, negotiation_direction, std::error_code&) noexcept
 
     /**
      * @internal
@@ -154,7 +154,7 @@ namespace net::telnet {
      * @see `disable_option` for throwing version, `async_disable_option` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::disable_option(option::id_num opt, NegotiationDirection direction, std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::disable_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept {
         try {
             return disable_option(opt, direction);
         }
@@ -166,7 +166,7 @@ namespace net::telnet {
             ec = std::make_error_code(error::internal_error);
             return 0;
         }
-    } //stream::disable_option(option::id_num, NegotiationDirection, std::error_code&) noexcept
+    } //stream::disable_option(option::id_num, negotiation_direction, std::error_code&) noexcept
 
     /**
      * @internal
@@ -249,7 +249,7 @@ namespace net::telnet {
      * @see `write_command` for throwing version, `async_write_command` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::write_command(TelnetCommand cmd, std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::write_command(telnet::command cmd, std::error_code& ec) noexcept {
         try {
             return write_command(cmd);
         }
@@ -265,7 +265,7 @@ namespace net::telnet {
             ec = std::make_error_code(error::internal_error);
             return 0;
         }
-    } //stream::write_command(TelnetCommand, std::error_code&) noexcept
+    } //stream::write_command(telnet::command, std::error_code&) noexcept
 
     /**
      * @internal

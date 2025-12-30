@@ -93,7 +93,7 @@ export namespace net::telnet::concepts {
      */
     template<typename T>
     concept ProtocolFSMConfig =
-        requires(T& config, TelnetCommand cmd, option full_opt, option::id_num opt, std::error_code& ec_out, std::error_code ec, byte_t byte, std::string msg) {
+        requires(T& config, telnet::command cmd, option full_opt, option::id_num opt, std::error_code& ec_out, std::error_code ec, byte_t byte, std::string msg) {
             typename T::UnknownOptionHandler;
             requires std::convertible_to<typename T::UnknownOptionHandler, typename ProtocolFSM<T>::UnknownOptionHandler>;
             typename T::ErrorLogger;
