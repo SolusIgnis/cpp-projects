@@ -11,8 +11,12 @@
 - Changed from Boost.Asio to standalone Asio:
   - Removed namespace alias from `boost::asio` to `asio`.
   - Changed `#include` directives from `boost/asio` prefix to `asio` prefix (e.g. `#include <asio.hpp>`).
+- Renamed `telnet::TelnetCommand` to `telnet::command`.
+- Changed `telnet::command` enumerators to lowercase and added `_opt` suffix to negotiation commands (e.g. `telnet::TelnetCommand::DO` to `telnet::command::do_opt`).
+- Renamed `telnet::NegotiationDirection` to `telnet::negotiation_direction`.
+- Changed `telnet::negotiation_direction` enumerators to lowercase (i.e. `remote` and `local`).
 
-## [0.5.7] - October 30, 2025
+# [0.5.7] - October 30, 2025
 ### Changed
 - No changes. After analysis, `spawn_handler` would be counterproductive. Implementation declined.
 
