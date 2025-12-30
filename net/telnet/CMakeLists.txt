@@ -19,8 +19,6 @@ add_library(net::telnet ALIAS net.telnet)
 target_compile_features(net.telnet
   PUBLIC cxx_std_23
 )
-set_target_properties(net.telnet PROPERTIES CXX_STANDARD_REQUIRED ON)
-#set_target_properties(net.telnet PROPERTIES CXX_EXTENSIONS OFF)
 
 # Module interface units
 target_sources(net.telnet

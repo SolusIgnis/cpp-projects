@@ -7,6 +7,7 @@ project(cpp-projects
   LANGUAGES CXX
 )
 
+#For "import std"
 set(CMAKE_CXX_MODULE_STD 1)
 
 message(STATUS "Configuring with ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
