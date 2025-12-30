@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 4.1.2)
+# Will be bumped to 4.3 most likely when "import std;" is no longer experimental
 
 # Read Version
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" NET_TELNET_VERSION)
@@ -6,6 +7,7 @@ string(STRIP "${NET_TELNET_VERSION}" NET_TELNET_VERSION)
 
 # Handle Embed/Standalone
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  # Experimental "import std;" until it's a first-class feature
   set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "d0edc3af-4c50-42ea-a356-e2862fe7a444")
   project(net-telnet
     VERSION   ${NET_TELNET_VERSION}
@@ -13,9 +15,10 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   )
 endif()
 
-add_library(net.telnet)
+add_library(net.telnet STATIC)
 add_library(net::telnet ALIAS net.telnet)
 
+# C++23 required for "import std;"
 target_compile_features(net.telnet
   PUBLIC cxx_std_23
 )
@@ -40,11 +43,16 @@ target_sources(net.telnet
       src/net.telnet-types.cppm
 )
 
+# Implementation Units
 target_sources(net.telnet
   PRIVATE
-      # Implementation Units
       src/impl/net.telnet-protocol_fsm-impl.cpp
       src/impl/net.telnet-stream-impl.cpp
       src/impl/net.telnet-stream-async-impl.cpp
       src/impl/net.telnet-stream-sync-impl.cpp
+)
+
+target_link_libraries(net.telnet
+  PUBLIC
+    net::asio_concepts
 )
