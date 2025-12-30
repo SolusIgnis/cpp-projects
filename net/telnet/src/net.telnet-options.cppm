@@ -233,78 +233,78 @@ export namespace net::telnet {
         status                             = 0x05, ///< Status (@see RFC 859)
         timing_mark                        = 0x06, ///< Timing Mark (@see RFC 860)
         remote_controlled_trans_and_echo   = 0x07, ///< Remote Controlled Trans and Echo (@see RFC 726)
-        OUTPUT_LINE_WIDTH                  = 0x08, ///< Output Line Width (NIC 20196 of August 1978)
-        OUTPUT_PAGE_SIZE                   = 0x09, ///< Output Page Size (NIC 20197 of August 1978)
-        OUTPUT_CARRIAGE_RETURN_DISPOSITION = 0x0A, ///< Output Carriage-Return Disposition (@see RFC 652)
-        OUTPUT_HORIZONTAL_TAB_STOPS        = 0x0B, ///< Output Horizontal Tab Stops (@see RFC 653)
-        OUTPUT_HORIZONTAL_TAB_DISPOSITION  = 0x0C, ///< Output Horizontal Tab Disposition (@see RFC 654)
-        OUTPUT_FORMFEED_DISPOSITION        = 0x0D, ///< Output Formfeed Disposition (@see RFC 655)
-        OUTPUT_VERTICAL_TABSTOPS           = 0x0E, ///< Output Vertical Tabstops (@see RFC 656)
-        OUTPUT_VERTICAL_TAB_DISPOSITION    = 0x0F, ///< Output Vertical Tab Disposition (@see RFC 657)
-        OUTPUT_LINEFEED_DISPOSITION        = 0x10, ///< Output Linefeed Disposition (@see RFC 658)
-        EXTENDED_ASCII                     = 0x11, ///< Extended ASCII (@see RFC 698)
-        LOGOUT                             = 0x12, ///< Logout (@see RFC 727)
-        BYTE_MACRO                         = 0x13, ///< Byte Macro (@see RFC 735)
-        DATA_ENTRY_TERMINAL                = 0x14, ///< Data Entry Terminal (@see RFC 1043, RFC 732)
-        SUPDUP                             = 0x15, ///< SUPDUP (@see RFC 736, RFC 734)
-        SUPDUP_OUTPUT                      = 0x16, ///< SUPDUP Output (@see RFC 749)
-        SEND_LOCATION                      = 0x17, ///< Send Location (@see RFC 779)
-        TERMINAL_TYPE                      = 0x18, ///< Terminal Type (@see RFC 1091) (Extended by "MTTS" MUD Terminal Type Standard)
-        END_OF_RECORD                      = 0x19, ///< End of Record (@see RFC 885)
-        TACACS_USER_IDENTIFICATION         = 0x1A, ///< TACACS User Identification (@see RFC 927)
-        OUTPUT_MARKING                     = 0x1B, ///< Output Marking (@see RFC 933)
-        TERMINAL_LOCATION_NUMBER           = 0x1C, ///< Terminal Location Number (@see RFC 946)
-        TELNET_3270_REGIME                 = 0x1D, ///< Telnet 3270 Regime (@see RFC 1041)
-        X_3_PAD                            = 0x1E, ///< X.3 PAD (@see RFC 1053)
-        NEGOTIATE_ABOUT_WINDOW_SIZE        = 0x1F, ///< Negotiate About Window Size (@see RFC 1073)
-        TERMINAL_SPEED                     = 0x20, ///< Terminal Speed (@see RFC 1079)
-        REMOTE_FLOW_CONTROL                = 0x21, ///< Remote Flow Control (@see RFC 1372)
-        LINEMODE                           = 0x22, ///< Linemode (@see RFC 1184)
-        X_DISPLAY_LOCATION                 = 0x23, ///< X Display Location (@see RFC 1096)
-        ENVIRONMENT_OPTION                 = 0x24, ///< Environment Option (@see RFC 1408)
-        AUTHENTICATION                     = 0x25, ///< Authentication Option (@see RFC 2941)
-        ENCRYPT_DEPRECATED                 = 0x26, ///< Encryption Option (@see RFC 2946) (Deprecated in favor of TLS)
-        NEW_ENVIRONMENT_OPTION             = 0x27, ///< New Environment Option (@see RFC 1572) (Extended by "MNES" MUD New Environment Standard)
-        TN3270E                            = 0x28, ///< TN3270E (@see RFC 2355)
-        XAUTH                              = 0x29, ///< XAUTH (Rob Earhart)
-        CHARSET                            = 0x2A, ///< CHARSET (@see RFC 2066)
-        TELNET_REMOTE_SERIAL_PORT          = 0x2B, ///< Telnet Remote Serial Port (Robert Barnes)
-        COM_PORT_CONTROL_OPTION            = 0x2C, ///< Com Port Control Option (@see RFC 2217)
-        TELNET_SUPPRESS_LOCAL_ECHO         = 0x2D, ///< Telnet Suppress Local Echo (Wirt Atmar)
-        TELNET_START_TLS                   = 0x2E, ///< Telnet Start TLS (Michael Boe)
-        KERMIT                             = 0x2F, ///< KERMIT (@see RFC 2840)
-        SEND_URL                           = 0x30, ///< SEND-URL (David Croft)
-        FORWARD_X                          = 0x31, ///< FORWARD_X (Jeffrey Altman)
+        output_line_width                  = 0x08, ///< Output Line Width (NIC 20196 of August 1978)
+        output_page_size                   = 0x09, ///< Output Page Size (NIC 20197 of August 1978)
+        output_carriage_return_disposition = 0x0A, ///< Output Carriage-Return Disposition (@see RFC 652)
+        output_horizontal_tab_stops        = 0x0B, ///< Output Horizontal Tab Stops (@see RFC 653)
+        output_horizontal_tab_disposition  = 0x0C, ///< Output Horizontal Tab Disposition (@see RFC 654)
+        output_formfeed_disposition        = 0x0D, ///< Output Formfeed Disposition (@see RFC 655)
+        output_vertical_tabstops           = 0x0E, ///< Output Vertical Tabstops (@see RFC 656)
+        output_vertical_tab_disposition    = 0x0F, ///< Output Vertical Tab Disposition (@see RFC 657)
+        output_linefeed_disposition        = 0x10, ///< Output Linefeed Disposition (@see RFC 658)
+        extended_ascii                     = 0x11, ///< Extended ASCII (@see RFC 698)
+        logout                             = 0x12, ///< Logout (@see RFC 727)
+        byte_macro                         = 0x13, ///< Byte Macro (@see RFC 735)
+        data_entry_terminal                = 0x14, ///< Data Entry Terminal (@see RFC 1043, RFC 732)
+        supdup                             = 0x15, ///< SUPDUP (@see RFC 736, RFC 734)
+        supdup_output                      = 0x16, ///< SUPDUP Output (@see RFC 749)
+        send_location                      = 0x17, ///< Send Location (@see RFC 779)
+        terminal_type                      = 0x18, ///< Terminal Type (@see RFC 1091) (Extended by "MTTS" MUD Terminal Type Standard)
+        end_of_record                      = 0x19, ///< End of Record (@see RFC 885)
+        tacacs_user_identification         = 0x1A, ///< TACACS User Identification (@see RFC 927)
+        output_marking                     = 0x1B, ///< Output Marking (@see RFC 933)
+        terminal_location_number           = 0x1C, ///< Terminal Location Number (@see RFC 946)
+        telnet_3270_regime                 = 0x1D, ///< Telnet 3270 Regime (@see RFC 1041)
+        x_3_pad                            = 0x1E, ///< X.3 PAD (@see RFC 1053)
+        negotiate_about_window_size        = 0x1F, ///< Negotiate About Window Size (@see RFC 1073)
+        terminal_speed                     = 0x20, ///< Terminal Speed (@see RFC 1079)
+        remote_flow_control                = 0x21, ///< Remote Flow Control (@see RFC 1372)
+        linemode                           = 0x22, ///< Linemode (@see RFC 1184)
+        x_display_location                 = 0x23, ///< X Display Location (@see RFC 1096)
+        environment_option                 = 0x24, ///< Environment Option (@see RFC 1408)
+        authentication                     = 0x25, ///< Authentication Option (@see RFC 2941)
+        encrypt_deprecated                 = 0x26, ///< Encryption Option (@see RFC 2946) (Deprecated in favor of TLS)
+        new_environment_option             = 0x27, ///< New Environment Option (@see RFC 1572) (Extended by "MNES" MUD New Environment Standard)
+        tn3270e                            = 0x28, ///< TN3270E (@see RFC 2355)
+        xauth                              = 0x29, ///< XAUTH (Rob Earhart)
+        charset                            = 0x2A, ///< CHARSET (@see RFC 2066)
+        telnet_remote_serial_port          = 0x2B, ///< Telnet Remote Serial Port (Robert Barnes)
+        com_port_control_option            = 0x2C, ///< Com Port Control Option (@see RFC 2217)
+        telnet_suppress_local_echo         = 0x2D, ///< Telnet Suppress Local Echo (Wirt Atmar)
+        telnet_start_tls                   = 0x2E, ///< Telnet Start TLS (Michael Boe)
+        kermit                             = 0x2F, ///< KERMIT (@see RFC 2840)
+        send_url                           = 0x30, ///< SEND-URL (David Croft)
+        forward_x                          = 0x31, ///< FORWARD_X (Jeffrey Altman)
         /* Range 0x32-0x44 Unused per IANA */
-        MSDP                               = 0x45, ///< MUD Server Data Protocol
-        MSSP                               = 0x46, ///< MUD Server Status Protocol
+        msdp                               = 0x45, ///< MUD Server Data Protocol
+        mssp                               = 0x46, ///< MUD Server Status Protocol
         /* Range 0x47-0x4E Unused per IANA */
-        GSSAPI                             = 0x4F, ///< Generic Security Service API (@see RFC 2942)
+        gssapi                             = 0x4F, ///< Generic Security Service API (@see RFC 2942)
         /* Range 0x50-0x54 Unused per IANA */
-        MCCP1                              = 0x55, ///< MUD Client Compression Protocol v.1
-        MCCP2                              = 0x56, ///< MUD Client Compression Protocol v.2
-        MCCP3                              = 0x57, ///< MUD Client Compression Protocol v.3
+        mccp1                              = 0x55, ///< MUD Client Compression Protocol v.1
+        mccp2                              = 0x56, ///< MUD Client Compression Protocol v.2
+        mccp3                              = 0x57, ///< MUD Client Compression Protocol v.3
         /* Range 0x58-0x59 Unused per IANA */
-        MSP                                = 0x5A, ///< MUD Sound Protocol
-        MXP                                = 0x5B, ///< MUD eXtension Protocol
+        msp                                = 0x5A, ///< MUD Sound Protocol
+        mxp                                = 0x5B, ///< MUD eXtension Protocol
         /* Option 0x5C Unused per IANA */
-        ZMP                                = 0x5D, ///< Zenith MUD Protocol
-        PUEBLO                             = 0x5E, ///< Pueblo Protocol (1998)
+        zmp                                = 0x5D, ///< Zenith MUD Protocol
+        pueblo                             = 0x5E, ///< Pueblo Protocol (1998)
         /* Range 0x5F-0x65 Unused per IANA */
-        AARDWOLF_102                       = 0x66, ///< Aardwolf MUD Channel 102 Protocol
+        aardwolf_102                       = 0x66, ///< Aardwolf MUD Channel 102 Protocol
         /* Range 0x67-0x89 Unused per IANA */
-        TELOPT_PRAGMA_LOGON                = 0x8A, ///< TELOPT PRAGMA LOGON (Steve McGregory)
-        TELOPT_SSPI_LOGON                  = 0x8B, ///< TELOPT SSPI LOGON (Steve McGregory)
-        TELOPT_PRAGMA_HEARTBEAT            = 0x8C, ///< TELOPT PRAGMA HEARTBEAT (Steve McGregory)
+        telopt_pragma_logon                = 0x8A, ///< TELOPT PRAGMA LOGON (Steve McGregory)
+        telopt_sspi_logon                  = 0x8B, ///< TELOPT SSPI LOGON (Steve McGregory)
+        telopt_pragma_heartbeat            = 0x8C, ///< TELOPT PRAGMA HEARTBEAT (Steve McGregory)
         /* Range 0x8D-0x90 Unused per IANA */
-        SSL_DEPRECATED                     = 0x91, ///< SSL Legacy Implementation (Deprecated in favor of TLS)
+        ssl_deprecated                     = 0x91, ///< SSL Legacy Implementation (Deprecated in favor of TLS)
         /* Range 0x92-0x9F Unused per IANA */
-        MCP                                = 0xA0, ///< MUD Client Protocol (2002)
+        mcp                                = 0xA0, ///< MUD Client Protocol (2002)
         /* Range 0xA1-0xC7 Unused per IANA */
-        ATCP                               = 0xC8, ///< Achaea Telnet Communication Protocol
-        GMCP                               = 0xC9, ///< Generic MUD Communication Protocol (aka ATCP2)
+        atcp                               = 0xC8, ///< Achaea Telnet Communication Protocol
+        gmcp                               = 0xC9, ///< Generic MUD Communication Protocol (aka ATCP2)
         /* Range 0xCA-0xFE Unused per IANA */        
-        EXTENDED_OPTIONS_LIST              = 0xFF  ///< Extended-Options-List (@see RFC 861)
+        extended_options_list              = 0xFF  ///< Extended-Options-List (@see RFC 861)
     }; //enum class option::id_num
     
     /**
