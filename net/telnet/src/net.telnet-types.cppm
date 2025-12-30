@@ -5,8 +5,8 @@
  *
  * @brief Partition for Telnet protocol-related types.
  * @remark Defines `byte_t` type alias for the byte stream's underlying type.
- * @remark Defines `TelnetCommand` and `NegotiationDirection` enumerations.
- * @remark Defines custom formatters for `TelnetCommand` and `NegotiationDirection` for use with `std::format`.
+ * @remark Defines `telnet::command` and `negotiation_direction` enumerations.
+ * @remark Defines custom formatters for `telnet::command` and `negotiation_direction` for use with `std::format`.
  *
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
@@ -68,8 +68,8 @@ export namespace net::telnet {
 
 export namespace std {
     /**
-     * @brief Formatter specialization for `::net::telnet::TelnetCommand` to support `std::format`.
-     * @remark Formats `TelnetCommand` values for use in `ProtocolConfig::log_error` and other logging contexts.
+     * @brief Formatter specialization for `::net::telnet::command` to support `std::format`.
+     * @remark Formats `telnet::command` values for use in `ProtocolConfig::log_error` and other logging contexts.
      * @see `:protocol_fsm` for logging usage.
      */
     template<>
@@ -110,23 +110,23 @@ export namespace std {
         auto format(::net::telnet::command cmd, FormatContext& ctx) const {
             string_view name;
             switch (cmd) {
-                case ::net::telnet::TelnetCommand::eor:      name = "EOR";  break;
-                case ::net::telnet::TelnetCommand::se:       name = "SE";   break;
-                case ::net::telnet::TelnetCommand::nop:      name = "NOP";  break;
-                case ::net::telnet::TelnetCommand::dm:       name = "DM";   break;
-                case ::net::telnet::TelnetCommand::brk:      name = "BRK";  break;
-                case ::net::telnet::TelnetCommand::ip:       name = "IP";   break;
-                case ::net::telnet::TelnetCommand::ao:       name = "AO";   break;
-                case ::net::telnet::TelnetCommand::ayt:      name = "AYT";  break;
-                case ::net::telnet::TelnetCommand::ec:       name = "EC";   break;
-                case ::net::telnet::TelnetCommand::el:       name = "EL";   break;
-                case ::net::telnet::TelnetCommand::ga:       name = "GA";   break;
-                case ::net::telnet::TelnetCommand::sb:       name = "SB";   break;
-                case ::net::telnet::TelnetCommand::will_opt: name = "WILL"; break;
-                case ::net::telnet::TelnetCommand::wont_opt: name = "WONT"; break;
-                case ::net::telnet::TelnetCommand::do_opt:   name = "DO";   break;
-                case ::net::telnet::TelnetCommand::dont_opt: name = "DONT"; break;
-                case ::net::telnet::TelnetCommand::iac:      name = "IAC";  break;
+                case ::net::telnet::command::eor:      name = "EOR";  break;
+                case ::net::telnet::command::se:       name = "SE";   break;
+                case ::net::telnet::command::nop:      name = "NOP";  break;
+                case ::net::telnet::command::dm:       name = "DM";   break;
+                case ::net::telnet::command::brk:      name = "BRK";  break;
+                case ::net::telnet::command::ip:       name = "IP";   break;
+                case ::net::telnet::command::ao:       name = "AO";   break;
+                case ::net::telnet::command::ayt:      name = "AYT";  break;
+                case ::net::telnet::command::ec:       name = "EC";   break;
+                case ::net::telnet::command::el:       name = "EL";   break;
+                case ::net::telnet::command::ga:       name = "GA";   break;
+                case ::net::telnet::command::sb:       name = "SB";   break;
+                case ::net::telnet::command::will_opt: name = "WILL"; break;
+                case ::net::telnet::command::wont_opt: name = "WONT"; break;
+                case ::net::telnet::command::do_opt:   name = "DO";   break;
+                case ::net::telnet::command::dont_opt: name = "DONT"; break;
+                case ::net::telnet::command::iac:      name = "IAC";  break;
                 default:                                     name = "UNKNOWN"; break;
             }
             
