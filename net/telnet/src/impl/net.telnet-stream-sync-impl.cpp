@@ -69,7 +69,8 @@ namespace net::telnet {
      * Wraps awaitable `async_read_some` in `sync_await` with perfect forwarding of the buffer sequence.
      * @see `async_read_some` in "net.telnet-stream-async-impl.cpp".
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC, MutableBufferSequence MBufSeq>
+    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<MutableBufferSequence MBufSeq>
     std::size_t stream<NLS, PC>::read_some(MBufSeq&& buffers) {
         return sync_await(async_read_some(std::forward<MBufSeq>(buffers), asio::use_awaitable));
     } //stream::read_some(MBufSeq&&)
@@ -79,7 +80,8 @@ namespace net::telnet {
      * Wraps awaitable `async_write_some` in `sync_await`, forwarding the buffer sequence.
      * @see `async_write_some` in "net.telnet-stream-async-impl.cpp".
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC, ConstBufferSequence CBufSeq>
+    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<ConstBufferSequence CBufSeq>
     std::size_t stream<NLS, PC>::write_some(const CBufSeq& data) {
         return sync_await(async_write_some(data, asio::use_awaitable));
     } //stream::write_some(const CBufSeq&)
@@ -89,7 +91,8 @@ namespace net::telnet {
      * Wraps awaitable `async_write_raw` in `sync_await`, forwarding the buffer sequence.
      * @see `async_write_raw` in "net.telnet-stream-async-impl.cpp".
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC, ConstBufferSequence CBufSeq>
+    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<ConstBufferSequence CBufSeq>
     std::size_t stream<NLS, PC>::write_raw(const CBufSeq& data) {
         return sync_await(async_write_raw(data, asio::use_awaitable));
     } //stream::write_raw(const CBufSeq&)
@@ -143,7 +146,7 @@ namespace net::telnet {
             return 0;
         }
         catch (...) {
-            ec = std::make_error_code(error::internal_error);
+            ec = make_error_code(error::internal_error);
             return 0;
         }
     } //stream::request_option(option::id_num, negotiation_direction, std::error_code&) noexcept
@@ -163,7 +166,7 @@ namespace net::telnet {
             return 0;
         }
         catch (...) {
-            ec = std::make_error_code(error::internal_error);
+            ec = make_error_code(error::internal_error);
             return 0;
         }
     } //stream::disable_option(option::id_num, negotiation_direction, std::error_code&) noexcept
@@ -173,33 +176,33 @@ namespace net::telnet {
      * Calls the throwing `read_some`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
      * @see `read_some` for throwing version, `async_read_some` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC, typename MutableBufferSequence>
-      requires asio::mutable_buffer_sequence<MutableBufferSequence>
-    std::size_t stream<NLS, PC>::read_some(MutableBufferSequence&& buffers, std::error_code& ec) noexcept {
+    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<MutableBufferSequence MBufSeq>
+    std::size_t stream<NLS, PC>::read_some(MBufSeq&& buffers, std::error_code& ec) noexcept {
         try {
-            return read_some(std::forward<MutableBufferSequence>(buffers));
+            return read_some(std::forward<MBufSeq>(buffers));
         }
         catch (const std::system_error& e) {
             ec = e.code();
             return 0;
         }
         catch (const std::bad_alloc& e) {
-            ec = std::make_error_code(std::errc::not_enough_memory);
+            ec = make_error_code(std::errc::not_enough_memory);
             return 0;
         }
         catch (...) {
-            ec = std::make_error_code(error::internal_error);
+            ec = make_error_code(error::internal_error);
             return 0;
         }
-    } //stream::read_some(MutableBufferSequence&&, std::error_code&) noexcept
+    } //stream::read_some(MBufSeq&&, std::error_code&) noexcept
 
     /**
      * @internal
      * Calls the throwing `write_some`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
      * @see `write_some` for throwing version, `async_write_some` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC, ConstBufferSequence CBufSeq>
-      requires asio::const_buffer_sequence<ConstBufferSequence>
+    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<ConstBufferSequence CBufSeq>
     std::size_t stream<NLS, PC>::write_some(const CBufSeq& data, std::error_code& ec) noexcept {
         try {
             return write_some(data);
@@ -209,11 +212,11 @@ namespace net::telnet {
             return 0;
         }
         catch (const std::bad_alloc& e) {
-            ec = std::make_error_code(std::errc::not_enough_memory);
+            ec = make_error_code(std::errc::not_enough_memory);
             return 0;
         }
         catch (...) {
-            ec = std::make_error_code(error::internal_error);
+            ec = make_error_code(error::internal_error);
             return 0;
         }
     } //stream::write_some(const CBufSeq&, std::error_code&) noexcept
@@ -223,8 +226,8 @@ namespace net::telnet {
      * Calls the throwing `write_raw`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
      * @see `write_raw` for throwing version, `async_write_raw` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC, ConstBufferSequence CBufSeq>
-      requires asio::const_buffer_sequence<ConstBufferSequence>
+    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<ConstBufferSequence CBufSeq>
     std::size_t stream<NLS, PC>::write_raw(const CBufSeq& data, std::error_code& ec) noexcept {
         try {
             return write_raw(data);
@@ -234,11 +237,11 @@ namespace net::telnet {
             return 0;
         }
         catch (const std::bad_alloc& e) {
-            ec = std::make_error_code(std::errc::not_enough_memory);
+            ec = make_error_code(std::errc::not_enough_memory);
             return 0;
         }
         catch (...) {
-            ec = std::make_error_code(error::internal_error);
+            ec = make_error_code(error::internal_error);
             return 0;
         }
     } //stream::write_raw(const CBufSeq&, std::error_code&) noexcept
@@ -258,11 +261,11 @@ namespace net::telnet {
             return 0;
         }
         catch (const std::bad_alloc& e) {
-            ec = std::make_error_code(std::errc::not_enough_memory);
+            ec = make_error_code(std::errc::not_enough_memory);
             return 0;
         }
         catch (...) {
-            ec = std::make_error_code(error::internal_error);
+            ec = make_error_code(error::internal_error);
             return 0;
         }
     } //stream::write_command(telnet::command, std::error_code&) noexcept
@@ -282,11 +285,11 @@ namespace net::telnet {
             return 0;
         }
         catch (const std::bad_alloc& e) {
-            ec = std::make_error_code(std::errc::not_enough_memory);
+            ec = make_error_code(std::errc::not_enough_memory);
             return 0;
         }
         catch (...) {
-            ec = std::make_error_code(error::internal_error);
+            ec = make_error_code(error::internal_error);
             return 0;
         }
     } //stream::write_subnegotiation(option, const std::vector<byte_t>&, std::error_code&) noexcept
@@ -306,11 +309,11 @@ namespace net::telnet {
             return 0;
         }
         catch (const std::bad_alloc& e) {
-            ec = std::make_error_code(std::errc::not_enough_memory);
+            ec = make_error_code(std::errc::not_enough_memory);
             return 0;
         }
         catch (...) {
-            ec = std::make_error_code(error::internal_error);
+            ec = make_error_code(error::internal_error);
             return 0;
         }
     } //stream::send_synch(std::error_code&) noexcept

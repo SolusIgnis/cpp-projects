@@ -43,7 +43,7 @@ namespace net::telnet {
         std::error_code ec;
         next_layer_.lowest_layer().set_option(lowest_layer_type::out_of_band_inline(true), ec);
         if (ec) {
-            ProtocolConfig::log_error(ec, "Failed to enable out_of_band_inline on socket: {}", ec.message());
+            PC::log_error(ec, "Failed to enable out_of_band_inline on socket: {}", ec.message());
         }
     } //stream::stream(next_layer_type&&)
 
@@ -57,7 +57,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<typename Awaitable>
     auto stream<NLS, PC>::sync_await(Awaitable&& a) {
-        using ResultType = typename asio::awaitable_traits<std::decay_t<Awaitable>>::return_type;
+        using ResultType = typename Awaitable::value_type;
         asio::io_context temp_ctx;
         std::promise<ResultType> promise;
         std::future<ResultType> future = promise.get_future();
@@ -90,8 +90,8 @@ namespace net::telnet {
      * @remark Catches other exceptions to clear `escaped_data` and return `telnet::error::internal_error`.
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<typename ConstBufferSequence>
-    std::tuple<std::error_code, std::vector<byte_t>&> stream<NLS, PC>::escape_telnet_output(std::vector<byte_t>& escaped_data, const ConstBufferSequence& data) const noexcept {
+    template<ConstBufferSequence CBufSeq>
+    std::tuple<std::error_code, std::vector<byte_t>&> stream<NLS, PC>::escape_telnet_output(std::vector<byte_t>& escaped_data, const CBufSeq& data) const noexcept {
         try {
             for (auto iter = asio::buffers_begin(data), end = asio::buffers_end(data); iter != end; ++iter) {
                 if ((*iter == static_cast<byte_t>('\n')) && !fsm_.enabled(option::id_num::binary, negotiation_direction::local)) {
@@ -107,12 +107,12 @@ namespace net::telnet {
             return {std::error_code(), escaped_data};
         } catch (const std::bad_alloc&) {
             escaped_data.clear();
-            return {std::make_error_code(std::errc::not_enough_memory), escaped_data};
+            return {make_error_code(std::errc::not_enough_memory), escaped_data};
         } catch (...) {
             escaped_data.clear();
-            return {std::make_error_code(error::internal_error), escaped_data};
+            return {make_error_code(error::internal_error), escaped_data};
         }
-    } //stream::escape_telnet_output(std::vector<byte_t>&, const ConstBufferSequence&) const noexcept
+    } //stream::escape_telnet_output(std::vector<byte_t>&, const CBufSeq&) const noexcept
 
     /**
      * @internal
@@ -122,18 +122,18 @@ namespace net::telnet {
      * @remark Catches other exceptions to return `telnet::error::internal_error` with an empty vector.
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<typename ConstBufferSequence>
-    std::tuple<std::error_code, std::vector<byte_t>> stream<NLS, PC>::escape_telnet_output(const ConstBufferSequence& data) const noexcept {
+    template<ConstBufferSequence CBufSeq>
+    std::tuple<std::error_code, std::vector<byte_t>> stream<NLS, PC>::escape_telnet_output(const CBufSeq& data) const noexcept {
         std::vector<byte_t> escaped_data;
         try {
             escaped_data.reserve(asio::buffer_size(data) * 1.1);
             return this->escape_telnet_output(escaped_data, data);
         } catch (const std::bad_alloc&) {
-            return {std::make_error_code(std::errc::not_enough_memory), std::vector<byte_t>()};
+            return {make_error_code(std::errc::not_enough_memory), std::vector<byte_t>()};
         } catch (...) {
-            return {std::make_error_code(error::internal_error), std::vector<byte_t>()};
+            return {make_error_code(error::internal_error), std::vector<byte_t>()};
         }
-    } //stream::escape_telnet_output(const ConstBufferSequence&) const noexcept
+    } //stream::escape_telnet_output(const CBufSeq&) const noexcept
 
     /**
      * @internal
@@ -255,7 +255,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     stream<NLS, PC>::InputProcessor<MBS>::InputProcessor(
-        stream& parent_stream, stream::fsm_type& fsm, stream::context_type& context, MutableBufferSequence buffers)
+        stream& parent_stream, stream::fsm_type& fsm, stream::context_type& context, MBS buffers)
         : parent_stream_(parent_stream),
           fsm_(fsm),
           context_(context),
@@ -329,7 +329,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::InputProcessor<MBS>::handle_processor_state_reading(Self& self, std::error_code ec_in = {}, std::size_t bytes_transferred = 0) {
+    void stream<NLS, PC>::InputProcessor<MBS>::handle_processor_state_reading(Self& self, std::error_code ec_in, std::size_t bytes_transferred) {
         context_.input_side_buffer.commit(bytes_transferred);
         
         if (context_.input_side_buffer.size() == 0) {
@@ -365,7 +365,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::InputProcessor<MBS>::handle_processor_state_processing(Self& self, std::error_code ec_in = {}) {
+    void stream<NLS, PC>::InputProcessor<MBS>::handle_processor_state_processing(Self& self, std::error_code ec_in) {
         if (ec_in) { //This has to be a write error.
             process_write_error(ec_in);
         }
@@ -528,8 +528,9 @@ namespace net::telnet {
     template<MutableBufferSequence MBS>
     template<typename Self>
     void stream<NLS, PC>::InputProcessor<MBS>::do_response(std::string response, Self&& self) {
+        static std::string r = std::move(response);
         parent_stream_.async_write_raw(
-            asio::buffer(std::make_shared<std::string>(std::move(response))),
+            asio::buffer(r),
             std::forward<Self>(self)
         );
     } //stream::InputProcessor::do_response(std::string, Self&&)

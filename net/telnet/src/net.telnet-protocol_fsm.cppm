@@ -50,8 +50,9 @@ export namespace net::telnet {
      * @remark Thread-safe for `ProtocolConfig` access via `mutex_`.
      * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:options` for `option` and `option::id_num`, `:types` for `telnet::command`, `:errors` for error codes, `:stream` for FSM usage, `:internal` for implementation classes
      */
-    template<ProtocolFSMConfig ConfigT = DefaultProtocolFSMConfig>
+    template<typename ConfigT = DefaultProtocolFSMConfig>
     class ProtocolFSM {
+        static_assert(ProtocolFSMConfig<ConfigT>);
     public:
         /**
          * @typedef ProtocolConfig
@@ -116,9 +117,9 @@ export namespace net::telnet {
         using ProcessingReturnVariant = std::variant<
             NegotiationResponse,
             std::string,
-            std::tuple<OptionEnablementAwaitable, std::optional<NegotiationResponse>>,
-            std::tuple<OptionDisablementAwaitable, std::optional<NegotiationResponse>>,
-            SubnegotiationAwaitable
+            std::tuple<awaitables::OptionEnablementAwaitable, std::optional<NegotiationResponse>>,
+            std::tuple<awaitables::OptionDisablementAwaitable, std::optional<NegotiationResponse>>,
+            awaitables::SubnegotiationAwaitable
         >;
 
         ///@brief Constructs the FSM, initializing `ProtocolConfig` once.
@@ -194,7 +195,7 @@ export namespace net::telnet {
         handle_state_subnegotiation_iac(byte_t byte) noexcept;
 
         ///@brief Handles STATUS subnegotiation (RFC 859), returning an awaitable with the IS [list] payload or user-handled result.
-        auto handle_status_subnegotiation(const option& opt, std::vector<byte_t> buffer) -> awaitables::SubnegotiationAwaitable;
+        auto handle_status_subnegotiation(option opt, std::vector<byte_t> buffer) -> awaitables::SubnegotiationAwaitable;
 
         //Data Members
         OptionHandlerRegistry<ProtocolConfig, OptionEnablementHandler, OptionDisablementHandler, SubnegotiationHandler> option_handler_registry_;

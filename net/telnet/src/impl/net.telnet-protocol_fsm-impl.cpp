@@ -11,9 +11,6 @@
  * @see "net.telnet-protocol_fsm.cppm" for interface, RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, `:types` for `telnet::command` and `negotiation_direction`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:stream` for FSM usage
  */
 
-module; //Including Asio in the Global Module Fragment until importable header units are reliable.
-#include <asio.hpp>
-
 //Module implementation unit
 module net.telnet;
 
@@ -26,15 +23,13 @@ import :awaitables;   ///< @see "net.telnet-awaitables.cppm" for `OptionDisablem
 
 import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for the partition being implemented.
 
-//namespace asio = boost::asio;
-
 namespace net::telnet {
     /**
      * @internal
      * Selects the `telnet::command` corresponding to a given `negotiation_direction` and enablement state 
      */
-    template<ProtocolFSMConfig PC>
-    telnet::command ProtocolFSM<PC>::make_negotiation_command(negotiation_direction direction, bool enable) {
+    template<typename PC>
+    telnet::command ProtocolFSM<PC>::make_negotiation_command(negotiation_direction direction, bool enable) noexcept {
         using enum telnet::command;
         return (
                    (direction == negotiation_direction::remote)
@@ -53,24 +48,24 @@ namespace net::telnet {
      * Logs errors for unregistered options (`error::option_not_available`), queue failures (`error::negotiation_queue_error`), or invalid states (`error::protocol_violation`).
      * @see RFC 1143 for Q Method, `:options` for `option::id_num`, `:errors` for error codes, `:types` for `negotiation_direction`, `:stream` for usage in `async_request_option`
      */
-    template<ProtocolFSMConfig PC>
-    std::tuple<std::error_code, std::optional<NegotiationResponse>> ProtocolFSM<PC>::request_option(
+    template<typename PC>
+    std::tuple<std::error_code, std::optional<typename ProtocolFSM<PC>::NegotiationResponse>> ProtocolFSM<PC>::request_option(
         option::id_num opt, negotiation_direction direction
     ) {
         if (!ProtocolConfig::registered_options.get(opt)) {
             ProtocolConfig::log_error(
-                std::make_error_code(error::option_not_available),
+                make_error_code(error::option_not_available),
                 "Option {} not registered for {} negotiation",
                 std::to_underlying(opt),
                 direction
             );
-            return {std::make_error_code(error::option_not_available), std::nullopt};
+            return {make_error_code(error::option_not_available), std::nullopt};
         }
         auto& status = option_status_[opt];
         //Six states: YES, WANTYES/EMPTY, WANTYES/OPPOSITE, WANTNO/EMPTY, WANTNO/OPPOSITE, NO
         if (status.enabled(direction)) { //YES
             ProtocolConfig::log_error(
-                std::make_error_code(error::invalid_negotiation),
+                make_error_code(error::invalid_negotiation),
                 "Redundant request for option {} in YES state, direction: {}",
                 std::to_underlying(opt),
                 direction
@@ -78,7 +73,7 @@ namespace net::telnet {
             return {std::error_code{}, std::nullopt}; //Idempotent success
         } else if (status.pending_enable(direction) && !status.queued(direction)) { //WANTYES/EMPTY
             ProtocolConfig::log_error(
-                std::make_error_code(error::invalid_negotiation),
+                make_error_code(error::invalid_negotiation),
                 "Redundant request for option {} in WANTYES/EMPTY state, direction: {}",
                 std::to_underlying(opt),
                 direction
@@ -100,7 +95,7 @@ namespace net::telnet {
             return {std::error_code{}, std::nullopt};
         } else if (status.pending_disable(direction) && status.queued(direction)) { //WANTNO/OPPOSITE
             ProtocolConfig::log_error(
-                std::make_error_code(error::invalid_negotiation),
+                make_error_code(error::invalid_negotiation),
                 "Redundant request for option {} in WANTNO/OPPOSITE state, direction: {}",
                 std::to_underlying(opt),
                 direction
@@ -111,12 +106,12 @@ namespace net::telnet {
             return {std::error_code{}, NegotiationResponse{direction, true, opt}};
         }
         ProtocolConfig::log_error(
-            std::make_error_code(error::protocol_violation),
+            make_error_code(error::protocol_violation),
             "Invalid state for option {} in direction: {}",
             std::to_underlying(opt),
             direction
         );
-        return {std::make_error_code(error::protocol_violation), std::nullopt};
+        return {make_error_code(error::protocol_violation), std::nullopt};
     } //request_option(option::id_num, negotiation_direction)
 
     /**
@@ -128,23 +123,23 @@ namespace net::telnet {
      * Logs errors for unregistered options (`error::option_not_available`), queue failures (`error::negotiation_queue_error`), or invalid states (`error::protocol_violation`).
      * @see RFC 1143 for Q Method, `:options` for `option::id_num`, `:errors` for error codes, `:types` for `negotiation_direction`, `:awaitables` for `OptionDisablementAwaitable`, `:stream` for usage in `async_disable_option`
      */
-    template<ProtocolFSMConfig PC>
-    std::tuple<std::error_code, std::optional<NegotiationResponse>, std::optional<awaitables::OptionDisablementAwaitable>>
+    template<typename PC>
+    std::tuple<std::error_code, std::optional<typename ProtocolFSM<PC>::NegotiationResponse>, std::optional<awaitables::OptionDisablementAwaitable>>
     ProtocolFSM<PC>::disable_option(option::id_num opt, negotiation_direction direction) {
         if (!ProtocolConfig::registered_options.get(opt)) {
             ProtocolConfig::log_error(
-                std::make_error_code(error::option_not_available),
+                make_error_code(error::option_not_available),
                 "Option {} not registered for {} negotiation",
                 std::to_underlying(opt),
                 direction
             );
-            return {std::make_error_code(error::option_not_available), std::nullopt, std::nullopt};
+            return {make_error_code(error::option_not_available), std::nullopt, std::nullopt};
         }
         auto& status = option_status_[opt];
         //Six states: NO, WANTNO/EMPTY, WANTNO/OPPOSITE, WANTYES/EMPTY, WANTYES/OPPOSITE, YES
         if (status.disabled(direction)) { //NO
             ProtocolConfig::log_error(
-                std::make_error_code(error::invalid_negotiation),
+                make_error_code(error::invalid_negotiation),
                 "Redundant disable for option {} in NO state, direction: {}",
                 std::to_underlying(opt),
                 direction
@@ -152,7 +147,7 @@ namespace net::telnet {
             return {std::error_code{}, std::nullopt, std::nullopt}; //Idempotent success
         } else if (status.pending_disable(direction) && !status.queued(direction)) { //WANTNO/EMPTY
             ProtocolConfig::log_error(
-                std::make_error_code(error::invalid_negotiation),
+                make_error_code(error::invalid_negotiation),
                 "Redundant disable for option {} in WANTNO/EMPTY state, direction: {}",
                 std::to_underlying(opt),
                 direction
@@ -174,7 +169,7 @@ namespace net::telnet {
             return {std::error_code{}, std::nullopt, std::nullopt};
         } else if (status.pending_enable(direction) && status.queued(direction)) { //WANTYES/OPPOSITE
             ProtocolConfig::log_error(
-                std::make_error_code(error::invalid_negotiation),
+                make_error_code(error::invalid_negotiation),
                 "Redundant disable for option {} in WANTYES/OPPOSITE state, direction: {}",
                 std::to_underlying(opt),
                 direction
@@ -186,12 +181,12 @@ namespace net::telnet {
             return {std::error_code{}, NegotiationResponse{direction, false, opt}, std::move(awaitable)};
         }
         ProtocolConfig::log_error(
-            std::make_error_code(error::protocol_violation),
+            make_error_code(error::protocol_violation),
             "Invalid state for option {} in direction: {}",
             std::to_underlying(opt),
             direction
         );
-        return {std::make_error_code(error::protocol_violation), std::nullopt, std::nullopt};
+        return {make_error_code(error::protocol_violation), std::nullopt, std::nullopt};
     } //disable_option(option::id_num, negotiation_direction)
    
     /**
@@ -199,7 +194,7 @@ namespace net::telnet {
      * Transitions `ProtocolFSM`'s state.
      * @note Resets `current_command_`, `current_option_`, and `subnegotiation_buffer_` when transitioning to `ProtocolState::Normal`.
      */
-    template<ProtocolFSMConfig PC>
+    template<typename PC>
     void ProtocolFSM<PC>::change_state(ProtocolState next_state) noexcept {
         if (next_state == ProtocolState::Normal) {
             current_command_ = std::nullopt;
@@ -215,8 +210,8 @@ namespace net::telnet {
      * Handles invalid states (e.g., memory corruption) by logging `error::protocol_violation`, resetting to `ProtocolState::Normal`, and returning an error tuple.
      * Uses `[[unlikely]]` for the default case to optimize for valid states.
      */
-    template<ProtocolFSMConfig PC>
-    std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
+    template<typename PC>
+    std::tuple<std::error_code, bool, std::optional<typename ProtocolFSM<PC>::ProcessingReturnVariant>>
     ProtocolFSM<PC>::process_byte(byte_t byte) noexcept {
         switch (current_state_) {
             case ProtocolState::Normal:
@@ -236,14 +231,14 @@ namespace net::telnet {
             default:
                 [[unlikely]] //Impossible unless a new enumerator has been added or memory has been corrupted.
                 ProtocolConfig::log_error(
-                    std::make_error_code(error::protocol_violation),
+                    make_error_code(error::protocol_violation),
                     "byte: 0x{:02x}, cmd: {}, opt: {}",
                     byte,
-                    current_command_.value_or("N/A"_sv),
-                    current_option_.value_or("N/A"_sv)
+                    current_command_,
+                    current_option_
                 );
                 change_state(ProtocolState::Normal);
-                return {std::make_error_code(error::protocol_violation), false, std::nullopt};
+                return std::make_tuple(make_error_code(error::protocol_violation), false, std::nullopt);
         }
     } //process_byte(byte_t)
 
@@ -253,19 +248,19 @@ namespace net::telnet {
      * Unless in `BINARY` mode, transitions to `ProtocolState::HasCR` if `byte` is `'\r'` (0x0D), forwarding the byte.
      * For non-`IAC` bytes, retains the byte as data (returns `true` for forward flag) unless it's nul (`'\0'`).
      */
-    template<ProtocolFSMConfig PC>
-    std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
+    template<typename PC>
+    std::tuple<std::error_code, bool, std::optional<typename ProtocolFSM<PC>::ProcessingReturnVariant>>
     ProtocolFSM<PC>::handle_state_normal(byte_t byte) noexcept {
         if (byte == std::to_underlying(telnet::command::iac)) {
             change_state(ProtocolState::IAC);
-            return {std::error_code(), false, std::nullopt}; //discard IAC byte
+            return std::make_tuple(std::error_code(), false, std::nullopt); //discard IAC byte
         } else if ((byte == static_cast<byte_t>('\r')) && (!option_status_[option::id_num::binary].enabled(negotiation_direction::remote))) {
             change_state(ProtocolState::HasCR);
-            return {std::error_code(), false, std::nullopt}; //discard CR byte
+            return std::make_tuple(std::error_code(), false, std::nullopt); //discard CR byte
         } else if (byte == static_cast<byte_t>('\0')) {
-            return {std::error_code(), false, std::nullopt}; //discard NUL byte
+            return std::make_tuple(std::error_code(), false, std::nullopt); //discard NUL byte
         }
-        return {std::error_code(), true, std::nullopt}; //retain data byte
+        return std::make_tuple(std::error_code(), true, std::nullopt); //retain data byte
     } //handle_state_normal(byte_t)
     
     /**
@@ -276,8 +271,8 @@ namespace net::telnet {
      * For all other bytes, retains the byte as data (returns `true` for forward flag) but logs a protocol violation, transitions to `ProtocolState::Normal`, and returns `processing_signal::carriage_return` to buffer the bare CR. 
      * In all cases other than `IAC`, transitions to `ProtocolState::Normal`.
      */
-    template<ProtocolFSMConfig PC>
-    std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
+    template<typename PC>
+    std::tuple<std::error_code, bool, std::optional<typename ProtocolFSM<PC>::ProcessingReturnVariant>>
     ProtocolFSM<PC>::handle_state_has_cr(byte_t byte) noexcept {
         ProtocolState next_state = ProtocolState::Normal;
 
@@ -286,32 +281,32 @@ namespace net::telnet {
         
         if (byte == static_cast<byte_t>('\n')) {
             //valid Telnet End-of-Line sequence
-            result_ec = std::make_error_code(processing_signal::end_of_line);
+            result_ec = make_error_code(processing_signal::end_of_line);
             result_forward = true; //retain LF byte
         } else if (byte == static_cast<byte_t>('\0')) {
             //valid Telnet Carriage-Return sequence
-            result_ec = std::make_error_code(processing_signal::carriage_return);
+            result_ec = make_error_code(processing_signal::carriage_return);
             result_forward = false; //discard NUL byte
-        } else if (byte == std::to_underlying(telnet::command::iac) {
+        } else if (byte == std::to_underlying(telnet::command::iac)) {
             ProtocolConfig::log_error(
-                std::make_error_code(error::protocol_violation),
+                make_error_code(error::protocol_violation),
                 "Invalid CR IAC sequence. Retained bare CR and transitioned to `ProtocolState::IAC`."
             );
-            result_ec = std::make_error_code(processing_signal::carriage_return);
+            result_ec = make_error_code(processing_signal::carriage_return);
             result_forward = false; //discard IAC byte
             next_state = ProtocolState::IAC;
         } else { //any other sequence is invalid
             ProtocolConfig::log_error(
-                std::make_error_code(error::protocol_violation),
+                make_error_code(error::protocol_violation),
                 "Invalid CR 0x{:02x} sequence. Retained CR and data byte for data safety and transitioned back to `ProtocolState::Normal`.",
                 byte
             );
-            result_ec = std::make_error_code(processing_signal::carriage_return);
+            result_ec = make_error_code(processing_signal::carriage_return);
             result_forward = true; //retain data byte
         }
         
         change_state(next_state);
-        return {result_ec, result_forward, std::nullopt};
+        return std::make_tuple(result_ec, result_forward, std::nullopt);
     } //handle_state_has_cr(byte_t)
 
     /**
@@ -326,8 +321,8 @@ namespace net::telnet {
      * Uses `[[likely]]` for valid `current_command_` cases.
      * @see RFC 854 for command definitions, `:errors` for `processing_signal` and error codes, `:stream` for `InputProcessor` handling
      */
-    template<ProtocolFSMConfig PC>
-    std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
+    template<typename PC>
+    std::tuple<std::error_code, bool, std::optional<typename ProtocolFSM<PC>::ProcessingReturnVariant>>
     ProtocolFSM<PC>::handle_state_iac(byte_t byte) noexcept {
         ProtocolState next_state = ProtocolState::Normal;
         
@@ -335,7 +330,7 @@ namespace net::telnet {
         bool result_forward = false;
         std::optional<ProcessingReturnVariant> result = std::nullopt;
         
-        if (byte == std::to_underlying(telnet::command::IAC)) {
+        if (byte == std::to_underlying(telnet::command::iac)) {
             result_forward = true; //retain 0xFF as data (escaped IAC)
         } else {
             current_command_ = static_cast<telnet::command>(byte);
@@ -354,28 +349,28 @@ namespace net::telnet {
                     case se:
                         //SE outside subnegotiation is a protocol-level error. Log it, ignore it and move on.
                         ProtocolConfig::log_error(
-                            std::make_error_code(error::invalid_subnegotiation),
+                            make_error_code(error::invalid_subnegotiation),
                             "byte: 0x{:02x}, cmd: {}, opt: {}",
                             byte,
                             telnet::command::se,
-                            current_option_.value_or("N/A"_sv)
+                            current_option_
                         );
                         break;
                     case dm:
-                        result_ec = std::make_error_code(processing_signal::data_mark);
+                        result_ec = make_error_code(processing_signal::data_mark);
                         break;
                     case ga:
                         if (option_status_[option::id_num::suppress_go_ahead].enabled(negotiation_direction::remote)) {
                             //Log GA if SGA is active, but ultimately ignore it.
                             ProtocolConfig::log_error(
-                                std::make_error_code(error::ignored_go_ahead),
+                                make_error_code(error::ignored_go_ahead),
                                 "byte: 0x{:02x}, cmd: {}, opt: N/A",
                                 byte,
                                 telnet::command::ga
                             );
                         } else {
                             //Absent SGA, signal early completion on Go-Ahead.
-                            result_ec = std::make_error_code(processing_signal::go_ahead);
+                            result_ec = make_error_code(processing_signal::go_ahead);
                         }
                         break;
                     case ayt:
@@ -383,7 +378,7 @@ namespace net::telnet {
                         break;
                     case eor:
                         if (option_status_[option::id_num::end_of_record].enabled(negotiation_direction::remote)) {
-                            result_ec = std::make_error_code(processing_signal::end_of_record); //signal early completion on End-of-Record
+                            result_ec = make_error_code(processing_signal::end_of_record); //signal early completion on End-of-Record
                         }
                         //If EOR is inactive, it's a no-op.
                         break;
@@ -391,41 +386,41 @@ namespace net::telnet {
                         //No-Op
                         break;
                     case ec:
-                        result_ec = std::make_error_code(processing_signal::erase_character);
+                        result_ec = make_error_code(processing_signal::erase_character);
                         break;
                     case el:
-                        result_ec = std::make_error_code(processing_signal::erase_line);
+                        result_ec = make_error_code(processing_signal::erase_line);
                         break;
                     case ao:
-                        result_ec = std::make_error_code(processing_signal::abort_output);
+                        result_ec = make_error_code(processing_signal::abort_output);
                         break;
                     case ip:
-                        result_ec = std::make_error_code(processing_signal::interrupt_process);
+                        result_ec = make_error_code(processing_signal::interrupt_process);
                         break;
                     case brk:
-                        result_ec = std::make_error_code(processing_signal::telnet_break);
+                        result_ec = make_error_code(processing_signal::telnet_break);
                         break;
                     default:
                         ProtocolConfig::log_error(
-                            std::make_error_code(error::invalid_command),
+                            make_error_code(error::invalid_command),
                             "byte: 0x{:02x}, cmd: {}, opt: {}",
                             byte,
                             *current_command_,
-                            current_option_.value_or("N/A"_sv)
+                            current_option_
                         );
                         break;
                 } //switch(*current_command_)
             } else [[unlikely]] { //Impossible unless memory has been corrupted.
                 ProtocolConfig::log_error(
-                    std::make_error_code(error::invalid_command),
+                    make_error_code(error::invalid_command),
                     "byte: 0x{:02x}, cmd: N/A, opt: {}",
                     byte,
-                    current_option_.value_or("N/A"_sv)
+                    current_option_
                 );
             }
         } //if (byte == ...)
         change_state(next_state);
-        return {result_ec, result_forward, result}; //discard command byte
+        return std::make_tuple(result_ec, result_forward, result); //discard command byte
     } //handle_state_iac(byte_t)
 
     /**
@@ -437,8 +432,8 @@ namespace net::telnet {
      * Transitions to `ProtocolState::Normal` and discards the option byte (returns `false` for forward flag).
      * Uses `[[likely]]` for valid `current_command_` cases.
      */
-    template<ProtocolFSMConfig PC>
-    std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
+    template<typename PC>
+    std::tuple<std::error_code, bool, std::optional<typename ProtocolFSM<PC>::ProcessingReturnVariant>>
     ProtocolFSM<PC>::handle_state_option_negotiation(byte_t byte) noexcept {
         std::optional<ProcessingReturnVariant> response = std::nullopt;
         
@@ -456,7 +451,7 @@ namespace net::telnet {
                     (!request_to_enable && current_status.disabled(direction))) {
                     //Redundant WILL/DO in YES or WONT/DONT in NO: ignore
                     ProtocolConfig::log_error(
-                        std::make_error_code(error::invalid_negotiation),
+                        make_error_code(error::invalid_negotiation),
                         "byte: 0x{:02x}, cmd: {}, opt: {}, dir: {}",
                         byte,
                         *current_command_,
@@ -492,7 +487,7 @@ namespace net::telnet {
                         } else {
                             //WANTNO with EMPTY queue bit. Invalid Negotiation.
                             ProtocolConfig::log_error(
-                                std::make_error_code(error::invalid_negotiation),
+                                make_error_code(error::invalid_negotiation),
                                 "byte: 0x{:02x}, cmd: {}, opt: {}, dir: {}",
                                 byte,
                                 *current_command_,
@@ -508,7 +503,7 @@ namespace net::telnet {
                             option_handler_registry_.handle_enablement(*current_option_, direction),
                             NegotiationResponse{direction, true, *current_option_}
                         };
-                    }achat else {
+                    } else {
                         //Unsupported option
                         response = NegotiationResponse{direction, false, *current_option_};
                     }
@@ -550,7 +545,7 @@ namespace net::telnet {
                     unknown_option_handler(static_cast<option::id_num>(byte));
                 } else {
                     ProtocolConfig::log_error(
-                        std::make_error_code(error::option_not_available),
+                        make_error_code(error::option_not_available),
                         "byte: 0x{:02x}, cmd: {}, opt: N/A, dir: {}",
                         byte,
                         *current_command_,
@@ -565,14 +560,14 @@ namespace net::telnet {
             }
         } else [[unlikely]] { //Impossible unless memory has been corrupted.
             ProtocolConfig::log_error(
-                std::make_error_code(error::protocol_violation),
+                make_error_code(error::protocol_violation),
                 "byte: 0x{:02x}, cmd: N/A, opt: {}",
                 byte,
-                current_option_.value_or("N/A"_sv)
+                current_option_
             );
         }
         change_state(ProtocolState::Normal);
-        return {std::error_code(), false, response}; //discard option byte
+        return std::make_tuple(std::error_code(), false, response); //discard option byte
     } //handle_state_option_negotiation(byte_t)
 
     /**
@@ -583,8 +578,8 @@ namespace net::telnet {
      * Reserves `subnegotiation_buffer_` based on `current_option_->max_subnegotiation_size()`.
      * Transitions to `ProtocolState::Subnegotiation` and discards the option byte (returns `false` for forward flag).
      */
-    template<ProtocolFSMConfig PC>
-    std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
+    template<typename PC>
+    std::tuple<std::error_code, bool, std::optional<typename ProtocolFSM<PC>::ProcessingReturnVariant>>
     ProtocolFSM<PC>::handle_state_subnegotiation_option(byte_t byte) noexcept {
         option_registry& registry = ProtocolConfig::registered_options;
         current_option_ = registry.get(static_cast<option::id_num>(byte));
@@ -593,7 +588,7 @@ namespace net::telnet {
             //Memoize a defaulted option object (automatic rejection) to avoid lookup failures on repeated bad requests.
             current_option_ = registry.upsert(static_cast<option::id_num>(byte));
             ProtocolConfig::log_error(
-                std::make_error_code(error::invalid_subnegotiation),
+                make_error_code(error::invalid_subnegotiation),
                 "byte: 0x{:02x}, cmd: {}, opt: {}",
                 byte,
                 telnet::command::sb,
@@ -601,7 +596,7 @@ namespace net::telnet {
             );
         } else if (!current_option_->supports_subnegotiation() || !(option_status_[*current_option_].is_enabled())) {
             ProtocolConfig::log_error(
-                std::make_error_code(error::invalid_subnegotiation),
+                make_error_code(error::invalid_subnegotiation),
                 "byte: 0x{:02x}, cmd: {}, opt: {}",
                 byte,
                 telnet::command::sb,
@@ -610,7 +605,7 @@ namespace net::telnet {
         }
         subnegotiation_buffer_.reserve(current_option_->max_subnegotiation_size());
         change_state(ProtocolState::Subnegotiation);
-        return {std::error_code(), false, std::nullopt}; //discard subnegotiation byte
+        return std::make_tuple(std::error_code(), false, std::nullopt); //discard subnegotiation byte
     } //handle_state_subnegotiation_option(byte_t)
 
     /**
@@ -620,18 +615,18 @@ namespace net::telnet {
      * Checks `subnegotiation_buffer_` size against `current_option_->max_subnegotiation_size()` and logs `error::subnegotiation_overflow` if exceeded, transitioning to `ProtocolState::Normal`.
      * Appends non-`IAC` bytes to `subnegotiation_buffer_` and discards them (returns `false` for forward flag).
      */
-    template<ProtocolFSMConfig PC>
-    std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
+    template<typename PC>
+    std::tuple<std::error_code, bool, std::optional<typename ProtocolFSM<PC>::ProcessingReturnVariant>>
     ProtocolFSM<PC>::handle_state_subnegotiation(byte_t byte) noexcept {
         if (!current_option_) {
             ProtocolConfig::log_error(
-                std::make_error_code(error::protocol_violation),
+                make_error_code(error::protocol_violation),
                 "byte: 0x{:02x}, cmd: {}, opt: N/A",
                 byte,
-                current_command_.value_or("N/A"_sv)
+                current_command_
             );
             change_state(ProtocolState::Normal);
-            return {std::make_error_code(error::protocol_violation), false, std::nullopt};
+            return std::make_tuple(make_error_code(error::protocol_violation), false, std::nullopt);
         }
         if (byte == std::to_underlying(telnet::command::iac)) {
             change_state(ProtocolState::SubnegotiationIAC);
@@ -639,14 +634,14 @@ namespace net::telnet {
             size_t max_size = current_option_->max_subnegotiation_size();
             if (max_size > 0 && subnegotiation_buffer_.size() >= max_size) {
                 ProtocolConfig::log_error(
-                    std::make_error_code(error::subnegotiation_overflow),
+                    make_error_code(error::subnegotiation_overflow),
                     "byte: 0x{:02x}, cmd: {}, opt: {}",
                     byte,
-                    current_command_.value_or("N/A"_sv),
+                    current_command_,
                     *current_option_
                 );
                 change_state(ProtocolState::Normal);
-                return {std::make_error_code(error::subnegotiation_overflow), false, std::nullopt};
+                return std::make_tuple(make_error_code(error::subnegotiation_overflow), false, std::nullopt);
             }
             subnegotiation_buffer_.push_back(byte);
         }
@@ -662,28 +657,28 @@ namespace net::telnet {
      * Checks `subnegotiation_buffer_` size against `max_subnegotiation_size()` and logs `error::subnegotiation_overflow` if exceeded.
      * Transitions to `ProtocolState::Subnegotiation` for non-`SE` bytes and discards all bytes (returns `false` for forward flag).
      */
-    template<ProtocolFSMConfig PC>
-    std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
+    template<typename PC>
+    std::tuple<std::error_code, bool, std::optional<typename ProtocolFSM<PC>::ProcessingReturnVariant>>
     ProtocolFSM<PC>::handle_state_subnegotiation_iac(byte_t byte) noexcept {
-        std::optional<ProcessingReturnVariant> result = std::nullopt;
+        std::optional<ProcessingReturnVariant> response = std::nullopt;
         if (!current_option_) {
             ProtocolConfig::log_error(
-                std::make_error_code(error::protocol_violation),
+                make_error_code(error::protocol_violation),
                 "byte: 0x{:02x}, cmd: {}, opt: N/A",
                 byte,
-                current_command_.value_or("N/A"_sv)
+                current_command_
             );
             change_state(ProtocolState::Normal);
-            return {std::make_error_code(error::protocol_violation), false, std::nullopt};
+            return std::make_tuple(make_error_code(error::protocol_violation), false, std::nullopt);
         }
         if (byte == std::to_underlying(telnet::command::se)) {
             //Subnegotiation sequence completed, so pass the buffer to the handler if supported. 
             //If subnegotiation is not supported or the option is not enabled, the error was logged at the beginning of subnegotiation, so just discard the buffer.
             if (current_option_->supports_subnegotiation() && option_status_[*current_option_].is_enabled()) {
                 if (*current_option_ == option::id_num::status) {
-                    result = handle_status_subnegotiation(*current_option_, std::move(subnegotiation_buffer_));
+                    response = handle_status_subnegotiation(*current_option_, std::move(subnegotiation_buffer_));
                 } else {
-                    result = option_handler_registry_.handle_subnegotiation(*current_option_, std::move(subnegotiation_buffer_));
+                    response = option_handler_registry_.handle_subnegotiation(*current_option_, std::move(subnegotiation_buffer_));
                 }
             }
             change_state(ProtocolState::Normal);
@@ -691,23 +686,23 @@ namespace net::telnet {
             std::size_t max_size = current_option_->max_subnegotiation_size();
             if (max_size > 0 && subnegotiation_buffer_.size() >= max_size) {
                 ProtocolConfig::log_error(
-                    std::make_error_code(error::subnegotiation_overflow),
+                    make_error_code(error::subnegotiation_overflow),
                     "byte: 0x{:02x}, cmd: {}, opt: {}",
                     byte,
-                    current_command_.value_or("N/A"_sv),
+                    current_command_,
                     *current_option_
                 );
                 change_state(ProtocolState::Normal);
-                return {std::make_error_code(error::subnegotiation_overflow), false, std::nullopt};
+                return std::make_tuple(make_error_code(error::subnegotiation_overflow), false, std::nullopt);
             }
             //We either have an escaped IAC or an invalid command, so append IAC to the buffer.
             subnegotiation_buffer_.push_back(std::to_underlying(telnet::command::iac));
             if (byte != std::to_underlying(telnet::command::iac)) {
                 ProtocolConfig::log_error(
-                    std::make_error_code(error::invalid_command),
+                    make_error_code(error::invalid_command),
                     "byte: 0x{:02x}, cmd: {}, opt: {}",
                     byte,
-                    current_command_.value_or("N/A"_sv),
+                    current_command_,
                     *current_option_
                 );
                 //Invalid subnegotiation command (not SE or IAC), assume peer forgot to escape 0xFF/IAC byte, so append the stray byte to the buffer.
@@ -715,7 +710,7 @@ namespace net::telnet {
             }
             change_state(ProtocolState::Subnegotiation);
         }
-        return {std::error_code(), false, result}; //discard subnegotiation byte
+        return std::make_tuple(std::error_code(), false, response); //discard subnegotiation byte
     } //handle_state_subnegotiation_iac(byte_t)
     
     /**
@@ -727,8 +722,8 @@ namespace net::telnet {
      * Iterates over `OptionStatusDB` to build the `SEND` payload with enabled options, excluding `STATUS`, escaping `IAC` (255) and `SE` (240) by doubling.
      * @see RFC 859, `:internal` for `OptionStatusDB`, `:options` for `option`, `:awaitables` for `SubnegotiationAwaitable`, `:stream` for `async_write_subnegotiation`
      */
-    template<ProtocolFSMConfig PC>
-    awaitables::SubnegotiationAwaitable ProtocolFSM<PC>::handle_status_subnegotiation(const option& opt, std::vector<byte_t> buffer) {
+    template<typename PC>
+    awaitables::SubnegotiationAwaitable ProtocolFSM<PC>::handle_status_subnegotiation(const option opt, std::vector<byte_t> buffer) {
         constexpr byte_t IS   = static_cast<byte_t>(0);
         constexpr byte_t SEND = static_cast<byte_t>(1);
 
@@ -737,10 +732,10 @@ namespace net::telnet {
         } else if (buffer[0] == IS) {
             if (option_status_[option::id_num::status].remote_enabled()) {
                 //Delegate processing of subcommand IS to user-provided handler.
-                co_return co_await option_handler_registry_.handle_subnegotiation(opt, std::move(buffer))
+                co_return co_await option_handler_registry_.handle_subnegotiation(opt, std::move(buffer));
             } else {
                 ProtocolConfig::log_error(error::option_not_available, "STATUS subnegotiation IS received, but STATUS option is not remotely enabled.");
-                co_return std::make_tuple(opt, {});
+                co_return std::make_tuple(opt, std::vector<byte_t>{});
             }
         } else if (buffer[0] == SEND) {
             if (option_status_[option::id_num::status].local_enabled()) {        
@@ -767,11 +762,11 @@ namespace net::telnet {
                 co_return std::make_tuple(opt, std::move(payload));
             } else {
                 ProtocolConfig::log_error(error::option_not_available, "STATUS subnegotiation SEND received, but STATUS option is not locally enabled.");
-                co_return std::make_tuple(opt, {});
+                co_return std::make_tuple(opt, std::vector<byte_t>{});
             }
         } else {
             ProtocolConfig::log_error(error::invalid_subnegotiation, "Invalid STATUS subnegotiation: expected IS (0) or SEND (1); received {}", buffer[0]);
-            co_return std::make_tuple(opt, {});
+            co_return std::make_tuple(opt, std::vector<byte_t>{});
         }
     } //handle_status_subnegotiation(const option&, std::vector<byte_t>)
 } //namespace net::telnet

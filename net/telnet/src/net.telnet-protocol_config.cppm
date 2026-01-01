@@ -75,7 +75,7 @@ export namespace net::telnet {
         
         ///@brief Logs an error with the registered error logger using a formatted string.
         template<typename ...Args>
-        static void log_error(const std::error_code& ec, std::format_string<auto> fmt, Args&&... args) {
+        static void log_error(const std::error_code& ec, std::format_string<std::remove_cvref_t<Args>...> fmt, Args&&... args) {
             std::shared_lock<std::shared_mutex> lock(mutex_);
             if (error_logger_) {
                 error_logger_(ec, std::format(fmt, std::forward<Args>(args)...));
@@ -93,8 +93,6 @@ export namespace net::telnet {
             std::lock_guard<std::shared_mutex> lock(mutex_);
             ayt_response_ = std::move(response);
         }
-        
-        static inline option_registry registered_options = initialize_option_registry();
 
     private:
         ///@brief Initializes the option registry with default options.
@@ -106,6 +104,10 @@ export namespace net::telnet {
             };
         } //initialize_option_registry()
 
+    public:
+        static inline option_registry registered_options = initialize_option_registry();
+
+    private:
         ///@brief Performs initialization for `initialize`.
         static void init() {
             std::lock_guard<std::shared_mutex> lock(mutex_);

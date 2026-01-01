@@ -44,10 +44,6 @@ export namespace net::telnet {
     template<typename ProtocolConfig, typename OptionEnablementHandler, typename OptionDisablementHandler, typename SubnegotiationHandler>
     class OptionHandlerRegistry {
     private:
-        using awaitables::OptionEnablementAwaitable;
-        using awaitables::OptionDisablementAwaitable;
-        using awaitables::SubnegotiationAwaitable;
-        
         /**
          * @brief Record for handlers registered to a single Telnet option.
          * @details Stores an optional enablement handler, an optional disablement handler, and an optional subnegotiation handler for processing option-specific data.
@@ -91,27 +87,27 @@ export namespace net::telnet {
         } //unregister_handlers(option::id_num)
 
         ///@brief Handles enablement for a Telnet option.
-        OptionEnablementAwaitable handle_enablement(const option& opt, negotiation_direction direction) {
+        awaitables::OptionEnablementAwaitable handle_enablement(const option opt, negotiation_direction direction) {
             auto it = handlers_.find(opt);
             if ((it != handlers_.end()) && it->second.enablement_handler) {
                 auto& handler = *(it->second.enablement_handler);
                 return handler(opt, direction);
             }
-            co_return;
+            return {};
         } //handle_enablement(const option&, negotiation_direction)
    
         ///@brief Handles disablement for a Telnet option.
-        OptionDisablementAwaitable handle_disablement(const option& opt, negotiation_direction direction) {
+        awaitables::OptionDisablementAwaitable handle_disablement(const option opt, negotiation_direction direction) {
             auto it = handlers_.find(opt);
             if ((it != handlers_.end()) && it->second.disablement_handler) {
                 auto& handler = *(it->second.disablement_handler);
                 return handler(opt, direction);
             }
-            co_return;
+            return {};
         } //handle_disablement(const option&, negotiation_direction)
         
         ///@brief Handles subnegotiation for a Telnet option.
-        SubnegotiationAwaitable handle_subnegotiation(const option& opt, std::vector<byte_t> data) {
+        awaitables::SubnegotiationAwaitable handle_subnegotiation(const option opt, std::vector<byte_t> data) {
             auto it = handlers_.find(opt);
             if ((it != handlers_.end()) && it->second.subnegotiation_handler) {
                 auto& handler = *(it->second.subnegotiation_handler);
@@ -122,12 +118,11 @@ export namespace net::telnet {
         } //handle_subnegotiation(option::id_num, std::vector<byte_t>)
     private:
         ///@brief Default handler for undefined subnegotiation.
-        template<typename PC>
-        static SubnegotiationAwaitable undefined_subnegotiation_handler(const option& opt, std::vector<byte_t>) {
-            PC::log_error(
-                std::make_error_code(error::user_handler_not_found),
+        awaitables::SubnegotiationAwaitable undefined_subnegotiation_handler(option opt, std::vector<byte_t>) {
+            ProtocolConfig::log_error(
+                make_error_code(error::user_handler_not_found),
                 "cmd: {}, option: {}",
-                command::SE,
+                command::se,
                 opt
             );
             co_return;
@@ -273,9 +268,9 @@ export namespace net::telnet {
 
         //Queue setters (usq, himq)
         ///@brief Sets a local user request as queued (OPPOSITE state).
-        std::error_code enqueue_local()  noexcept { if (local_enabled()  || local_disabled())  { return std::make_error_code(error::negotiation_queue_error); } else { local_queue_  = true; return {}; } }
+        std::error_code enqueue_local()  noexcept { if (local_enabled()  || local_disabled())  { return make_error_code(error::negotiation_queue_error); } else { local_queue_  = true; return {}; } }
         ///@brief Sets a remote user request as queued (OPPOSITE state).
-        std::error_code enqueue_remote() noexcept { if (remote_enabled() || remote_disabled()) { return std::make_error_code(error::negotiation_queue_error); } else { remote_queue_ = true; return {}; } }
+        std::error_code enqueue_remote() noexcept { if (remote_enabled() || remote_disabled()) { return make_error_code(error::negotiation_queue_error); } else { remote_queue_ = true; return {}; } }
         ///@brief Sets a user request as queued (OPPOSITE state) in the designated direction.
         std::error_code enqueue(negotiation_direction direction) noexcept { if (direction == negotiation_direction::remote) { return enqueue_remote(); } else { return enqueue_local(); } }
         ///@brief Clears a queued local user request.
@@ -558,10 +553,9 @@ export namespace net::telnet {
         ///@brief Retrieves an `OptionStatusRecord` for a Telnet option.
         const OptionStatusRecord& operator[](option::id_num opt) const { return status_records_[std::to_underlying(opt)]; }
 
-    private:
         ///@brief The number of possible `option::id_num` values.
         static inline constexpr size_t MAX_OPTION_COUNT = (1 << std::numeric_limits<std::underlying_type_t<option::id_num>>::digits);
-
+    private:
         //Byte array of Status Record bit-fields.
         std::array<OptionStatusRecord, MAX_OPTION_COUNT> status_records_;
     }; //class OptionStatusDB

@@ -109,5 +109,5 @@ export namespace net::telnet::awaitables {
      * @brief Awaitable type for subnegotiation handlers.
      * @see `TaggedAwaitable`, `tags::SubnegotiationTag`, `:internal` (`OptionHandlerRegistry`), `:protocol_fsm` (for use)
      */
-    using SubnegotiationAwaitable = TaggedAwaitable<tags::SubnegotiationTag, std::tuple<const option&, std::vector<byte_t>>>;
+    using SubnegotiationAwaitable = TaggedAwaitable<tags::SubnegotiationTag, std::tuple<option, std::vector<byte_t>>>;
 } //namespace net::telnet::awaitables

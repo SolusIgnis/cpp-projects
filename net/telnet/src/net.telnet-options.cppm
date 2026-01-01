@@ -119,15 +119,15 @@ export namespace net::telnet {
     private:
         static constexpr size_t MAX_SUBNEGOTIATION_SIZE = 1024;
         
-        const id_num id_;
-        const std::string name_;
+        id_num id_;
+        std::string name_;
         
-        const EnablePredicate local_predicate_;
-        const EnablePredicate remote_predicate_;
+        EnablePredicate local_predicate_;
+        EnablePredicate remote_predicate_;
         
-        const bool supports_subnegotiation_;
+        bool supports_subnegotiation_;
         
-        const size_t max_subneg_size_;
+        size_t max_subneg_size_;
     }; //class option
     
     /**

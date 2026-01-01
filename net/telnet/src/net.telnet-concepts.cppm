@@ -25,14 +25,15 @@ import net.asio_concepts; //For asio_concepts namespace concept definitions
 
 import std; //For std::error_code, std::size_t, std::same_as, std::convertible_to
 
+import :types;   ///< @see "net.telnet-types.cppm" for telnet::command
+import :options; ///< @see "net.telnet-options.cppm" for telnet::option
+
 //namespace asio = boost::asio;
 
-namespace net::telnet {
+export namespace net::telnet::concepts {
     //Forward declaration referenced in a following concept definition.
     template<typename ConfigT> class ProtocolFSM;
-} //namespace net::telnet
 
-export namespace net::telnet::concepts {
     /**
      * @concept MutableBufferSequence
      * @brief Alias for a type modeling Boost.Asio's "MutableBufferSequence" requirement.
