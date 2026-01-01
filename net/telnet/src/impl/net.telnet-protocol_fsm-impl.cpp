@@ -238,7 +238,7 @@ namespace net::telnet {
                     current_option_
                 );
                 change_state(ProtocolState::Normal);
-                return std::make_tuple(make_error_code(error::protocol_violation), false, std::nullopt);
+                return {make_error_code(error::protocol_violation), false, std::nullopt};
         }
     } //process_byte(byte_t)
 
@@ -253,14 +253,14 @@ namespace net::telnet {
     ProtocolFSM<PC>::handle_state_normal(byte_t byte) noexcept {
         if (byte == std::to_underlying(telnet::command::iac)) {
             change_state(ProtocolState::IAC);
-            return std::make_tuple(std::error_code(), false, std::nullopt); //discard IAC byte
+            return {std::error_code(), false, std::nullopt}; //discard IAC byte
         } else if ((byte == static_cast<byte_t>('\r')) && (!option_status_[option::id_num::binary].enabled(negotiation_direction::remote))) {
             change_state(ProtocolState::HasCR);
-            return std::make_tuple(std::error_code(), false, std::nullopt); //discard CR byte
+            return {std::error_code(), false, std::nullopt}; //discard CR byte
         } else if (byte == static_cast<byte_t>('\0')) {
-            return std::make_tuple(std::error_code(), false, std::nullopt); //discard NUL byte
+            return {std::error_code(), false, std::nullopt}; //discard NUL byte
         }
-        return std::make_tuple(std::error_code(), true, std::nullopt); //retain data byte
+        return {std::error_code(), true, std::nullopt}; //retain data byte
     } //handle_state_normal(byte_t)
     
     /**
@@ -306,7 +306,7 @@ namespace net::telnet {
         }
         
         change_state(next_state);
-        return std::make_tuple(result_ec, result_forward, std::nullopt);
+        return {result_ec, result_forward, std::nullopt};
     } //handle_state_has_cr(byte_t)
 
     /**
@@ -420,7 +420,7 @@ namespace net::telnet {
             }
         } //if (byte == ...)
         change_state(next_state);
-        return std::make_tuple(result_ec, result_forward, result); //discard command byte
+        return {result_ec, result_forward, std::move(result)}; //discard command byte
     } //handle_state_iac(byte_t)
 
     /**
@@ -567,7 +567,7 @@ namespace net::telnet {
             );
         }
         change_state(ProtocolState::Normal);
-        return std::make_tuple(std::error_code(), false, response); //discard option byte
+        return {std::error_code(), false, std::move(response)}; //discard option byte
     } //handle_state_option_negotiation(byte_t)
 
     /**
@@ -605,7 +605,7 @@ namespace net::telnet {
         }
         subnegotiation_buffer_.reserve(current_option_->max_subnegotiation_size());
         change_state(ProtocolState::Subnegotiation);
-        return std::make_tuple(std::error_code(), false, std::nullopt); //discard subnegotiation byte
+        return {std::error_code(), false, std::nullopt}; //discard subnegotiation byte
     } //handle_state_subnegotiation_option(byte_t)
 
     /**
@@ -626,7 +626,7 @@ namespace net::telnet {
                 current_command_
             );
             change_state(ProtocolState::Normal);
-            return std::make_tuple(make_error_code(error::protocol_violation), false, std::nullopt);
+            return {make_error_code(error::protocol_violation), false, std::nullopt};
         }
         if (byte == std::to_underlying(telnet::command::iac)) {
             change_state(ProtocolState::SubnegotiationIAC);
@@ -641,7 +641,7 @@ namespace net::telnet {
                     *current_option_
                 );
                 change_state(ProtocolState::Normal);
-                return std::make_tuple(make_error_code(error::subnegotiation_overflow), false, std::nullopt);
+                return {make_error_code(error::subnegotiation_overflow), false, std::nullopt};
             }
             subnegotiation_buffer_.push_back(byte);
         }
@@ -669,7 +669,7 @@ namespace net::telnet {
                 current_command_
             );
             change_state(ProtocolState::Normal);
-            return std::make_tuple(make_error_code(error::protocol_violation), false, std::nullopt);
+            return {make_error_code(error::protocol_violation), false, std::nullopt};
         }
         if (byte == std::to_underlying(telnet::command::se)) {
             //Subnegotiation sequence completed, so pass the buffer to the handler if supported. 
@@ -693,7 +693,7 @@ namespace net::telnet {
                     *current_option_
                 );
                 change_state(ProtocolState::Normal);
-                return std::make_tuple(make_error_code(error::subnegotiation_overflow), false, std::nullopt);
+                return {make_error_code(error::subnegotiation_overflow), false, std::nullopt};
             }
             //We either have an escaped IAC or an invalid command, so append IAC to the buffer.
             subnegotiation_buffer_.push_back(std::to_underlying(telnet::command::iac));
@@ -710,7 +710,7 @@ namespace net::telnet {
             }
             change_state(ProtocolState::Subnegotiation);
         }
-        return std::make_tuple(std::error_code(), false, response); //discard subnegotiation byte
+        return {std::error_code(), false, std::move(response)}; //discard subnegotiation byte
     } //handle_state_subnegotiation_iac(byte_t)
     
     /**
