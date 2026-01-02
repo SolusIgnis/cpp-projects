@@ -1,0 +1,83 @@
+---
+Checks: >
+  -*,
+
+  # ---------- Core correctness ----------
+  clang-diagnostic-*,
+  clang-analyzer-*,
+
+  # ---------- Thread safety (Clang capability analysis) ----------
+  clang-analyzer-core.CallAndMessage,
+  clang-analyzer-core.NonNullParamChecker,
+  clang-analyzer-core.NullDereference,
+  clang-analyzer-core.StackAddressEscape,
+  clang-analyzer-core.UndefinedBinaryOperatorResult,
+
+  clang-analyzer-deadcode.*,
+
+  clang-analyzer-unix.Malloc,
+  clang-analyzer-unix.MallocSizeof,
+
+  # Enable mutex / lock analysis
+  clang-analyzer-core.Lock,
+  clang-analyzer-core.DynamicTypePropagation,
+
+  # ---------- Modern C++ ----------
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-using,
+  modernize-use-equals-default,
+  modernize-use-equals-delete,
+  modernize-use-default-member-init,
+  modernize-avoid-c-arrays,
+  modernize-return-braced-init-list,
+  modernize-use-nodiscard,
+
+  # ---------- Bug-prone constructs ----------
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-narrowing-conversions,
+
+  # ---------- Performance ----------
+  performance-*,
+  -performance-unnecessary-value-param,
+
+  # ---------- Readability (low-noise only) ----------
+  readability-const-return-type,
+  readability-redundant-declaration,
+  readability-redundant-string-init,
+  readability-static-accessed-through-instance,
+
+  # ---------- C++ Core Guidelines (selective) ----------
+  cppcoreguidelines-*,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+
+  # ---------- CERT (thread & exception safety) ----------
+  cert-err33-c,
+  cert-oop54-cpp
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: '.*'
+AnalyzeTemporaryDtors: true
+
+CheckOptions:
+  # Performance / correctness tuning
+  - key: performance-move-const-arg
+    value: 'true'
+
+  # Enforce [[nodiscard]] meaningfully
+  - key: modernize-use-nodiscard.AllowDiscardedReturnValues
+    value: 'false'
+
+  # Special member functions
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: 'true'
+
+FormatStyle: file
+...
