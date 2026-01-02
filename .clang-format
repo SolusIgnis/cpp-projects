@@ -1,0 +1,154 @@
+# -------------------------------------------------------------------
+# net.telnet clang-format
+# Inferred from real implementation code (FSM-heavy, C++23 modules)
+# -------------------------------------------------------------------
+
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++23
+
+# -------------------------------------------------------------------
+# Indentation
+# -------------------------------------------------------------------
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+
+IndentCaseLabels: false
+IndentCaseBlocks: false
+IndentGotoLabels: false
+IndentExternBlock: NoIndent
+
+NamespaceIndentation: All
+CompactNamespaces: false
+
+AccessModifierOffset: -4
+
+# -------------------------------------------------------------------
+# Braces (strict Allman)
+# -------------------------------------------------------------------
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterExternBlock: true
+  AfterControlStatement: false
+  BeforeElse: true
+  BeforeCatch: true
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+
+# -------------------------------------------------------------------
+# Line breaking
+# -------------------------------------------------------------------
+ColumnLimit: 120
+
+AlwaysBreakTemplateDeclarations: Yes
+BreakTemplateDeclarations: Yes
+
+BinPackArguments: false
+BinPackParameters: false
+BinPackLongBracedList: false
+
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+
+PenaltyBreakBeforeFirstCallParameter: 200
+PenaltyBreakAssignment: 100
+PenaltyBreakTemplateDeclaration: 10
+PenaltyExcessCharacter: 1000000  # strongly prefer your manual wrapping
+
+# -------------------------------------------------------------------
+# Control flow readability (FSM-friendly)
+# -------------------------------------------------------------------
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
+
+BreakBeforeBinaryOperators: None
+BreakBinaryOperations: false
+
+# -------------------------------------------------------------------
+# Alignment
+# -------------------------------------------------------------------
+AlignAfterOpenBracket: Align
+AlignOperands: Align
+AlignTrailingComments: true
+AlignEscapedNewlines: Right
+
+AlignConsecutiveAssignments: None
+AlignConsecutiveDeclarations: None
+AlignConsecutiveMacros: None
+
+# -------------------------------------------------------------------
+# Spacing
+# -------------------------------------------------------------------
+SpaceBeforeParens: ControlStatements
+SpaceBeforeParensOptions:
+  AfterControlStatements: true
+  AfterFunctionDeclarationName: false
+  AfterFunctionDefinitionName: false
+  AfterOverloadedOperator: false
+
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpacesInAngles: false
+SpacesInContainerLiterals: false
+SpaceInEmptyParentheses: false
+
+SpaceBeforeAssignmentOperators: true
+SpaceAroundPointerQualifiers: Default
+
+SpaceAfterCStyleCast: false
+
+PointerAlignment: Left
+ReferenceAlignment: Left
+
+# -------------------------------------------------------------------
+# Switch / attributes
+# -------------------------------------------------------------------
+IndentCaseBlocks: false
+IndentCaseLabels: false
+
+StatementAttributeLikeMacros:
+  - likely
+  - unlikely
+  - fallthrough
+
+# -------------------------------------------------------------------
+# Comments & documentation
+# -------------------------------------------------------------------
+ReflowComments: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+
+CommentPragmas: '^@'
+
+# -------------------------------------------------------------------
+# Includes / imports
+# -------------------------------------------------------------------
+SortIncludes: false
+SortUsingDeclarations: false
+IncludeBlocks: Preserve
+
+# -------------------------------------------------------------------
+# Modern C++ / modules
+# -------------------------------------------------------------------
+RequiresClausePosition: OwnLine
+BreakBeforeConceptDeclarations: true
+Cpp11BracedListStyle: true
+
+# -------------------------------------------------------------------
+# Misc
+# -------------------------------------------------------------------
+DeriveLineEnding: true
+DerivePointerAlignment: false
