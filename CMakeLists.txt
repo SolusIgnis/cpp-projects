@@ -9,6 +9,9 @@ project(cpp-projects
   LANGUAGES CXX
 )
 
+# Generate compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 #For "import std"
 set(CMAKE_CXX_MODULE_STD 1)
 
