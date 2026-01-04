@@ -5,7 +5,7 @@
 
 BasedOnStyle: LLVM
 Language: Cpp
-Standard: c++23
+#Standard: c++23
 
 # -------------------------------------------------------------------
 # Indentation
@@ -75,7 +75,7 @@ AllowShortBlocksOnASingleLine: Never
 AllowShortFunctionsOnASingleLine: None
 
 BreakBeforeBinaryOperators: None
-BreakBinaryOperations: false
+#BreakBinaryOperations: false
 
 # -------------------------------------------------------------------
 # Alignment
@@ -116,8 +116,8 @@ ReferenceAlignment: Left
 # -------------------------------------------------------------------
 # Switch / attributes
 # -------------------------------------------------------------------
-IndentCaseBlocks: false
-IndentCaseLabels: false
+#IndentCaseBlocks: false
+#IndentCaseLabels: false
 
 StatementAttributeLikeMacros:
   - likely
