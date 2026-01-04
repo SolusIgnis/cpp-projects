@@ -156,7 +156,7 @@ export namespace net::telnet {
         enum class ProtocolState { 
             Normal,               ///< Default state for data processing
             HasCR,                ///< Processing the byte after '\r'
-            IAC,                  ///< Processing IAC command byte
+            HasIAC,                  ///< Processing IAC command byte
             OptionNegotiation,    ///< Processing option ID after WILL/WONT/DO/DONT
             SubnegotiationOption, ///< Processing option ID after SB
             Subnegotiation,       ///< Processing subnegotiation data
