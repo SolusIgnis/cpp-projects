@@ -26,7 +26,7 @@ CompactNamespaces: false
 AccessModifierOffset: -4
 
 # -------------------------------------------------------------------
-# Braces (strict Allman)
+# Braces
 # -------------------------------------------------------------------
 BreakBeforeBraces: Custom
 BraceWrapping:
@@ -49,7 +49,6 @@ BraceWrapping:
 # -------------------------------------------------------------------
 ColumnLimit: 120
 
-AlwaysBreakTemplateDeclarations: Yes
 BreakTemplateDeclarations: Yes
 
 BinPackArguments: false
@@ -59,6 +58,10 @@ BinPackLongBracedList: false
 AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowAllConstructorInitializersOnNextLine: false
+AllowBreakBeforeNoexceptSpecifier: OnlyWithParen
+AlwaysBreakBeforeMultilineStrings: false
+
+PackConstructorInitializers: NextLine
 
 PenaltyBreakBeforeFirstCallParameter: 200
 PenaltyBreakAssignment: 100
@@ -71,8 +74,13 @@ PenaltyExcessCharacter: 1000000  # strongly prefer your manual wrapping
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
-AllowShortBlocksOnASingleLine: Never
-AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCompoundRequirementOnASingleLine: true
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: true
 
 BreakBeforeBinaryOperators: None
 #BreakBinaryOperations: false
@@ -81,13 +89,39 @@ BreakBeforeBinaryOperators: None
 # Alignment
 # -------------------------------------------------------------------
 AlignAfterOpenBracket: Align
-AlignOperands: Align
-AlignTrailingComments: true
-AlignEscapedNewlines: Right
+AlignArrayOfStructures: Right
 
-AlignConsecutiveAssignments: None
-AlignConsecutiveDeclarations: None
-AlignConsecutiveMacros: None
+AlignConsecutiveAssignments:
+  Enabled:          true
+  AcrossEmptyLines: false
+  AcrossComments:   false
+  AlignCompound:    true
+  PadOperators:     true
+AlignConsecutiveBitFields:
+  Enabled:          true
+  AcrossEmptyLines: false
+  AcrossComments:   false
+AlignConsecutiveDeclarations:
+  Enabled:          false
+  AcrossEmptyLines: false
+  AcrossComments:   false
+  AlignFunctionDeclarations: false
+  AlignFunctionPointers: false
+AlignConsecutiveMacros:
+  Enabled:          false
+  AcrossEmptyLines: false
+  AcrossComments:   false
+AlignConsecutiveShortCaseStatements:
+  Enabled:          true
+  AcrossEmptyLines: true
+  AcrossComments:   false
+  AlignCaseColons:  false
+AlignEscapedNewlines: Left
+AlignOperands: AlignAfterOperator
+AlignTrailingComments:
+  Kind:           Always
+  OverEmptyLines: 0
+
 
 # -------------------------------------------------------------------
 # Spacing
