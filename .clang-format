@@ -4,21 +4,31 @@
 # -------------------------------------------------------------------
 
 BasedOnStyle: LLVM
+
 Language: Cpp
-#Standard: c++23
+Standard: Latest
 
 # -------------------------------------------------------------------
 # Indentation
 # -------------------------------------------------------------------
 IndentWidth: 4
-TabWidth: 4
-UseTab: Never
+TabWidth:    4
+UseTab:      Never
+
+ConstructorInitializerIndentWidth: 4
+
 ContinuationIndentWidth: 4
 
-IndentCaseLabels: false
+IndentAccessModifiers: false
 IndentCaseBlocks: false
+IndentCaseLabels: false
 IndentGotoLabels: false
-IndentExternBlock: NoIndent
+IndentExportBlock: true
+IndentExternBlock: Indent
+IndentPPDirectives: BeforeHash
+IndentWrappedFunctionNames: true
+
+LambdaBodyIndentation: Signature
 
 NamespaceIndentation: All
 CompactNamespaces: false
@@ -30,19 +40,20 @@ AccessModifierOffset: -4
 # -------------------------------------------------------------------
 BreakBeforeBraces: Custom
 BraceWrapping:
-  AfterClass: true
-  AfterStruct: true
-  AfterUnion: true
-  AfterEnum: true
-  AfterFunction: true
-  AfterNamespace: true
-  AfterExternBlock: true
-  AfterControlStatement: false
-  BeforeElse: true
-  BeforeCatch: true
-  SplitEmptyFunction: false
-  SplitEmptyRecord: false
-  SplitEmptyNamespace: false
+  AfterCaseLabel:        false
+  AfterClass:            false
+  AfterStruct:           false
+  AfterUnion:            false
+  AfterEnum:             false
+  AfterFunction:         false
+  AfterNamespace:        false
+  AfterExternBlock:      false
+  AfterControlStatement: Never
+  BeforeElse:            false
+  BeforeCatch:           false
+  SplitEmptyFunction:    false
+  SplitEmptyRecord:      false
+  SplitEmptyNamespace:   false
 
 # -------------------------------------------------------------------
 # Line breaking
@@ -50,9 +61,17 @@ BraceWrapping:
 ColumnLimit: 120
 
 BreakTemplateDeclarations: Yes
+BreakAdjacentStringLiterals: false
+BreakAfterAttributes: Leave
+BreakAfterOpenBracketBracedList: false
+BreakAfterOpenBracketFunction: false
+BreakAfterOpenBracketIf: false
+BreakAfterOpenBracketLoop: false
+BreakAfterOpenBracketSwitch: false
+BreakAfterReturnType: ExceptShortType
 
 BinPackArguments: false
-BinPackParameters: false
+BinPackParameters: BinPack #OnePerLine if this ends up ugly
 BinPackLongBracedList: false
 
 AllowAllArgumentsOnNextLine: false
@@ -61,7 +80,12 @@ AllowAllConstructorInitializersOnNextLine: false
 AllowBreakBeforeNoexceptSpecifier: OnlyWithParen
 AlwaysBreakBeforeMultilineStrings: false
 
+EmptyLineAfterAccessModifier: Never
+EmptyLineBeforeAccessModifier: LogicalBlock
+
 PackConstructorInitializers: NextLine
+
+WrapNamespaceBodyWithEmptyLines: Never
 
 PenaltyBreakBeforeFirstCallParameter: 200
 PenaltyBreakAssignment: 100
@@ -71,8 +95,6 @@ PenaltyExcessCharacter: 1000000  # strongly prefer your manual wrapping
 # -------------------------------------------------------------------
 # Control flow readability (FSM-friendly)
 # -------------------------------------------------------------------
-AllowShortIfStatementsOnASingleLine: Never
-AllowShortLoopsOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortBlocksOnASingleLine: Empty
 AllowShortCompoundRequirementOnASingleLine: true
@@ -82,8 +104,25 @@ AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true
 
-BreakBeforeBinaryOperators: None
-#BreakBinaryOperations: false
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeCloseBracketBracedList: true
+BreakBeforeCloseBracketFunction: true
+BreakBeforeCloseBracketIf: true
+BreakBeforeCloseBracketLoop: true
+BreakBeforeCloseBracketSwitch: true
+BreakBeforeTemplateCloser: true
+BreakBeforeTernaryOperators: true
+BreakBinaryOperations: Never
+BreakConstructorInitializers: BeforeColon
+BreakFunctionDefinitionParameters: false
+BreakInheritanceList: AfterComma
+BreakStringLiterals: true
+
+RemoveBracesLLVM:  false
+RemoveParentheses: Leave
+RemoveSemicolon:   false
+
+SeparateDefinitionBlocks: Always
 
 # -------------------------------------------------------------------
 # Alignment
@@ -122,67 +161,116 @@ AlignTrailingComments:
   Kind:           Always
   OverEmptyLines: 0
 
-
 # -------------------------------------------------------------------
 # Spacing
 # -------------------------------------------------------------------
-SpaceBeforeParens: ControlStatements
-SpaceBeforeParensOptions:
-  AfterControlStatements: true
-  AfterFunctionDeclarationName: false
-  AfterFunctionDefinitionName: false
-  AfterOverloadedOperator: false
+BitFieldColonSpacing: Both
 
-SpacesInParentheses: false
-SpacesInSquareBrackets: false
-SpacesInAngles: false
-SpacesInContainerLiterals: false
-SpaceInEmptyParentheses: false
+SpaceAfterCStyleCast:      false
+SpaceAfterLogicalNot:      false
+SpaceAfterOperatorKeyword: false
+SpaceAfterTemplateKeyword: false
 
-SpaceBeforeAssignmentOperators: true
 SpaceAroundPointerQualifiers: Default
 
-SpaceAfterCStyleCast: false
+SpaceBeforeAssignmentOperators:    true
+SpaceBeforeCaseColon:              false
+SpaceBeforeCpp11BracedList:        false
+SpaceBeforeCtorInitializerColon:   true
+SpaceBeforeInheritanceColon:       true
+SpaceBeforeParens:                 Custom
+SpaceBeforeParensOptions:
+  AfterControlStatements:          true
+  AfterForeachMacros:              false
+  AfterFunctionDefinitionName:     false
+  AfterFunctionDeclarationName:    false
+  AfterIfMacros:                   true
+  AfterNot:                        true
+  AfterOverloadedOperator:         false
+  AfterPlacementOperator:          false
+  AfterRequiresInClause:           true
+  AfterRequiresInExpression:       false
+  BeforeNonEmptyParentheses:       false
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceBeforeSquareBrackets:         false
+SpacesBeforeTrailingComments:      1
 
-PointerAlignment: Left
-ReferenceAlignment: Left
+SpaceInEmptyBraces:        false
+SpaceInEmptyParentheses:   false
+SpacesInAngles:            Never
+SpacesInContainerLiterals: false
+SpacesInLineCommentPrefix:
+  Minimum:                 0
+  Maximum:                 1
+SpacesInParens:            Never
+SpacesInParensOptions:
+  ExceptDoubleParentheses: false
+  InCStyleCasts:           false
+  InConditionalStatements: false
+  InEmptyParentheses:      false
+  Other:                   false
+SpacesInSquareBrackets:    false
+
+PointerAlignment:   Left
+ReferenceAlignment: Pointer
+QualifierAlignment: Left
 
 # -------------------------------------------------------------------
 # Switch / attributes
 # -------------------------------------------------------------------
-#IndentCaseBlocks: false
-#IndentCaseLabels: false
 
-StatementAttributeLikeMacros:
-  - likely
-  - unlikely
-  - fallthrough
 
 # -------------------------------------------------------------------
 # Comments & documentation
 # -------------------------------------------------------------------
-ReflowComments: false
-KeepEmptyLinesAtTheStartOfBlocks: false
+ReflowComments: IndentOnly
+
+FixNamespaceComments: true
+
+InsertNewlineAtEOF: true
+KeepEmptyLines:
+  AtEndOfFile:     true
+  AtStartOfBlock:  false
+  AtStartOfFile:   false
 MaxEmptyLinesToKeep: 1
+RemoveEmptyLinesInUnwrappedLines: true
 
 CommentPragmas: '^@'
 
 # -------------------------------------------------------------------
 # Includes / imports
 # -------------------------------------------------------------------
-SortIncludes: false
-SortUsingDeclarations: false
+SortIncludes:
+  Enabled:         false
+  IgnoreCase:      false
+  IgnoreExtension: true
+SortUsingDeclarations: never
 IncludeBlocks: Preserve
 
 # -------------------------------------------------------------------
 # Modern C++ / modules
 # -------------------------------------------------------------------
 RequiresClausePosition: OwnLine
-BreakBeforeConceptDeclarations: true
-Cpp11BracedListStyle: true
+IndentRequiresClause: true
+
+RequiresExpressionIndentation: Keyword
+
+BreakBeforeConceptDeclarations: Always
+Cpp11BracedListStyle: FunctionCall
 
 # -------------------------------------------------------------------
 # Misc
 # -------------------------------------------------------------------
-DeriveLineEnding: true
 DerivePointerAlignment: false
+LineEnding: DeriveLF
+
+IntegerLiteralSeparator:
+  Binary:                 0
+  BinaryMinDigitsInsert:  0
+  BinaryMaxDigitsRemove:  0
+  Decimal:                0
+  DecimalMinDigitsInsert: 0
+  DecimalMaxDigitsRemove: 0
+  Hex:                    0
+  HexMinDigitsInsert:     0
+  HexMaxDigitsRemove:     0
