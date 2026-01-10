@@ -64,20 +64,20 @@ Checks: >
 WarningsAsErrors: ''
 
 HeaderFilterRegex: '.*'
-AnalyzeTemporaryDtors: true
+#AnalyzeTemporaryDtors: true
 
-CheckOptions:
+#CheckOptions:
   # Performance / correctness tuning
-  - key: performance-move-const-arg
-    value: 'true'
+#  - key: performance-move-const-arg
+#    value: 'true'
 
   # Enforce [[nodiscard]] meaningfully
-  - key: modernize-use-nodiscard.AllowDiscardedReturnValues
-    value: 'false'
+#  - key: modernize-use-nodiscard.AllowDiscardedReturnValues
+#    value: 'false'
 
   # Special member functions
-  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
-    value: 'true'
+#  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+#    value: 'true'
 
 FormatStyle: file
 ...
