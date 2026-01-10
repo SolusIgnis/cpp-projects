@@ -37,41 +37,35 @@ export namespace net::telnet::awaitables {
     class TaggedAwaitable {
     private:
         using awaitable_type = Awaitable; ///< Underlying awaitable type
-    
+
         awaitable_type awaitable_; ///< The wrapped awaitable
-    
+
     public:
         ///@brief Default constructor.
         TaggedAwaitable() = default;
-    
+
         ///@brief Constructs from an awaitable.
-        TaggedAwaitable(awaitable_type awaitable) noexcept
-            : awaitable_(std::move(awaitable)) {}
-    
+        TaggedAwaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
+
         ///@brief Implicit conversion to underlying awaitable (lvalue).
         operator awaitable_type&() noexcept { return awaitable_; }
-    
+
         ///@brief Implicit conversion to underlying awaitable (const lvalue).
         operator const awaitable_type&() const noexcept { return awaitable_; }
-    
+
         ///@brief Implicit conversion to underlying awaitable (rvalue).
         operator awaitable_type&&() noexcept { return std::move(awaitable_); }
-    
+
         ///@brief Supports co_await for lvalue.
-        auto operator co_await() & noexcept {
-            return awaitable_.operator co_await();
-        }
-    
+        auto operator co_await() & noexcept { return awaitable_.operator co_await(); }
+
         ///@brief Supports co_await for const lvalue.
-        auto operator co_await() const & noexcept {
-            return awaitable_.operator co_await();
-        }
-    
+        auto operator co_await() const& noexcept { return awaitable_.operator co_await(); }
+
         ///@brief Supports co_await for rvalue.
-        auto operator co_await() && noexcept {
-            return std::move(awaitable_).operator co_await();
-        }
+        auto operator co_await() && noexcept { return std::move(awaitable_).operator co_await(); }
     }; //class TaggedAwaitable
+
     /**
      * @fn TaggedAwaitable::TaggedAwaitable(awaitable_type awaitable) noexcept
      * @param awaitable The awaitable to wrap.
@@ -82,28 +76,28 @@ export namespace net::telnet::awaitables {
     namespace tags {
         /// @brief Tag to specialize `TaggedAwaitable` for option enablement handlers. @see `TaggedAwaitable`
         struct OptionEnablementTag {};
-        
+
         /// @brief Tag to specialize `TaggedAwaitable` for option disablement handlers. @see `TaggedAwaitable`
         struct OptionDisablementTag {};
-        
+
         /// @brief Tag to specialize `TaggedAwaitable` for subnegotiation handlers. @see `TaggedAwaitable`
         struct SubnegotiationTag {};
     } //namespace tags
-    
+
     /**
      * @typedef OptionEnablementAwaitable
      * @brief Awaitable type for option enablement handlers.
      * @see `TaggedAwaitable`, `tags::OptionEnablementTag`, `:internal` (`OptionHandlerRegistry`), `:protocol_fsm` (for use)
      */
     using OptionEnablementAwaitable = TaggedAwaitable<tags::OptionEnablementTag, void>;
-     
+
     /**
      * @typedef OptionDisablementAwaitable
      * @brief Awaitable type for option disablement handlers.
      * @see `TaggedAwaitable`, `tags::OptionDisablementTag`, `:internal` (`OptionHandlerRegistry`), `:protocol_fsm` (for use)
      */
     using OptionDisablementAwaitable = TaggedAwaitable<tags::OptionDisablementTag, void>;
-     
+
     /**
      * @typedef SubnegotiationAwaitable
      * @brief Awaitable type for subnegotiation handlers.
