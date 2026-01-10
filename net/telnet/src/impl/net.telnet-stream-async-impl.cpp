@@ -27,7 +27,7 @@ import :options;      ///< @see "net.telnet-options.cppm" for `option` and `opti
 import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for `ProtocolFSM`
 import :awaitables;   ///< @see "net.telnet-awaitables.cppm" for awaitable types
 
-import :stream;       ///< @see "net.telnet-stream.cppm" for the partition being implemented.
+import :stream; ///< @see "net.telnet-stream.cppm" for the partition being implemented.
 
 //namespace asio = boost::asio;
 
@@ -42,11 +42,14 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<typename CompletionToken>
-    auto stream<NLS, PC>::async_request_option(option::id_num opt, negotiation_direction direction, CompletionToken&& token)
-    {
+    auto stream<NLS, PC>::async_request_option(option::id_num opt,
+                                               negotiation_direction direction,
+                                               CompletionToken&& token) {
         auto [ec, response] = fsm_.request_option(opt, direction);
-        if (ec || !response) return async_report_error(ec, std::forward<CompletionToken>(token));
-        else return async_write_negotiation(*response, std::forward<CompletionToken>(token));
+        if (ec || !response)
+            return async_report_error(ec, std::forward<CompletionToken>(token));
+        else
+            return async_write_negotiation(*response, std::forward<CompletionToken>(token));
     } //stream::async_request_option(option::id_num, negotiation_direction, CompletionToken&&)
 
     /**
@@ -61,30 +64,34 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<typename CompletionToken>
-    auto stream<NLS, PC>::async_disable_option(option::id_num opt, negotiation_direction direction, CompletionToken&& token)
-    {
+    auto stream<NLS, PC>::async_disable_option(option::id_num opt,
+                                               negotiation_direction direction,
+                                               CompletionToken&& token) {
         auto [ec, response, awaitable] = fsm_.disable_option(opt, direction);
-        if (ec || (!response && !awaitable)) return async_report_error(ec, std::forward<CompletionToken>(token));
-        else return asio::co_spawn(
-            this->get_executor(),
-            [this, response = std::move(response), awaitable = std::move(awaitable)]() mutable -> asio::awaitable<std::size_t> {
-                try {
-                    std::size_t bt = 0;
-                    if (response) {
-                        bt += co_await async_write_negotiation(*response, asio::use_awaitable);
+        if (ec || (!response && !awaitable))
+            return async_report_error(ec, std::forward<CompletionToken>(token));
+        else
+            return asio::co_spawn(
+                this->get_executor(),
+                [this,
+                 response  = std::move(response),
+                 awaitable = std::move(awaitable)]() mutable -> asio::awaitable<std::size_t> {
+                    try {
+                        std::size_t bt = 0;
+                        if (response) {
+                            bt += co_await async_write_negotiation(*response, asio::use_awaitable);
+                        }
+                        if (awaitable) {
+                            co_await *awaitable;
+                        }
+                        co_return bt;
+                    } catch (std::system_error se) {
+                        throw;
+                    } catch (...) {
+                        throw std::system_error(error::internal_error);
                     }
-                    if (awaitable) {
-                        co_await *awaitable;
-                    }
-                    co_return bt;
-                } catch (std::system_error se) {
-                    throw;
-                } catch (...) {
-                    throw std::system_error(error::internal_error);
-                }
-            },
-            std::forward<CompletionToken>(token)
-        );
+                },
+                std::forward<CompletionToken>(token));
     } //stream::async_disable_option(option::id_num, negotiation_direction, CompletionToken&&)
 
     /**
@@ -93,9 +100,8 @@ namespace net::telnet {
      * @remark Binds the operation to the stream’s executor using `get_executor()`.
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBufSeq, ReadToken CompletionToken> 
-    auto stream<NLS, PC>::async_read_some(const MBufSeq& buffers, CompletionToken&& token)
-    {
+    template<MutableBufferSequence MBufSeq, ReadToken CompletionToken>
+    auto stream<NLS, PC>::async_read_some(const MBufSeq& buffers, CompletionToken&& token) {
         return asio::async_compose<CompletionToken, typename stream<NLS, PC>::asio_completion_signature>(
             InputProcessor<MBufSeq>(*this, fsm_, context_, std::move(buffers)),
             std::forward<CompletionToken>(token),
@@ -109,8 +115,7 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<ConstBufferSequence CBufSeq, WriteToken CompletionToken>
-    auto stream<NLS, PC>::async_write_some(const CBufSeq& data, CompletionToken&& token)
-    {
+    auto stream<NLS, PC>::async_write_some(const CBufSeq& data, CompletionToken&& token) {
         auto [ec, escaped_data] = escape_telnet_output(data);
         if (ec) {
             return async_report_error(ec, std::forward<CompletionToken>(token));
@@ -125,13 +130,10 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<ConstBufferSequence CBufSeq, WriteToken CompletionToken>
-    auto stream<NLS, PC>::async_write_raw(const CBufSeq& data, CompletionToken&& token)
-    {
-        return asio::async_write(
-            this->next_layer_,
-            data,
-            asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token))
-        );
+    auto stream<NLS, PC>::async_write_raw(const CBufSeq& data, CompletionToken&& token) {
+        return asio::async_write(this->next_layer_,
+                                 data,
+                                 asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token)));
     } //stream::async_write_raw(const CBufSeq&, CompletionToken&&)
 
     /**
@@ -141,18 +143,12 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<WriteToken CompletionToken>
-    auto stream<NLS, PC>::async_write_command(telnet::command cmd, CompletionToken&& token)
-    {
-        static std::array<byte_t, 2> buf{
-            std::to_underlying(telnet::command::iac),
-            std::to_underlying(cmd)
-        };
-        
-        return asio::async_write(
-            this->next_layer_,
-            asio::buffer(buf),
-            asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token))
-        );
+    auto stream<NLS, PC>::async_write_command(telnet::command cmd, CompletionToken&& token) {
+        static std::array<byte_t, 2> buf{std::to_underlying(telnet::command::iac), std::to_underlying(cmd)};
+
+        return asio::async_write(this->next_layer_,
+                                 asio::buffer(buf),
+                                 asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token)));
     } //stream::async_write_command(telnet::command, CompletionToken&&)
 
     /**
@@ -166,13 +162,16 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<WriteToken CompletionToken>
-    auto stream<NLS, PC>::async_write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, CompletionToken&& token)
-    {
+    auto stream<NLS, PC>::async_write_subnegotiation(option opt,
+                                                     const std::vector<byte_t>& subnegotiation_buffer,
+                                                     CompletionToken&& token) {
         if (!opt.supports_subnegotiation()) {
-            return async_report_error(make_error_code(error::invalid_subnegotiation), std::forward<CompletionToken>(token));
+            return async_report_error(make_error_code(error::invalid_subnegotiation),
+                                      std::forward<CompletionToken>(token));
         }
         if (!fsm_.is_enabled(opt)) {
-            return async_report_error(make_error_code(error::option_not_available), std::forward<CompletionToken>(token));
+            return async_report_error(make_error_code(error::option_not_available),
+                                      std::forward<CompletionToken>(token));
         }
 
         std::vector<byte_t> escaped_buffer;
@@ -196,7 +195,8 @@ namespace net::telnet {
             escaped_buffer.push_back(std::to_underlying(telnet::command::iac));
             escaped_buffer.push_back(std::to_underlying(telnet::command::se));
         } catch (const std::bad_alloc&) {
-            return async_report_error(make_error_code(std::errc::not_enough_memory), std::forward<CompletionToken>(token));
+            return async_report_error(make_error_code(std::errc::not_enough_memory),
+                                      std::forward<CompletionToken>(token));
         } catch (...) {
             return async_report_error(make_error_code(error::internal_error), std::forward<CompletionToken>(token));
         }
@@ -211,42 +211,50 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<WriteToken CompletionToken>
-    auto stream<NLS, PC>::async_send_synch(CompletionToken&& token)
-    {
+    auto stream<NLS, PC>::async_send_synch(CompletionToken&& token) {
         return asio::async_initiate<CompletionToken, asio_completion_signature>(
             [this](auto&& handler) {
                 std::size_t bytes_transferred = 0;
                 this->async_send_nul( //Send 1
-                    false, 
-                    [this, bytes_transferred, handler = std::move(handler)](std::error_code ec, std::size_t bytes) mutable {
+                    false,
+                    [this, bytes_transferred, handler = std::move(handler)](std::error_code ec,
+                                                                            std::size_t bytes) mutable {
                         bytes_transferred += bytes;
-                        if (ec) { asio::dispatch(std::move(handler), ec, bytes_transferred); return; }
+                        if (ec) {
+                            asio::dispatch(std::move(handler), ec, bytes_transferred);
+                            return;
+                        }
                         this->async_send_nul( //Send 2
-                            true, //Urgent/OOB
-                            [this, bytes_transferred, handler = std::move(handler)](std::error_code ec, std::size_t bytes) mutable {
+                            true,             //Urgent/OOB
+                            [this, bytes_transferred, handler = std::move(handler)](std::error_code ec,
+                                                                                    std::size_t bytes) mutable {
                                 bytes_transferred += bytes;
-                                if (ec) { asio::dispatch(std::move(handler), ec, bytes_transferred); return; }
+                                if (ec) {
+                                    asio::dispatch(std::move(handler), ec, bytes_transferred);
+                                    return;
+                                }
                                 this->async_send_nul( //Send 3
                                     false,
-                                    [this, bytes_transferred, handler = std::move(handler)](std::error_code ec, std::size_t bytes) mutable {
+                                    [this, bytes_transferred, handler = std::move(handler)](std::error_code ec,
+                                                                                            std::size_t bytes) mutable {
                                         bytes_transferred += bytes;
-                                        if (ec) { asio::dispatch(std::move(handler), ec, bytes_transferred); return; }
+                                        if (ec) {
+                                            asio::dispatch(std::move(handler), ec, bytes_transferred);
+                                            return;
+                                        }
                                         this->async_write_command( //Final IAC DM
                                             telnet::command::dm,
-                                            [bytes_transferred, handler = std::move(handler)](std::error_code ec, std::size_t bytes) mutable {
+                                            [bytes_transferred,
+                                             handler = std::move(handler)](std::error_code ec,
+                                                                           std::size_t bytes) mutable {
                                                 bytes_transferred += bytes;
                                                 asio::dispatch(std::move(handler), ec, bytes_transferred);
-                                            }
-                                        ); //End of final IAC DM
-                                    }
-                                ); //End of send 3
-                            }
-                        ); //End of send 2
-                    }
-                ); //End of send 1
+                                            }); //End of final IAC DM
+                                    });         //End of send 3
+                            });                 //End of send 2
+                    });                         //End of send 1
             },
-            std::forward<CompletionToken>(token)
-        ); //End of async_initiate
+            std::forward<CompletionToken>(token)); //End of async_initiate
     } //stream::async_send_synch(CompletionToken&&)
 
     /**
@@ -255,21 +263,15 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<WriteToken CompletionToken>
-    auto stream<NLS, PC>::async_send_nul(bool urgent, CompletionToken&& token)
-    {
+    auto stream<NLS, PC>::async_send_nul(bool urgent, CompletionToken&& token) {
         constexpr static byte_t NUL = static_cast<byte_t>('\0');
-        
+
         if (urgent) {
-            return this->lowest_layer().async_send(
-                asio::buffer(&NUL, 1),
-                lowest_layer_type::message_out_of_band,
-                std::forward<CompletionToken>(token)
-            );
+            return this->lowest_layer().async_send(asio::buffer(&NUL, 1),
+                                                   lowest_layer_type::message_out_of_band,
+                                                   std::forward<CompletionToken>(token));
         } else {
-            return this->lowest_layer().async_send(
-                asio::buffer(&NUL, 1),
-                std::forward<CompletionToken>(token)
-            );
+            return this->lowest_layer().async_send(asio::buffer(&NUL, 1), std::forward<CompletionToken>(token));
         }
     } //stream::async_send_nul(bool, CompletionToken&&)
 
@@ -280,19 +282,15 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<WriteToken CompletionToken>
-    auto stream<NLS, PC>::async_write_negotiation(typename fsm_type::NegotiationResponse response, CompletionToken&& token)
-    {
+    auto stream<NLS, PC>::async_write_negotiation(typename fsm_type::NegotiationResponse response,
+                                                  CompletionToken&& token) {
         auto [dir, enable, opt] = response;
-        static std::array<byte_t, 3> buf{
-            std::to_underlying(telnet::command::iac),
-            std::to_underlying(fsm_type::make_negotiation_command(dir, enable)),
-            std::to_underlying(opt)
-        };
-        return asio::async_write(
-            this->next_layer_,
-            asio::buffer(buf),
-            asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token))
-        );
+        static std::array<byte_t, 3> buf{std::to_underlying(telnet::command::iac),
+                                         std::to_underlying(fsm_type::make_negotiation_command(dir, enable)),
+                                         std::to_underlying(opt)};
+        return asio::async_write(this->next_layer_,
+                                 asio::buffer(buf),
+                                 asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token)));
     } //stream::async_write_negotiation(fsm_type::NegotiationResponse, CompletionToken&&)
 
     /**
@@ -304,18 +302,18 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<WriteToken CompletionToken>
-    auto stream<NLS, PC>::async_write_temp_buffer(std::vector<byte_t>&& temp_buffer, CompletionToken&& token)
-    {
+    auto stream<NLS, PC>::async_write_temp_buffer(std::vector<byte_t>&& temp_buffer, CompletionToken&& token) {
         return asio::async_initiate<CompletionToken, typename stream<NLS, PC>::asio_completion_signature>(
             [this, temp_buffer = std::move(temp_buffer)](auto handler) mutable {
                 asio::async_write(this->next_layer_,
-                    asio::buffer(temp_buffer),
-                    asio::bind_executor(this->get_executor(),
-                        [handler](const std::error_code& ec, std::size_t bytes_written) mutable {
-                            handler(ec, bytes_written);
-                        })
-                );
-            }, std::forward<CompletionToken>(token));
+                                  asio::buffer(temp_buffer),
+                                  asio::bind_executor(this->get_executor(),
+                                                      [handler](const std::error_code& ec,
+                                                                std::size_t bytes_written) mutable {
+                                                          handler(ec, bytes_written);
+                                                      }));
+            },
+            std::forward<CompletionToken>(token));
     } //stream::async_write_temp_buffer(std::vector<byte_t>&&, CompletionToken&&)
 
     /**
@@ -324,11 +322,9 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<WriteToken CompletionToken>
-    auto stream<NLS, PC>::async_report_error(std::error_code ec, CompletionToken&& token)
-    {
+    auto stream<NLS, PC>::async_report_error(std::error_code ec, CompletionToken&& token) {
         return asio::async_initiate<CompletionToken, typename stream<NLS, PC>::asio_completion_signature>(
-            [ec](auto handler) {
-                handler(ec, 0);
-            }, std::forward<CompletionToken>(token));
+            [ec](auto handler) { handler(ec, 0); },
+            std::forward<CompletionToken>(token));
     } //stream::async_report_error(std::error_code, CompletionToken&&)
 } //namespace net::telnet

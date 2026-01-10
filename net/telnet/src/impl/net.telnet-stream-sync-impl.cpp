@@ -27,7 +27,7 @@ import :concepts;     ///< @see "net.telnet-concepts.cppm" for `telnet::concepts
 import :options;      ///< @see "net.telnet-options.cppm" for `option`
 import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for `ProtocolFSM`
 
-import :stream;       ///< @see "net.telnet-stream.cppm" for the partition being implemented.
+import :stream; ///< @see "net.telnet-stream.cppm" for the partition being implemented.
 
 //namespace asio = boost::asio;
 
@@ -96,7 +96,7 @@ namespace net::telnet {
     std::size_t stream<NLS, PC>::write_raw(const CBufSeq& data) {
         return sync_await(async_write_raw(data, asio::use_awaitable));
     } //stream::write_raw(const CBufSeq&)
-    
+
     /**
      * @internal
      * Wraps awaitable `async_write_command` in `sync_await`, forwarding the command.
@@ -137,15 +137,15 @@ namespace net::telnet {
      * @see `request_option` for throwing version, `async_request_option` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::request_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::request_option(option::id_num opt,
+                                                negotiation_direction direction,
+                                                std::error_code& ec) noexcept {
         try {
             return request_option(opt, direction);
-        }
-        catch (const std::system_error& e) {
+        } catch (const std::system_error& e) {
             ec = e.code();
             return 0;
-        }
-        catch (...) {
+        } catch (...) {
             ec = make_error_code(error::internal_error);
             return 0;
         }
@@ -157,15 +157,15 @@ namespace net::telnet {
      * @see `disable_option` for throwing version, `async_disable_option` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::disable_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::disable_option(option::id_num opt,
+                                                negotiation_direction direction,
+                                                std::error_code& ec) noexcept {
         try {
             return disable_option(opt, direction);
-        }
-        catch (const std::system_error& e) {
+        } catch (const std::system_error& e) {
             ec = e.code();
             return 0;
-        }
-        catch (...) {
+        } catch (...) {
             ec = make_error_code(error::internal_error);
             return 0;
         }
@@ -181,16 +181,13 @@ namespace net::telnet {
     std::size_t stream<NLS, PC>::read_some(MBufSeq&& buffers, std::error_code& ec) noexcept {
         try {
             return read_some(std::forward<MBufSeq>(buffers));
-        }
-        catch (const std::system_error& e) {
+        } catch (const std::system_error& e) {
             ec = e.code();
             return 0;
-        }
-        catch (const std::bad_alloc& e) {
+        } catch (const std::bad_alloc& e) {
             ec = make_error_code(std::errc::not_enough_memory);
             return 0;
-        }
-        catch (...) {
+        } catch (...) {
             ec = make_error_code(error::internal_error);
             return 0;
         }
@@ -206,16 +203,13 @@ namespace net::telnet {
     std::size_t stream<NLS, PC>::write_some(const CBufSeq& data, std::error_code& ec) noexcept {
         try {
             return write_some(data);
-        }
-        catch (const std::system_error& e) {
+        } catch (const std::system_error& e) {
             ec = e.code();
             return 0;
-        }
-        catch (const std::bad_alloc& e) {
+        } catch (const std::bad_alloc& e) {
             ec = make_error_code(std::errc::not_enough_memory);
             return 0;
-        }
-        catch (...) {
+        } catch (...) {
             ec = make_error_code(error::internal_error);
             return 0;
         }
@@ -231,21 +225,18 @@ namespace net::telnet {
     std::size_t stream<NLS, PC>::write_raw(const CBufSeq& data, std::error_code& ec) noexcept {
         try {
             return write_raw(data);
-        }
-        catch (const std::system_error& e) {
+        } catch (const std::system_error& e) {
             ec = e.code();
             return 0;
-        }
-        catch (const std::bad_alloc& e) {
+        } catch (const std::bad_alloc& e) {
             ec = make_error_code(std::errc::not_enough_memory);
             return 0;
-        }
-        catch (...) {
+        } catch (...) {
             ec = make_error_code(error::internal_error);
             return 0;
         }
     } //stream::write_raw(const CBufSeq&, std::error_code&) noexcept
-    
+
     /**
      * @internal
      * Calls the throwing `write_command`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
@@ -255,16 +246,13 @@ namespace net::telnet {
     std::size_t stream<NLS, PC>::write_command(telnet::command cmd, std::error_code& ec) noexcept {
         try {
             return write_command(cmd);
-        }
-        catch (const std::system_error& e) {
+        } catch (const std::system_error& e) {
             ec = e.code();
             return 0;
-        }
-        catch (const std::bad_alloc& e) {
+        } catch (const std::bad_alloc& e) {
             ec = make_error_code(std::errc::not_enough_memory);
             return 0;
-        }
-        catch (...) {
+        } catch (...) {
             ec = make_error_code(error::internal_error);
             return 0;
         }
@@ -276,24 +264,23 @@ namespace net::telnet {
      * @see `write_subnegotiation` for throwing version, `async_write_subnegotiation` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::write_subnegotiation(option opt,
+                                                      const std::vector<byte_t>& subnegotiation_buffer,
+                                                      std::error_code& ec) noexcept {
         try {
             return write_subnegotiation(opt, subnegotiation_buffer);
-        }
-        catch (const std::system_error& e) {
+        } catch (const std::system_error& e) {
             ec = e.code();
             return 0;
-        }
-        catch (const std::bad_alloc& e) {
+        } catch (const std::bad_alloc& e) {
             ec = make_error_code(std::errc::not_enough_memory);
             return 0;
-        }
-        catch (...) {
+        } catch (...) {
             ec = make_error_code(error::internal_error);
             return 0;
         }
     } //stream::write_subnegotiation(option, const std::vector<byte_t>&, std::error_code&) noexcept
-    
+
     /**
      * @internal
      * Calls the throwing `send_synch`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
@@ -303,16 +290,13 @@ namespace net::telnet {
     std::size_t stream<NLS, PC>::send_synch(std::error_code& ec) noexcept {
         try {
             return send_synch();
-        }
-        catch (const std::system_error& e) {
+        } catch (const std::system_error& e) {
             ec = e.code();
             return 0;
-        }
-        catch (const std::bad_alloc& e) {
+        } catch (const std::bad_alloc& e) {
             ec = make_error_code(std::errc::not_enough_memory);
             return 0;
-        }
-        catch (...) {
+        } catch (...) {
             ec = make_error_code(error::internal_error);
             return 0;
         }
