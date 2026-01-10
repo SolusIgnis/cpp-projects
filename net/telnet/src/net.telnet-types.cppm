@@ -13,7 +13,7 @@
  *
  * @remark This module is fully inline.
  */
- 
+
 //Module partition interface unit
 export module net.telnet:types;
 
@@ -27,8 +27,8 @@ export namespace net::telnet {
      * @see `:stream` and `:protocol_fsm` for `byte_t` stream processing.
      * @todo Future Development: Consider switching from `std::uint8_t` to `std::byte` when C++23 support is better.
      */
-    using byte_t = std::uint8_t; 
-    
+    using byte_t = std::uint8_t;
+
     /**
      * @brief Enumeration of Telnet commands as defined in RFC 854.
      * @remark Used in stream operations and protocol state machine to represent Telnet commands.
@@ -36,7 +36,7 @@ export namespace net::telnet {
      * @see `:protocol_fsm` for reading `telnet::command` from the Telnet incoming byte stream by the protocol state machine and `:stream` for usage in transmitting `telnet::command` to a Telnet peer.
      */
     enum class command : byte_t {
-        eor      = 0xEF, ///< End of Record 
+        eor      = 0xEF, ///< End of Record
         se       = 0xF0, ///< Subnegotiation End
         nop      = 0xF1, ///< No Operation
         dm       = 0xF2, ///< Data Mark
@@ -54,17 +54,17 @@ export namespace net::telnet {
         dont_opt = 0xFE, ///< Sender requests receiver to disable option
         iac      = 0xFF  ///< Interpret As Command
     }; //enum class command
-    
+
     /**
      * @brief Enumeration representing option negotiation directions (i.e., local/remote enablement).
      * @see RFC 854 for Telnet protocol specification and RFC 1143 for option negotiation guidelines.
      * @see `:protocol_fsm` for use in option negotiation.
      */
     enum class negotiation_direction {
-        local,  ///< Local side ("us", sends WILL/WONT, receives DO/DONT)
-        remote  ///< Remote side ("them", sends DO/DONT, receives WILL/WONT)
+        local, ///< Local side ("us", sends WILL/WONT, receives DO/DONT)
+        remote ///< Remote side ("them", sends DO/DONT, receives WILL/WONT)
     }; //enum class NegotiationDirection
-} // export namespace net::telnet
+} //namespace net::telnet
 
 export namespace std {
     /**
@@ -110,26 +110,62 @@ export namespace std {
         auto format(::net::telnet::command cmd, FormatContext& ctx) const {
             string_view name;
             switch (cmd) {
-                case ::net::telnet::command::eor:      name = "EOR";  break;
-                case ::net::telnet::command::se:       name = "SE";   break;
-                case ::net::telnet::command::nop:      name = "NOP";  break;
-                case ::net::telnet::command::dm:       name = "DM";   break;
-                case ::net::telnet::command::brk:      name = "BRK";  break;
-                case ::net::telnet::command::ip:       name = "IP";   break;
-                case ::net::telnet::command::ao:       name = "AO";   break;
-                case ::net::telnet::command::ayt:      name = "AYT";  break;
-                case ::net::telnet::command::ec:       name = "EC";   break;
-                case ::net::telnet::command::el:       name = "EL";   break;
-                case ::net::telnet::command::ga:       name = "GA";   break;
-                case ::net::telnet::command::sb:       name = "SB";   break;
-                case ::net::telnet::command::will_opt: name = "WILL"; break;
-                case ::net::telnet::command::wont_opt: name = "WONT"; break;
-                case ::net::telnet::command::do_opt:   name = "DO";   break;
-                case ::net::telnet::command::dont_opt: name = "DONT"; break;
-                case ::net::telnet::command::iac:      name = "IAC";  break;
-                default:                                     name = "UNKNOWN"; break;
+            case ::net::telnet::command::eor:
+                name = "EOR";
+                break;
+            case ::net::telnet::command::se:
+                name = "SE";
+                break;
+            case ::net::telnet::command::nop:
+                name = "NOP";
+                break;
+            case ::net::telnet::command::dm:
+                name = "DM";
+                break;
+            case ::net::telnet::command::brk:
+                name = "BRK";
+                break;
+            case ::net::telnet::command::ip:
+                name = "IP";
+                break;
+            case ::net::telnet::command::ao:
+                name = "AO";
+                break;
+            case ::net::telnet::command::ayt:
+                name = "AYT";
+                break;
+            case ::net::telnet::command::ec:
+                name = "EC";
+                break;
+            case ::net::telnet::command::el:
+                name = "EL";
+                break;
+            case ::net::telnet::command::ga:
+                name = "GA";
+                break;
+            case ::net::telnet::command::sb:
+                name = "SB";
+                break;
+            case ::net::telnet::command::will_opt:
+                name = "WILL";
+                break;
+            case ::net::telnet::command::wont_opt:
+                name = "WONT";
+                break;
+            case ::net::telnet::command::do_opt:
+                name = "DO";
+                break;
+            case ::net::telnet::command::dont_opt:
+                name = "DONT";
+                break;
+            case ::net::telnet::command::iac:
+                name = "IAC";
+                break;
+            default:
+                name = "UNKNOWN";
+                break;
             }
-            
+
             if (presentation == 'n') {
                 return std::format_to(ctx.out(), "{}", name);
             } else if (presentation == 'x') {
@@ -173,4 +209,4 @@ export namespace std {
             return format_to(ctx.out(), "{}", name);
         } //format(::net::telnet::negotiation_direction, FormatContext&)
     }; //struct formatter<::net::telnet::negotiation_direction>
-} //export namespace std
+} //namespace std

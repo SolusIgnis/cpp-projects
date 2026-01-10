@@ -26,14 +26,14 @@ export module net.telnet:protocol_fsm;
 
 import std; //For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec, std::format
 
-export import :types;      ///< @see "net.telnet-types.cppm" for `byte_t`, `telnet::command`, and `negotiation_direction`
-export import :errors;     ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-export import :concepts;   ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
-export import :options;    ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
+export import :types;    ///< @see "net.telnet-types.cppm" for `byte_t`, `telnet::command`, and `negotiation_direction`
+export import :errors;   ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+export import :concepts; ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
+export import :options;  ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
 export import :awaitables; ///< @see "net.telnet-awaitables.cppm" for `TaggedAwaitable`, semantic tags, and type aliases
 
-import :internal;          ///< @see "net.telnet-internal.cppm" for implementation classes
-import :protocol_config;   ///< @see "net.telnet-protocol_config.cppm" for `DefaultProtocolFSMConfig`
+import :internal;        ///< @see "net.telnet-internal.cppm" for implementation classes
+import :protocol_config; ///< @see "net.telnet-protocol_config.cppm" for `DefaultProtocolFSMConfig`
 
 //namespace asio = boost::asio;
 
@@ -53,6 +53,7 @@ export namespace net::telnet {
     template<typename ConfigT = DefaultProtocolFSMConfig>
     class ProtocolFSM {
         static_assert(ProtocolFSMConfig<ConfigT>);
+
     public:
         /**
          * @typedef ProtocolConfig
@@ -67,7 +68,8 @@ export namespace net::telnet {
          * @param direction The negotiation direction (`local` or `remote`).
          * @return `OptionEnablementAwaitable` representing the asynchronous handling result.
          */
-        using OptionEnablementHandler = std::function<awaitables::OptionEnablementAwaitable(option::id_num, negotiation_direction)>;
+        using OptionEnablementHandler =
+            std::function<awaitables::OptionEnablementAwaitable(option::id_num, negotiation_direction)>;
 
         /**
          * @typedef OptionDisablementHandler
@@ -76,7 +78,8 @@ export namespace net::telnet {
          * @param direction The negotiation direction (`local` or `remote`).
          * @return `OptionDisablementAwaitable` representing the asynchronous handling result.
          */
-        using OptionDisablementHandler = std::function<awaitables::OptionDisablementAwaitable(option::id_num, negotiation_direction)>;
+        using OptionDisablementHandler =
+            std::function<awaitables::OptionDisablementAwaitable(option::id_num, negotiation_direction)>;
 
         /**
          * @typedef SubnegotiationHandler
@@ -85,7 +88,8 @@ export namespace net::telnet {
          * @param data The `std::vector<byte_t>` containing subnegotiation data.
          * @return `SubnegotiationAwaitable` for asynchronous subnegotiation handling.
          */
-        using SubnegotiationHandler = std::function<awaitables::SubnegotiationAwaitable(const option&, std::vector<byte_t>)>;
+        using SubnegotiationHandler =
+            std::function<awaitables::SubnegotiationAwaitable(const option&, std::vector<byte_t>)>;
 
         /**
          * @typedef UnknownOptionHandler
@@ -114,32 +118,36 @@ export namespace net::telnet {
          * @brief Variant type for return values from byte processing.
          * @remark Holds either a `NegotiationResponse`, direct stream write (`std::string`), handler awaitable (`OptionEnablementAwaitable` or `OptionDisablementAwaitable`) paired with an optional `NegotiationResponse`, or subnegotiation awaitable (`SubnegotiationAwaitable`).
          */
-        using ProcessingReturnVariant = std::variant<
-            NegotiationResponse,
-            std::string,
-            std::tuple<awaitables::OptionEnablementAwaitable, std::optional<NegotiationResponse>>,
-            std::tuple<awaitables::OptionDisablementAwaitable, std::optional<NegotiationResponse>>,
-            awaitables::SubnegotiationAwaitable
-        >;
+        using ProcessingReturnVariant =
+            std::variant<NegotiationResponse,
+                         std::string,
+                         std::tuple<awaitables::OptionEnablementAwaitable, std::optional<NegotiationResponse>>,
+                         std::tuple<awaitables::OptionDisablementAwaitable, std::optional<NegotiationResponse>>,
+                         awaitables::SubnegotiationAwaitable>;
 
         ///@brief Constructs the FSM, initializing `ProtocolConfig` once.
-        ProtocolFSM() {
-            ConfigT::initialize();
-        }
+        ProtocolFSM() { ConfigT::initialize(); }
 
         ///@brief Registers handlers for option enablement, disablement, and subnegotiation.
-        void register_option_handlers(option::id_num opt, std::optional<OptionEnablementHandler> enable_handler, std::optional<OptionDisablementHandler> disable_handler, std::optional<SubnegotiationHandler> subneg_handler = std::nullopt) { option_handler_registry_.register_handlers(opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler)); }
+        void register_option_handlers(option::id_num opt,
+                                      std::optional<OptionEnablementHandler> enable_handler,
+                                      std::optional<OptionDisablementHandler> disable_handler,
+                                      std::optional<SubnegotiationHandler> subneg_handler = std::nullopt) {
+            option_handler_registry_.register_handlers(opt,
+                                                       std::move(enable_handler),
+                                                       std::move(disable_handler),
+                                                       std::move(subneg_handler));
+        }
 
         ///@brief Unregisters handlers for an option.
         void unregister_option_handlers(option::id_num opt) { option_handler_registry_.unregister_handlers(opt); }
 
         ///@brief Processes a single byte of Telnet input.
-        std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-        process_byte(byte_t byte) noexcept;
+        std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>> process_byte(byte_t byte) noexcept;
 
         ///@brief Checks if an option is enabled locally or remotely.
         bool is_enabled(option::id_num opt) { return option_status_[opt].is_enabled(); }
-        
+
         ///@brief Checks if an option is enabled in a specified direction.
         bool is_enabled(option::id_num opt, negotiation_direction dir) { return option_status_[opt].enabled(dir); }
 
@@ -147,13 +155,17 @@ export namespace net::telnet {
         static telnet::command make_negotiation_command(negotiation_direction direction, bool enable) noexcept;
 
         ///@brief Requests an option to be enabled (WILL/DO), synchronously updating OptionStatusDB and returning a negotiation response.
-        std::tuple<std::error_code, std::optional<NegotiationResponse>> request_option(option::id_num opt, negotiation_direction direction);
+        std::tuple<std::error_code, std::optional<NegotiationResponse>> request_option(option::id_num opt,
+                                                                                       negotiation_direction direction);
 
         ///@brief Disables an option (WONT/DONT), synchronously updating OptionStatusDB and returning a negotiation response and optional disablement awaitable.
-        std::tuple<std::error_code, std::optional<NegotiationResponse>, std::optional<awaitables::OptionDisablementAwaitable>> disable_option(option::id_num opt, negotiation_direction direction);
+        std::tuple<std::error_code,
+                   std::optional<NegotiationResponse>,
+                   std::optional<awaitables::OptionDisablementAwaitable>>
+            disable_option(option::id_num opt, negotiation_direction direction);
 
     private:
-        enum class ProtocolState { 
+        enum class ProtocolState {
             Normal,               ///< Default state for data processing
             HasCR,                ///< Processing the byte after '\r'
             IAC,                  ///< Processing IAC command byte
@@ -168,39 +180,41 @@ export namespace net::telnet {
 
         ///@brief Handles bytes in the `Normal` state (data or IAC).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-        handle_state_normal(byte_t byte) noexcept;
+            handle_state_normal(byte_t byte) noexcept;
 
         ///@brief Handles bytes immediately after '\r' ('\0', '\n', or error)
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-        handle_state_has_cr(byte_t byte) noexcept;
+            handle_state_has_cr(byte_t byte) noexcept;
 
         ///@brief Handles bytes after IAC (commands like WILL, DO, SB, etc.).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-        handle_state_iac(byte_t byte) noexcept;
+            handle_state_iac(byte_t byte) noexcept;
 
         ///@brief Handles bytes in the `OptionNegotiation` state (option ID after WILL/WONT/DO/DONT).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-        handle_state_option_negotiation(byte_t byte) noexcept;
+            handle_state_option_negotiation(byte_t byte) noexcept;
 
         ///@brief Handles bytes in the `SubnegotiationOption` state (option ID after IAC SB).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-        handle_state_subnegotiation_option(byte_t byte) noexcept;
+            handle_state_subnegotiation_option(byte_t byte) noexcept;
 
         ///@brief Handles bytes in the `Subnegotiation` state (data after option ID).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-        handle_state_subnegotiation(byte_t byte) noexcept;
+            handle_state_subnegotiation(byte_t byte) noexcept;
 
         ///@brief Handles bytes in the `SubnegotiationIAC` state (IAC in subnegotiation data).
         std::tuple<std::error_code, bool, std::optional<ProcessingReturnVariant>>
-        handle_state_subnegotiation_iac(byte_t byte) noexcept;
+            handle_state_subnegotiation_iac(byte_t byte) noexcept;
 
         ///@brief Handles STATUS subnegotiation (RFC 859), returning an awaitable with the IS [list] payload or user-handled result.
-        auto handle_status_subnegotiation(option opt, std::vector<byte_t> buffer) -> awaitables::SubnegotiationAwaitable;
+        auto handle_status_subnegotiation(option opt, std::vector<byte_t> buffer)
+            -> awaitables::SubnegotiationAwaitable;
 
         //Data Members
-        OptionHandlerRegistry<ProtocolConfig, OptionEnablementHandler, OptionDisablementHandler, SubnegotiationHandler> option_handler_registry_;
+        OptionHandlerRegistry<ProtocolConfig, OptionEnablementHandler, OptionDisablementHandler, SubnegotiationHandler>
+            option_handler_registry_;
         OptionStatusDB option_status_;
-        
+
         ProtocolState current_state_ = ProtocolState::Normal;
         std::optional<telnet::command> current_command_;
         std::optional<option> current_option_;
@@ -376,4 +390,4 @@ export namespace net::telnet {
      * @remark The returned `SubnegotiationAwaitable` is processed by `InputProcessor` to pass the payload to `stream::async_write_subnegotiation`, which adds `IAC` `SB` `status` ... `IAC` `SE` framing.
      * @see RFC 859, `:internal` for `OptionStatusDB`, `:options` for `option`, `:awaitables` for `SubnegotiationAwaitable`, `:stream` for `async_write_subnegotiation`
      */
-} //export namespace net::telnet
+} //namespace net::telnet

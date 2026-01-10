@@ -16,11 +16,11 @@
  *
  * @see `:protocol_fsm` for `ProtocolFSM`, `:concepts` for `ProtocolFSMConfig`, `:options` for `option`
  */
- 
+
 //Module partition interface unit
 export module net.telnet:protocol_config;
 
-import std; //For std::shared_mutex, std::lock_guard, std::shared_lock, std::function, std::error_code, std::string, std::once_flag 
+import std; //For std::shared_mutex, std::lock_guard, std::shared_lock, std::function, std::error_code, std::string, std::once_flag
 
 export import :types;    ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
 export import :errors;   ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
@@ -51,9 +51,7 @@ export namespace net::telnet {
         using ErrorLogger = std::function<void(const std::error_code&, std::string)>;
 
         ///@brief Initializes the configuration once.
-        static void initialize() {
-            std::call_once(initialization_flag_, &init);
-        }
+        static void initialize() { std::call_once(initialization_flag_, &init); }
 
         ///@brief Sets the handler for unknown option negotiation attempts.
         static void set_unknown_option_handler(UnknownOptionHandler handler) {
@@ -72,22 +70,23 @@ export namespace net::telnet {
             std::shared_lock<std::shared_mutex> lock(mutex_);
             return unknown_option_handler_;
         }
-        
+
         ///@brief Logs an error with the registered error logger using a formatted string.
-        template<typename ...Args>
-        static void log_error(const std::error_code& ec, std::format_string<std::remove_cvref_t<Args>...> fmt, Args&&... args) {
+        template<typename... Args>
+        static void
+            log_error(const std::error_code& ec, std::format_string<std::remove_cvref_t<Args>...> fmt, Args&&... args) {
             std::shared_lock<std::shared_mutex> lock(mutex_);
             if (error_logger_) {
                 error_logger_(ec, std::format(fmt, std::forward<Args>(args)...));
             }
         }
-        
+
         ///@brief Gets the AYT response string.
         static std::string_view get_ayt_response() {
             std::shared_lock<std::shared_mutex> lock(mutex_);
             return ayt_response_;
         }
-    
+
         ///@brief Sets the AYT response string.
         static void set_ayt_response(std::string response) {
             std::lock_guard<std::shared_mutex> lock(mutex_);
@@ -98,9 +97,11 @@ export namespace net::telnet {
         ///@brief Initializes the option registry with default options.
         static option_registry initialize_option_registry() {
             return {
-                option{option::id_num::binary,            "Binary Transmission", option::always_accept, option::always_accept},
-                option{option::id_num::suppress_go_ahead, "Suppress Go-Ahead",   option::always_accept, option::always_accept},
-                option{option::id_num::status,            "Status",              option::always_accept, option::always_reject, true}           
+                option{option::id_num::binary, "Binary Transmission", option::always_accept, option::always_accept},
+                option{option::id_num::suppress_go_ahead,
+                       "Suppress Go-Ahead", option::always_accept,
+                       option::always_accept},
+                option{option::id_num::status, "Status", option::always_accept, option::always_reject, true}
             };
         } //initialize_option_registry()
 
@@ -123,8 +124,9 @@ export namespace net::telnet {
         static inline UnknownOptionHandler unknown_option_handler_;
         static inline ErrorLogger error_logger_;
         static inline std::string ayt_response_ = "Telnet system is active."; ///Default AYT response
-        static inline std::shared_mutex mutex_; ///Mutex to protect shared static members
-        static inline std::once_flag initialization_flag_; ///Ensures initialize() is idempotent; only invokes init() once
+        static inline std::shared_mutex mutex_;                               ///Mutex to protect shared static members
+        static inline std::once_flag
+            initialization_flag_; ///Ensures initialize() is idempotent; only invokes init() once
     }; //class DefaultProtocolFSMConfig
 
     /**
@@ -193,4 +195,4 @@ export namespace net::telnet {
      * @remark Initializes `unknown_command_handler_`, `unknown_option_handler_`, and `error_logger_`.
      * @remark Called once by `initialize` under `std::call_once`.
      */
-} //export namespace net::telnet
+} //namespace net::telnet
