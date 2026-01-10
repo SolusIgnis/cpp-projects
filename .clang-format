@@ -63,11 +63,11 @@ ColumnLimit: 120
 BreakTemplateDeclarations: Yes
 BreakAdjacentStringLiterals: false
 BreakAfterAttributes: Leave
-BreakAfterOpenBracketBracedList: false
-BreakAfterOpenBracketFunction: false
-BreakAfterOpenBracketIf: false
-BreakAfterOpenBracketLoop: false
-BreakAfterOpenBracketSwitch: false
+#BreakAfterOpenBracketBracedList: false
+#BreakAfterOpenBracketFunction: false
+#BreakAfterOpenBracketIf: false
+#BreakAfterOpenBracketLoop: false
+#BreakAfterOpenBracketSwitch: false
 BreakAfterReturnType: ExceptShortType
 
 BinPackArguments: false
@@ -105,11 +105,11 @@ AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true
 
 BreakBeforeBinaryOperators: NonAssignment
-BreakBeforeCloseBracketBracedList: true
-BreakBeforeCloseBracketFunction: true
-BreakBeforeCloseBracketIf: true
-BreakBeforeCloseBracketLoop: true
-BreakBeforeCloseBracketSwitch: true
+#BreakBeforeCloseBracketBracedList: true
+#BreakBeforeCloseBracketFunction: true
+#BreakBeforeCloseBracketIf: true
+#BreakBeforeCloseBracketLoop: true
+#BreakBeforeCloseBracketSwitch: true
 BreakBeforeTemplateCloser: true
 BreakBeforeTernaryOperators: true
 BreakBinaryOperations: Never
@@ -195,7 +195,7 @@ SpaceBeforeRangeBasedForLoopColon: true
 SpaceBeforeSquareBrackets:         false
 SpacesBeforeTrailingComments:      1
 
-SpaceInEmptyBraces:        false
+#SpaceInEmptyBraces:        false
 SpaceInEmptyParentheses:   false
 SpacesInAngles:            Never
 SpacesInContainerLiterals: false
@@ -243,8 +243,8 @@ CommentPragmas: '^@'
 SortIncludes:
   Enabled:         false
   IgnoreCase:      false
-  IgnoreExtension: true
-SortUsingDeclarations: never
+#  IgnoreExtension: true
+SortUsingDeclarations: Never
 IncludeBlocks: Preserve
 
 # -------------------------------------------------------------------
@@ -256,7 +256,8 @@ IndentRequiresClause: true
 RequiresExpressionIndentation: Keyword
 
 BreakBeforeConceptDeclarations: Always
-Cpp11BracedListStyle: FunctionCall
+#Cpp11BracedListStyle: FunctionCall
+Cpp11BracedListStyle: true
 
 # -------------------------------------------------------------------
 # Misc
@@ -266,11 +267,11 @@ LineEnding: DeriveLF
 
 IntegerLiteralSeparator:
   Binary:                 0
-  BinaryMinDigitsInsert:  0
-  BinaryMaxDigitsRemove:  0
+#  BinaryMinDigitsInsert:  0
+#  BinaryMaxDigitsRemove:  0
   Decimal:                0
-  DecimalMinDigitsInsert: 0
-  DecimalMaxDigitsRemove: 0
+#  DecimalMinDigitsInsert: 0
+#  DecimalMaxDigitsRemove: 0
   Hex:                    0
-  HexMinDigitsInsert:     0
-  HexMaxDigitsRemove:     0
+#  HexMinDigitsInsert:     0
+#  HexMaxDigitsRemove:     0
