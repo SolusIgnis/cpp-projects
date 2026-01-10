@@ -196,8 +196,7 @@ namespace net::telnet {
                 //We cannot transition and must exit.
                 ProtocolConfig::log_error(
                     error::internal_error,
-                    "Invalid state in saw_urgent: HAS_URGENT_DATA already set; implies launch_wait_for_urgent_data was "
-                    "called while urgent data was already in the byte stream.");
+                    "Invalid state in saw_urgent: HAS_URGENT_DATA already set; implies launch_wait_for_urgent_data was " "called while urgent data was already in the byte stream.");
                 return;
             }
 
@@ -467,10 +466,10 @@ namespace net::telnet {
         if (context_.deferred_transport_error) {
             //We have a new write error on top of a previously deferred error.
             //Log it and attempt to continue processing the buffered byte stream.
-            decltype(fsm_)::ProtocolConfig::log_error(ec,
-                                                      "Error writing Telnet response with error {} previously deferred "
-                                                      "for reporting after processing the buffered byte stream.",
-                                                      context_.deferred_transport_error);
+            decltype(fsm_)::ProtocolConfig::log_error(
+                ec,
+                "Error writing Telnet response with error {} previously deferred " "for reporting after processing the buffered byte stream.",
+                context_.deferred_transport_error);
         } else {
             //Defer the write error.
             context_.deferred_transport_error = ec;

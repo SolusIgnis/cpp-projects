@@ -279,9 +279,7 @@ namespace net::telnet {
         } else { //any other sequence is invalid
             ProtocolConfig::log_error(
                 make_error_code(error::protocol_violation),
-                "Invalid CR 0x{:02x} sequence. Retained CR and data byte for data safety and " "transitioned back to "
-                                                                                               "`ProtocolState::Normal`"
-                                                                                               ".",
+                "Invalid CR 0x{:02x} sequence. Retained CR and data byte for data safety and transitioned back to `ProtocolState::Normal`.",
                 byte);
             result_ec      = make_error_code(processing_signal::carriage_return);
             result_forward = true; //retain data byte

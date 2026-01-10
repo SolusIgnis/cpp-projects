@@ -21,7 +21,7 @@ ContinuationIndentWidth: 4
 
 IndentAccessModifiers:      false
 IndentCaseBlocks:           false
-IndentCaseLabels:           false
+IndentCaseLabels:           true
 IndentGotoLabels:           false
 IndentExportBlock:          true
 IndentExternBlock:          Indent
@@ -116,7 +116,7 @@ BreakBinaryOperations:             Never
 BreakConstructorInitializers:      BeforeColon
 BreakFunctionDefinitionParameters: false
 BreakInheritanceList:              AfterComma
-BreakStringLiterals:               true
+BreakStringLiterals:               false
 
 RemoveBracesLLVM:  false
 RemoveParentheses: Leave
