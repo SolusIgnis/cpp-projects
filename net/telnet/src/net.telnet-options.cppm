@@ -223,8 +223,14 @@ export namespace net::telnet {
      * @brief Enumeration of Telnet option ID bytes.
      *
      * @see IANA Telnet Option Registry, RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` processing, `:stream` for negotiation operations.
+     *
+     * @remark The formatting of this protocol registry enumeration is intentionally fixed to preserve column alignment of TelOpt names, TelOpt numbers, and description/reference comments. clang-format is disabled within the braces of the enumeration.
      */
     enum class option::id_num : byte_t {
+    // clang-format off: preserve column alignment
+    /* ============================================================================================================================================ *
+     *             TelOpt Name          TelOpt Number            Description/Reference                                                              *
+     * ============================================================================================================================================ */
         binary                             = 0x00, ///< Binary Transmission (@see RFC 856)
         echo                               = 0x01, ///< Echo (@see RFC 857)
         reconnection                       = 0x02, ///< Reconnection (NIC 15391 of 1973)
@@ -305,6 +311,7 @@ export namespace net::telnet {
         gmcp                               = 0xC9, ///< Generic MUD Communication Protocol (aka ATCP2)
         /* Range 0xCA-0xFE Unused per IANA */        
         extended_options_list              = 0xFF  ///< Extended-Options-List (@see RFC 861)
+    // clang-format on
     }; //enum class option::id_num
     
     /**
