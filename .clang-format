@@ -19,26 +19,26 @@ ConstructorInitializerIndentWidth: 4
 
 ContinuationIndentWidth: 4
 
-IndentAccessModifiers: false
-IndentCaseBlocks: false
-IndentCaseLabels: false
-IndentGotoLabels: false
-IndentExportBlock: true
-IndentExternBlock: Indent
-IndentPPDirectives: BeforeHash
+IndentAccessModifiers:      false
+IndentCaseBlocks:           false
+IndentCaseLabels:           false
+IndentGotoLabels:           false
+IndentExportBlock:          true
+IndentExternBlock:          Indent
+IndentPPDirectives:         BeforeHash
 IndentWrappedFunctionNames: true
 
 LambdaBodyIndentation: Signature
 
 NamespaceIndentation: All
-CompactNamespaces: false
+CompactNamespaces:    false
 
 AccessModifierOffset: -4
 
 # -------------------------------------------------------------------
 # Braces
 # -------------------------------------------------------------------
-BreakBeforeBraces: Custom
+BreakBeforeBraces:       Custom
 BraceWrapping:
   AfterCaseLabel:        false
   AfterClass:            false
@@ -60,27 +60,27 @@ BraceWrapping:
 # -------------------------------------------------------------------
 ColumnLimit: 120
 
-BreakTemplateDeclarations: Yes
-BreakAdjacentStringLiterals: false
-BreakAfterAttributes: Leave
+BreakTemplateDeclarations:       Yes
+BreakAdjacentStringLiterals:     false
+BreakAfterAttributes:            Leave
 #BreakAfterOpenBracketBracedList: false
-#BreakAfterOpenBracketFunction: false
-#BreakAfterOpenBracketIf: false
-#BreakAfterOpenBracketLoop: false
-#BreakAfterOpenBracketSwitch: false
-BreakAfterReturnType: ExceptShortType
+#BreakAfterOpenBracketFunction:   false
+#BreakAfterOpenBracketIf:         false
+#BreakAfterOpenBracketLoop:       false
+#BreakAfterOpenBracketSwitch:     false
+BreakAfterReturnType:            ExceptShortType
 
-BinPackArguments: false
-BinPackParameters: BinPack #OnePerLine if this ends up ugly
+BinPackArguments:      false
+BinPackParameters:     OnePerLine
 BinPackLongBracedList: false
 
-AllowAllArgumentsOnNextLine: false
+AllowAllArgumentsOnNextLine:               false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowAllConstructorInitializersOnNextLine: false
-AllowBreakBeforeNoexceptSpecifier: OnlyWithParen
-AlwaysBreakBeforeMultilineStrings: false
+AllowBreakBeforeNoexceptSpecifier:         OnlyWithParen
+AlwaysBreakBeforeMultilineStrings:         false
 
-EmptyLineAfterAccessModifier: Never
+EmptyLineAfterAccessModifier:  Never
 EmptyLineBeforeAccessModifier: LogicalBlock
 
 PackConstructorInitializers: NextLine
@@ -88,35 +88,35 @@ PackConstructorInitializers: NextLine
 WrapNamespaceBodyWithEmptyLines: Never
 
 PenaltyBreakBeforeFirstCallParameter: 200
-PenaltyBreakAssignment: 100
-PenaltyBreakTemplateDeclaration: 10
-PenaltyExcessCharacter: 1000000  # strongly prefer your manual wrapping
+PenaltyBreakAssignment:               100
+PenaltyBreakTemplateDeclaration:      10
+PenaltyExcessCharacter:               1000000  # strongly prefer your manual wrapping
 
 # -------------------------------------------------------------------
 # Control flow readability (FSM-friendly)
 # -------------------------------------------------------------------
-AllowShortCaseLabelsOnASingleLine: false
-AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine:          false
+AllowShortBlocksOnASingleLine:              Empty
 AllowShortCompoundRequirementOnASingleLine: true
-AllowShortEnumsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: Inline
-AllowShortIfStatementsOnASingleLine: Never
-AllowShortLambdasOnASingleLine: All
-AllowShortLoopsOnASingleLine: true
+AllowShortEnumsOnASingleLine:               false
+AllowShortFunctionsOnASingleLine:           Inline
+AllowShortIfStatementsOnASingleLine:        Never
+AllowShortLambdasOnASingleLine:             All
+AllowShortLoopsOnASingleLine:               true
 
-BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBinaryOperators:        NonAssignment
 #BreakBeforeCloseBracketBracedList: true
-#BreakBeforeCloseBracketFunction: true
-#BreakBeforeCloseBracketIf: true
-#BreakBeforeCloseBracketLoop: true
-#BreakBeforeCloseBracketSwitch: true
-BreakBeforeTemplateCloser: true
-BreakBeforeTernaryOperators: true
-BreakBinaryOperations: Never
-BreakConstructorInitializers: BeforeColon
+#BreakBeforeCloseBracketFunction:   true
+#BreakBeforeCloseBracketIf:         true
+#BreakBeforeCloseBracketLoop:       true
+#BreakBeforeCloseBracketSwitch:     true
+BreakBeforeTemplateCloser:         true
+BreakBeforeTernaryOperators:       true
+BreakBinaryOperations:             Never
+BreakConstructorInitializers:      BeforeColon
 BreakFunctionDefinitionParameters: false
-BreakInheritanceList: AfterComma
-BreakStringLiterals: true
+BreakInheritanceList:              AfterComma
+BreakStringLiterals:               true
 
 RemoveBracesLLVM:  false
 RemoveParentheses: Leave
