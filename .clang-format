@@ -1,6 +1,9 @@
 # -------------------------------------------------------------------
-# net.telnet clang-format
-# Inferred from real implementation code (FSM-heavy, C++23 modules)
+# cpp-projects .clang-format
+# This file is normative and MUST NOT be changed without discussion.
+# @see STYLE.md for rationale and elaboration on guidelines.
+# @note Commented-out lines can be safely restored once clang-format
+#       version >= 22.0.0 is ubiquitous.
 # -------------------------------------------------------------------
 
 BasedOnStyle: LLVM
