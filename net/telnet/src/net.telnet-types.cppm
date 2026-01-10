@@ -110,60 +110,60 @@ export namespace std {
         auto format(::net::telnet::command cmd, FormatContext& ctx) const {
             string_view name;
             switch (cmd) {
-            case ::net::telnet::command::eor:
-                name = "EOR";
-                break;
-            case ::net::telnet::command::se:
-                name = "SE";
-                break;
-            case ::net::telnet::command::nop:
-                name = "NOP";
-                break;
-            case ::net::telnet::command::dm:
-                name = "DM";
-                break;
-            case ::net::telnet::command::brk:
-                name = "BRK";
-                break;
-            case ::net::telnet::command::ip:
-                name = "IP";
-                break;
-            case ::net::telnet::command::ao:
-                name = "AO";
-                break;
-            case ::net::telnet::command::ayt:
-                name = "AYT";
-                break;
-            case ::net::telnet::command::ec:
-                name = "EC";
-                break;
-            case ::net::telnet::command::el:
-                name = "EL";
-                break;
-            case ::net::telnet::command::ga:
-                name = "GA";
-                break;
-            case ::net::telnet::command::sb:
-                name = "SB";
-                break;
-            case ::net::telnet::command::will_opt:
-                name = "WILL";
-                break;
-            case ::net::telnet::command::wont_opt:
-                name = "WONT";
-                break;
-            case ::net::telnet::command::do_opt:
-                name = "DO";
-                break;
-            case ::net::telnet::command::dont_opt:
-                name = "DONT";
-                break;
-            case ::net::telnet::command::iac:
-                name = "IAC";
-                break;
-            default:
-                name = "UNKNOWN";
-                break;
+                case ::net::telnet::command::eor:
+                    name = "EOR";
+                    break;
+                case ::net::telnet::command::se:
+                    name = "SE";
+                    break;
+                case ::net::telnet::command::nop:
+                    name = "NOP";
+                    break;
+                case ::net::telnet::command::dm:
+                    name = "DM";
+                    break;
+                case ::net::telnet::command::brk:
+                    name = "BRK";
+                    break;
+                case ::net::telnet::command::ip:
+                    name = "IP";
+                    break;
+                case ::net::telnet::command::ao:
+                    name = "AO";
+                    break;
+                case ::net::telnet::command::ayt:
+                    name = "AYT";
+                    break;
+                case ::net::telnet::command::ec:
+                    name = "EC";
+                    break;
+                case ::net::telnet::command::el:
+                    name = "EL";
+                    break;
+                case ::net::telnet::command::ga:
+                    name = "GA";
+                    break;
+                case ::net::telnet::command::sb:
+                    name = "SB";
+                    break;
+                case ::net::telnet::command::will_opt:
+                    name = "WILL";
+                    break;
+                case ::net::telnet::command::wont_opt:
+                    name = "WONT";
+                    break;
+                case ::net::telnet::command::do_opt:
+                    name = "DO";
+                    break;
+                case ::net::telnet::command::dont_opt:
+                    name = "DONT";
+                    break;
+                case ::net::telnet::command::iac:
+                    name = "IAC";
+                    break;
+                default:
+                    name = "UNKNOWN";
+                    break;
             }
 
             if (presentation == 'n') {

@@ -88,30 +88,30 @@ export namespace net::telnet {
          */
         std::string message(int ev) const override {
             switch (static_cast<error>(ev)) {
-            case error::protocol_violation:
-                return "Telnet protocol violation";
-            case error::internal_error:
-                return "Unexpected internal Telnet error";
-            case error::invalid_command:
-                return "Unrecognized Telnet command after IAC";
-            case error::invalid_negotiation:
-                return "Invalid Telnet negotiation command";
-            case error::option_not_available:
-                return "Telnet option not available";
-            case error::invalid_subnegotiation:
-                return "Invalid or incomplete Telnet subnegotiation";
-            case error::subnegotiation_overflow:
-                return "Telnet subnegotiation buffer overflow";
-            case error::ignored_go_ahead:
-                return "Telnet Go-Ahead ignored due to SUPPRESS_GO_AHEAD";
-            case error::user_handler_forbidden:
-                return "Attempt to register handler for reserved option";
-            case error::user_handler_not_found:
-                return "No handler registered for requested option";
-            case error::negotiation_queue_error:
-                return "Telnet negotiation queue bit can only be set when the NegotiationState is WANTYES or WANTNO.";
-            default:
-                [[unlikely]] return "Unknown Telnet error"; // Impossible unless programmer error results in an error code without a defined message
+                case error::protocol_violation:
+                    return "Telnet protocol violation";
+                case error::internal_error:
+                    return "Unexpected internal Telnet error";
+                case error::invalid_command:
+                    return "Unrecognized Telnet command after IAC";
+                case error::invalid_negotiation:
+                    return "Invalid Telnet negotiation command";
+                case error::option_not_available:
+                    return "Telnet option not available";
+                case error::invalid_subnegotiation:
+                    return "Invalid or incomplete Telnet subnegotiation";
+                case error::subnegotiation_overflow:
+                    return "Telnet subnegotiation buffer overflow";
+                case error::ignored_go_ahead:
+                    return "Telnet Go-Ahead ignored due to SUPPRESS_GO_AHEAD";
+                case error::user_handler_forbidden:
+                    return "Attempt to register handler for reserved option";
+                case error::user_handler_not_found:
+                    return "No handler registered for requested option";
+                case error::negotiation_queue_error:
+                    return "Telnet negotiation queue bit can only be set when the NegotiationState is WANTYES or WANTNO.";
+                default:
+                    [[unlikely]] return "Unknown Telnet error"; // Impossible unless programmer error results in an error code without a defined message
             }
         } //message(int) const
 
@@ -124,30 +124,30 @@ export namespace net::telnet {
          */
         std::error_condition default_error_condition(int ev) const noexcept override {
             switch (static_cast<error>(ev)) {
-            case error::invalid_command:
-                [[fallthrough]];
-            case error::invalid_subnegotiation:
-                [[fallthrough]];
-            case error::invalid_negotiation:
-                [[fallthrough]];
-            case error::protocol_violation:
-                return std::errc::protocol_error;
-            case error::option_not_available:
-                return std::errc::not_supported;
-            case error::subnegotiation_overflow:
-                return std::errc::message_size;
-            case error::ignored_go_ahead:
-                [[fallthrough]];
-            case error::user_handler_not_found:
-                return std::errc::operation_not_supported;
-            case error::internal_error:
-                return std::errc::state_not_recoverable;
-            case error::user_handler_forbidden:
-                [[fallthrough]];
-            case error::negotiation_queue_error:
-                return std::errc::operation_not_permitted;
-            default:
-                return std::error_condition();
+                case error::invalid_command:
+                    [[fallthrough]];
+                case error::invalid_subnegotiation:
+                    [[fallthrough]];
+                case error::invalid_negotiation:
+                    [[fallthrough]];
+                case error::protocol_violation:
+                    return std::errc::protocol_error;
+                case error::option_not_available:
+                    return std::errc::not_supported;
+                case error::subnegotiation_overflow:
+                    return std::errc::message_size;
+                case error::ignored_go_ahead:
+                    [[fallthrough]];
+                case error::user_handler_not_found:
+                    return std::errc::operation_not_supported;
+                case error::internal_error:
+                    return std::errc::state_not_recoverable;
+                case error::user_handler_forbidden:
+                    [[fallthrough]];
+                case error::negotiation_queue_error:
+                    return std::errc::operation_not_permitted;
+                default:
+                    return std::error_condition();
             }
         } //default_error_condition(int) const noexcept
     }; //class telnet_error_category
@@ -184,28 +184,28 @@ export namespace net::telnet {
          */
         std::string message(int ev) const override {
             switch (static_cast<processing_signal>(ev)) {
-            case processing_signal::end_of_line:
-                return "Telnet encountered End-of-Line in the byte stream";
-            case processing_signal::carriage_return:
-                return "Telnet encountered Carriage-Return sequence in the byte stream requiring special handling";
-            case processing_signal::end_of_record:
-                return "Telnet encountered \"End-of-Record\" command in the byte stream";
-            case processing_signal::go_ahead:
-                return "Telnet encountered \"Go-Ahead\" command in the byte stream";
-            case processing_signal::erase_character:
-                return "Telnet encountered \"Erase Character\" command in the byte stream";
-            case processing_signal::erase_line:
-                return "Telnet encountered \"Erase Line\" command in the byte stream";
-            case processing_signal::abort_output:
-                return "Telnet encountered \"Abort Output\" command in the byte stream";
-            case processing_signal::interrupt_process:
-                return "Telnet encountered \"Interrupt Process\" command in the byte stream";
-            case processing_signal::telnet_break:
-                return "Telnet encountered \"Break\" command in the byte stream";
-            case processing_signal::data_mark:
-                return "Telnet encountered \"Data Mark\" command in the byte stream";
-            default:
-                [[unlikely]] return "Unknown Telnet processing signal"; // Impossible unless programmer error results in a signal code without a defined message
+                case processing_signal::end_of_line:
+                    return "Telnet encountered End-of-Line in the byte stream";
+                case processing_signal::carriage_return:
+                    return "Telnet encountered Carriage-Return sequence in the byte stream requiring special handling";
+                case processing_signal::end_of_record:
+                    return "Telnet encountered \"End-of-Record\" command in the byte stream";
+                case processing_signal::go_ahead:
+                    return "Telnet encountered \"Go-Ahead\" command in the byte stream";
+                case processing_signal::erase_character:
+                    return "Telnet encountered \"Erase Character\" command in the byte stream";
+                case processing_signal::erase_line:
+                    return "Telnet encountered \"Erase Line\" command in the byte stream";
+                case processing_signal::abort_output:
+                    return "Telnet encountered \"Abort Output\" command in the byte stream";
+                case processing_signal::interrupt_process:
+                    return "Telnet encountered \"Interrupt Process\" command in the byte stream";
+                case processing_signal::telnet_break:
+                    return "Telnet encountered \"Break\" command in the byte stream";
+                case processing_signal::data_mark:
+                    return "Telnet encountered \"Data Mark\" command in the byte stream";
+                default:
+                    [[unlikely]] return "Unknown Telnet processing signal"; // Impossible unless programmer error results in a signal code without a defined message
             }
         } //message(int) const
     }; //class telnet_processing_signal_category
