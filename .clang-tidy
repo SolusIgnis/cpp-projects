@@ -1,7 +1,7 @@
 ---
 Checks: >
   -*,
-
+#21.1.6
   # ---------- Core correctness ----------
   clang-diagnostic-*,
   clang-analyzer-*,
