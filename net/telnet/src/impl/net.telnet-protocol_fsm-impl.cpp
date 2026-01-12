@@ -218,7 +218,7 @@ namespace net::telnet {
                 return handle_state_normal(byte);
             case ProtocolState::HasCR:
                 return handle_state_has_cr(byte);
-            case ProtocolState::IAC:
+            case ProtocolState::HasIAC:
                 return handle_state_iac(byte);
             case ProtocolState::OptionNegotiation:
                 return handle_state_option_negotiation(byte);
@@ -244,7 +244,7 @@ namespace net::telnet {
 
     /**
      * @internal
-     * Transitions to `ProtocolState::IAC` if `byte` is `IAC` (0xFF), discarding the byte (returns `false` for forward flag).
+     * Transitions to `ProtocolState::HasIAC` if `byte` is `IAC` (0xFF), discarding the byte (returns `false` for forward flag).
      * Unless in `BINARY` mode, transitions to `ProtocolState::HasCR` if `byte` is `'\r'` (0x0D), forwarding the byte.
      * For non-`IAC` bytes, retains the byte as data (returns `true` for forward flag) unless it's nul (`'\0'`).
      */
@@ -252,7 +252,7 @@ namespace net::telnet {
     std::tuple<std::error_code, bool, std::optional<typename ProtocolFSM<PC>::ProcessingReturnVariant>>
     ProtocolFSM<PC>::handle_state_normal(byte_t byte) noexcept {
         if (byte == std::to_underlying(telnet::command::iac)) {
-            change_state(ProtocolState::IAC);
+            change_state(ProtocolState::HasIAC);
             return {std::error_code(), false, std::nullopt}; //discard IAC byte
         } else if ((byte == static_cast<byte_t>('\r')) && (!option_status_[option::id_num::binary].enabled(negotiation_direction::remote))) {
             change_state(ProtocolState::HasCR);
@@ -267,7 +267,7 @@ namespace net::telnet {
      * @internal
      * For `'\n'`, forwards the byte (CR LF is EOL) and returns `processing_signal::end_of_line`.
      * For `'\0'`, discards the byte (CR NUL drops the NUL) and returns `processing_signal::carriage_return` to buffer the CR.
-     * For `IAC`, logs a protocol violation and transitions to `ProtocolState::IAC`, discarding the byte and returns `processing_signal::carriage_return` to buffer the bare CR.
+     * For `IAC`, logs a protocol violation and transitions to `ProtocolState::HasIAC`, discarding the byte and returns `processing_signal::carriage_return` to buffer the bare CR.
      * For all other bytes, retains the byte as data (returns `true` for forward flag) but logs a protocol violation, transitions to `ProtocolState::Normal`, and returns `processing_signal::carriage_return` to buffer the bare CR. 
      * In all cases other than `IAC`, transitions to `ProtocolState::Normal`.
      */
@@ -290,11 +290,11 @@ namespace net::telnet {
         } else if (byte == std::to_underlying(telnet::command::iac)) {
             ProtocolConfig::log_error(
                 make_error_code(error::protocol_violation),
-                "Invalid CR IAC sequence. Retained bare CR and transitioned to `ProtocolState::IAC`."
+                "Invalid CR IAC sequence. Retained bare CR and transitioned to `ProtocolState::HasIAC`."
             );
             result_ec = make_error_code(processing_signal::carriage_return);
             result_forward = false; //discard IAC byte
-            next_state = ProtocolState::IAC;
+            next_state = ProtocolState::HasIAC;
         } else { //any other sequence is invalid
             ProtocolConfig::log_error(
                 make_error_code(error::protocol_violation),
