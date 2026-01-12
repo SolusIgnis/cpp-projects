@@ -90,7 +90,29 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: Medium (code reuse, consistency, and future extensibility).
   - **Estimated Effort**: Completed in 0 days. (Prior refactoring made this unnecessary/impractical.)
 
-08. [ ] **TLS Support**:
+### Phase 7 Milestones
+01. [ ] **Implement a strand in `telnet::stream`**:
+  - **Task**: Implement a strand as the executor type for `telnet::stream`.
+  - **Steps**:
+    - Change `telnet::stream::executor_type` to `asio::strand<typename next_layer_type::executor_type>`.
+    - Create a `strand_executor_` member initialized in the `telnet::stream` constructor.
+    - Change `telnet::stream::get_executor` to return the strand.
+  - **Dependencies**: Affects `:stream`.
+  - **Priority**: High (enhances protocol correctness and thread-safety by explicitly sequencing operations)
+  - **Estimated Effort**: 1 day.
+  
+02. [ ] **Refactor Asynchronous Write Methods to Use the Side Buffer**:
+  - **Task**: Implement an `OutputProcessor` class to manage writes through the side buffer, and send all writes through it.
+  - **Steps**:
+    - Implement an `OutputProcessor` class analogous to `InputProcessor`.
+    - Refactor each asynchronous write method to use the `OutputProcessor` instead of direct calls to `next_layer_.async_write_some`.
+    - Implement queueing within the `OutputProcessor` to coalesce pended writes into a single underlying call.
+    - Implement a flag in `stream::context_` to prevent writes during the Abort Output command processing.
+  - **Dependencies**: Affects `:stream`.
+  - **Priority**: High (enhances safety by controlling buffer lifetimes)
+  - **Estimated Effort**: 2 day.
+
+03. [ ] **TLS Support**:
   - **Task**: Implement option `TELNET_START_TLS` using `LayeredTLSStream` for conditional TLS support.
   - **Steps**:
     - Define `LayeredTLSStream` for `boost::asio::ssl::stream`.
@@ -102,7 +124,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: Medium (enhances security, optional for core functionality).
   - **Estimated Effort**: 4–5 days (1 for design, 2–2.5 for implementation, 1–1.5 for testing).
 
-09. [ ] **Half-Duplex Support**:
+04. [ ] **Half-Duplex Support**:
   - **Task**: Add optional half-duplex support per RFC 854 for legacy peers.
   - **Steps**:
     - Evaluate legacy peer requirements.
