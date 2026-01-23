@@ -91,6 +91,23 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Estimated Effort**: Completed in 0 days. (Prior refactoring made this unnecessary/impractical.)
 
 ### Phase 7 Milestones
+01. [ ] **Investigate TaggedAwaitable Tags**:
+  - **Task**: Investigate whether the tag types for TaggedAwaitable need to be declared or defined to be used.
+  - **Steps**:
+    - See if the tag types work as incomplete types or if they need definitions.
+  **Dependencies**: `:awaitables`
+  **Priority**: Low (curiosity and minor redundancy reduction)
+  **Estimated Effort**: 1 hour
+  
+02. [ ] **Refine Socket Concepts for MutableBufferSequence, ConstBufferSequence, and CompletionToken Method Parameters**:
+  - **Task**: Use the lambda trick from the Orcs/Heroes CPPCon24 talk to refine the socket concepts from the `asio_concepts` module.
+  - **Steps**:
+    - Identify concepts with templated member functions.
+    - Use the lambda trick to model the template parameters in the concept definitions.
+  **Dependencies**: `asio_concepts` and `:concepts`
+  **Priority**: Medium (concept refinement is useful ahead of TLS implementation)
+  **Estimated Effort**: 1 day
+  
 01. [ ] **Implement a strand in `telnet::stream`**:
   - **Task**: Implement a strand as the executor type for `telnet::stream`.
   - **Steps**:
