@@ -54,12 +54,12 @@ export namespace net::telnet {
         using EnablePredicate = std::function<bool(id_num)>;
 
         ///@brief Constructs an `option` with the given ID and optional parameters.
-        explicit option(id_num id,
-                        std::string name            = "",
-                        EnablePredicate local_pred  = always_reject,
-                        EnablePredicate remote_pred = always_reject,
-                        bool subneg_supported       = false,
-                        size_t max_subneg_size      = MAX_SUBNEGOTIATION_SIZE)
+        option(id_num id, //NOLINT google-explicit-constructor
+               std::string name            = "",
+               EnablePredicate local_pred  = always_reject,
+               EnablePredicate remote_pred = always_reject,
+               bool subneg_supported       = false,
+               size_t max_subneg_size      = MAX_SUBNEGOTIATION_SIZE)
             : id_(id),
               name_(std::move(name)),
               local_predicate_(std::move(local_pred)),
@@ -91,7 +91,7 @@ export namespace net::telnet {
         constexpr auto operator<=>(option::id_num other_id) const noexcept { return id_ <=> other_id; }
 
         ///@brief Implicitly converts to `option::id_num`.
-        operator id_num() const noexcept { return id_; }
+        operator id_num() const noexcept { return id_; } //NOLINT google-explicit-constructor
 
         ///@brief Gets the Telnet `option::id_num`.
         id_num get_id() const noexcept { return id_; }
@@ -100,13 +100,13 @@ export namespace net::telnet {
         const std::string& get_name() const noexcept { return name_; }
 
         ///@brief Evaluates the local predicate to determine if the `option` can be enabled locally.
-        bool supports_local() const noexcept { return local_predicate_(id_); }
+        bool supports_local() const { return local_predicate_(id_); }
 
         ///@brief Evaluates the remote predicate to determine if the `option` can be enabled remotely.
-        bool supports_remote() const noexcept { return remote_predicate_(id_); }
+        bool supports_remote() const { return remote_predicate_(id_); }
 
         ///@brief Evaluates the predicate for the designated direction to determine if the `option` can be enabled in that direction.
-        bool supports(negotiation_direction direction) const noexcept {
+        bool supports(negotiation_direction direction) const {
             return (direction == negotiation_direction::remote) ? supports_remote() : supports_local();
         }
 
@@ -340,7 +340,7 @@ export namespace net::telnet {
         } //option_registry(std::initializer_list<option>)
 
         ///@brief Constructs a registry from a pre-constructed `std::set` of `option` instances.
-        option_registry(std::set<option, std::less<>>&& init) : registry_(std::move(init)) {}
+        explicit option_registry(std::set<option, std::less<>>&& init) : registry_(std::move(init)) {}
 
         ///@brief Retrieves an `option` by its ID.
         std::optional<option> get(option::id_num opt_id) const noexcept {

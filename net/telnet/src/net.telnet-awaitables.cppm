@@ -45,16 +45,16 @@ export namespace net::telnet::awaitables {
         TaggedAwaitable() = default;
 
         ///@brief Constructs from an awaitable.
-        TaggedAwaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
+        TaggedAwaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {} //NOLINT google-explicit-constructor
 
         ///@brief Implicit conversion to underlying awaitable (lvalue).
-        operator awaitable_type&() noexcept { return awaitable_; }
+        operator awaitable_type&() noexcept { return awaitable_; } //NOLINT google-explicit-constructor
 
         ///@brief Implicit conversion to underlying awaitable (const lvalue).
-        operator const awaitable_type&() const noexcept { return awaitable_; }
+        operator const awaitable_type&() const noexcept { return awaitable_; } //NOLINT google-explicit-constructor
 
         ///@brief Implicit conversion to underlying awaitable (rvalue).
-        operator awaitable_type&&() noexcept { return std::move(awaitable_); }
+        operator awaitable_type&&() noexcept { return std::move(awaitable_); } //NOLINT google-explicit-constructor
 
         ///@brief Supports co_await for lvalue.
         auto operator co_await() & noexcept { return awaitable_.operator co_await(); }

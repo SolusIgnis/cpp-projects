@@ -660,7 +660,7 @@ export namespace net::telnet {
 
         ///@brief The number of possible `option::id_num` values.
         static inline constexpr size_t MAX_OPTION_COUNT =
-            (1 << std::numeric_limits<std::underlying_type_t<option::id_num>>::digits);
+            (1u << std::numeric_limits<std::underlying_type_t<option::id_num>>::digits); //NOLINT hicpp-signed-bitwise
 
     private:
         //Byte array of Status Record bit-fields.
