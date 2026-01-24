@@ -1,0 +1,379 @@
+/usr/share/libc++/v1/std.compat/cstdlib.inc:17:11: warning: declaration uses identifier '_Exit', which is a reserved identifier [bugprone-reserved-identifier]
+   17 |   using ::_Exit _LIBCPP_USING_IF_EXISTS;
+      |           ^~~~~
+      |           Exit
+/usr/share/libc++/v1/std/algorithm.inc:33:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+   33 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:31:13: note: namespace 'ranges' starts here
+   31 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:39:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+   39 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:37:13: note: namespace 'ranges' starts here
+   37 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:45:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+   45 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:43:13: note: namespace 'ranges' starts here
+   43 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:96:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+   96 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:94:13: note: namespace 'ranges' starts here
+   94 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:103:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  103 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:101:13: note: namespace 'ranges' starts here
+  101 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:110:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  110 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:108:13: note: namespace 'ranges' starts here
+  108 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:135:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  135 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:133:13: note: namespace 'ranges' starts here
+  133 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:142:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  142 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:140:13: note: namespace 'ranges' starts here
+  140 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:149:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  149 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:147:13: note: namespace 'ranges' starts here
+  147 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:155:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  155 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:153:13: note: namespace 'ranges' starts here
+  153 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:305:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  305 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:303:13: note: namespace 'ranges' starts here
+  303 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:319:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  319 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:317:13: note: namespace 'ranges' starts here
+  317 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:333:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  333 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:331:13: note: namespace 'ranges' starts here
+  331 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:347:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  347 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:345:13: note: namespace 'ranges' starts here
+  345 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:354:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  354 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:352:13: note: namespace 'ranges' starts here
+  352 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:361:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  361 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:359:13: note: namespace 'ranges' starts here
+  359 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:367:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  367 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:365:13: note: namespace 'ranges' starts here
+  365 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:375:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  375 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:373:13: note: namespace 'ranges' starts here
+  373 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:381:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  381 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:379:13: note: namespace 'ranges' starts here
+  379 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:387:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  387 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:385:13: note: namespace 'ranges' starts here
+  385 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:408:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  408 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:406:13: note: namespace 'ranges' starts here
+  406 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:415:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  415 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:413:13: note: namespace 'ranges' starts here
+  413 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:421:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  421 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:419:13: note: namespace 'ranges' starts here
+  419 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:427:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  427 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:425:13: note: namespace 'ranges' starts here
+  425 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:433:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  433 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:431:13: note: namespace 'ranges' starts here
+  431 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:440:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  440 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:438:13: note: namespace 'ranges' starts here
+  438 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:446:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  446 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:444:13: note: namespace 'ranges' starts here
+  444 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:452:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  452 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:450:13: note: namespace 'ranges' starts here
+  450 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:465:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  465 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:463:13: note: namespace 'ranges' starts here
+  463 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:477:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  477 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:475:13: note: namespace 'ranges' starts here
+  475 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:483:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  483 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:481:13: note: namespace 'ranges' starts here
+  481 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:518:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  518 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:516:13: note: namespace 'ranges' starts here
+  516 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:524:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  524 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:522:13: note: namespace 'ranges' starts here
+  522 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:530:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  530 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:528:13: note: namespace 'ranges' starts here
+  528 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:536:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  536 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:534:13: note: namespace 'ranges' starts here
+  534 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:542:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  542 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:540:13: note: namespace 'ranges' starts here
+  540 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:548:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  548 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:546:13: note: namespace 'ranges' starts here
+  546 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:555:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  555 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:553:13: note: namespace 'ranges' starts here
+  553 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:561:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  561 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:559:13: note: namespace 'ranges' starts here
+  559 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:575:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  575 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:573:13: note: namespace 'ranges' starts here
+  573 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:581:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  581 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:579:13: note: namespace 'ranges' starts here
+  579 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:595:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  595 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:593:13: note: namespace 'ranges' starts here
+  593 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/algorithm.inc:602:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  602 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/algorithm.inc:600:13: note: namespace 'ranges' starts here
+  600 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/concepts.inc:41:5: warning: namespace '__cpo' not terminated with a closing comment [llvm-namespace-comment]
+   41 |     }
+      |     ^
+      |       // namespace __cpo
+/usr/share/libc++/v1/std/concepts.inc:39:22: note: namespace '__cpo' starts here
+   39 |     inline namespace __cpo {
+      |                      ^
+/usr/share/libc++/v1/std/cstdlib.inc:17:14: warning: declaration uses identifier '_Exit', which is a reserved identifier [bugprone-reserved-identifier]
+   17 |   using std::_Exit _LIBCPP_USING_IF_EXISTS;
+      |              ^~~~~
+      |              Exit
+/usr/share/libc++/v1/std/deque.inc:25:3: warning: namespace 'pmr' not terminated with a closing comment [llvm-namespace-comment]
+   25 |   }
+      |   ^
+      |     // namespace pmr
+/usr/share/libc++/v1/std/deque.inc:23:13: note: namespace 'pmr' starts here
+   23 |   namespace pmr {
+      |             ^
+/usr/share/libc++/v1/std/filesystem.inc:114:1: warning: namespace 'std' not terminated with a closing comment [llvm-namespace-comment]
+  114 | }
+      | ^
+      |   // namespace std
+/usr/share/libc++/v1/std/filesystem.inc:112:18: note: namespace 'std' starts here
+  112 | export namespace std {
+      |                  ^
+/usr/share/libc++/v1/std/forward_list.inc:25:3: warning: namespace 'pmr' not terminated with a closing comment [llvm-namespace-comment]
+   25 |   }
+      |   ^
+      |     // namespace pmr
+/usr/share/libc++/v1/std/forward_list.inc:23:13: note: namespace 'pmr' starts here
+   23 |   namespace pmr {
+      |             ^
+/usr/share/libc++/v1/std/list.inc:25:3: warning: namespace 'pmr' not terminated with a closing comment [llvm-namespace-comment]
+   25 |   }
+      |   ^
+      |     // namespace pmr
+/usr/share/libc++/v1/std/list.inc:23:13: note: namespace 'pmr' starts here
+   23 |   namespace pmr {
+      |             ^
+/usr/share/libc++/v1/std/memory.inc:112:3: warning: namespace 'ranges' not terminated with a closing comment [llvm-namespace-comment]
+  112 |   }
+      |   ^
+      |     // namespace ranges
+/usr/share/libc++/v1/std/memory.inc:110:13: note: namespace 'ranges' starts here
+  110 |   namespace ranges {
+      |             ^
+/usr/share/libc++/v1/std/ranges.inc:103:5: warning: namespace 'views' not terminated with a closing comment [llvm-namespace-comment]
+  103 |     }
+      |     ^
+      |       // namespace views
+/usr/share/libc++/v1/std/ranges.inc:101:15: note: namespace 'views' starts here
+  101 |     namespace views {
+      |               ^
+/usr/share/libc++/v1/std/ranges.inc:138:5: warning: namespace 'views' not terminated with a closing comment [llvm-namespace-comment]
+  138 |     }
+      |     ^
+      |       // namespace views
+/usr/share/libc++/v1/std/ranges.inc:136:15: note: namespace 'views' starts here
+  136 |     namespace views {
+      |               ^
+/usr/share/libc++/v1/std/ranges.inc:337:5: warning: namespace 'views' not terminated with a closing comment [llvm-namespace-comment]
+  337 |     }
+      |     ^
+      |       // namespace views
+/usr/share/libc++/v1/std/ranges.inc:335:15: note: namespace 'views' starts here
+  335 |     namespace views {
+      |               ^
+/usr/share/libc++/v1/std/vector.inc:25:3: warning: namespace 'pmr' not terminated with a closing comment [llvm-namespace-comment]
+   25 |   }
+      |   ^
+      |     // namespace pmr
+/usr/share/libc++/v1/std/vector.inc:23:13: note: namespace 'pmr' starts here
+   23 |   namespace pmr {
+      |             ^
