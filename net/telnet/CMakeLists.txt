@@ -53,7 +53,7 @@ target_sources(net.telnet
 )
 
 target_include_directories(net.telnet
-  SYSTEM
+  SYSTEM PUBLIC
     /usr/include
 )
 
