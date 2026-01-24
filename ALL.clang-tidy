@@ -91,7 +91,7 @@ ImplementationFileExtensions:
   - cc       # Older C++ source files
   - cpp      # Modern C++ source files
   - cxx      # Alternate modern C++ source files
-HeaderFilterRegex: '.*'
+HeaderFilterRegex: '^(?!/usr/).*'
 ExcludeHeaderFilterRegex: ''
 FormatStyle: file
 CheckOptions:
