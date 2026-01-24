@@ -259,8 +259,8 @@ export namespace net::telnet {
                     return (state_.load(std::memory_order_relaxed) == UrgentDataState::HAS_URGENT_DATA);
                 }
 
-                ///@brief Implicitly converts to bool reporting if the urgent notification is currently active.
-                operator bool() const noexcept { return has_urgent_data(); }
+                ///@brief Converts to bool reporting if the urgent notification is currently active.
+                explicit operator bool() const noexcept { return has_urgent_data(); }
             };
 
         public:

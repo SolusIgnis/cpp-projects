@@ -46,10 +46,15 @@ target_sources(net.telnet
 # Implementation Units
 target_sources(net.telnet
   PRIVATE
-      src/impl/net.telnet-protocol_fsm-impl.cpp
-      src/impl/net.telnet-stream-impl.cpp
-      src/impl/net.telnet-stream-async-impl.cpp
-      src/impl/net.telnet-stream-sync-impl.cpp
+    src/impl/net.telnet-protocol_fsm-impl.cpp
+    src/impl/net.telnet-stream-impl.cpp
+    src/impl/net.telnet-stream-async-impl.cpp
+    src/impl/net.telnet-stream-sync-impl.cpp
+)
+
+target_include_directories(net.telnet
+  SYSTEM
+    /usr/include
 )
 
 target_link_libraries(net.telnet
