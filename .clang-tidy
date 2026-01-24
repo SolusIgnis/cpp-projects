@@ -1,83 +1,83 @@
 ---
 #21.1.6
-Checks: >
-  -*,
+Checks:
+  - '-*'
 
   # ============================================================
   # Core correctness (always-on, non-negotiable)
   # ============================================================
-  clang-diagnostic-*,
-  clang-analyzer-*,
-  bugprone-*,
-  concurrency-*,
+  - 'clang-diagnostic-*'
+  - 'clang-analyzer-*'
+  - 'bugprone-*'
+  - 'concurrency-*'
   
   # Alias of bugprone-unused-return-value: duplicated intentionally due to differing configured functions.
-  cert-err33-c,
+  - 'cert-err33-c'
 
   # ============================================================
   # Language modernization (C++17 → C++23)
   # ============================================================
-  modernize-*,
-  -modernize-use-trailing-return-type,
+  - 'modernize-*'
+  - '-modernize-use-trailing-return-type'
 
   # ============================================================
   # Performance correctness (non-micro-optimizing)
   # ============================================================
-  performance-*,
+  - 'performance-*'
 
   # ============================================================
   # API & lifetime rules (selective core guidelines)
   # ============================================================
-  cppcoreguidelines-*,
+  - 'cppcoreguidelines-*'
   
   # Do-While loops are idiomatic for compare-exchange.
-  -cppcoreguidelines-avoid-do-while,
+  - '-cppcoreguidelines-avoid-do-while'
   
   # ============================================================
   # Readability & maintainability (policy-driven)
   # ============================================================
-  readability-*,
+  - 'readability-*'
   
   # Const parameters may be necessary with contract post-conditions
-  -readability-avoid-const-params-in-decls,
+  - '-readability-avoid-const-params-in-decls'
   
-  #-readability-else-after-return,
+  #- '-readability-else-after-return'
   
   # Redundant continue and return sometimes enhance readability
-  -readability-redundant-control-flow,
+  - '-readability-redundant-control-flow'
 
   # ============================================================
   # Vendor / legacy rule sets (TEMPORARY, prune later)
   # ============================================================
-  google-build-explicit-make-pair,
-  google-build-using-namespace,
-  google-default-arguments,
-  google-explicit-constructor,
-  google-runtime-float,
-  google-runtime-int,
+  - 'google-build-explicit-make-pair'
+  - 'google-build-using-namespace'
+  - 'google-default-arguments'
+  - 'google-explicit-constructor'
+  - 'google-runtime-float'
+  - 'google-runtime-int'
   
-  google-readability-avoid-underscore-in-googletest-name,
-  google-upgrade-googletest-case,
+  - 'google-readability-avoid-underscore-in-googletest-name'
+  - 'google-upgrade-googletest-case'
   
-  hicpp-exception-baseclass,
-  hicpp-multiway-paths-covered,
-  hicpp-no-assembler,
-  hicpp-signed-bitwise,
+  - 'hicpp-exception-baseclass'
+  - 'hicpp-multiway-paths-covered'
+  - 'hicpp-no-assembler'
+  - 'hicpp-signed-bitwise'
   
   # Alias of bugprone-unused-return-value: duplicated intentionally due to differing configured functions.
-  hicpp-ignored-remove-result,
+  - 'hicpp-ignored-remove-result'
   
-  llvm-namespace-comment,
+  - 'llvm-namespace-comment'
 
   # ============================================================
   # Misc & portability
   # ============================================================
-  misc-*,
-  -misc-multiple-inheritance,
-  -misc-no-recursion,
-  portability-*,
-  -portability-restrict-system-includes,
-  boost-use-to-string
+  - 'misc-*'
+  - '-misc-multiple-inheritance'
+  - '-misc-no-recursion'
+  - 'portability-*'
+  - '-portability-restrict-system-includes'
+  - 'boost-use-to-string'
   
 WarningsAsErrors: ''
 HeaderFileExtensions:
