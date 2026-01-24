@@ -101,7 +101,7 @@ export namespace net::telnet {
                 option{option::id_num::suppress_go_ahead,
                        "Suppress Go-Ahead", option::always_accept,
                        option::always_accept},
-                option{option::id_num::status, "Status", option::always_accept, option::always_reject, true}
+                option{option::id_num::status, "Status", option::always_accept, option::always_reject, /*subneg_supported=*/true}
             };
         } //initialize_option_registry()
 
@@ -113,7 +113,7 @@ export namespace net::telnet {
         static void init() {
             std::lock_guard<std::shared_mutex> lock(mutex_);
             unknown_option_handler_ = [](option::id_num opt) {
-                std::cout << "Unknown option: " << std::to_underlying(opt) << "\n";
+                std::cout << "Unknown option: " << static_cast<std::uint32_t>(std::to_underlying(opt)) << "\n";
                 return;
             };
             error_logger_ = [](const std::error_code& ec, std::string msg) {
