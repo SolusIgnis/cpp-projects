@@ -333,9 +333,40 @@ CheckOptions:
   readability-identifier-naming.GetConfigPerFile:                'true'
   readability-identifier-naming.IgnoreMainLikeFunctions:         'true'
   readability-identifier-naming.DefaultCase:                     lower_case
+  # ---------- Types ----------
+  readability-identifier-naming.NamespaceCase:                   lower_case
+  readability-identifier-naming.ClassCase:                       lower_case
+  readability-identifier-naming.StructCase:                      lower_case
+  readability-identifier-naming.UnionCase:                       lower_case
+  readability-identifier-naming.EnumCase:                        lower_case
+  readability-identifier-naming.EnumConstantCase:                lower_case
+  readability-identifier-naming.TypedefCase:                     lower_case
+  readability-identifier-naming.TypeAliasCase:                   lower_case
+  readability-identifier-naming.ConceptCase:                     lower_case
+  # ---------- Functions ----------
+  readability-identifier-naming.FunctionCase:                    lower_case
+  readability-identifier-naming.MethodCase:                      lower_case
+  readability-identifier-naming.StaticMethodCase:                lower_case
+  readability-identifier-naming.VirtualMethodCase:               lower_case
+  # ---------- Variables ----------
+  readability-identifier-naming.VariableCase:                    lower_case
+  readability-identifier-naming.GlobalVariableCase:              lower_case
+  readability-identifier-naming.StaticVariableCase:              lower_case
+  readability-identifier-naming.LocalVariableCase:               lower_case
+  readability-identifier-naming.ParameterCase:                   lower_case
+  # ---------- Data members ----------
+  readability-identifier-naming.MemberCase:                      lower_case
   readability-identifier-naming.PrivateMemberSuffix:             _
   readability-identifier-naming.ProtectedMemberSuffix:           _
+  # ---------- Constants ----------
+  readability-identifier-naming.ConstantCase:                    lower_case
+  readability-identifier-naming.StaticConstantCase:              lower_case
+  # ---------- Templates ----------
   readability-identifier-naming.TemplateParameterCase:           CamelCase
+  readability-identifier-naming.TemplateTemplateParameterCase:   CamelCase
+  readability-identifier-naming.TemplateTypeParameterCase:       CamelCase
+  readability-identifier-naming.TemplateValueParameterCase:      CamelCase
+  # ---------- Macros ----------
   readability-identifier-naming.MacroDefinitionCase:             UPPER_CASE
   
   readability-implicit-bool-conversion.AllowIntegerConditions:    'false'
