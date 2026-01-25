@@ -66,7 +66,7 @@ export namespace net::telnet {
          * @return `OptionEnablementAwaitable` representing the asynchronous handling result.
          */
         using OptionEnablementHandler =
-            std::function<awaitables::OptionEnablementAwaitable(option::id_num, negotiation_direction)>;
+            std::function<awaitables::OptionEnablementAwaitable(option::id_num /*id*/, negotiation_direction /*direction*/)>;
 
         /**
          * @typedef OptionDisablementHandler
@@ -76,7 +76,7 @@ export namespace net::telnet {
          * @return `OptionDisablementAwaitable` representing the asynchronous handling result.
          */
         using OptionDisablementHandler =
-            std::function<awaitables::OptionDisablementAwaitable(option::id_num, negotiation_direction)>;
+            std::function<awaitables::OptionDisablementAwaitable(option::id_num /*id*/, negotiation_direction /*direction*/)>;
 
         /**
          * @typedef SubnegotiationHandler
@@ -86,14 +86,14 @@ export namespace net::telnet {
          * @return `SubnegotiationAwaitable` for asynchronous subnegotiation handling.
          */
         using SubnegotiationHandler =
-            std::function<awaitables::SubnegotiationAwaitable(const option&, std::vector<byte_t>)>;
+            std::function<awaitables::SubnegotiationAwaitable(const option& /*id*/, std::vector<byte_t> /*data*/)>;
 
         /**
          * @typedef UnknownOptionHandler
          * @brief Function type for handling unknown option negotiation attempts.
          * @param id The `option::id_num` of the unknown option.
          */
-        using UnknownOptionHandler = std::function<void(option::id_num)>;
+        using UnknownOptionHandler = std::function<void(option::id_num /*id*/)>;
 
         /**
          * @typedef ErrorLogger
@@ -101,7 +101,7 @@ export namespace net::telnet {
          * @param ec The `std::error_code` describing the error.
          * @param msg The formatted error message.
          */
-        using ErrorLogger = std::function<void(const std::error_code&, std::string)>;
+        using ErrorLogger = std::function<void(const std::error_code& /*ec*/, std::string /*msg*/)>;
 
         /**
          * @typedef NegotiationResponse

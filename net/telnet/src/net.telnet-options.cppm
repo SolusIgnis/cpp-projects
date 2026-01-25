@@ -479,16 +479,17 @@ export namespace std {
          * @throws std::format_error if the specifier is invalid (not 'd', 'n', or 'x').
          * @remark Supports 'd' (default: 0xXX (name)), 'n' (name only), and 'x' (hex only, 0xXX).
          */
+        //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         constexpr auto parse(format_parse_context& ctx) {
-            auto it = ctx.begin();
-            if (it != ctx.end() && (*it == 'n' || *it == 'x' || *it == 'd')) {
-                presentation = *it;
-                ++it;
+            auto iter = ctx.begin();
+            if (iter != ctx.end() && (*iter == 'n' || *iter == 'x' || *iter == 'd')) {
+                presentation = *iter;
+                ++iter;
             }
-            if (it != ctx.end() && *it != '}') {
+            if (iter != ctx.end() && *iter != '}') {
                 throw std::format_error("Invalid format specifier for option");
             }
-            return it;
+            return iter;
         } //parse(format_parse_context&)
 
         /**
@@ -501,6 +502,7 @@ export namespace std {
          * - 'n': "name" (e.g., "Binary Transmission" or "unknown" if empty).
          * - 'x': "0xXX" (e.g., "0x00").
          */
+        //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         template<typename FormatContext>
         auto format(const ::net::telnet::option& opt, FormatContext& ctx) const {
             if (presentation == 'n') {

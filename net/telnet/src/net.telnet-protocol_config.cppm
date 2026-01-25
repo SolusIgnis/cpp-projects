@@ -40,7 +40,7 @@ export namespace net::telnet {
          * @brief Function type for handling unknown option negotiation attempts.
          * @param id The `option::id_num` of the unknown option.
          */
-        using UnknownOptionHandler = std::function<void(option::id_num)>;
+        using UnknownOptionHandler = std::function<void(option::id_num /*id*/)>;
 
         /**
          * @typedef ErrorLogger
@@ -48,7 +48,7 @@ export namespace net::telnet {
          * @param ec The `std::error_code` describing the error.
          * @param msg The formatted error message.
          */
-        using ErrorLogger = std::function<void(const std::error_code&, std::string)>;
+        using ErrorLogger = std::function<void(const std::error_code& /*ec*/, std::string /*msg*/)>;
 
         ///@brief Initializes the configuration once.
         static void initialize() { std::call_once(initialization_flag_, &init); }
