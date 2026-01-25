@@ -45,7 +45,7 @@ Checks:
   - '-readability-else-after-return'
   
   # Pointers that act like iterators should hide being raw pointers
-  - '-readability-qualified-auto'
+  #- '-readability-qualified-auto'
   
   # Redundant continue and return sometimes enhance readability
   - '-readability-redundant-control-flow'
@@ -92,13 +92,14 @@ HeaderFileExtensions:
   - hh       # Older C++ headers
   - hpp      # Modern C++ headers
   - hxx      # Alternate modern C++ headers
+  - inc      # Header fragment include files
+  - cppm     # Modern (>= C++20) module interface units
 ImplementationFileExtensions:
   - c        # C source files
   - cc       # Older C++ source files
   - cpp      # Modern C++ source files
   - cxx      # Alternate modern C++ source files
-  - cppm     # Modern (>= C++20) module interface units
-HeaderFilterRegex: '^(?!/usr/).*'
+HeaderFilterRegex: '^(?!.*(usr/|lib/|v1/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|std\.cppm|std\.compat\.cppm)).*$'
 ExcludeHeaderFilterRegex: ''
 FormatStyle: file
 CheckOptions:
@@ -396,6 +397,8 @@ CheckOptions:
   
   readability-operators-representation.BinaryOperators:     ''
   readability-operators-representation.OverloadedOperators: ''
+  
+  readability-qualified-auto.AddConstToQualified: true
   
   readability-redundant-casting.IgnoreMacros:      'true'
   readability-redundant-casting.IgnoreTypeAliases: 'false'

@@ -470,7 +470,7 @@ export namespace std {
      */
     template<>
     struct formatter<::net::telnet::option, char> {
-        char presentation = 'd'; ///< Format specifier: 'd' for 0xXX (name), 'n' for name only, 'x' for hex only.
+        char presentation_ = 'd'; ///< Format specifier: 'd' for 0xXX (name), 'n' for name only, 'x' for hex only.
 
         /**
          * @brief Parses the format specifier for `option`.
@@ -481,15 +481,18 @@ export namespace std {
          */
         //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         constexpr auto parse(format_parse_context& ctx) {
-            auto iter = ctx.begin();
-            if (iter != ctx.end() && (*iter == 'n' || *iter == 'x' || *iter == 'd')) {
-                presentation = *iter;
-                ++iter;
+            auto view = std::ranges::subrange(ctx.begin(), ctx.end());
+            if (!view.empty()) {
+                char c = view.front();
+                if (c == 'n' || c == 'x' || c == 'd') {
+                    presentation_ = c;
+                    view = view.drop_first(1);
+                }
             }
-            if (iter != ctx.end() && *iter != '}') {
-                throw std::format_error("Invalid format specifier for option");
+            if (!view.empty() && view.front() != '}') {
+                throw std::format_error("Invalid format specifier for telnet::command");
             }
-            return iter;
+            return view.begin();
         } //parse(format_parse_context&)
 
         /**
@@ -505,9 +508,9 @@ export namespace std {
         //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         template<typename FormatContext>
         auto format(const ::net::telnet::option& opt, FormatContext& ctx) const {
-            if (presentation == 'n') {
+            if (presentation_ == 'n') {
                 return std::format_to(ctx.out(), "{}", opt.get_name().empty() ? "unknown" : opt.get_name());
-            } else if (presentation == 'x') {
+            } else if (presentation_ == 'x') {
                 return std::format_to(ctx.out(), "0x{:02x}", std::to_underlying(opt.get_id()));
             } else { // 'd' (default: 0xXX (name))
                 return std::format_to(ctx.out(),

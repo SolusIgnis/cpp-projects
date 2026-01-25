@@ -24,18 +24,18 @@ export namespace net::telnet {
      * @brief Telnet-specific error codes for protocol and stream operations.
      * @see RFC 854 for `protocol_violation`, `:protocol_fsm` for `telnet::error` usage, `:stream` for stream-related errors
      */
-    enum class error {
-        protocol_violation = 1, ///< General RFC 854 violation or invalid state transition (@see RFC 854)
-        internal_error,         ///< Unexpected internal error or uncaught exception (@see `:protocol_fsm`, `:stream`)
-        invalid_command,        ///< Unrecognized command byte after `IAC` (@see `:protocol_fsm`)
-        invalid_negotiation, ///< Invalid command in negotiation (not `WILL`/`WONT`/`DO`/`DONT`) (@see RFC 854, `:stream`)
+    enum class error : std::uint8_t {
+        protocol_violation = 1,  ///< General RFC 854 violation or invalid state transition (@see RFC 854)
+        internal_error,          ///< Unexpected internal error or uncaught exception (@see `:protocol_fsm`, `:stream`)
+        invalid_command,         ///< Unrecognized command byte after `IAC` (@see `:protocol_fsm`)
+        invalid_negotiation,     ///< Invalid command in negotiation (not `WILL`/`WONT`/`DO`/`DONT`) (@see RFC 854, `:stream`)
         option_not_available,    ///< Option is unsupported, disabled, or not found (@see `:options`, `:protocol_fsm`)
         invalid_subnegotiation,  ///< Invalid or incomplete subnegotiation sequence (@see `:protocol_fsm`)
         subnegotiation_overflow, ///< Subnegotiation buffer exceeds maximum size allowed by `option` (@see `:options`)
         ignored_go_ahead,        ///< Go-Ahead command ignored due to `SUPPRESS_GO_AHEAD` (@see `:protocol_fsm`)
         user_handler_forbidden,  ///< Attempt to register handler for reserved option (@see `:protocol_fsm`)
         user_handler_not_found,  ///< No handler registered for requested option (@see `:protocol_fsm`)
-        negotiation_queue_error ///< The negotiation queue bit was set in a forbidden `NegotiationState` (@see `:internal`)
+        negotiation_queue_error  ///< The negotiation queue bit was set in a forbidden `NegotiationState` (@see `:internal`)
     }; //enum class error
 
     /**
@@ -43,14 +43,14 @@ export namespace net::telnet {
      * @remark Signals act as "soft EOF" allowing reads to complete early and signal "short read" pause conditions.
      * @see RFC 854 for `end_of_line`, `go_ahead`, `erase_character`, `erase_line`, `abort_output`, `interrupt_process`, `telnet_break`, `data_mark`; RFC 885 for `end_of_record`
      */
-    enum class processing_signal {
-        end_of_line = 1, ///< Encountered End-of-Line (`\r\n`) in byte stream (@see RFC 854, `:protocol_fsm`)
-        carriage_return, ///< Encountered Carriage-Return (`\r`) sequence in byte stream requiring special handling (@see RFC 854, `:protocol_fsm`)
-        end_of_record,   ///< Encountered End-of-Record (`IAC EOR`) in byte stream (@see RFC 885, `:protocol_fsm`)
-        go_ahead,        ///< Encountered Go-Ahead (`IAC GA`) in byte stream (@see RFC 854, `:protocol_fsm`)
-        erase_character, ///< Encountered Erase Character (`IAC EC`) in byte stream (@see RFC 854, `:protocol_fsm`)
-        erase_line,      ///< Encountered Erase Line (`IAC EL`) in byte stream (@see RFC 854, `:protocol_fsm`)
-        abort_output,    ///< Encountered Abort Output (`IAC AO`) in byte stream (@see RFC 854, `:protocol_fsm`)
+    enum class processing_signal : std::uint8_t {
+        end_of_line = 1,   ///< Encountered End-of-Line (`\r\n`) in byte stream (@see RFC 854, `:protocol_fsm`)
+        carriage_return,   ///< Encountered Carriage-Return (`\r`) sequence in byte stream requiring special handling (@see RFC 854, `:protocol_fsm`)
+        end_of_record,     ///< Encountered End-of-Record (`IAC EOR`) in byte stream (@see RFC 885, `:protocol_fsm`)
+        go_ahead,          ///< Encountered Go-Ahead (`IAC GA`) in byte stream (@see RFC 854, `:protocol_fsm`)
+        erase_character,   ///< Encountered Erase Character (`IAC EC`) in byte stream (@see RFC 854, `:protocol_fsm`)
+        erase_line,        ///< Encountered Erase Line (`IAC EL`) in byte stream (@see RFC 854, `:protocol_fsm`)
+        abort_output,      ///< Encountered Abort Output (`IAC AO`) in byte stream (@see RFC 854, `:protocol_fsm`)
         interrupt_process, ///< Encountered Interrupt Process (`IAC IP`) in byte stream (@see RFC 854, `:protocol_fsm`)
         telnet_break,      ///< Encountered Break (`IAC BRK`) in byte stream (@see RFC 854, `:protocol_fsm`)
         data_mark          ///< Encountered Data Mark (`IAC DM`) in byte stream (@see RFC 854, `:protocol_fsm`)

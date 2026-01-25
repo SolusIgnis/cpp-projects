@@ -86,15 +86,18 @@ export namespace std {
          */
         //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         constexpr auto parse(format_parse_context& ctx) {
-            auto iter = ctx.begin();
-            if (iter != ctx.end() && (*iter == 'n' || *iter == 'x' || *iter == 'd')) {
-                presentation_ = *iter;
-                ++iter;
+            auto view = std::ranges::subrange(ctx.begin(), ctx.end());
+            if (!view.empty()) {
+                char c = view.front();
+                if (c == 'n' || c == 'x' || c == 'd') {
+                    presentation_ = c;
+                    view = view.drop_first(1);
+                }
             }
-            if (iter != ctx.end() && *iter != '}') {
+            if (!view.empty() && view.front() != '}') {
                 throw std::format_error("Invalid format specifier for telnet::command");
             }
-            return iter;
+            return view.begin();
         } //parse(format_parse_context&)
 
         /**
@@ -194,11 +197,11 @@ export namespace std {
          */
         //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         constexpr auto parse(format_parse_context& ctx) {
-            auto iter = ctx.begin();
-            if (iter != ctx.end() && *iter != '}') {
-                throw format_error("Invalid format specifier for NegotiationDirection");
+            auto view = std::ranges::subrange(ctx.begin(), ctx.end());
+            if (!view.empty() && view.front() != '}') {
+                throw std::format_error("Invalid format specifier for NegotiationDirection");
             }
-            return iter;
+            return view.begin();
         } //parse(format_parse_context&)
 
         /**
@@ -209,8 +212,8 @@ export namespace std {
          */
         template<typename FormatContext>
         auto format(::net::telnet::negotiation_direction dir, FormatContext& ctx) const {
-            string_view name = (dir == ::net::telnet::negotiation_direction::local ? "local" : "remote");
-            return format_to(ctx.out(), "{}", name);
+            std::string_view name = (dir == ::net::telnet::negotiation_direction::local ? "local" : "remote");
+            return std::format_to(ctx.out(), "{}", name);
         } //format(::net::telnet::negotiation_direction, FormatContext&)
     }; //struct formatter<::net::telnet::negotiation_direction>
 } //namespace std
