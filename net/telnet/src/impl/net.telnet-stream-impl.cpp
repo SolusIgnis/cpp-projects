@@ -18,7 +18,7 @@ module; //Including Asio in the Global Module Fragment until importable header u
 //Module implementation unit
 module net.telnet;
 
-import std; //For std::promise, std::future, std::jthread, std::exception_ptr, std::make_tuple
+import std; //NOLINT For std::promise, std::future, std::jthread, std::exception_ptr, std::make_tuple
 
 import :types;        ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
 import :errors;       ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes

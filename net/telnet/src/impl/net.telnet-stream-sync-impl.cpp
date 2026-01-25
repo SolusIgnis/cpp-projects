@@ -19,7 +19,7 @@ module; //Including Asio in the Global Module Fragment until importable header u
 //Module implementation unit
 module net.telnet;
 
-import std; //For std::size_t, std::system_error
+import std; //NOLINT For std::size_t, std::system_error
 
 import :types;        ///< @see "net.telnet-types.cppm" for `telnet::command`
 import :errors;       ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes

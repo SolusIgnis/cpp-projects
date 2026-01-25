@@ -23,7 +23,7 @@ export module net.telnet:concepts;
 
 import net.asio_concepts; //For asio_concepts namespace concept definitions
 
-import std; //For std::error_code, std::size_t, std::same_as, std::convertible_to
+import std; //NOLINT For std::error_code, std::size_t, std::same_as, std::convertible_to
 
 import :types;   ///< @see "net.telnet-types.cppm" for telnet::command
 import :options; ///< @see "net.telnet-options.cppm" for telnet::option

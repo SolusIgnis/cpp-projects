@@ -14,7 +14,7 @@
 //Module implementation unit
 module net.telnet;
 
-import std; //For std::nullopt, std::optional, std::tuple, std::make_tuple, std::make_optional, std::error_code, std::format, std::string_view
+import std; //NOLINT For std::nullopt, std::optional, std::tuple, std::make_tuple, std::make_optional, std::error_code, std::format, std::string_view
 
 import :types;      ///< @see "net.telnet-types.cppm" for `telnet::command`, `negotiation_direction`
 import :errors;     ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes

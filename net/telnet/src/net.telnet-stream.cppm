@@ -24,7 +24,7 @@ module; //Including Asio in the Global Module Fragment until importable header u
 //Module partition interface unit
 export module net.telnet:stream;
 
-import std; //For std::error_code, std::size_t, std::vector, std::same_as
+import std; //NOLINT For std::error_code, std::size_t, std::vector, std::same_as
 
 export import :types;    ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
 export import :errors;   ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes

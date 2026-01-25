@@ -17,7 +17,7 @@
 //Module partition interface unit
 export module net.telnet:errors;
 
-import std; //For std::error_category, std::error_code, std::string, std::true_type
+import std; //NOLINT For std::error_category, std::error_code, std::string, std::true_type
 
 export namespace net::telnet {
     /**

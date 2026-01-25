@@ -19,7 +19,7 @@ module; //Including Asio in the Global Module Fragment until importable header u
 //Module partition interface unit
 export module net.telnet:options;
 
-import std; //For std::string, std::vector, std::function, std::optional, std::size_t
+import std; //NOLINT For std::string, std::vector, std::function, std::optional, std::size_t
 
 export import :types;  ///< @see "net.telnet-types.cppm" for `byte_t`
 export import :errors; ///< @see "net.telnet-errors.cppm" for `error` enum

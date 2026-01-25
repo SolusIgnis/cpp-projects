@@ -17,8 +17,8 @@
 //Module partition interface unit
 export module net.telnet:types;
 
-import std;        //For std::format, std::string_view, std::format_context
-import std.compat; //For std::uint8_t
+import std;        //NOLINT For std::format, std::string_view, std::format_context
+import std.compat; //NOLINT For std::uint8_t
 
 export namespace net::telnet {
     /**

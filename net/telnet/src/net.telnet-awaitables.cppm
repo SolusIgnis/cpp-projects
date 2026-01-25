@@ -18,7 +18,7 @@ module; //Including Asio in the Global Module Fragment until importable header u
 // Module partition interface unit
 export module net.telnet:awaitables;
 
-import std; //for std::move
+import std; //NOLINT for std::move
 
 export import :options; ///< @see "net.telnet-options.cppm" for `option`
 

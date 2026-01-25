@@ -19,8 +19,8 @@ module; //Including Asio in the Global Module Fragment until importable header u
 //Module partition interface unit
 export module net.telnet:internal;
 
-import std; //For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec
-import std.compat; //For std::uint8_t (needed for bit-field type specifier)
+import std; //NOLINT For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec
+import std.compat; //NOLINT For std::uint8_t (needed for bit-field type specifier)
 
 import :types;      ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
 import :errors;     ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
