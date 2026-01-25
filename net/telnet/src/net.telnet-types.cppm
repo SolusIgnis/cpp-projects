@@ -88,7 +88,7 @@ export namespace std {
         constexpr auto parse(format_parse_context& ctx) {
             auto view = std::ranges::subrange(ctx.begin(), ctx.end());
             if (!view.empty()) {
-                char c = view.front(); //NOLINT(readability-identifier-length): Idiomatic
+                const char c = view.front(); //NOLINT(readability-identifier-length): Idiomatic
                 if (c == 'n' || c == 'x' || c == 'd') {
                     presentation_ = c;
                     view = view.advance(1);

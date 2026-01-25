@@ -86,7 +86,7 @@ export namespace net::telnet {
          * @see `telnet::error` for error codes
          * @remark The `[[unlikely]]` (theoretically unreachable) default case guards against an error code message being undefined.
          */
-        std::string message(int ev) const override {
+        [[nodiscard]] std::string message(int ev) const override {
             switch (static_cast<error>(ev)) {
                 case error::protocol_violation:
                     return "Telnet protocol violation";
@@ -122,7 +122,7 @@ export namespace net::telnet {
          * @remark Uses `[[fallthrough]]` to group related protocol errors under `std::errc::protocol_error` and handler errors under `std::errc::operation_not_supported` or `operation_not_permitted`.
          * @see `telnet::error` for error codes
          */
-        std::error_condition default_error_condition(int value) const noexcept override {
+        [[nodiscard]] std::error_condition default_error_condition(int value) const noexcept override {
             switch (static_cast<error>(value)) {
                 case error::invalid_command:
                     [[fallthrough]];
@@ -147,7 +147,7 @@ export namespace net::telnet {
                 case error::negotiation_queue_error:
                     return std::errc::operation_not_permitted;
                 default:
-                    return std::error_condition();
+                    return {};
             }
         } //default_error_condition(int) const noexcept
     }; //class telnet_error_category
@@ -182,7 +182,7 @@ export namespace net::telnet {
          * @see `telnet::processing_signal` for signal codes
          * @remark The `[[unlikely]]` (theoretically unreachable) default case guards against an undefined signal code message.
          */
-        std::string message(int value) const override {
+        [[nodiscard]] std::string message(int value) const override {
             switch (static_cast<processing_signal>(value)) {
                 case processing_signal::end_of_line:
                     return "Telnet encountered End-of-Line in the byte stream";
