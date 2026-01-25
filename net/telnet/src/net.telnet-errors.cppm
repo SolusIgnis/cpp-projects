@@ -86,8 +86,8 @@ export namespace net::telnet {
          * @see `telnet::error` for error codes
          * @remark The `[[unlikely]]` (theoretically unreachable) default case guards against an error code message being undefined.
          */
-        [[nodiscard]] std::string message(int ev) const override {
-            switch (static_cast<error>(ev)) {
+        [[nodiscard]] std::string message(int value) const override {
+            switch (static_cast<error>(value)) {
                 case error::protocol_violation:
                     return "Telnet protocol violation";
                 case error::internal_error:
