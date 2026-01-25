@@ -60,7 +60,7 @@ export namespace net::telnet {
      * @see RFC 854 for Telnet protocol specification and RFC 1143 for option negotiation guidelines.
      * @see `:protocol_fsm` for use in option negotiation.
      */
-    enum class negotiation_direction {
+    enum class negotiation_direction : std::uint8_t {
         local, ///< Local side ("us", sends WILL/WONT, receives DO/DONT)
         remote ///< Remote side ("them", sends DO/DONT, receives WILL/WONT)
     }; //enum class NegotiationDirection
@@ -84,15 +84,15 @@ export namespace std {
          * @remark Supports 'd' (default: name (0xXX)), 'n' (name only), and 'x' (hex only, 0xXX).
          */
         constexpr auto parse(format_parse_context& ctx) {
-            auto it = ctx.begin();
-            if (it != ctx.end() && (*it == 'n' || *it == 'x' || *it == 'd')) {
-                presentation = *it;
-                ++it;
+            auto iter = ctx.begin();
+            if (iter != ctx.end() && (*iter == 'n' || *iter == 'x' || *iter == 'd')) {
+                presentation = *iter;
+                ++iter;
             }
-            if (it != ctx.end() && *it != '}') {
+            if (iter != ctx.end() && *iter != '}') {
                 throw std::format_error("Invalid format specifier for telnet::command");
             }
-            return it;
+            return iter;
         } //parse(format_parse_context&)
 
         /**
@@ -108,7 +108,7 @@ export namespace std {
          */
         template<typename FormatContext>
         auto format(::net::telnet::command cmd, FormatContext& ctx) const {
-            string_view name;
+            std::string_view name;
             switch (cmd) {
                 case ::net::telnet::command::eor:
                     name = "EOR";

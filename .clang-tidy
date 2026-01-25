@@ -41,7 +41,8 @@ Checks:
   # Const parameters may be necessary with contract post-conditions
   - '-readability-avoid-const-params-in-decls'
   
-  #- '-readability-else-after-return'
+  # Else after return sometimes enhances readability
+  - '-readability-else-after-return'
   
   # Redundant continue and return sometimes enhance readability
   - '-readability-redundant-control-flow'
@@ -75,6 +76,8 @@ Checks:
   - 'misc-*'
   - '-misc-multiple-inheritance'
   - '-misc-no-recursion'
+  # Unfortunately, this doesn't work with import std yet
+  - '-misc-include-cleaner'
   - 'portability-*'
   - '-portability-restrict-system-includes'
   - 'boost-use-to-string'
@@ -323,6 +326,8 @@ CheckOptions:
   readability-enum-initial-value.AllowExplicitSequentialInitialValues: 'true'
   readability-enum-initial-value.AllowExplicitZeroFirstInitialValue:   'true'
   
+  readability-identifier-length.IgnoredParameterNames:        '^[n]$|^ec$'
+  readability-identifier-length.IgnoredVariableNames:         '^ec$'
   readability-identifier-length.MinimumExceptionNameLength:   '2'
   readability-identifier-length.MinimumLoopCounterNameLength: '2'
   readability-identifier-length.MinimumParameterNameLength:   '3'
@@ -342,7 +347,7 @@ CheckOptions:
   readability-identifier-naming.EnumConstantCase:                lower_case
   readability-identifier-naming.TypedefCase:                     lower_case
   readability-identifier-naming.TypeAliasCase:                   lower_case
-  readability-identifier-naming.ConceptCase:                     lower_case
+  readability-identifier-naming.ConceptCase:                     CamelCase
   # ---------- Functions ----------
   readability-identifier-naming.FunctionCase:                    lower_case
   readability-identifier-naming.MethodCase:                      lower_case
