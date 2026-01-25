@@ -91,7 +91,7 @@ export namespace std {
                 char c = view.front(); //NOLINT(readability-identifier-length): Idiomatic
                 if (c == 'n' || c == 'x' || c == 'd') {
                     presentation_ = c;
-                    view = view.drop_first(1);
+                    view = view.advance(1);
                 }
             }
             if (!view.empty() && view.front() != '}') {
