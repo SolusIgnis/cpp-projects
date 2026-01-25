@@ -99,8 +99,8 @@ ImplementationFileExtensions:
   - cpp      # Modern C++ source files
   - cxx      # Alternate modern C++ source files
   - cppm     # Modern (>= C++20) module interface units
-HeaderFilterRegex: '^(?!.*(usr/|lib/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|std\.cppm|std\.compat\.cppm)).*$'
-ExcludeHeaderFilterRegex: ''
+HeaderFilterRegex: '^(?!.*(usr/|lib/|v1/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|std\.cppm|std\.compat\.cppm)).*$'
+ExcludeHeaderFilterRegex: '/include/c\+\+/v1/'
 FormatStyle: file
 CheckOptions:
   bugprone-argument-comment.CommentBoolLiterals:        '1'

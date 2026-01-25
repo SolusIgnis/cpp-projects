@@ -151,11 +151,11 @@ export namespace net::telnet {
         ///@brief Makes a negotiation response command
         static telnet::command make_negotiation_command(negotiation_direction direction, bool enable) noexcept;
 
-        ///@brief Requests an option to be enabled (WILL/DO), synchronously updating OptionStatusDB and returning a negotiation response.
+        ///@brief Requests an option to be enabled (WILL/DO), synchronously updating option_status_db and returning a negotiation response.
         std::tuple<std::error_code, std::optional<NegotiationResponse>> request_option(option::id_num opt,
                                                                                        negotiation_direction direction);
 
-        ///@brief Disables an option (WONT/DONT), synchronously updating OptionStatusDB and returning a negotiation response and optional disablement awaitable.
+        ///@brief Disables an option (WONT/DONT), synchronously updating option_status_db and returning a negotiation response and optional disablement awaitable.
         std::tuple<std::error_code,
                    std::optional<NegotiationResponse>,
                    std::optional<awaitables::OptionDisablementAwaitable>>
@@ -210,7 +210,7 @@ export namespace net::telnet {
         //Data Members
         OptionHandlerRegistry<ProtocolConfig, OptionEnablementHandler, OptionDisablementHandler, SubnegotiationHandler>
             option_handler_registry_;
-        OptionStatusDB option_status_;
+        option_status_db option_status_;
 
         ProtocolState current_state_ = ProtocolState::Normal;
         std::optional<telnet::command> current_command_;
@@ -256,7 +256,7 @@ export namespace net::telnet {
      * @param opt The `option::id_num` to check.
      * @return True if `opt` is enabled either locally or remotely, false otherwise.
      *
-     * @remark Queries `OptionStatusDB` for the option’s status.
+     * @remark Queries `option_status_db` for the option’s status.
      */
     /**
      * @overload bool ProtocolFSM::is_enabled(option::id_num opt, negotiation_direction dir)
@@ -265,7 +265,7 @@ export namespace net::telnet {
      * @param dir The `negotiation_direction` to check.
      * @return True if `opt` is enabled in the designated direction, false otherwise.
      *
-     * @remark Queries `OptionStatusDB` for the option’s status.
+     * @remark Queries `option_status_db` for the option’s status.
      */
     /**
      * @fn telnet::command make_negotiation_command(negotiation_direction direction, bool enable) noexcept
@@ -385,6 +385,6 @@ export namespace net::telnet {
      * @remark Logs `telnet::error::option_not_available` and returns an empty payload if `status` is not enabled in the required direction.
      * @remark Logs `telnet::error::invalid_subnegotiation` for invalid subcommands.
      * @remark The returned `SubnegotiationAwaitable` is processed by `InputProcessor` to pass the payload to `stream::async_write_subnegotiation`, which adds `IAC` `SB` `status` ... `IAC` `SE` framing.
-     * @see RFC 859, `:internal` for `OptionStatusDB`, `:options` for `option`, `:awaitables` for `SubnegotiationAwaitable`, `:stream` for `async_write_subnegotiation`
+     * @see RFC 859, `:internal` for `option_status_db`, `:options` for `option`, `:awaitables` for `SubnegotiationAwaitable`, `:stream` for `async_write_subnegotiation`
      */
 } //namespace net::telnet
