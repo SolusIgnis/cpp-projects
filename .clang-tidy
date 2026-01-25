@@ -93,12 +93,12 @@ HeaderFileExtensions:
   - hpp      # Modern C++ headers
   - hxx      # Alternate modern C++ headers
   - inc      # Header fragment include files
-  - cppm     # Modern (>= C++20) module interface units
 ImplementationFileExtensions:
   - c        # C source files
   - cc       # Older C++ source files
   - cpp      # Modern C++ source files
   - cxx      # Alternate modern C++ source files
+  - cppm     # Modern (>= C++20) module interface units
 HeaderFilterRegex: '^(?!.*(usr/|lib/|v1/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|std\.cppm|std\.compat\.cppm)).*$'
 ExcludeHeaderFilterRegex: ''
 FormatStyle: file

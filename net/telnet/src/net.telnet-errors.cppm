@@ -77,7 +77,7 @@ export namespace net::telnet {
          * @brief Gets the name of the error category.
          * @return `"telnet"` as the category name.
          */
-        const char* name() const noexcept override { return "telnet"; }
+        [[nodiscard]] const char* name() const noexcept override { return "telnet"; }
 
         /**
          * @brief Gets the error message for a `telnet::error` code.
@@ -122,8 +122,8 @@ export namespace net::telnet {
          * @remark Uses `[[fallthrough]]` to group related protocol errors under `std::errc::protocol_error` and handler errors under `std::errc::operation_not_supported` or `operation_not_permitted`.
          * @see `telnet::error` for error codes
          */
-        std::error_condition default_error_condition(int ev) const noexcept override {
-            switch (static_cast<error>(ev)) {
+        std::error_condition default_error_condition(int value) const noexcept override {
+            switch (static_cast<error>(value)) {
                 case error::invalid_command:
                     [[fallthrough]];
                 case error::invalid_subnegotiation:
@@ -173,7 +173,7 @@ export namespace net::telnet {
          * @brief Gets the name of the error category.
          * @return `"telnet_processing_signal"` as the category name.
          */
-        const char* name() const noexcept override { return "telnet_processing_signal"; }
+        [[nodiscard]] const char* name() const noexcept override { return "telnet_processing_signal"; }
 
         /**
          * @brief Gets the message for a `telnet::processing_signal` code.
@@ -182,8 +182,8 @@ export namespace net::telnet {
          * @see `telnet::processing_signal` for signal codes
          * @remark The `[[unlikely]]` (theoretically unreachable) default case guards against an undefined signal code message.
          */
-        std::string message(int ev) const override {
-            switch (static_cast<processing_signal>(ev)) {
+        std::string message(int value) const override {
+            switch (static_cast<processing_signal>(value)) {
                 case processing_signal::end_of_line:
                     return "Telnet encountered End-of-Line in the byte stream";
                 case processing_signal::carriage_return:
@@ -216,8 +216,8 @@ export namespace net::telnet {
      * @return `std::error_code` with `telnet_error_category`.
      * @see `telnet_error_category` for category details
      */
-    inline std::error_code make_error_code(error e) {
-        return std::error_code(static_cast<int>(e), telnet_error_category::instance());
+    inline std::error_code make_error_code(error ec) {
+        return {static_cast<int>(ec), telnet_error_category::instance()};
     }
 
     /**
@@ -226,8 +226,8 @@ export namespace net::telnet {
      * @return `std::error_code` with `telnet_processing_signal_category`.
      * @see `telnet_processing_signal_category` for category details
      */
-    inline std::error_code make_error_code(processing_signal s) {
-        return std::error_code(static_cast<int>(s), telnet_processing_signal_category::instance());
+    inline std::error_code make_error_code(processing_signal ec) {
+        return {static_cast<int>(ec), telnet_processing_signal_category::instance()};
     }
 } //namespace net::telnet
 
