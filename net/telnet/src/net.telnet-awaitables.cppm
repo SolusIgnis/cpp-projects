@@ -4,7 +4,7 @@
  * @release_date October 30, 2025
  *
  * @brief Partition defining tagged awaitable types for type-safe asynchronous operations in the Telnet library.
- * @remark Defines `TaggedAwaitable` and associated semantic tag structs for option negotiation and subnegotiation handlers.
+ * @remark Defines `tagged_awaitable` and associated semantic tag structs for option negotiation and subnegotiation handlers.
  *
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
@@ -34,7 +34,7 @@ export namespace net::telnet::awaitables {
      * @see `tags` namespace for semantic tag types, `:protocol_fsm`, `:internal`
      */
     template<typename Tag, typename T, typename Awaitable = asio::awaitable<T>>
-    class TaggedAwaitable {
+    class tagged_awaitable {
     private:
         using awaitable_type = Awaitable; ///< Underlying awaitable type
 
@@ -44,10 +44,10 @@ export namespace net::telnet::awaitables {
         //NOLINTBEGIN(google-explicit-constructor): Implicit conversion to/from our `awaitable_type` is the point.
     
         ///@brief Default constructor.
-        TaggedAwaitable() = default;
+        tagged_awaitable() = default;
 
         ///@brief Constructs from an awaitable.
-        TaggedAwaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
+        tagged_awaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
 
         ///@brief Implicit conversion to underlying awaitable (lvalue).
         operator awaitable_type&() noexcept { return awaitable_; }
@@ -68,44 +68,44 @@ export namespace net::telnet::awaitables {
 
         ///@brief Supports co_await for rvalue.
         auto operator co_await() && noexcept { return std::move(awaitable_).operator co_await(); }
-    }; //class TaggedAwaitable
+    }; //class tagged_awaitable
 
     /**
-     * @fn TaggedAwaitable::TaggedAwaitable(awaitable_type awaitable) noexcept
+     * @fn tagged_awaitable::tagged_awaitable(awaitable_type awaitable) noexcept
      * @param awaitable The awaitable to wrap.
      * @note Implicit conversion from the underlying type allows direct returns from Boost.Asio asynchronous operations.
      */
 
-    /// @brief Semantic tag `struct`s to specialize `TaggedAwaitable`. @see `TaggedAwaitable`
+    /// @brief Semantic tag `struct`s to specialize `tagged_awaitable`. @see `tagged_awaitable`
     namespace tags {
-        /// @brief Tag to specialize `TaggedAwaitable` for option enablement handlers. @see `TaggedAwaitable`
-        struct OptionEnablementTag {};
+        /// @brief Tag to specialize `tagged_awaitable` for option enablement handlers. @see `tagged_awaitable`
+        struct option_enablement_tag {};
 
-        /// @brief Tag to specialize `TaggedAwaitable` for option disablement handlers. @see `TaggedAwaitable`
-        struct OptionDisablementTag {};
+        /// @brief Tag to specialize `tagged_awaitable` for option disablement handlers. @see `tagged_awaitable`
+        struct option_disablement_tag {};
 
-        /// @brief Tag to specialize `TaggedAwaitable` for subnegotiation handlers. @see `TaggedAwaitable`
-        struct SubnegotiationTag {};
+        /// @brief Tag to specialize `tagged_awaitable` for subnegotiation handlers. @see `tagged_awaitable`
+        struct subnegotiation_tag {};
     } //namespace tags
 
     /**
-     * @typedef OptionEnablementAwaitable
+     * @typedef option_enablement_awaitable
      * @brief Awaitable type for option enablement handlers.
-     * @see `TaggedAwaitable`, `tags::OptionEnablementTag`, `:internal` (`OptionHandlerRegistry`), `:protocol_fsm` (for use)
+     * @see `tagged_awaitable`, `tags::option_enablement_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using OptionEnablementAwaitable = TaggedAwaitable<tags::OptionEnablementTag, void>;
+    using option_enablement_awaitable = tagged_awaitable<tags::option_enablement_tag, void>;
 
     /**
-     * @typedef OptionDisablementAwaitable
+     * @typedef option_disablement_awaitable
      * @brief Awaitable type for option disablement handlers.
-     * @see `TaggedAwaitable`, `tags::OptionDisablementTag`, `:internal` (`OptionHandlerRegistry`), `:protocol_fsm` (for use)
+     * @see `tagged_awaitable`, `tags::option_disablement_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using OptionDisablementAwaitable = TaggedAwaitable<tags::OptionDisablementTag, void>;
+    using option_disablement_awaitable = tagged_awaitable<tags::option_disablement_tag, void>;
 
     /**
-     * @typedef SubnegotiationAwaitable
+     * @typedef subnegotiation_awaitable
      * @brief Awaitable type for subnegotiation handlers.
-     * @see `TaggedAwaitable`, `tags::SubnegotiationTag`, `:internal` (`OptionHandlerRegistry`), `:protocol_fsm` (for use)
+     * @see `tagged_awaitable`, `tags::subnegotiation_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using SubnegotiationAwaitable = TaggedAwaitable<tags::SubnegotiationTag, std::tuple<option, std::vector<byte_t>>>;
+    using subnegotiation_awaitable = tagged_awaitable<tags::subnegotiation_tag, std::tuple<option, std::vector<byte_t>>>;
 } //namespace net::telnet::awaitables
