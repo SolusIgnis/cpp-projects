@@ -18,9 +18,6 @@
  * @todo Phase 6: Add optional half-duplex support (RFC 854) if legacy peer requirements arise.
  */
 
-module; //Including Asio in the Global Module Fragment until importable header units are reliable.
-#include <asio.hpp>
-
 //Module partition interface unit
 export module net.telnet:protocol_fsm;
 

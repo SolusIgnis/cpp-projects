@@ -83,6 +83,7 @@ export namespace std {
          * @throws std::format_error if the specifier is invalid (not 'd', 'n', or 'x').
          * @remark Supports 'd' (default: name (0xXX)), 'n' (name only), and 'x' (hex only, 0xXX).
          */
+        //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         constexpr auto parse(format_parse_context& ctx) {
             auto iter = ctx.begin();
             if (iter != ctx.end() && (*iter == 'n' || *iter == 'x' || *iter == 'd')) {
@@ -106,6 +107,7 @@ export namespace std {
          * - 'x': "0xXX" (e.g., "0xFB").
          * - Unknown commands format as "UNKNOWN" ('n') or "0xXX" ('x').
          */
+        //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         template<typename FormatContext>
         auto format(::net::telnet::command cmd, FormatContext& ctx) const {
             std::string_view name;
@@ -189,12 +191,13 @@ export namespace std {
          * @return Iterator pointing to the end of the parsed format specifier.
          * @throws std::format_error if the specifier is not '}' (only default {} is supported).
          */
+        //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         constexpr auto parse(format_parse_context& ctx) {
-            auto it = ctx.begin();
-            if (it != ctx.end() && *it != '}') {
+            auto iter = ctx.begin();
+            if (iter != ctx.end() && *iter != '}') {
                 throw format_error("Invalid format specifier for NegotiationDirection");
             }
-            return it;
+            return iter;
         } //parse(format_parse_context&)
 
         /**
@@ -205,7 +208,7 @@ export namespace std {
          */
         template<typename FormatContext>
         auto format(::net::telnet::negotiation_direction dir, FormatContext& ctx) const {
-            string_view name = dir == ::net::telnet::negotiation_direction::local ? "local" : "remote";
+            string_view name = (dir == ::net::telnet::negotiation_direction::local ? "local" : "remote");
             return format_to(ctx.out(), "{}", name);
         } //format(::net::telnet::negotiation_direction, FormatContext&)
     }; //struct formatter<::net::telnet::negotiation_direction>

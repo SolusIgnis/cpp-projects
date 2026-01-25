@@ -54,7 +54,8 @@ export namespace net::telnet {
         using EnablePredicate = std::function<bool(id_num)>;
 
         ///@brief Constructs an `option` with the given ID and optional parameters.
-        option(id_num id, //NOLINT google-explicit-constructor
+        //NOLINTNEXTLINE(google-explicit-constructor)
+        option(id_num id,
                std::string name            = "",
                EnablePredicate local_pred  = always_reject,
                EnablePredicate remote_pred = always_reject,
@@ -91,7 +92,7 @@ export namespace net::telnet {
         constexpr auto operator<=>(option::id_num other_id) const noexcept { return id_ <=> other_id; }
 
         ///@brief Implicitly converts to `option::id_num`.
-        operator id_num() const noexcept { return id_; } //NOLINT google-explicit-constructor
+        operator id_num() const noexcept { return id_; } //NOLINT(google-explicit-constructor)
 
         ///@brief Gets the Telnet `option::id_num`.
         id_num get_id() const noexcept { return id_; }

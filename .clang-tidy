@@ -44,6 +44,9 @@ Checks:
   # Else after return sometimes enhances readability
   - '-readability-else-after-return'
   
+  # Pointers that act like iterators should hide being raw pointers
+  - 'readability-qualified-auto'
+  
   # Redundant continue and return sometimes enhance readability
   - '-readability-redundant-control-flow'
 
@@ -393,9 +396,6 @@ CheckOptions:
   
   readability-operators-representation.BinaryOperators:     ''
   readability-operators-representation.OverloadedOperators: ''
-  
-  readability-qualified-auto.AddConstToQualified: 'true'
-  readability-qualified-auto.AllowedTypes:        ''
   
   readability-redundant-casting.IgnoreMacros:      'true'
   readability-redundant-casting.IgnoreTypeAliases: 'false'
