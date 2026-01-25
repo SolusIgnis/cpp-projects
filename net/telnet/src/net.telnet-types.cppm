@@ -74,8 +74,9 @@ export namespace std {
      */
     template<>
     struct formatter<::net::telnet::command, char> {
-        char presentation = 'd'; ///< Format specifier: 'd' for name (0xXX), 'n' for name only, 'x' for hex only.
-
+    private:
+        char presentation_ = 'd'; ///< Format specifier: 'd' for name (0xXX), 'n' for name only, 'x' for hex only.
+    public:
         /**
          * @brief Parses the format specifier for `telnet::command`.
          * @param ctx The format parse context.
@@ -87,7 +88,7 @@ export namespace std {
         constexpr auto parse(format_parse_context& ctx) {
             auto iter = ctx.begin();
             if (iter != ctx.end() && (*iter == 'n' || *iter == 'x' || *iter == 'd')) {
-                presentation = *iter;
+                presentation_ = *iter;
                 ++iter;
             }
             if (iter != ctx.end() && *iter != '}') {
@@ -168,9 +169,9 @@ export namespace std {
                     break;
             }
 
-            if (presentation == 'n') {
+            if (presentation_ == 'n') {
                 return std::format_to(ctx.out(), "{}", name);
-            } else if (presentation == 'x') {
+            } else if (presentation_ == 'x') {
                 return std::format_to(ctx.out(), "0x{:02x}", std::to_underlying(cmd));
             } else { // 'd' (default: name (0xXX))
                 return std::format_to(ctx.out(), "{} (0x{:02x})", name, std::to_underlying(cmd));
