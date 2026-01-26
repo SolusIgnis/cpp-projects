@@ -197,19 +197,20 @@ namespace net::telnet {
     std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>>
         protocol_fsm<PC>::process_byte(byte_t byte) noexcept {
         switch (current_state_) {
-            case protocol_state::normal:
+            using enum protocol_state;
+            case normal:
                 return handle_state_normal(byte);
-            case protocol_state::has_cr:
+            case has_cr:
                 return handle_state_has_cr(byte);
-            case protocol_state::has_iac:
+            case has_iac:
                 return handle_state_iac(byte);
-            case protocol_state::option_negotiation:
+            case option_negotiation:
                 return handle_state_option_negotiation(byte);
-            case protocol_state::subnegotiation_option:
+            case subnegotiation_option:
                 return handle_state_subnegotiation_option(byte);
-            case protocol_state::subnegotiation:
+            case subnegotiation:
                 return handle_state_subnegotiation(byte);
-            case protocol_state::subnegotiation_iac:
+            case subnegotiation_iac:
                 return handle_state_subnegotiation_iac(byte);
             default:
                 [[unlikely]] //Impossible unless a new enumerator has been added or memory has been corrupted.
@@ -315,8 +316,8 @@ namespace net::telnet {
         } else {
             current_command_ = static_cast<telnet::command>(byte);
             if (current_command_) [[likely]] {
-                using enum telnet::command;
                 switch (*current_command_) {
+                    using enum telnet::command;
                     case will_opt:
                         [[fallthrough]];
                     case wont_opt:
