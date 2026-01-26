@@ -155,7 +155,7 @@ namespace net::telnet {
                         if (!ec) {
                             this->context_.urgent_data_state.saw_urgent();
                         } else {
-                            fsm_type::ProtocolConfig::log_error(ec, "OOB wait failed: {}", ec.message());
+                            fsm_type::protocol_config_type::log_error(ec, "OOB wait failed: {}", ec.message());
                             if (!this->context_.deferred_transport_error) {
                                 this->context_.deferred_transport_error = ec;
                             } //If there is already a transport error deferred, ignore this one as it’s likely redundant.
@@ -168,41 +168,41 @@ namespace net::telnet {
     /**
      * @internal
      * Use `compare_exchange_strong` to update `state_`.
-     * If `state_` was `NO_URGENT_DATA`, it becomes `HAS_URGENT_DATA`.
-     * If `state_` was `UNEXPECTED_DATA_MARK`, it resets to `NO_URGENT_DATA`.
-     * It can't already be `HAS_URGENT_DATA` without a major bug.
+     * If `state_` was `no_urgent_data`, it becomes `has_urgent_data`.
+     * If `state_` was `unexpected_data_mark`, it resets to `no_urgent_data`.
+     * It can't already be `has_urgent_data` without a major bug.
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     void stream<NLS, PC>::context_type::urgent_data_tracker::saw_urgent() {
-        UrgentDataState expected;
-        UrgentDataState desired;
+        urgent_data_state expected_state;
+        urgent_data_state desired_state;
         bool success = false;
 
         do {
             //Load the current state
-            expected = state_.load(std::memory_order_relaxed);
+            expected_state = state_.load(std::memory_order_relaxed);
 
-            if (expected == UrgentDataState::NO_URGENT_DATA) {
+            if (expected_state == urgent_data_state::no_urgent_data) {
                 //The OOB notification arrived first.
-                desired = UrgentDataState::HAS_URGENT_DATA;
-            } else if (expected == UrgentDataState::UNEXPECTED_DATA_MARK) {
+                desired_state = urgent_data_state::has_urgent_data;
+            } else if (expected_state == urgent_data_state::unexpected_data_mark) {
                 //The DM arrived first; this is the delayed notification. Reset.
-                ProtocolConfig::log_error(
+                protocol_config_type::log_error(
                     processing_signal::data_mark,
                     "DM already arrived before current TCP urgent notification. Assuming Synch is already complete.");
-                desired = UrgentDataState::NO_URGENT_DATA;
+                desired_state = urgent_data_state::no_urgent_data;
             } else {
-                //CANT HAPPEN: State is `HAS_URGENT_DATA`. This means another saw_urgent fired without saw_data_mark in between, or a logic error.
+                //CANT HAPPEN: State is `has_urgent_data`. This means another saw_urgent fired without saw_data_mark in between, or a logic error.
                 //We cannot transition and must exit.
-                ProtocolConfig::log_error(
+                protocol_config_type::log_error(
                     error::internal_error,
-                    "Invalid state in saw_urgent: HAS_URGENT_DATA already set; implies launch_wait_for_urgent_data was " "called while urgent data was already in the byte stream.");
+                    "Invalid state in saw_urgent: has_urgent_data already set; implies launch_wait_for_urgent_data was " "called while urgent data was already in the byte stream.");
                 return;
             }
 
             //Atomically attempt the transition
-            success = state_.compare_exchange_strong(expected,
-                                                     desired,
+            success = state_.compare_exchange_strong(expected_state,
+                                                     desired_state,
                                                      std::memory_order_release, //Ensure subsequent reads see the change
                                                      std::memory_order_relaxed);
 
@@ -212,37 +212,37 @@ namespace net::telnet {
     /**
      * @internal
      * Use `compare_exchange_strong` to update `state_`.
-     * If `state_` was `NO_URGENT_DATA`, it becomes `UNEXPECTED_DATA_MARK`.
-     * If `state_` was `HAS_URGENT_DATA`, it resets to `NO_URGENT_DATA`.
+     * If `state_` was `no_urgent_data`, it becomes `unexpected_data_mark`.
+     * If `state_` was `has_urgent_data`, it resets to `no_urgent_data`.
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     void stream<NLS, PC>::context_type::urgent_data_tracker::saw_data_mark() {
-        UrgentDataState expected;
-        UrgentDataState desired;
+        urgent_data_state expected_state;
+        urgent_data_state desired_state;
         bool success = false;
 
         do {
             //Load the current state
-            expected = state_.load(std::memory_order_relaxed);
+            expected_state = state_.load(std::memory_order_relaxed);
 
-            if (expected == UrgentDataState::HAS_URGENT_DATA) {
+            if (expected_state == urgent_data_state::has_urgent_data) {
                 //The DM arrived as expected. Reset.
-                desired = UrgentDataState::NO_URGENT_DATA;
-            } else if (expected == UrgentDataState::NO_URGENT_DATA) {
+                desired_state = urgent_data_state::no_urgent_data;
+            } else if (expected_state == urgent_data_state::no_urgent_data) {
                 //The DM arrived before the OOB notification arrived.
-                desired = UrgentDataState::UNEXPECTED_DATA_MARK;
-                ProtocolConfig::log_error(processing_signal::data_mark, "DM arrived without/before TCP urgent.");
+                desired_state = urgent_data_state::unexpected_data_mark;
+                protocol_config_type::log_error(processing_signal::data_mark, "DM arrived without/before TCP urgent.");
             } else {
-                //State is `UNEXPECTED_DATA_MARK`. This means another `saw_data_mark` fired without `saw_urgent` in between, or a logic error. The peer likely sent 2 data marks in quick succession, but this is safe.
+                //State is `unexpected_data_mark`. This means another `saw_data_mark` fired without `saw_urgent` in between, or a logic error. The peer likely sent 2 data marks in quick succession, but this is safe.
                 //We cannot transition and must exit.
-                ProtocolConfig::log_error(processing_signal::data_mark,
+                protocol_config_type::log_error(processing_signal::data_mark,
                                           "Subsequent DM received while expecting TCP urgent.");
                 return;
             }
 
             //Atomically attempt the transition
-            success = state_.compare_exchange_strong(expected,
-                                                     desired,
+            success = state_.compare_exchange_strong(expected_state,
+                                                     desired_state,
                                                      std::memory_order_release, //Ensure subsequent reads see the change
                                                      std::memory_order_relaxed);
 
@@ -466,7 +466,7 @@ namespace net::telnet {
         if (context_.deferred_transport_error) {
             //We have a new write error on top of a previously deferred error.
             //Log it and attempt to continue processing the buffered byte stream.
-            decltype(fsm_)::ProtocolConfig::log_error(
+            fsm_type::protocol_config_type::log_error(
                 ec,
                 "Error writing Telnet response with error {} previously deferred " "for reporting after processing the buffered byte stream.",
                 context_.deferred_transport_error);

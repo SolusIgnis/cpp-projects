@@ -7,7 +7,7 @@
  * @remark Provides thread-safe, static configuration with option registry and handlers.
  * @example
  *   telnet::ProtocolFSM<> fsm;
- *   telnet::DefaultProtocolFSMConfig::set_error_logger([](const std::error_code& ec, std::string msg) {
+ *   telnet::default_protocol_fsm_config::set_error_logger([](const std::error_code& ec, std::string msg) {
  *       std::cerr << "Error: " << ec.message() << " - " << msg << std::endl;
  *   });
  *
@@ -33,40 +33,40 @@ export namespace net::telnet {
      * @remark Provides thread-safe access to static members via `mutex_`.
      * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, :options for `option` and `option::id_num`, :errors for error codes, :internal for implementation classes
      */
-    class DefaultProtocolFSMConfig {
+    class default_protocol_fsm_config {
     public:
         /**
-         * @typedef UnknownOptionHandler
+         * @typedef unknown_option_handler_type
          * @brief Function type for handling unknown option negotiation attempts.
          * @param id The `option::id_num` of the unknown option.
          */
-        using UnknownOptionHandler = std::function<void(option::id_num /*id*/)>;
+        using unknown_option_handler_type = std::function<void(option::id_num /*id*/)>;
 
         /**
-         * @typedef ErrorLogger
+         * @typedef error_logger_type
          * @brief Function type for logging errors during FSM processing.
          * @param ec The `std::error_code` describing the error.
          * @param msg The formatted error message.
          */
-        using ErrorLogger = std::function<void(const std::error_code& /*ec*/, std::string /*msg*/)>;
+        using error_logger_type = std::function<void(const std::error_code& /*ec*/, std::string /*msg*/)>;
 
         ///@brief Initializes the configuration once.
         static void initialize() { std::call_once(initialization_flag_, &init); }
 
         ///@brief Sets the handler for unknown option negotiation attempts.
-        static void set_unknown_option_handler(UnknownOptionHandler handler) {
+        static void set_unknown_option_handler(unknown_option_handler_type handler) {
             std::lock_guard<std::shared_mutex> lock(mutex_);
             unknown_option_handler_ = std::move(handler);
         }
 
         ///@brief Sets the error logging handler.
-        static void set_error_logger(ErrorLogger handler) {
+        static void set_error_logger(error_logger_type handler) {
             std::lock_guard<std::shared_mutex> lock(mutex_);
             error_logger_ = std::move(handler);
         }
 
         ///@brief Gets the handler for unknown option negotiation attempts.
-        static const UnknownOptionHandler& get_unknown_option_handler() {
+        static const unknown_option_handler_type& get_unknown_option_handler() {
             std::shared_lock<std::shared_mutex> lock(mutex_);
             return unknown_option_handler_;
         }
@@ -121,43 +121,43 @@ export namespace net::telnet {
             };
         } //init()
 
-        static inline UnknownOptionHandler unknown_option_handler_;
-        static inline ErrorLogger error_logger_;
+        static inline Unknown_option_handler_type unknown_option_handler_;
+        static inline error_logger_type error_logger_;
         static inline std::string ayt_response_ = "Telnet system is active."; ///Default AYT response
         static inline std::shared_mutex mutex_;                               ///Mutex to protect shared static members
         static inline std::once_flag
             initialization_flag_; ///Ensures initialize() is idempotent; only invokes init() once
-    }; //class DefaultProtocolFSMConfig
+    }; //class default_protocol_fsm_config
 
     /**
-     * @fn void DefaultProtocolFSMConfig::initialize()
+     * @fn void default_protocol_fsm_config::initialize()
      *
      * @remark Initializes static members using `init` under a `std::once_flag`.
      * @remark Thread-safe via `std::call_once`.
      */
     /**
-     * @fn void DefaultProtocolFSMConfig::set_unknown_option_handler(UnknownOptionHandler handler)
+     * @fn void default_protocol_fsm_config::set_unknown_option_handler(unknown_option_handler_type handler)
      *
-     * @param handler The `UnknownOptionHandler` to set for unknown option negotiations.
-     *
-     * @remark Thread-safe via `std::lock_guard<std::shared_mutex>`.
-     */
-    /**
-     * @fn void DefaultProtocolFSMConfig::set_error_logger(ErrorLogger handler)
-     *
-     * @param handler The `ErrorLogger` to set for error reporting.
+     * @param handler The `unknown_option_handler_type` callback to set for unknown option negotiations.
      *
      * @remark Thread-safe via `std::lock_guard<std::shared_mutex>`.
      */
     /**
-     * @fn const UnknownOptionHandler& DefaultProtocolFSMConfig::get_unknown_option_handler()
+     * @fn void default_protocol_fsm_config::set_error_logger(error_logger_type handler)
      *
-     * @return Const reference to the `UnknownOptionHandler`.
+     * @param handler The `error_logger_type` callback to set for error reporting.
+     *
+     * @remark Thread-safe via `std::lock_guard<std::shared_mutex>`.
+     */
+    /**
+     * @fn const unknown_option_handler_type& default_protocol_fsm_config::get_unknown_option_handler()
+     *
+     * @return Const reference to the `unknown_option_handler_type` callback.
      *
      * @remark Thread-safe via `std::shared_lock<std::shared_mutex>`.
      */
     /**
-     * @fn template<typename ...Args> void DefaultProtocolFSMConfig::log_error(const std::error_code& ec, std::format_string<auto> fmt, Args&&... args)
+     * @fn template<typename ...Args> void default_protocol_fsm_config::log_error(const std::error_code& ec, std::format_string<auto> fmt, Args&&... args)
      *
      * @tparam Args Variadic argument type pack.
      * @param ec The error code to log.
@@ -168,21 +168,21 @@ export namespace net::telnet {
      * @remark Thread-safe via `std::shared_lock<std::shared_mutex>`.
      */
     /**
-     * @fn std::string_view DefaultProtocolFSMConfig::get_ayt_response()
+     * @fn std::string_view default_protocol_fsm_config::get_ayt_response()
      *
      * @return `std::string_view` of the AYT response string.
      *
      * @remark Thread-safe via `std::shared_lock<std::shared_mutex>`.
      */
     /**
-     * @fn void DefaultProtocolFSMConfig::set_ayt_response(std::string response)
+     * @fn void default_protocol_fsm_config::set_ayt_response(std::string response)
      *
      * @param response The AYT response string to set.
      *
      * @remark Thread-safe via `std::lock_guard<std::shared_mutex>`.
      */
     /**
-     * @fn option_registry DefaultProtocolFSMConfig::initialize_option_registry()
+     * @fn option_registry default_protocol_fsm_config::initialize_option_registry()
      *
      * @return `option_registry` with default `option` instances.
      *
@@ -190,7 +190,7 @@ export namespace net::telnet {
      * @note `STATUS` is supported locally but not remotely by default as the core implementation can send a status report but will not request one and cannot understand receipt of one.
      */
     /**
-     * @fn void DefaultProtocolFSMConfig::init()
+     * @fn void default_protocol_fsm_config::init()
      *
      * @remark Initializes `unknown_command_handler_`, `unknown_option_handler_`, and `error_logger_`.
      * @remark Called once by `initialize` under `std::call_once`.

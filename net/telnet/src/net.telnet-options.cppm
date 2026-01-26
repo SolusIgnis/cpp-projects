@@ -45,20 +45,20 @@ export namespace net::telnet {
         enum class id_num : byte_t;
 
         /**
-         * @typedef enable_predicate
+         * @typedef enable_predicate_type
          * @brief Function type for predicates determining local or remote option support.
          *
          * @param id The `option::id_num` to evaluate.
          * @return True if the option is supported, false otherwise.
          */
-        using enable_predicate = std::function<bool(id_num /*id*/)>;
+        using enable_predicate_type = std::function<bool(id_num /*id*/)>;
 
         ///@brief Constructs an `option` with the given ID and optional parameters.
         //NOLINTNEXTLINE(google-explicit-constructor)
         option(id_num id,
                std::string name             = "",
-               enable_predicate local_pred  = always_reject,
-               enable_predicate remote_pred = always_reject,
+               enable_predicate_type local_pred  = always_reject,
+               enable_predicate_type remote_pred = always_reject,
                bool subneg_supported        = false,
                size_t max_subneg_size       = max_subnegotiation_size_)
             : id_(id),
@@ -74,9 +74,9 @@ export namespace net::telnet {
                                   bool local_supported   = false,
                                   bool remote_supported  = false,
                                   bool subneg_supported  = false,
-                                  size_t max_subneg_size = max_subnegotiation_size) {
-            enable_predicate local_pred  = local_supported ? always_accept : always_reject;
-            enable_predicate remote_pred = remote_supported ? always_accept : always_reject;
+                                  size_t max_subneg_size = max_subnegotiation_size_) {
+            enable_predicate_type local_pred  = local_supported ? always_accept : always_reject;
+            enable_predicate_type remote_pred = remote_supported ? always_accept : always_reject;
             return option(id,
                           std::move(name),
                           std::move(local_pred),
@@ -129,8 +129,8 @@ export namespace net::telnet {
         id_num id_;
         std::string name_;
 
-        enable_predicate local_predicate_;
-        enable_predicate remote_predicate_;
+        enable_predicate_type local_predicate_;
+        enable_predicate_type remote_predicate_;
 
         bool supports_subnegotiation_;
 
@@ -138,7 +138,7 @@ export namespace net::telnet {
     }; //class option
 
     /**
-     * @fn explicit option::option(id_num id, std::string name, enable_predicate local_pred, enable_predicate remote_pred, bool subneg_supported, size_t max_subneg_size)
+     * @fn explicit option::option(id_num id, std::string name, enable_predicate_type local_pred, enable_predicate_type remote_pred, bool subneg_supported, size_t max_subneg_size)
      *
      * @param id The Telnet `option::id_num`.
      * @param name The option name (default empty; populated in C++26? with reflection).

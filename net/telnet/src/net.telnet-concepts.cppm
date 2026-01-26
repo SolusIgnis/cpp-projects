@@ -33,7 +33,7 @@ import :options; ///< @see "net.telnet-options.cppm" for telnet::option
 export namespace net::telnet::concepts {
     //Forward declaration referenced in a following concept definition.
     template<typename ConfigT>
-    class ProtocolFSM;
+    class protocol_fsm;
 
     /**
      * @concept MutableBufferSequence
@@ -103,17 +103,17 @@ export namespace net::telnet::concepts {
                  std::error_code ec,
                  byte_t byte,
                  std::string msg) {
-            typename T::UnknownOptionHandler;
-            requires std::convertible_to<typename T::UnknownOptionHandler,
-                                         typename ProtocolFSM<T>::UnknownOptionHandler>;
-            typename T::ErrorLogger;
-            requires std::convertible_to<typename T::ErrorLogger, typename ProtocolFSM<T>::ErrorLogger>;
+            typename T::unknown_option_handler_type;
+            requires std::convertible_to<typename T::unknown_option_handler_type,
+                                         typename protocol_fsm<T>::unknown_option_handler_type>;
+            typename T::error_logger_type;
+            requires std::convertible_to<typename T::error_logger_type, typename protocol_fsm<T>::error_logger_type>;
             { T::initialize() } -> std::same_as<void>;
-            { T::set_unknown_option_handler(std::declval<typename T::UnknownOptionHandler>()) } -> std::same_as<void>;
-            { T::set_error_logger(std::declval<typename T::ErrorLogger>()) } -> std::same_as<void>;
+            { T::set_unknown_option_handler(std::declval<typename T::unknown_option_handler_type>()) } -> std::same_as<void>;
+            { T::set_error_logger(std::declval<typename T::error_logger_type>()) } -> std::same_as<void>;
             {
                 T::get_unknown_option_handler()
-            } -> std::convertible_to<const typename ProtocolFSM<T>::UnknownOptionHandler&>;
+            } -> std::convertible_to<const typename protocol_fsm<T>::unknown_option_handler_type&>;
             { T::log_error(ec, msg) } -> std::same_as<void>;
             { T::registered_options.get(opt) } -> std::convertible_to<std::optional<option>>;
             { T::registered_options.has(opt) } -> std::same_as<bool>;
