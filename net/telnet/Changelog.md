@@ -15,6 +15,10 @@
 - Changed `telnet::command` enumerators to lowercase and added `_opt` suffix to negotiation commands (e.g. `telnet::TelnetCommand::DO` to `telnet::command::do_opt`).
 - Renamed `telnet::NegotiationDirection` to `telnet::negotiation_direction`.
 - Changed `telnet::negotiation_direction` enumerators to lowercase (i.e. `remote` and `local`).
+- Changed `:options`, `:internal`, and `:protocol_fsm` to consistently use `snake_case` identifiers like the rest of the module.
+  - Template parameters and concepts use `CamelCase`, macros use `ALL_CAPS`, and all other identifiers use `snake_case`.
+  - Also, nested type aliases use a `_type` suffix unless the word type would be a stutter (e.g. `processing_return_variant` instead of `processing_return_variant_type` since a variant is inherently a type).
+- Added a lot of `[[nodiscard]]` attributes on functions.
 
 # [0.5.7] - October 30, 2025
 ### Changed
