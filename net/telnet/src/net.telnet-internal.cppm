@@ -87,9 +87,9 @@ export namespace net::telnet {
 
         ///@brief Handles enablement for a Telnet option.
         awaitables::option_enablement_awaitable handle_enablement(const option opt, negotiation_direction direction) {
-            auto it = handlers_.find(opt);
-            if ((it != handlers_.end()) && it->second.enablement_handler) {
-                auto& handler = *(it->second.enablement_handler);
+            auto iter = handlers_.find(opt);
+            if ((iter != handlers_.end()) && iter->second.enablement_handler) {
+                auto& handler = *(iter->second.enablement_handler);
                 return handler(opt, direction);
             }
             return {};
@@ -97,9 +97,9 @@ export namespace net::telnet {
 
         ///@brief Handles disablement for a Telnet option.
         awaitables::option_disablement_awaitable handle_disablement(const option opt, negotiation_direction direction) {
-            auto it = handlers_.find(opt);
-            if ((it != handlers_.end()) && it->second.disablement_handler) {
-                auto& handler = *(it->second.disablement_handler);
+            auto iter = handlers_.find(opt);
+            if ((iter != handlers_.end()) && iter->second.disablement_handler) {
+                auto& handler = *(iter->second.disablement_handler);
                 return handler(opt, direction);
             }
             return {};
@@ -107,9 +107,9 @@ export namespace net::telnet {
 
         ///@brief Handles subnegotiation for a Telnet option.
         awaitables::subnegotiation_awaitable handle_subnegotiation(const option opt, std::vector<byte_t> data) {
-            auto it = handlers_.find(opt);
-            if ((it != handlers_.end()) && it->second.subnegotiation_handler) {
-                auto& handler = *(it->second.subnegotiation_handler);
+            auto iter = handlers_.find(opt);
+            if ((iter != handlers_.end()) && iter->second.subnegotiation_handler) {
+                auto& handler = *(iter->second.subnegotiation_handler);
                 return handler(opt, std::move(data));
             } else {
                 return undefined_subnegotiation_handler<ProtocolConfig>(opt, std::move(data));
@@ -117,7 +117,7 @@ export namespace net::telnet {
         } //handle_subnegotiation(option::id_num, std::vector<byte_t>)
     private:
         ///@brief Default handler for undefined subnegotiation.
-        awaitables::subnegotiation_awaitable undefined_subnegotiation_handler(option opt, std::vector<byte_t>) {
+        awaitables::subnegotiation_awaitable undefined_subnegotiation_handler(option opt, std::vector<byte_t> /*unused*/) {
             ProtocolConfig::log_error(make_error_code(error::user_handler_not_found),
                                       "cmd: {}, option: {}",
                                       command::se,
@@ -651,11 +651,11 @@ export namespace net::telnet {
     class option_status_db {
     public:
         ///@brief Accesses or creates an `option_status_record` for a Telnet option.
-        option_status_record& operator[](option::id_num opt) { return status_records_[std::to_underlying(opt)]; }
+        option_status_record& operator[](option::id_num opt) { return status_records_[std::to_underlying(opt)]; } //NOLINT(cppcoreguidelines-pro-bounds-constant-array-index): Safe by construction as the array bounds are defined to hold all values of the underlying type.
 
         ///@brief Retrieves an `option_status_record` for a Telnet option.
         const option_status_record& operator[](option::id_num opt) const {
-            return status_records_[std::to_underlying(opt)];
+            return status_records_[std::to_underlying(opt)]; //NOLINT(cppcoreguidelines-pro-bounds-constant-array-index): Safe by construction as the array bounds are defined to hold all values of the underlying type.
         }
 
         ///@brief The number of possible `option::id_num` values.
