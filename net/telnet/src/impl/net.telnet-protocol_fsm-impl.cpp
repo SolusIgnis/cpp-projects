@@ -19,7 +19,7 @@ import std; //NOLINT For std::nullopt, std::optional, std::tuple, std::make_tupl
 import :types;      ///< @see "net.telnet-types.cppm" for `telnet::command`, `negotiation_direction`
 import :errors;     ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
 import :options;    ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
-import :awaitables; ///< @see "net.telnet-awaitables.cppm" for `OptionDisablementAwaitable`
+import :awaitables; ///< @see "net.telnet-awaitables.cppm" for `option_disablement_awaitable`
 
 import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for the partition being implemented.
 
@@ -107,14 +107,14 @@ namespace net::telnet {
      * Validates option registration and updates `OptionStatusDB` based on the six states per RFC 1143 Q Method.
      * Handles redundant disablements (`NO`, `WANTNO`/`EMPTY`, `WANTYES`/`OPPOSITE`) as idempotent successes, logging warnings.
      * Enqueues opposite requests in `WANTYES`/`EMPTY` to transition to `WANTYES`/`OPPOSITE`.
-     * Transitions to `WANTNO`/`EMPTY` in `YES` state, returning a `negotiation_response_type` and `OptionDisablementAwaitable` via `option_handler_registry_.handle_disablement`.
+     * Transitions to `WANTNO`/`EMPTY` in `YES` state, returning a `negotiation_response_type` and `option_disablement_awaitable` via `option_handler_registry_.handle_disablement`.
      * Logs errors for unregistered options (`error::option_not_available`), queue failures (`error::negotiation_queue_error`), or invalid states (`error::protocol_violation`).
-     * @see RFC 1143 for Q Method, `:options` for `option::id_num`, `:errors` for error codes, `:types` for `negotiation_direction`, `:awaitables` for `OptionDisablementAwaitable`, `:stream` for usage in `async_disable_option`
+     * @see RFC 1143 for Q Method, `:options` for `option::id_num`, `:errors` for error codes, `:types` for `negotiation_direction`, `:awaitables` for `option_disablement_awaitable`, `:stream` for usage in `async_disable_option`
      */
     template<typename PC>
     std::tuple<std::error_code,
                std::optional<typename protocol_fsm<PC>::negotiation_response_type>,
-               std::optional<awaitables::OptionDisablementAwaitable>>
+               std::optional<awaitables::option_disablement_awaitable>>
         protocol_fsm<PC>::disable_option(option::id_num opt, negotiation_direction direction) {
         if (!protocol_config_type::registered_options.get(opt)) {
             protocol_config_type::log_error(make_error_code(error::option_not_available),
@@ -197,20 +197,19 @@ namespace net::telnet {
     std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>>
         protocol_fsm<PC>::process_byte(byte_t byte) noexcept {
         switch (current_state_) {
-            using enum protocol_state;
-            case normal:
+            case protocol_state::normal:
                 return handle_state_normal(byte);
-            case has_cr:
+            case protocol_state::has_cr:
                 return handle_state_has_cr(byte);
-            case has_iac:
+            case protocol_state::has_iac:
                 return handle_state_iac(byte);
-            case option_negotiation:
+            case protocol_state::option_negotiation:
                 return handle_state_option_negotiation(byte);
-            case subnegotiation_option:
+            case protocol_state::subnegotiation_option:
                 return handle_state_subnegotiation_option(byte);
-            case subnegotiation:
+            case protocol_state::subnegotiation:
                 return handle_state_subnegotiation(byte);
-            case subnegotiation_iac:
+            case protocol_state::subnegotiation_iac:
                 return handle_state_subnegotiation_iac(byte);
             default:
                 [[unlikely]] //Impossible unless a new enumerator has been added or memory has been corrupted.
@@ -616,7 +615,7 @@ namespace net::telnet {
      * @internal
      * Logs `error::protocol_violation` and transitions to `protocol_state::normal` if `current_option_` is unset.
      * For `SE`, completes subnegotiation by invoking `option_handler_registry_.handle_subnegotiation` if supported and enabled, then transitions to `protocol_state::normal`.
-     * @note For `STATUS` subnegotiation, invokes dedicated `handle_status_subnegotiation` helper to yield the `SubnegotiationAwaitable` for internal processing.
+     * @note For `STATUS` subnegotiation, invokes dedicated `handle_status_subnegotiation` helper to yield the `subnegotiation_awaitable` for internal processing.
      * For non-`SE`/non-`IAC` bytes, logs `error::invalid_command`, assumes an unescaped IAC, and appends both `IAC` and the byte to `subnegotiation_buffer_`.
      * Checks `subnegotiation_buffer_` size against `max_subnegotiation_size()` and logs `error::subnegotiation_overflow` if exceeded.
      * Transitions to `protocol_state::subnegotiation` for non-`SE` bytes and discards all bytes (returns `false` for forward flag).
@@ -677,12 +676,12 @@ namespace net::telnet {
      * Processes an `IAC` `SB` `STATUS` `SEND` or `IS` sequence, validating the input buffer for `SEND` (1) or `IS` (0) and logging `telnet::error::invalid_subnegotiation` if invalid.
      * Validates enablement of `STATUS` option (local for `SEND`, remote for `IS`), logging `telnet::error::option_not_available` if not enabled.
      * For `IAC` `SB` `STATUS` `IS` ... `IAC` `SE`, delegates to a user-provided subnegotiation handler via `OptionHandlerRegistry`.
-     * For `IAC` `SB` `STATUS` `SEND` `IAC` `SE`, constructs an `IS` [list] payload using `OptionStatusDB`, `co_return`ing a `SubnegotiationAwaitable`.
+     * For `IAC` `SB` `STATUS` `SEND` `IAC` `SE`, constructs an `IS` [list] payload using `OptionStatusDB`, `co_return`ing a `subnegotiation_awaitable`.
      * Iterates over `OptionStatusDB` to build the `SEND` payload with enabled options, excluding `STATUS`, escaping `IAC` (255) and `SE` (240) by doubling.
-     * @see RFC 859, `:internal` for `OptionStatusDB`, `:options` for `option`, `:awaitables` for `SubnegotiationAwaitable`, `:stream` for `async_write_subnegotiation`
+     * @see RFC 859, `:internal` for `OptionStatusDB`, `:options` for `option`, `:awaitables` for `subnegotiation_awaitable`, `:stream` for `async_write_subnegotiation`
      */
     template<typename PC>
-    awaitables::SubnegotiationAwaitable protocol_fsm<PC>::handle_status_subnegotiation(const option opt,
+    awaitables::subnegotiation_awaitable protocol_fsm<PC>::handle_status_subnegotiation(const option opt,
                                                                                       std::vector<byte_t> buffer) {
         constexpr byte_t IS   = static_cast<byte_t>(0);
         constexpr byte_t SEND = static_cast<byte_t>(1);
