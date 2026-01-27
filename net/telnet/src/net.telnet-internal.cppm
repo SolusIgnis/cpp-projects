@@ -86,7 +86,7 @@ export namespace net::telnet {
         void unregister_handlers(option::id_num opt) { handlers_.erase(opt); } //unregister_handlers(option::id_num)
 
         ///@brief Handles enablement for a Telnet option.
-        awaitables::OptionEnablementAwaitable handle_enablement(const option opt, negotiation_direction direction) {
+        awaitables::option_enablement_awaitable handle_enablement(const option opt, negotiation_direction direction) {
             auto it = handlers_.find(opt);
             if ((it != handlers_.end()) && it->second.enablement_handler) {
                 auto& handler = *(it->second.enablement_handler);
@@ -96,7 +96,7 @@ export namespace net::telnet {
         } //handle_enablement(const option&, negotiation_direction)
 
         ///@brief Handles disablement for a Telnet option.
-        awaitables::OptionDisablementAwaitable handle_disablement(const option opt, negotiation_direction direction) {
+        awaitables::option_disablement_awaitable handle_disablement(const option opt, negotiation_direction direction) {
             auto it = handlers_.find(opt);
             if ((it != handlers_.end()) && it->second.disablement_handler) {
                 auto& handler = *(it->second.disablement_handler);
@@ -106,7 +106,7 @@ export namespace net::telnet {
         } //handle_disablement(const option&, negotiation_direction)
 
         ///@brief Handles subnegotiation for a Telnet option.
-        awaitables::SubnegotiationAwaitable handle_subnegotiation(const option opt, std::vector<byte_t> data) {
+        awaitables::subnegotiation_awaitable handle_subnegotiation(const option opt, std::vector<byte_t> data) {
             auto it = handlers_.find(opt);
             if ((it != handlers_.end()) && it->second.subnegotiation_handler) {
                 auto& handler = *(it->second.subnegotiation_handler);
@@ -117,7 +117,7 @@ export namespace net::telnet {
         } //handle_subnegotiation(option::id_num, std::vector<byte_t>)
     private:
         ///@brief Default handler for undefined subnegotiation.
-        awaitables::SubnegotiationAwaitable undefined_subnegotiation_handler(option opt, std::vector<byte_t>) {
+        awaitables::subnegotiation_awaitable undefined_subnegotiation_handler(option opt, std::vector<byte_t>) {
             ProtocolConfig::log_error(make_error_code(error::user_handler_not_found),
                                       "cmd: {}, option: {}",
                                       command::se,
@@ -142,32 +142,32 @@ export namespace net::telnet {
      * @remark Removes the handler record from the registry.
      */
     /**
-     * @fn OptionEnablementAwaitable option_handler_registry::handle_enablement(const option& opt, negotiation_direction direction)
+     * @fn option_enablement_awaitable option_handler_registry::handle_enablement(const option& opt, negotiation_direction direction)
      * @param opt The `option::id_num` of the Telnet option.
      * @param direction The negotiation direction (`local` or `remote`).
-     * @return `OptionEnablementAwaitable` representing the asynchronous handling result.
+     * @return `option_enablement_awaitable` representing the asynchronous handling result.
      * @remark Invokes the registered enablement handler if present; otherwise, returns an empty awaitable.
      */
     /**
-     * @fn OptionDisablementAwaitable option_handler_registry::handle_disablement(const option& opt, negotiation_direction direction)
+     * @fn option_disablement_awaitable option_handler_registry::handle_disablement(const option& opt, negotiation_direction direction)
      * @param opt The `option::id_num` of the Telnet option.
      * @param direction The negotiation direction (`local` or `remote`).
-     * @return `OptionDisablementAwaitable` representing the asynchronous handling result.
+     * @return `option_disablement_awaitable` representing the asynchronous handling result.
      * @remark Invokes the registered disablement handler if present; otherwise, returns an empty awaitable.
      */
     /**
-     * @fn SubnegotiationAwaitable option_handler_registry::handle_subnegotiation(const option& opt, std::vector<byte_t> data)
+     * @fn subnegotiation_awaitable option_handler_registry::handle_subnegotiation(const option& opt, std::vector<byte_t> data)
      * @param opt The `option::id_num` of the Telnet option.
      * @param data The subnegotiation data to process.
-     * @return `SubnegotiationAwaitable` representing the asynchronous handling result.
+     * @return `subnegotiation_awaitable` representing the asynchronous handling result.
      * @remark Invokes the registered subnegotiation handler if present; otherwise, calls `undefined_subnegotiation_handler`.
      */
     /**
-     * @fn static SubnegotiationAwaitable option_handler_registry::undefined_subnegotiation_handler<PC>(const option& opt, std::vector<byte_t>)
+     * @fn static subnegotiation_awaitable option_handler_registry::undefined_subnegotiation_handler<PC>(const option& opt, std::vector<byte_t>)
      * @tparam PC The `ProtocolConfig` type for logging.
      * @param opt The `option::id_num` of the Telnet option.
      * @param data The subnegotiation data (unused).
-     * @return `SubnegotiationAwaitable` representing an empty asynchronous result.
+     * @return `subnegotiation_awaitable` representing an empty asynchronous result.
      * @remark Logs an `error::user_handler_not_found` error via `PC::log_error`.
      * @note Used as a fallback when no subnegotiation handler is registered.
      */

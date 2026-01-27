@@ -121,7 +121,7 @@ export namespace net::telnet {
             };
         } //init()
 
-        static inline Unknown_option_handler_type unknown_option_handler_;
+        static inline unknown_option_handler_type unknown_option_handler_;
         static inline error_logger_type error_logger_;
         static inline std::string ayt_response_ = "Telnet system is active."; ///Default AYT response
         static inline std::shared_mutex mutex_;                               ///Mutex to protect shared static members
