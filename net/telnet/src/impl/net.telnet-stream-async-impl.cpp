@@ -35,7 +35,7 @@ namespace net::telnet {
     /**
      * @internal
      * Implements asynchronous option request by delegating to FSM and writing negotiation.
-     * @remark Calls `fsm_.request_option` to check state and generate a response tuple containing an optional `NegotiationResponse`.
+     * @remark Calls `fsm_.request_option` to check state and generate a response tuple containing an optional `negotiation_response`.
      * @remark If no response is needed or an error occurs, invokes `async_report_error` with the error code and 0 bytes.
      * @remark Forwards valid responses to `async_write_negotiation` to send IAC WILL/DO sequence.
      * @remark Uses `std::forward` for `CompletionToken` to preserve handler efficiency.
@@ -55,7 +55,7 @@ namespace net::telnet {
     /**
      * @internal
      * Implements asynchronous option disablement with FSM state management and optional awaitable handling.
-     * @remark Calls `fsm_.disable_option` to obtain error code, optional `NegotiationResponse`, and optional awaitable.
+     * @remark Calls `fsm_.disable_option` to obtain error code, optional `negotiation_response`, and optional awaitable.
      * @remark Uses `asio::co_spawn` to manage coroutine lifetime, executing on the stream’s executor.
      * @remark If a response is present, writes IAC WONT/DONT via `async_write_negotiation` and accumulates bytes transferred.
      * @remark If an awaitable is present, co_awaits it to handle registered disablement callbacks.
@@ -282,7 +282,7 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<WriteToken CompletionToken>
-    auto stream<NLS, PC>::async_write_negotiation(typename fsm_type::NegotiationResponse response,
+    auto stream<NLS, PC>::async_write_negotiation(typename fsm_type::negotiation_response response,
                                                   CompletionToken&& token) {
         auto [dir, enable, opt] = response;
         static std::array<byte_t, 3> buf{std::to_underlying(telnet::command::iac),
@@ -291,7 +291,7 @@ namespace net::telnet {
         return asio::async_write(this->next_layer_,
                                  asio::buffer(buf),
                                  asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token)));
-    } //stream::async_write_negotiation(fsm_type::NegotiationResponse, CompletionToken&&)
+    } //stream::async_write_negotiation(fsm_type::negotiation_response, CompletionToken&&)
 
     /**
      * @internal

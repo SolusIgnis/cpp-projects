@@ -31,7 +31,7 @@ export import :errors;   ///< @see "net.telnet-errors.cppm" for `telnet::error` 
 export import :concepts; ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
 export import :options;  ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
 export import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for `protocol_fsm`
-export import :awaitables;   ///< @see "net.telnet-awaitables.cppm" for `TaggedAwaitable`
+export import :awaitables;   ///< @see "net.telnet-awaitables.cppm" for `tagged_awaitable`
 
 //namespace asio = boost::asio;
 
@@ -192,13 +192,13 @@ export namespace net::telnet {
         ///@todo Future Development: make this private
         ///@brief Asynchronously writes a Telnet negotiation command with an option.
         template<WriteToken CompletionToken>
-        auto async_write_negotiation(typename fsm_type::NegotiationResponse response, CompletionToken&& token);
+        auto async_write_negotiation(typename fsm_type::negotiation_response response, CompletionToken&& token);
 
         ///@brief Synchronously writes a Telnet negotiation command with an option.
-        std::size_t write_negotiation(typename fsm_type::NegotiationResponse response);
+        std::size_t write_negotiation(typename fsm_type::negotiation_response response);
 
         ///@brief Synchronously writes a Telnet negotiation command with an option.
-        std::size_t write_negotiation(typename fsm_type::NegotiationResponse response, std::error_code& ec) noexcept;
+        std::size_t write_negotiation(typename fsm_type::negotiation_response response, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously writes a Telnet subnegotiation command.
         template<WriteToken CompletionToken>
@@ -315,9 +315,9 @@ export namespace net::telnet {
             ///@brief Handles processing_signal error codes from fsm_.process_byte, modifying the user buffer or urgent data state.
             void process_fsm_signals(std::error_code& signal_ec);
 
-            ///@brief Handle a `NegotiationResponse` by initiating an async write of the negotiation.
+            ///@brief Handle a `negotiation_response` by initiating an async write of the negotiation.
             template<typename Self>
-            void do_response(typename stream::fsm_type::NegotiationResponse response, Self&& self);
+            void do_response(typename stream::fsm_type::negotiation_response response, Self&& self);
 
             ///@brief Handle a `std::string` by initiating an async write of raw data.
             template<typename Self>
@@ -327,10 +327,10 @@ export namespace net::telnet {
             template<typename Self>
             void do_response(awaitables::subnegotiation_awaitable awaitable, Self&& self);
 
-            ///@brief Handle any `TaggedAwaitable` with optional `NegotiationResponse`.
+            ///@brief Handle any `tagged_awaitable` with optional `negotiation_response`.
             template<typename Self, typename Tag, typename T, typename Awaitable>
-            void do_response(std::tuple<awaitables::TaggedAwaitable<Tag, T, Awaitable>,
-                                        std::optional<typename stream::fsm_type::NegotiationResponse>> response,
+            void do_response(std::tuple<awaitables::tagged_awaitable<Tag, T, Awaitable>,
+                                        std::optional<typename stream::fsm_type::negotiation_response>> response,
                              Self&& self);
 
             static inline constexpr std::size_t READ_BLOCK_SIZE = 1024;
@@ -603,7 +603,7 @@ export namespace net::telnet {
      * @see `sync_await` for synchronous operation, :types for `telnet::command`, :errors for error codes, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
-     * @fn auto stream::async_write_negotiation(typename fsm_type::NegotiationResponse response, CompletionToken&& token)
+     * @fn auto stream::async_write_negotiation(typename fsm_type::negotiation_response response, CompletionToken&& token)
      * @tparam CompletionToken The type of completion token.
      * @param response The negotiation response to write.
      * @param token The completion token.
@@ -722,12 +722,12 @@ export namespace net::telnet {
      * @see `:errors` for `processing_signal`, `:protocol_fsm` for `protocol_fsm`, `:stream` for `context_type`, "net.telnet-stream-impl.cpp" for implementation, RFC 854 for Telnet protocol
      */
     /**
-     * @fn void stream::InputProcessor::do_response(typename stream::fsm_type::NegotiationResponse response, Self&& self)
+     * @fn void stream::InputProcessor::do_response(typename stream::fsm_type::negotiation_response response, Self&& self)
      * @tparam Self The type of the coroutine self reference.
      * @param response The negotiation response to write (e.g., `WILL`/`DO`/`WONT`/`DONT` with option).
      * @param self The completion handler to forward.
      * @remark Initiates an asynchronous write of the negotiation response using `async_write_negotiation`.
-     * @see `:protocol_fsm` for `NegotiationResponse`, `:errors` for error codes, RFC 855 for negotiation, "net.telnet-stream-async-impl.cpp" for `async_write_negotiation`
+     * @see `:protocol_fsm` for `negotiation_response`, `:errors` for error codes, RFC 855 for negotiation, "net.telnet-stream-async-impl.cpp" for `async_write_negotiation`
      */
     /**
      * @overload void stream::InputProcessor::do_response(std::string response, Self&& self)
@@ -744,19 +744,19 @@ export namespace net::telnet {
      * @param self The completion handler to forward.
      * @remark Spawns a coroutine to process the subnegotiation, writing the result via `async_write_subnegotiation` if non-empty.
      * @throws `std::system_error` for system errors, `telnet::error::internal_error` for unexpected exceptions.
-     * @see `:awaitables` for `subnegotiation_awaitable`, `:errors` for error codes, RFC 855 for subnegotiation, "net.telnet-stream-async-impl.cpp" for `async_write_subnegotiation`
+     * @see `:awaitables` for `SubnegotiationAwaitable`, `:errors` for error codes, RFC 855 for subnegotiation, "net.telnet-stream-async-impl.cpp" for `async_write_subnegotiation`
      */
     /**
-     * @overload void stream::InputProcessor::do_response(std::tuple<awaitables::TaggedAwaitable<Tag, T, Awaitable>, std::optional<typename stream::fsm_type::NegotiationResponse>> response, Self&& self)
+     * @overload void stream::InputProcessor::do_response(std::tuple<awaitables::tagged_awaitable<Tag, T, Awaitable>, std::optional<typename stream::fsm_type::negotiation_response>> response, Self&& self)
      * @tparam Self The type of the coroutine self reference.
-     * @tparam Tag The semantic tag for TaggedAwaitable.
-     * @tparam T The underlying value type for TaggedAwaitable.
-     * @tparam Awaitable The underlying Awaitable type for TaggedAwaitable.
+     * @tparam Tag The semantic tag for `tagged_awaitable`.
+     * @tparam T The underlying value type for `tagged_awaitable`.
+     * @tparam Awaitable The underlying Awaitable type for `tagged_awaitable`.
      * @param response Tuple of awaitable and optional negotiation response.
      * @param self The completion handler to forward.
      * @remark Spawns a coroutine to process the awaitable, optionally writing a negotiation response via `async_write_negotiation`.
      * @throws `std::system_error` for system errors, `telnet::error::internal_error` for unexpected exceptions.
-     * @see `:awaitables` for `TaggedAwaitable`, `:protocol_fsm` for `NegotiationResponse`, `:errors` for error codes, RFC 855 for negotiation, "net.telnet-stream-async-impl.cpp" for `async_write_negotiation`
+     * @see `:awaitables` for `tagged_awaitable`, `:protocol_fsm` for `negotiation_response`, `:errors` for error codes, RFC 855 for negotiation, "net.telnet-stream-async-impl.cpp" for `async_write_negotiation`
      */
     /**
      * @fn auto stream::sync_await(Awaitable&& a)
