@@ -127,7 +127,6 @@ export namespace net::telnet {
 
         std::map<option::id_num, option_handler_record> handlers_;
     }; //class option_handler_registry
-
     /**
      * @fn void option_handler_registry::register_handlers(option::id_num opt, std::optional<OptionEnablementHandler> enablement_handler, std::optional<OptionDisablementHandler> disablement_handler, std::optional<SubnegotiationHandler> subnegotiation_handler)
      * @param opt The `option::id_num` to register handlers for.
@@ -307,7 +306,7 @@ export namespace net::telnet {
             } else {
                 enable_local();
             }
-        }
+        } //enable(negotiation_direction) noexcept
 
         ///@brief Disables the option in the designated direction.
         void disable(negotiation_direction direction) noexcept {
@@ -316,7 +315,7 @@ export namespace net::telnet {
             } else {
                 disable_local();
             }
-        }
+        } //disable(negotiation_direction) noexcept
 
         ///@brief Marks an enablement request as pending in the designated direction.
         void pend_enable(negotiation_direction direction) noexcept {
@@ -325,7 +324,7 @@ export namespace net::telnet {
             } else {
                 pend_enable_local();
             }
-        }
+        } //pend_enable(negotiation_direction) noexcept
 
         ///@brief Marks a disablement request as pending in the designated direction.
         void pend_disable(negotiation_direction direction) noexcept {
@@ -334,7 +333,7 @@ export namespace net::telnet {
             } else {
                 pend_disable_local();
             }
-        }
+        } //pend_disable(negotiation_direction) noexcept
 
         //Queue setters (usq, himq)
         ///@brief Sets a local user request as queued (OPPOSITE state).
@@ -345,7 +344,7 @@ export namespace net::telnet {
                 local_queue_ = true;
                 return {};
             }
-        }
+        } //enqueue_local() noexcept
 
         ///@brief Sets a remote user request as queued (OPPOSITE state).
         [[nodiscard]] std::error_code enqueue_remote() noexcept {
@@ -355,7 +354,7 @@ export namespace net::telnet {
                 remote_queue_ = true;
                 return {};
             }
-        }
+        } //enqueue_remote() noexcept
 
         ///@brief Sets a user request as queued (OPPOSITE state) in the designated direction.
         [[nodiscard]] std::error_code enqueue(negotiation_direction direction) noexcept {
@@ -364,7 +363,7 @@ export namespace net::telnet {
             } else {
                 return enqueue_local();
             }
-        }
+        } //enqueue(negotiation_direction) noexcept
 
         ///@brief Clears a queued local user request.
         void dequeue_local() noexcept { local_queue_ = false; }
@@ -379,7 +378,7 @@ export namespace net::telnet {
             } else {
                 dequeue_local();
             }
-        }
+        } //dequeue(negotiation_direction) noexcept
 
         ///@brief Clears all queued requests.
         void clear_queued_requests() noexcept { local_queue_ = remote_queue_ = false; }
@@ -389,8 +388,9 @@ export namespace net::telnet {
         void reset() noexcept {
             local_state_  = std::to_underlying(negotiation_state::no);
             remote_state_ = std::to_underlying(negotiation_state::no);
-            local_queue_ = remote_queue_ = false;
-        }
+            local_queue_  = false;
+            remote_queue_ = false;
+        } //reset() noexcept
 
         ///@brief Checks if either local or remote negotiation is pending. [Optional]
         [[nodiscard]] bool is_negotiating() const noexcept { return local_pending() || remote_pending(); }
@@ -398,16 +398,15 @@ export namespace net::telnet {
         ///@brief Validates state consistency (e.g., queue flags false when not pending). [Optional]
         [[nodiscard]] bool is_valid() const noexcept {
             return (!local_queue_ || local_pending()) && (!remote_queue_ || remote_pending());
-        }
+        } //is_valid() noexcept
 
     private:
         //Pack these 4 fields into 1 byte (6 bits used, 2 unused).
         std::uint8_t local_state_  : 2 = std::to_underlying(negotiation_state::no); //us
         std::uint8_t remote_state_ : 2 = std::to_underlying(negotiation_state::no); //him
-        std::uint8_t local_queue_  : 1 = static_cast<std::uint8_t>(false);         //usq  (EMPTY=false, OPPOSITE=true)
-        std::uint8_t remote_queue_ : 1 = static_cast<std::uint8_t>(false);         //himq (EMPTY=false, OPPOSITE=true)
+        std::uint8_t local_queue_  : 1 = static_cast<std::uint8_t>(false);          //usq  (EMPTY=false, OPPOSITE=true)
+        std::uint8_t remote_queue_ : 1 = static_cast<std::uint8_t>(false);          //himq (EMPTY=false, OPPOSITE=true)
     }; //class option_status_record
-
     /**
      * @fn bool option_status_record::local_enabled() const noexcept
      * @return True if the option is enabled locally (state is YES), false otherwise.
@@ -651,22 +650,30 @@ export namespace net::telnet {
     class option_status_db {
     public:
         ///@brief Accesses or creates an `option_status_record` for a Telnet option.
-        option_status_record& operator[](option::id_num opt) { return status_records_[std::to_underlying(opt)]; } //NOLINT(cppcoreguidelines-pro-bounds-constant-array-index): Safe by construction as the array bounds are defined to hold all values of the underlying type.
+        option_status_record& operator[](option::id_num opt) {
+            //NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index): Safe by construction as the array bounds are defined to hold all values of the underlying type.
+            return status_records_[std::to_underlying(opt)];
+        } //operator[](option::id_num)
 
         ///@brief Retrieves an `option_status_record` for a Telnet option.
         const option_status_record& operator[](option::id_num opt) const {
-            return status_records_[std::to_underlying(opt)]; //NOLINT(cppcoreguidelines-pro-bounds-constant-array-index): Safe by construction as the array bounds are defined to hold all values of the underlying type.
-        }
+            //NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index): Safe by construction as the array bounds are defined to hold all values of the underlying type.
+            return status_records_[std::to_underlying(opt)];
+        } //operator[](option::id_num) const
 
-        ///@brief The number of possible `option::id_num` values.
-        static constexpr size_t max_option_count =
-            (1U << std::numeric_limits<std::underlying_type_t<option::id_num>>::digits); //NOLINT(hicpp-signed-bitwise)
+        //The underlying type of `option::id_num` should be 8 bits to hold the 256 possible options unless the Telnet specification is incomprehensibly rewritten, but we'll allow anything the machine can reason about.
+        static_assert(
+            std::numeric_limits<std::underlying_type_t<option::id_num>>::digits < std::numeric_limits<std::size_t>::digits,
+            "The underlying type of `option::id_num` MUST have fewer value bits than `std::size_t` to compute its number of representable values."
+        );
+        
+        ///@brief The number of possible `option::id_num` values. (@note Assuming no changes to the Telnet specification, this should be 256 in perpetuity, but never assume when you can assert/compute.)
+        static constexpr size_t max_option_count{std::numeric_limits<std::underlying_type_t<option::id_num>>::max() + std::size_t{1}};
 
     private:
         //Byte array of Status Record bit-fields.
         std::array<option_status_record, max_option_count> status_records_;
     }; //class option_status_db
-
     /**
      * @fn option_status_record& option_status_db::operator[](option::id_num opt)
      *
