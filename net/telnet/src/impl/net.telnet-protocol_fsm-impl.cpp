@@ -37,7 +37,7 @@ namespace net::telnet {
 
     /**
      * @internal
-     * Validates option registration and updates `OptionStatusDB` based on the six states per RFC 1143 Q Method.
+     * Validates option registration and updates `option_status_db` based on the six states per RFC 1143 Q Method.
      * Handles redundant requests (`YES`, `WANTYES/EMPTY`, `WANTNO/OPPOSITE`) as idempotent successes, logging warnings.
      * Enqueues opposite requests in `WANTNO/EMPTY` to transition to `WANTNO/OPPOSITE`.
      * Transitions to `WANTYES`/`EMPTY` in `NO` state, returning a `negotiation_response_type` to initiate negotiation.
@@ -104,7 +104,7 @@ namespace net::telnet {
 
     /**
      * @internal
-     * Validates option registration and updates `OptionStatusDB` based on the six states per RFC 1143 Q Method.
+     * Validates option registration and updates `option_status_db` based on the six states per RFC 1143 Q Method.
      * Handles redundant disablements (`NO`, `WANTNO`/`EMPTY`, `WANTYES`/`OPPOSITE`) as idempotent successes, logging warnings.
      * Enqueues opposite requests in `WANTYES`/`EMPTY` to transition to `WANTYES`/`OPPOSITE`.
      * Transitions to `WANTNO`/`EMPTY` in `YES` state, returning a `negotiation_response_type` and `option_disablement_awaitable` via `option_handler_registry_.handle_disablement`.
@@ -676,9 +676,9 @@ namespace net::telnet {
      * Processes an `IAC` `SB` `STATUS` `SEND` or `IS` sequence, validating the input buffer for `SEND` (1) or `IS` (0) and logging `telnet::error::invalid_subnegotiation` if invalid.
      * Validates enablement of `STATUS` option (local for `SEND`, remote for `IS`), logging `telnet::error::option_not_available` if not enabled.
      * For `IAC` `SB` `STATUS` `IS` ... `IAC` `SE`, delegates to a user-provided subnegotiation handler via `OptionHandlerRegistry`.
-     * For `IAC` `SB` `STATUS` `SEND` `IAC` `SE`, constructs an `IS` [list] payload using `OptionStatusDB`, `co_return`ing a `subnegotiation_awaitable`.
-     * Iterates over `OptionStatusDB` to build the `SEND` payload with enabled options, excluding `STATUS`, escaping `IAC` (255) and `SE` (240) by doubling.
-     * @see RFC 859, `:internal` for `OptionStatusDB`, `:options` for `option`, `:awaitables` for `subnegotiation_awaitable`, `:stream` for `async_write_subnegotiation`
+     * For `IAC` `SB` `STATUS` `SEND` `IAC` `SE`, constructs an `IS` [list] payload using `option_status_db`, `co_return`ing a `subnegotiation_awaitable`.
+     * Iterates over `option_status_db` to build the `SEND` payload with enabled options, excluding `STATUS`, escaping `IAC` (255) and `SE` (240) by doubling.
+     * @see RFC 859, `:internal` for `option_status_db`, `:options` for `option`, `:awaitables` for `subnegotiation_awaitable`, `:stream` for `async_write_subnegotiation`
      */
     template<typename PC>
     awaitables::subnegotiation_awaitable protocol_fsm<PC>::handle_status_subnegotiation(const option opt,
@@ -702,7 +702,7 @@ namespace net::telnet {
         } else if (buffer[0] == SEND) {
             if (option_status_[option::id_num::status].local_enabled()) {
                 std::vector<byte_t> payload = {IS}; //IS
-                for (std::size_t i = 0; i < OptionStatusDB::MAX_OPTION_COUNT; ++i) {
+                for (std::size_t i = 0; i < option_status_db::max_option_count; ++i) {
                     auto id = static_cast<option::id_num>(i);
 
                     const auto& status = option_status_[id];
