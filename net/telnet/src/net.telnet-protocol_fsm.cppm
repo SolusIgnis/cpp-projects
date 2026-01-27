@@ -208,7 +208,7 @@ export namespace net::telnet {
             -> awaitables::subnegotiation_awaitable;
 
         //Data Members
-        OptionHandlerRegistry<protocol_config_type, option_enablement_handler_type, option_disablement_handler_type, subnegotiation_handler_type>
+        option_handler_registry<protocol_config_type, option_enablement_handler_type, option_disablement_handler_type, subnegotiation_handler_type>
             option_handler_registry_;
         option_status_db option_status_;
 
