@@ -535,14 +535,14 @@ namespace net::telnet {
 
     /**
      * @internal
-     * Spawns a coroutine to process a `SubnegotiationAwaitable`, writing the result via `async_write_subnegotiation` if non-empty.
+     * Spawns a coroutine to process a `subnegotiation_awaitable`, writing the result via `async_write_subnegotiation` if non-empty.
      * @remark Uses `asio::co_spawn` to execute the awaitable, handling potential exceptions by throwing `std::system_error` with `telnet::error::internal_error` for non-system errors.
-     * @see "net.telnet-stream.cppm" for interface, `:awaitables` for `SubnegotiationAwaitable`, `:errors` for error codes, RFC 855 for subnegotiation
+     * @see "net.telnet-stream.cppm" for interface, `:awaitables` for `subnegotiation_awaitable`, `:errors` for error codes, RFC 855 for subnegotiation
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::InputProcessor<MBS>::do_response(awaitables::SubnegotiationAwaitable awaitable, Self&& self) {
+    void stream<NLS, PC>::InputProcessor<MBS>::do_response(awaitables::subnegotiation_awaitable awaitable, Self&& self) {
         asio::co_spawn(
             parent_stream_.get_executor(),
             [this, handler_awaitable = std::move(awaitable)]() mutable -> asio::awaitable<std::size_t> {
@@ -561,7 +561,7 @@ namespace net::telnet {
                 }
             },
             std::forward<Self>(self));
-    } //stream::InputProcessor::do_response(awaitables::SubnegotiationAwaitable, Self&&)
+    } //stream::InputProcessor::do_response(awaitables::subnegotiation_awaitable, Self&&)
 
     /**
      * @internal

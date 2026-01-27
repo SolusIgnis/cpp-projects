@@ -323,9 +323,9 @@ export namespace net::telnet {
             template<typename Self>
             void do_response(std::string response, Self&& self);
 
-            ///@brief Handle a `SubnegotiationAwaitable` by spawning a coroutine to process it.
+            ///@brief Handle a `subnegotiation_awaitable` by spawning a coroutine to process it.
             template<typename Self>
-            void do_response(awaitables::SubnegotiationAwaitable awaitable, Self&& self);
+            void do_response(awaitables::subnegotiation_awaitable awaitable, Self&& self);
 
             ///@brief Handle any `TaggedAwaitable` with optional `NegotiationResponse`.
             template<typename Self, typename Tag, typename T, typename Awaitable>
@@ -738,13 +738,13 @@ export namespace net::telnet {
      * @see `:errors` for error codes, RFC 854 for IAC escaping, "net.telnet-stream-async-impl.cpp" for `async_write_raw`
      */
     /**
-     * @overload void stream::InputProcessor::do_response(awaitables::SubnegotiationAwaitable awaitable, Self&& self)
+     * @overload void stream::InputProcessor::do_response(awaitables::subnegotiation_awaitable awaitable, Self&& self)
      * @tparam Self The type of the coroutine self reference.
      * @param awaitable The subnegotiation awaitable to process.
      * @param self The completion handler to forward.
      * @remark Spawns a coroutine to process the subnegotiation, writing the result via `async_write_subnegotiation` if non-empty.
      * @throws `std::system_error` for system errors, `telnet::error::internal_error` for unexpected exceptions.
-     * @see `:awaitables` for `SubnegotiationAwaitable`, `:errors` for error codes, RFC 855 for subnegotiation, "net.telnet-stream-async-impl.cpp" for `async_write_subnegotiation`
+     * @see `:awaitables` for `subnegotiation_awaitable`, `:errors` for error codes, RFC 855 for subnegotiation, "net.telnet-stream-async-impl.cpp" for `async_write_subnegotiation`
      */
     /**
      * @overload void stream::InputProcessor::do_response(std::tuple<awaitables::TaggedAwaitable<Tag, T, Awaitable>, std::optional<typename stream::fsm_type::NegotiationResponse>> response, Self&& self)
