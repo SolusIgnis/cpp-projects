@@ -48,7 +48,7 @@ export namespace net::telnet {
          * @param ec The `std::error_code` describing the error.
          * @param msg The formatted error message.
          */
-        using error_logger_type = std::function<void(const std::error_code& /*ec*/, std::string /*msg*/)>;
+        using error_logger_type = std::function<void(const std::error_code& /*ec*/, const std::string& /*msg*/)>;
 
         ///@brief Initializes the configuration once.
         static void initialize() { std::call_once(initialization_flag, &init); }
@@ -116,7 +116,7 @@ export namespace net::telnet {
                 std::cout << "Unknown option: " << static_cast<std::uint32_t>(std::to_underlying(opt)) << "\n";
                 return;
             };
-            error_logger = [](const std::error_code& ec, std::string msg) {
+            error_logger = [](const std::error_code& ec, const std::string& msg) {
                 std::cerr << "Telnet FSM error: " << ec.message() << " (" << msg << ")\n";
             };
         } //init()

@@ -101,7 +101,7 @@ export namespace net::telnet {
          * @param ec The `std::error_code` describing the error.
          * @param msg The formatted error message.
          */
-        using error_logger_type = std::function<void(const std::error_code& /*ec*/, std::string /*msg*/)>;
+        using error_logger_type = std::function<void(const std::error_code& /*ec*/, const std::string& /*msg*/)>;
 
         /**
          * @typedef negotiation_response_type
