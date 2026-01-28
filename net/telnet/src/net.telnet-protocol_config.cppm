@@ -51,46 +51,46 @@ export namespace net::telnet {
         using error_logger_type = std::function<void(const std::error_code& /*ec*/, std::string /*msg*/)>;
 
         ///@brief Initializes the configuration once.
-        static void initialize() { std::call_once(initialization_flag_, &init); }
+        static void initialize() { std::call_once(initialization_flag, &init); }
 
         ///@brief Sets the handler for unknown option negotiation attempts.
         static void set_unknown_option_handler(unknown_option_handler_type handler) {
-            std::lock_guard<std::shared_mutex> lock(mutex_);
-            unknown_option_handler_ = std::move(handler);
+            const std::lock_guard<std::shared_mutex> lock(mutex);
+            unknown_option_handler = std::move(handler);
         }
 
         ///@brief Sets the error logging handler.
         static void set_error_logger(error_logger_type handler) {
-            std::lock_guard<std::shared_mutex> lock(mutex_);
-            error_logger_ = std::move(handler);
+            const std::lock_guard<std::shared_mutex> lock(mutex);
+            error_logger = std::move(handler);
         }
 
         ///@brief Gets the handler for unknown option negotiation attempts.
         static const unknown_option_handler_type& get_unknown_option_handler() {
-            std::shared_lock<std::shared_mutex> lock(mutex_);
-            return unknown_option_handler_;
+            const std::shared_lock<std::shared_mutex> lock(mutex);
+            return unknown_option_handler;
         }
 
         ///@brief Logs an error with the registered error logger using a formatted string.
         template<typename... Args>
         static void
             log_error(const std::error_code& ec, std::format_string<std::remove_cvref_t<Args>...> fmt, Args&&... args) {
-            std::shared_lock<std::shared_mutex> lock(mutex_);
-            if (error_logger_) {
-                error_logger_(ec, std::format(fmt, std::forward<Args>(args)...));
+            std::shared_lock<std::shared_mutex> lock(mutex);
+            if (error_logger) {
+                error_logger(ec, std::format(fmt, std::forward<Args>(args)...));
             }
         }
 
         ///@brief Gets the AYT response string.
         static std::string_view get_ayt_response() {
-            std::shared_lock<std::shared_mutex> lock(mutex_);
-            return ayt_response_;
+            const std::shared_lock<std::shared_mutex> lock(mutex);
+            return ayt_response;
         }
 
         ///@brief Sets the AYT response string.
         static void set_ayt_response(std::string response) {
-            std::lock_guard<std::shared_mutex> lock(mutex_);
-            ayt_response_ = std::move(response);
+            const std::lock_guard<std::shared_mutex> lock(mutex);
+            ayt_response = std::move(response);
         }
 
     private:
@@ -112,21 +112,21 @@ export namespace net::telnet {
         ///@brief Performs initialization for `initialize`.
         static void init() {
             std::lock_guard<std::shared_mutex> lock(mutex_);
-            unknown_option_handler_ = [](option::id_num opt) {
+            unknown_option_handler = [](option::id_num opt) {
                 std::cout << "Unknown option: " << static_cast<std::uint32_t>(std::to_underlying(opt)) << "\n";
                 return;
             };
-            error_logger_ = [](const std::error_code& ec, std::string msg) {
-                std::cerr << "Telnet FSM error: " << ec.message() << " (" << msg << ")" << std::endl;
+            error_logger = [](const std::error_code& ec, std::string msg) {
+                std::cerr << "Telnet FSM error: " << ec.message() << " (" << msg << ")\n";
             };
         } //init()
 
-        static inline unknown_option_handler_type unknown_option_handler_;
-        static inline error_logger_type error_logger_;
-        static inline std::string ayt_response_ = "Telnet system is active."; ///Default AYT response
-        static inline std::shared_mutex mutex_;                               ///Mutex to protect shared static members
+        static inline unknown_option_handler_type unknown_option_handler;
+        static inline error_logger_type error_logger;
+        static inline std::string ayt_response = "Telnet system is active."; ///Default AYT response
+        static inline std::shared_mutex mutex;                               ///Mutex to protect shared static members
         static inline std::once_flag
-            initialization_flag_; ///Ensures initialize() is idempotent; only invokes init() once
+            initialization_flag; ///Ensures initialize() is idempotent; only invokes init() once
     }; //class default_protocol_fsm_config
 
     /**
