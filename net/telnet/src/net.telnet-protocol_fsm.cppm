@@ -162,7 +162,7 @@ export namespace net::telnet {
             disable_option(option::id_num opt, negotiation_direction direction);
 
     private:
-        enum class protocol_state {
+        enum class protocol_state : std::uint8_t {
             normal,                ///< Default state for data processing
             has_cr,                ///< Processing the byte after '\r'
             has_iac,               ///< Processing IAC command byte
