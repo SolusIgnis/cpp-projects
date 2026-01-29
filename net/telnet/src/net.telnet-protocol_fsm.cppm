@@ -140,7 +140,7 @@ export namespace net::telnet {
         void unregister_option_handlers(option::id_num opt) { option_handler_registry_.unregister_handlers(opt); }
 
         ///@brief Processes a single byte of Telnet input.
-        std::tuple<std::error_code, bool, std::optional<processing_return_variant>> process_byte(byte_t byte) noexcept;
+        std::tuple<std::error_code, bool, std::optional<processing_return_variant>> process_byte(byte_t byte);
 
         ///@brief Checks if an option is enabled locally or remotely.
         bool is_enabled(option::id_num opt) { return option_status_[opt].is_enabled(); }
@@ -177,31 +177,31 @@ export namespace net::telnet {
 
         ///@brief Handles bytes in the `Normal` state (data or IAC).
         std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_normal(byte_t byte) noexcept;
+            handle_state_normal(byte_t byte);
 
         ///@brief Handles bytes immediately after '\r' ('\0', '\n', or error)
         std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_has_cr(byte_t byte) noexcept;
+            handle_state_has_cr(byte_t byte);
 
         ///@brief Handles bytes after IAC (commands like WILL, DO, SB, etc.).
         std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_iac(byte_t byte) noexcept;
+            handle_state_iac(byte_t byte);
 
         ///@brief Handles bytes in the `OptionNegotiation` state (option ID after WILL/WONT/DO/DONT).
         std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_option_negotiation(byte_t byte) noexcept;
+            handle_state_option_negotiation(byte_t byte);
 
         ///@brief Handles bytes in the `SubnegotiationOption` state (option ID after IAC SB).
         std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_subnegotiation_option(byte_t byte) noexcept;
+            handle_state_subnegotiation_option(byte_t byte);
 
         ///@brief Handles bytes in the `Subnegotiation` state (data after option ID).
         std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_subnegotiation(byte_t byte) noexcept;
+            handle_state_subnegotiation(byte_t byte);
 
         ///@brief Handles bytes in the `SubnegotiationIAC` state (IAC in subnegotiation data).
         std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_subnegotiation_iac(byte_t byte) noexcept;
+            handle_state_subnegotiation_iac(byte_t byte);
 
         ///@brief Handles STATUS subnegotiation (RFC 859), returning an awaitable with the IS [list] payload or user-handled result.
         auto handle_status_subnegotiation(option opt, std::vector<byte_t> buffer)
@@ -241,7 +241,7 @@ export namespace net::telnet {
      * @remark Forwards to `OptionHandlerRegistry::unregister_handlers`.
      */
     /**
-     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::process_byte(byte_t byte) noexcept
+     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::process_byte(byte_t byte)
      *
      * @param byte The byte to process.
      * @return Tuple of error code, forward flag (true to pass byte to application), and optional negotiation response.
@@ -309,7 +309,7 @@ export namespace net::telnet {
      * @see RFC 854 for state transitions
      */
     /**
-     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_normal(byte_t byte) noexcept
+     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_normal(byte_t byte)
      *
      * @param byte The byte to process.
      * @return Tuple of error code, forward flag (true for data bytes), and optional negotiation response.
@@ -318,7 +318,7 @@ export namespace net::telnet {
      * @see RFC 854 for Normal state behavior, `:types` for `telnet::command`
      */
     /**
-     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_has_cr(byte_t byte) noexcept
+     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_has_cr(byte_t byte)
      *
      * @param byte The byte to process.
      * @return Tuple of error code, forward flag (true for data bytes), and optional negotiation response.
@@ -327,7 +327,7 @@ export namespace net::telnet {
      * @see RFC 854 for CR NUL or CR LF state behavior, `:types` for `telnet::command`
      */
     /**
-     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_iac(byte_t byte) noexcept
+     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_iac(byte_t byte)
      *
      * @param byte The byte to process.
      * @return Tuple of error code, forward flag (true for escaped IAC), and optional response (`processing_return_variant`)
@@ -336,7 +336,7 @@ export namespace net::telnet {
      * @see RFC 854 for IAC command processing, `:types` for `telnet::command`, `:errors` for error codes
      */
     /**
-     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_option_negotiation(byte_t byte) noexcept
+     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_option_negotiation(byte_t byte)
      *
      * @param byte The byte to process.
      * @return Tuple of error code, forward flag (false), and optional negotiation response (`std::tuple<telnet::command, telnet::option::id_num>`).
@@ -345,7 +345,7 @@ export namespace net::telnet {
      * @see RFC 855 for option negotiation, `:options` for `option::id_num`, `:errors` for error codes
      */
     /**
-     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_subnegotiation_option(byte_t byte) noexcept
+     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_subnegotiation_option(byte_t byte)
      *
      * @param byte The byte to process.
      * @return Tuple of error code, forward flag (false), and optional negotiation response.
@@ -354,7 +354,7 @@ export namespace net::telnet {
      * @see RFC 855 for subnegotiation, `:options` for `option::id_num`, `:errors` for error codes
      */
     /**
-     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_subnegotiation(byte_t byte) noexcept
+     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_subnegotiation(byte_t byte)
      *
      * @param byte The byte to process.
      * @return Tuple of error code, forward flag (false), and optional negotiation response.
@@ -364,7 +364,7 @@ export namespace net::telnet {
      * @see RFC 855 for subnegotiation, `:options` for `option::id_num`, `:errors` for error codes
      */
     /**
-     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_subnegotiation_iac(byte_t byte) noexcept
+     * @fn std::tuple<std::error_code, bool, std::optional<processing_return_variant>> protocol_fsm::handle_state_subnegotiation_iac(byte_t byte)
      *
      * @param byte The byte to process.
      * @return Tuple of error code, forward flag (false), and optional negotiation response (`subnegotiation_awaitable`).

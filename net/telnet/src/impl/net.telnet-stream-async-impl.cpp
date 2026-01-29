@@ -46,10 +46,11 @@ namespace net::telnet {
                                                negotiation_direction direction,
                                                CompletionToken&& token) {
         auto [ec, response] = fsm_.request_option(opt, direction);
-        if (ec || !response)
+        if (ec || !response) {
             return async_report_error(ec, std::forward<CompletionToken>(token));
-        else
+        } else {
             return async_write_negotiation(*response, std::forward<CompletionToken>(token));
+        }
     } //stream::async_request_option(option::id_num, negotiation_direction, CompletionToken&&)
 
     /**
@@ -68,42 +69,44 @@ namespace net::telnet {
                                                negotiation_direction direction,
                                                CompletionToken&& token) {
         auto [ec, response, awaitable] = fsm_.disable_option(opt, direction);
-        if (ec || (!response && !awaitable))
+        if (ec || (!response && !awaitable)) {
             return async_report_error(ec, std::forward<CompletionToken>(token));
-        else
+        } else {
             return asio::co_spawn(
                 this->get_executor(),
+                //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): Lambda closure lifetime is ensured by Asio. `this` lifetime is bound to parent stream and must be guaranteed for the operation to complete.
                 [this,
                  response  = std::move(response),
                  awaitable = std::move(awaitable)]() mutable -> asio::awaitable<std::size_t> {
                     try {
-                        std::size_t bt = 0;
+                        std::size_t bytes_transferred = 0;
                         if (response) {
-                            bt += co_await async_write_negotiation(*response, asio::use_awaitable);
+                            bytes_transferred += co_await async_write_negotiation(*response, asio::use_awaitable);
                         }
                         if (awaitable) {
                             co_await *awaitable;
                         }
-                        co_return bt;
-                    } catch (std::system_error se) {
+                        co_return bytes_transferred;
+                    } catch (std::system_error& sys_err) {
                         throw;
                     } catch (...) {
                         throw std::system_error(error::internal_error);
                     }
                 },
                 std::forward<CompletionToken>(token));
+        }
     } //stream::async_disable_option(option::id_num, negotiation_direction, CompletionToken&&)
 
     /**
      * @internal
-     * Uses `asio::async_compose` to initiate asynchronous read with `InputProcessor`.
+     * Uses `asio::async_compose` to initiate asynchronous read with `input_processor`.
      * @remark Binds the operation to the stream’s executor using `get_executor()`.
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBufSeq, ReadToken CompletionToken>
     auto stream<NLS, PC>::async_read_some(const MBufSeq& buffers, CompletionToken&& token) {
         return asio::async_compose<CompletionToken, typename stream<NLS, PC>::asio_completion_signature>(
-            InputProcessor<MBufSeq>(*this, fsm_, context_, std::move(buffers)),
+            input_processor<MBufSeq>(*this, fsm_, context_, std::move(buffers)),
             std::forward<CompletionToken>(token),
             this->get_executor());
     } //stream::async_read_some(MutableBufferSequence, CompletionToken&&)
@@ -177,7 +180,10 @@ namespace net::telnet {
         std::vector<byte_t> escaped_buffer;
         try {
             //Reserve space for the original size plus 10% for escaping and 5 bytes for framing (IAC SB, opt, IAC SE)
-            escaped_buffer.reserve(subnegotiation_buffer.size() * 1.1 + 5);
+            constexpr double escaping_cushion_factor = 1.1;
+            using size_type = decltype(subnegotiation_buffer.size());
+            constexpr size_type framing_padding = 5;
+            escaped_buffer.reserve(static_cast<size_type>(static_cast<double>(subnegotiation_buffer.size()) * escaping_cushion_factor) + framing_padding);
 
             //Append initial framing: IAC SB opt
             escaped_buffer.push_back(std::to_underlying(telnet::command::iac));
@@ -213,7 +219,7 @@ namespace net::telnet {
     template<WriteToken CompletionToken>
     auto stream<NLS, PC>::async_send_synch(CompletionToken&& token) {
         return asio::async_initiate<CompletionToken, asio_completion_signature>(
-            [this](auto&& handler) {
+            [this](auto handler) {
                 std::size_t bytes_transferred = 0;
                 this->async_send_nul( //Send 1
                     false,
@@ -264,14 +270,14 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<WriteToken CompletionToken>
     auto stream<NLS, PC>::async_send_nul(bool urgent, CompletionToken&& token) {
-        constexpr static byte_t NUL = static_cast<byte_t>('\0');
+        constexpr static auto nul = static_cast<byte_t>('\0');
 
         if (urgent) {
-            return this->lowest_layer().async_send(asio::buffer(&NUL, 1),
+            return this->lowest_layer().async_send(asio::buffer(&nul, 1),
                                                    lowest_layer_type::message_out_of_band,
                                                    std::forward<CompletionToken>(token));
         } else {
-            return this->lowest_layer().async_send(asio::buffer(&NUL, 1), std::forward<CompletionToken>(token));
+            return this->lowest_layer().async_send(asio::buffer(&nul, 1), std::forward<CompletionToken>(token));
         }
     } //stream::async_send_nul(bool, CompletionToken&&)
 

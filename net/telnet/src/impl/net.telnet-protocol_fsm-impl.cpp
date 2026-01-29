@@ -195,7 +195,7 @@ namespace net::telnet {
      */
     template<typename PC>
     std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>>
-        protocol_fsm<PC>::process_byte(byte_t byte) noexcept {
+        protocol_fsm<PC>::process_byte(byte_t byte) {
         switch (current_state_) {
             case protocol_state::normal:
                 return handle_state_normal(byte);
@@ -231,7 +231,7 @@ namespace net::telnet {
      */
     template<typename PC>
     std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>>
-        protocol_fsm<PC>::handle_state_normal(byte_t byte) noexcept {
+        protocol_fsm<PC>::handle_state_normal(byte_t byte) {
         if (byte == std::to_underlying(telnet::command::iac)) {
             change_state(protocol_state::has_iac);
             return {std::error_code(), false, std::nullopt}; //discard IAC byte
@@ -255,7 +255,7 @@ namespace net::telnet {
      */
     template<typename PC>
     std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>>
-        protocol_fsm<PC>::handle_state_has_cr(byte_t byte) noexcept {
+        protocol_fsm<PC>::handle_state_has_cr(byte_t byte) {
         protocol_state next_state = protocol_state::normal;
 
         std::error_code result_ec;
@@ -299,11 +299,11 @@ namespace net::telnet {
      * Logs `error::invalid_command` for commands outside of `telnet::command`.
      * Discards command bytes (returns `false` for forward flag).
      * Uses `[[likely]]` for valid `current_command_` cases.
-     * @see RFC 854 for command definitions, `:errors` for `processing_signal` and error codes, `:stream` for `InputProcessor` handling
+     * @see RFC 854 for command definitions, `:errors` for `processing_signal` and error codes, `:stream` for `input_processor` handling
      */
     template<typename PC>
     std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>>
-        protocol_fsm<PC>::handle_state_iac(byte_t byte) noexcept {
+        protocol_fsm<PC>::handle_state_iac(byte_t byte) {
         protocol_state next_state = protocol_state::normal;
 
         std::error_code result_ec;
@@ -408,9 +408,10 @@ namespace net::telnet {
      * Transitions to `protocol_state::normal` and discards the option byte (returns `false` for forward flag).
      * Uses `[[likely]]` for valid `current_command_` cases.
      */
+    //NOLINTBEGIN(readability-function-cognitive-complexity)
     template<typename PC>
     std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>>
-        protocol_fsm<PC>::handle_state_option_negotiation(byte_t byte) noexcept {
+        protocol_fsm<PC>::handle_state_option_negotiation(byte_t byte) {
         std::optional<processing_return_variant> response = std::nullopt;
 
         if (current_command_) [[likely]] {
@@ -540,6 +541,7 @@ namespace net::telnet {
         change_state(protocol_state::normal);
         return {std::error_code(), false, std::move(response)}; //discard option byte
     } //handle_state_option_negotiation(byte_t)
+    //NOLINTEND(readability-function-cognitive-complexity)
 
     /**
      * @internal
@@ -551,7 +553,7 @@ namespace net::telnet {
      */
     template<typename PC>
     std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>>
-        protocol_fsm<PC>::handle_state_subnegotiation_option(byte_t byte) noexcept {
+        protocol_fsm<PC>::handle_state_subnegotiation_option(byte_t byte) {
         option_registry& registry = protocol_config_type::registered_options;
         current_option_           = registry.get(static_cast<option::id_num>(byte));
 
@@ -584,7 +586,7 @@ namespace net::telnet {
      */
     template<typename PC>
     std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>>
-        protocol_fsm<PC>::handle_state_subnegotiation(byte_t byte) noexcept {
+        protocol_fsm<PC>::handle_state_subnegotiation(byte_t byte) {
         if (!current_option_) {
             protocol_config_type::log_error(make_error_code(error::protocol_violation),
                                       "byte: 0x{:02x}, cmd: {}, opt: N/A",
@@ -622,7 +624,7 @@ namespace net::telnet {
      */
     template<typename PC>
     std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>>
-        protocol_fsm<PC>::handle_state_subnegotiation_iac(byte_t byte) noexcept {
+        protocol_fsm<PC>::handle_state_subnegotiation_iac(byte_t byte) {
         std::optional<processing_return_variant> response = std::nullopt;
         if (!current_option_) {
             protocol_config_type::log_error(make_error_code(error::protocol_violation),
@@ -680,16 +682,17 @@ namespace net::telnet {
      * Iterates over `option_status_db` to build the `SEND` payload with enabled options, excluding `STATUS`, escaping `IAC` (255) and `SE` (240) by doubling.
      * @see RFC 859, `:internal` for `option_status_db`, `:options` for `option`, `:awaitables` for `subnegotiation_awaitable`, `:stream` for `async_write_subnegotiation`
      */
+    //NOLINTBEGIN(readability-function-cognitive-complexity)
     template<typename PC>
     awaitables::subnegotiation_awaitable protocol_fsm<PC>::handle_status_subnegotiation(const option opt,
                                                                                       std::vector<byte_t> buffer) {
-        constexpr byte_t IS   = static_cast<byte_t>(0);
-        constexpr byte_t SEND = static_cast<byte_t>(1);
+        constexpr auto subcommand_is   = static_cast<byte_t>(0);
+        constexpr auto subcommand_send = static_cast<byte_t>(1);
 
         if (buffer.empty()) {
             protocol_config_type::log_error(error::invalid_subnegotiation,
                                       "Invalid STATUS subnegotiation: no data between IAC SB STATUS and IAC SE");
-        } else if (buffer[0] == IS) {
+        } else if (buffer[0] == subcommand_is) {
             if (option_status_[option::id_num::status].remote_enabled()) {
                 //Delegate processing of subcommand IS to user-provided handler.
                 co_return co_await option_handler_registry_.handle_subnegotiation(opt, std::move(buffer));
@@ -699,28 +702,28 @@ namespace net::telnet {
                     "STATUS subnegotiation IS received, but STATUS option is not remotely enabled.");
                 co_return std::make_tuple(opt, std::vector<byte_t>{});
             }
-        } else if (buffer[0] == SEND) {
+        } else if (buffer[0] == subcommand_send) {
             if (option_status_[option::id_num::status].local_enabled()) {
-                std::vector<byte_t> payload = {IS}; //IS
+                std::vector<byte_t> payload = {subcommand_is}; //IS
                 for (std::size_t i = 0; i < option_status_db::max_option_count; ++i) {
-                    auto id = static_cast<option::id_num>(i);
+                    auto opt_id = static_cast<option::id_num>(i);
 
-                    const auto& status = option_status_[id];
+                    const auto& status = option_status_[opt_id];
                     if (status.local_enabled()) {
                         payload.push_back(std::to_underlying(telnet::command::will_opt));
-                        if (std::to_underlying(id) == std::to_underlying(telnet::command::iac)
-                            || std::to_underlying(id) == std::to_underlying(telnet::command::se)) { //Escape IAC or SE
-                            payload.push_back(std::to_underlying(id));
+                        if (std::to_underlying(opt_id) == std::to_underlying(telnet::command::iac)
+                            || std::to_underlying(opt_id) == std::to_underlying(telnet::command::se)) { //Escape IAC or SE
+                            payload.push_back(std::to_underlying(opt_id));
                         }
-                        payload.push_back(std::to_underlying(id));
+                        payload.push_back(std::to_underlying(opt_id));
                     }
                     if (status.remote_enabled()) {
                         payload.push_back(std::to_underlying(telnet::command::do_opt));
-                        if (std::to_underlying(id) == std::to_underlying(telnet::command::iac)
-                            || std::to_underlying(id) == std::to_underlying(telnet::command::se)) { //Escape IAC or SE
-                            payload.push_back(std::to_underlying(id));
+                        if (std::to_underlying(opt_id) == std::to_underlying(telnet::command::iac)
+                            || std::to_underlying(opt_id) == std::to_underlying(telnet::command::se)) { //Escape IAC or SE
+                            payload.push_back(std::to_underlying(opt_id));
                         }
-                        payload.push_back(std::to_underlying(id));
+                        payload.push_back(std::to_underlying(opt_id));
                     }
                 }
                 co_return std::make_tuple(opt, std::move(payload));
@@ -737,4 +740,5 @@ namespace net::telnet {
             co_return std::make_tuple(opt, std::vector<byte_t>{});
         }
     } //handle_status_subnegotiation(const option&, std::vector<byte_t>)
+    //NOLINTEND(readability-function-cognitive-complexity)
 } //namespace net::telnet
