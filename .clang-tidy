@@ -40,6 +40,9 @@ Checks:
   
   # Const parameters may be necessary with contract post-conditions
   - '-readability-avoid-const-params-in-decls'
+
+  # Judicious and well-formatted uses only please
+  - '-readability-avoid-nested-conditional-operator'
   
   # Else after return sometimes enhances readability
   - '-readability-else-after-return'
@@ -80,12 +83,24 @@ Checks:
   # Misc & portability
   # ============================================================
   - 'misc-*'
+
+  # Multiple inheritance is part of the language for a reason.
   - '-misc-multiple-inheritance'
+
+  # Recursion is perfectly valid.
   - '-misc-no-recursion'
-  # Unfortunately, this doesn't work with import std yet
+  
+  # Unfortunately, this doesn't work with import std yet.
   - '-misc-include-cleaner'
+  
   - 'portability-*'
+
+  # This check has no utility at this time.
   - '-portability-restrict-system-includes'
+
+  # This is noisy and doesn't play well with asio.
+  - '-portability-template-virtual-member-function'
+  
   - 'boost-use-to-string'
   
 WarningsAsErrors: ''
@@ -206,7 +221,7 @@ CheckOptions:
   
   hicpp-ignored-remove-result.AllowCastToVoid: 'true'
 
-  hicpp-multiway-paths-covered.WarnOnMissingElse: 'true'
+  hicpp-multiway-paths-covered.WarnOnMissingElse: 'false'
   
   hicpp-signed-bitwise.IgnorePositiveIntegerLiterals: 'false'
   
