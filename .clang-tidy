@@ -50,6 +50,9 @@ Checks:
   # Redundant continue and return sometimes enhance readability
   - '-readability-redundant-control-flow'
 
+  # Redundant declarations are generally benign, and this check does not play well with `import std;` 
+  - '-readability-redundant-declaration'
+
   # ============================================================
   # Vendor / legacy rule sets (TEMPORARY, prune later)
   # ============================================================
