@@ -30,7 +30,7 @@ export import :options;  ///< @see "net.telnet-options.cppm" for `option` and `o
 export namespace net::telnet {
     /**
      * @brief Default configuration class for `ProtocolFSM`, encapsulating options and handlers.
-     * @remark Provides thread-safe access to static members via `mutex_`.
+     * @remark Provides thread-safe access to static members via `mutex`.
      * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, :options for `option` and `option::id_num`, :errors for error codes, :internal for implementation classes
      */
     class default_protocol_fsm_config {
@@ -111,7 +111,7 @@ export namespace net::telnet {
     private:
         ///@brief Performs initialization for `initialize`.
         static void init() {
-            std::lock_guard<std::shared_mutex> lock(mutex_);
+            std::lock_guard<std::shared_mutex> lock(mutex);
             unknown_option_handler = [](option::id_num opt) {
                 std::cout << "Unknown option: " << static_cast<std::uint32_t>(std::to_underlying(opt)) << "\n";
                 return;
@@ -164,7 +164,7 @@ export namespace net::telnet {
      * @param fmt The format string for the error message.
      * @param args Arguments to format the error message.
      *
-     * @remark Formats the message using std::format and invokes the registered `error_logger_`.
+     * @remark Formats the message using std::format and invokes the registered `error_logger`.
      * @remark Thread-safe via `std::shared_lock<std::shared_mutex>`.
      */
     /**
@@ -192,7 +192,7 @@ export namespace net::telnet {
     /**
      * @fn void default_protocol_fsm_config::init()
      *
-     * @remark Initializes `unknown_command_handler_`, `unknown_option_handler_`, and `error_logger_`.
+     * @remark Initializes `unknown_option_handler` and `error_logger`.
      * @remark Called once by `initialize` under `std::call_once`.
      */
 } //namespace net::telnet
