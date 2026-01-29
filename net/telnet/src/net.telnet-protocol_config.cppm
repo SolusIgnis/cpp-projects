@@ -75,7 +75,7 @@ export namespace net::telnet {
         template<typename... Args>
         static void
             log_error(const std::error_code& ec, std::format_string<std::remove_cvref_t<Args>...> fmt, Args&&... args) {
-            std::shared_lock<std::shared_mutex> lock(mutex);
+            const std::shared_lock<std::shared_mutex> lock(mutex);
             if (error_logger) {
                 error_logger(ec, std::format(fmt, std::forward<Args>(args)...));
             }
@@ -111,7 +111,7 @@ export namespace net::telnet {
     private:
         ///@brief Performs initialization for `initialize`.
         static void init() {
-            std::lock_guard<std::shared_mutex> lock(mutex);
+            const std::lock_guard<std::shared_mutex> lock(mutex);
             unknown_option_handler = [](option::id_num opt) {
                 std::cout << "Unknown option: " << static_cast<std::uint32_t>(std::to_underlying(opt)) << "\n";
                 return;
