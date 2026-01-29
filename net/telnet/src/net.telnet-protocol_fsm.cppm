@@ -65,8 +65,9 @@ export namespace net::telnet {
          * @param direction The negotiation direction (`local` or `remote`).
          * @return `option_enablement_awaitable` representing the asynchronous handling result.
          */
-        using option_enablement_handler_type =
-            std::function<awaitables::option_enablement_awaitable(option::id_num /*id*/, negotiation_direction /*direction*/)>;
+        using option_enablement_handler_type = std::function<
+            awaitables::option_enablement_awaitable(option::id_num /*id*/, negotiation_direction /*direction*/)
+        >;
 
         /**
          * @typedef option_disablement_handler_type
@@ -75,8 +76,9 @@ export namespace net::telnet {
          * @param direction The negotiation direction (`local` or `remote`).
          * @return `option_disablement_awaitable` representing the asynchronous handling result.
          */
-        using option_disablement_handler_type =
-            std::function<awaitables::option_disablement_awaitable(option::id_num /*id*/, negotiation_direction /*direction*/)>;
+        using option_disablement_handler_type = std::function<
+            awaitables::option_disablement_awaitable(option::id_num /*id*/, negotiation_direction /*direction*/)
+        >;
 
         /**
          * @typedef subnegotiation_handler_type
@@ -115,25 +117,28 @@ export namespace net::telnet {
          * @brief Variant type for return values from byte processing.
          * @remark Holds either a `negotiation_response_type`, direct stream write (`std::string`), handler awaitable (`option_enablement_awaitable` or `option_disablement_awaitable`) paired with an optional `negotiation_response_type`, or subnegotiation awaitable (`subnegotiation_awaitable`).
          */
-        using processing_return_variant =
-            std::variant<negotiation_response_type,
-                         std::string,
-                         std::tuple<awaitables::option_enablement_awaitable, std::optional<negotiation_response_type>>,
-                         std::tuple<awaitables::option_disablement_awaitable, std::optional<negotiation_response_type>>,
-                         awaitables::subnegotiation_awaitable>;
+        using processing_return_variant = std::variant<
+            negotiation_response_type,
+            std::string,
+            std::tuple<awaitables::option_enablement_awaitable, std::optional<negotiation_response_type>>,
+            std::tuple<awaitables::option_disablement_awaitable, std::optional<negotiation_response_type>>,
+            awaitables::subnegotiation_awaitable
+        >;
 
         ///@brief Constructs the FSM, initializing `protocol_config_type` once.
         protocol_fsm() { ConfigT::initialize(); }
 
         ///@brief Registers handlers for option enablement, disablement, and subnegotiation.
-        void register_option_handlers(option::id_num opt,
-                                      std::optional<option_enablement_handler_type> enable_handler,
-                                      std::optional<option_disablement_handler_type> disable_handler,
-                                      std::optional<subnegotiation_handler_type> subneg_handler = std::nullopt) {
-            option_handler_registry_.register_handlers(opt,
-                                                       std::move(enable_handler),
-                                                       std::move(disable_handler),
-                                                       std::move(subneg_handler));
+        void register_option_handlers(
+            option::id_num opt,
+            std::optional<option_enablement_handler_type> enable_handler,
+            std::optional<option_disablement_handler_type> disable_handler,
+            std::optional<subnegotiation_handler_type> subneg_handler = std::nullopt
+        )
+        {
+            option_handler_registry_.register_handlers(
+                opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler)
+            );
         }
 
         ///@brief Unregisters handlers for an option.
@@ -152,14 +157,15 @@ export namespace net::telnet {
         static telnet::command make_negotiation_command(negotiation_direction direction, bool enable) noexcept;
 
         ///@brief Requests an option to be enabled (WILL/DO), synchronously updating option_status_db and returning a negotiation response.
-        std::tuple<std::error_code, std::optional<negotiation_response_type>> request_option(option::id_num opt,
-                                                                                       negotiation_direction direction);
+        std::tuple<std::error_code, std::optional<negotiation_response_type>>
+            request_option(option::id_num opt, negotiation_direction direction);
 
         ///@brief Disables an option (WONT/DONT), synchronously updating option_status_db and returning a negotiation response and optional disablement awaitable.
-        std::tuple<std::error_code,
-                   std::optional<negotiation_response_type>,
-                   std::optional<awaitables::option_disablement_awaitable>>
-            disable_option(option::id_num opt, negotiation_direction direction);
+        std::tuple<
+            std::error_code,
+            std::optional<negotiation_response_type>,
+            std::optional<awaitables::option_disablement_awaitable>
+        > disable_option(option::id_num opt, negotiation_direction direction);
 
     private:
         enum class protocol_state : std::uint8_t {
@@ -176,16 +182,13 @@ export namespace net::telnet {
         void change_state(protocol_state next_state) noexcept;
 
         ///@brief Handles bytes in the `Normal` state (data or IAC).
-        std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_normal(byte_t byte);
+        std::tuple<std::error_code, bool, std::optional<processing_return_variant>> handle_state_normal(byte_t byte);
 
         ///@brief Handles bytes immediately after '\r' ('\0', '\n', or error)
-        std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_has_cr(byte_t byte);
+        std::tuple<std::error_code, bool, std::optional<processing_return_variant>> handle_state_has_cr(byte_t byte);
 
         ///@brief Handles bytes after IAC (commands like WILL, DO, SB, etc.).
-        std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_iac(byte_t byte);
+        std::tuple<std::error_code, bool, std::optional<processing_return_variant>> handle_state_iac(byte_t byte);
 
         ///@brief Handles bytes in the `OptionNegotiation` state (option ID after WILL/WONT/DO/DONT).
         std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
@@ -208,7 +211,12 @@ export namespace net::telnet {
             -> awaitables::subnegotiation_awaitable;
 
         //Data Members
-        option_handler_registry<protocol_config_type, option_enablement_handler_type, option_disablement_handler_type, subnegotiation_handler_type>
+        option_handler_registry<
+            protocol_config_type,
+            option_enablement_handler_type,
+            option_disablement_handler_type,
+            subnegotiation_handler_type
+        >
             option_handler_registry_;
         option_status_db option_status_;
 

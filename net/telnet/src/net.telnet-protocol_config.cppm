@@ -54,19 +54,22 @@ export namespace net::telnet {
         static void initialize() { std::call_once(initialization_flag, &init); }
 
         ///@brief Sets the handler for unknown option negotiation attempts.
-        static void set_unknown_option_handler(unknown_option_handler_type handler) {
+        static void set_unknown_option_handler(unknown_option_handler_type handler)
+        {
             const std::lock_guard<std::shared_mutex> lock(mutex);
             unknown_option_handler = std::move(handler);
         }
 
         ///@brief Sets the error logging handler.
-        static void set_error_logger(error_logger_type handler) {
+        static void set_error_logger(error_logger_type handler)
+        {
             const std::lock_guard<std::shared_mutex> lock(mutex);
             error_logger = std::move(handler);
         }
 
         ///@brief Gets the handler for unknown option negotiation attempts.
-        static const unknown_option_handler_type& get_unknown_option_handler() {
+        static const unknown_option_handler_type& get_unknown_option_handler()
+        {
             const std::shared_lock<std::shared_mutex> lock(mutex);
             return unknown_option_handler;
         }
@@ -74,7 +77,8 @@ export namespace net::telnet {
         ///@brief Logs an error with the registered error logger using a formatted string.
         template<typename... Args>
         static void
-            log_error(const std::error_code& ec, std::format_string<std::remove_cvref_t<Args>...> fmt, Args&&... args) {
+            log_error(const std::error_code& ec, std::format_string<std::remove_cvref_t<Args>...> fmt, Args&&... args)
+        {
             const std::shared_lock<std::shared_mutex> lock(mutex);
             if (error_logger) {
                 error_logger(ec, std::format(fmt, std::forward<Args>(args)...));
@@ -82,26 +86,34 @@ export namespace net::telnet {
         }
 
         ///@brief Gets the AYT response string.
-        static std::string_view get_ayt_response() {
+        static std::string_view get_ayt_response()
+        {
             const std::shared_lock<std::shared_mutex> lock(mutex);
             return ayt_response;
         }
 
         ///@brief Sets the AYT response string.
-        static void set_ayt_response(std::string response) {
+        static void set_ayt_response(std::string response)
+        {
             const std::lock_guard<std::shared_mutex> lock(mutex);
             ayt_response = std::move(response);
         }
 
     private:
         ///@brief Initializes the option registry with default options.
-        static option_registry initialize_option_registry() {
+        static option_registry initialize_option_registry()
+        {
             return {
                 option{option::id_num::binary, "Binary Transmission", option::always_accept, option::always_accept},
-                option{option::id_num::suppress_go_ahead,
-                       "Suppress Go-Ahead", option::always_accept,
-                       option::always_accept},
-                option{option::id_num::status, "Status", option::always_accept, option::always_reject, /*subneg_supported=*/true}
+                option{
+                       option::id_num::suppress_go_ahead, "Suppress Go-Ahead", option::always_accept, option::always_accept
+                },
+                option{
+                       option::id_num::status,
+                       "Status", option::always_accept,
+                       option::always_reject,
+                       /*subneg_supported=*/true
+                }
             };
         } //initialize_option_registry()
 
@@ -110,7 +122,8 @@ export namespace net::telnet {
 
     private:
         ///@brief Performs initialization for `initialize`.
-        static void init() {
+        static void init()
+        {
             const std::lock_guard<std::shared_mutex> lock(mutex);
             unknown_option_handler = [](option::id_num opt) {
                 std::cout << "Unknown option: " << static_cast<std::uint32_t>(std::to_underlying(opt)) << "\n";

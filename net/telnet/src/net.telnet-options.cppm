@@ -55,34 +55,37 @@ export namespace net::telnet {
 
         ///@brief Constructs an `option` with the given ID and optional parameters.
         //NOLINTNEXTLINE(google-explicit-constructor)
-        option(id_num id,
-               std::string name             = "",
-               enable_predicate_type local_pred  = always_reject,
-               enable_predicate_type remote_pred = always_reject,
-               bool subneg_supported        = false,
-               size_t max_subneg_size       = max_subnegotiation_size_)
+        option(
+            id_num id,
+            std::string name                  = "",
+            enable_predicate_type local_pred  = always_reject,
+            enable_predicate_type remote_pred = always_reject,
+            bool subneg_supported             = false,
+            size_t max_subneg_size            = max_subnegotiation_size_
+        )
             : id_(id),
               name_(std::move(name)),
               local_predicate_(std::move(local_pred)),
               remote_predicate_(std::move(remote_pred)),
               supports_subnegotiation_(subneg_supported),
-              max_subneg_size_(max_subneg_size) {}
+              max_subneg_size_(max_subneg_size)
+        {}
 
         ///@brief Factory to create common `option` instances.
-        static option make_option(id_num id,
-                                  std::string name,
-                                  bool local_supported   = false,
-                                  bool remote_supported  = false,
-                                  bool subneg_supported  = false,
-                                  size_t max_subneg_size = max_subnegotiation_size_) {
+        static option make_option(
+            id_num id,
+            std::string name,
+            bool local_supported   = false,
+            bool remote_supported  = false,
+            bool subneg_supported  = false,
+            size_t max_subneg_size = max_subnegotiation_size_
+        )
+        {
             enable_predicate_type local_pred  = local_supported ? always_accept : always_reject;
             enable_predicate_type remote_pred = remote_supported ? always_accept : always_reject;
-            return option(id,
-                          std::move(name),
-                          std::move(local_pred),
-                          std::move(remote_pred),
-                          subneg_supported,
-                          max_subneg_size);
+            return option(
+                id, std::move(name), std::move(local_pred), std::move(remote_pred), subneg_supported, max_subneg_size
+            );
         }
 
         ///@brief Three-way comparison operator for ordering and equality.
@@ -107,7 +110,8 @@ export namespace net::telnet {
         [[nodiscard]] bool supports_remote() const { return remote_predicate_(id_); }
 
         ///@brief Evaluates the predicate for the designated direction to determine if the `option` can be enabled in that direction.
-        [[nodiscard]] bool supports(negotiation_direction direction) const {
+        [[nodiscard]] bool supports(negotiation_direction direction) const
+        {
             return (direction == negotiation_direction::remote) ? supports_remote() : supports_local();
         }
 
@@ -331,7 +335,8 @@ export namespace net::telnet {
     class option_registry {
     public:
         ///@brief Constructs a registry from a sorted initializer list of `option` instances.
-        option_registry(std::initializer_list<option> init) {
+        option_registry(std::initializer_list<option> init)
+        {
             ///@todo Figure out if this can be done as a constant expression.
             //static_assert(
             // std::is_sorted(init.begin(), init.end(), std::less<>{}),
@@ -344,7 +349,8 @@ export namespace net::telnet {
         explicit option_registry(std::set<option, std::less<>>&& init) : registry_(std::move(init)) {}
 
         ///@brief Retrieves an `option` by its ID.
-        std::optional<option> get(option::id_num opt_id) const noexcept {
+        std::optional<option> get(option::id_num opt_id) const noexcept
+        {
             std::shared_lock<std::shared_mutex> lock(mutex_);
             auto it = registry_.find(opt_id);
             if (it != registry_.end()) {
@@ -355,13 +361,15 @@ export namespace net::telnet {
         } //get(option::id_num)
 
         ///@brief Checks if an `option` is present in the registry.
-        [[nodiscard]] bool has(option::id_num opt_id) const noexcept {
+        [[nodiscard]] bool has(option::id_num opt_id) const noexcept
+        {
             std::shared_lock<std::shared_mutex> lock(mutex_);
             return (registry_.find(opt_id) != registry_.end());
         } //has(option::id_num)
 
         ///@brief Inserts or updates an `option` in the registry.
-        const option& upsert(const option& opt) {
+        const option& upsert(const option& opt)
+        {
             std::lock_guard<std::shared_mutex> lock(mutex_);
             auto [add_result, success] = registry_.insert(opt);
             if (success) {
@@ -374,7 +382,8 @@ export namespace net::telnet {
         } //upsert(const option&)
 
         ///@brief Inserts or updates an `option` with error handling.
-        void upsert(const option& opt, std::error_code& ec) noexcept {
+        void upsert(const option& opt, std::error_code& ec) noexcept
+        {
             try {
                 upsert(opt); // the mutex is locked inside this call
             } catch (const std::system_error& e) {
@@ -388,7 +397,8 @@ export namespace net::telnet {
 
         ///@brief Inserts or updates an `option` constructed from arguments.
         template<typename... Args>
-        const option& upsert(option::id_num opt_id, Args&&... args) {
+        const option& upsert(option::id_num opt_id, Args&&... args)
+        {
             return upsert(option{opt_id, std::forward<Args>(args)...});
         } //upsert(option::id_num, Args...)
 
@@ -480,13 +490,14 @@ export namespace std {
          * @remark Supports 'd' (default: 0xXX (name)), 'n' (name only), and 'x' (hex only, 0xXX).
          */
         //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
-        constexpr auto parse(format_parse_context& ctx) {
+        constexpr auto parse(format_parse_context& ctx)
+        {
             auto view = std::ranges::subrange(ctx.begin(), ctx.end());
             if (!view.empty()) {
                 const char c = view.front(); //NOLINT(readability-identifier-length): Idiomatic
                 if (c == 'n' || c == 'x' || c == 'd') {
                     presentation_ = c;
-                    view = view.advance(1);
+                    view          = view.advance(1);
                 }
             }
             if (!view.empty() && view.front() != '}') {
@@ -507,16 +518,19 @@ export namespace std {
          */
         //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         template<typename FormatContext>
-        auto format(const ::net::telnet::option& opt, FormatContext& ctx) const {
+        auto format(const ::net::telnet::option& opt, FormatContext& ctx) const
+        {
             if (presentation_ == 'n') {
                 return std::format_to(ctx.out(), "{}", opt.get_name().empty() ? "unknown" : opt.get_name());
             } else if (presentation_ == 'x') {
                 return std::format_to(ctx.out(), "0x{:02x}", std::to_underlying(opt.get_id()));
             } else { // 'd' (default: 0xXX (name))
-                return std::format_to(ctx.out(),
-                                      "0x{:02x} ({})",
-                                      std::to_underlying(opt.get_id()),
-                                      opt.get_name().empty() ? "unknown" : opt.get_name());
+                return std::format_to(
+                    ctx.out(),
+                    "0x{:02x} ({})",
+                    std::to_underlying(opt.get_id()),
+                    opt.get_name().empty() ? "unknown" : opt.get_name()
+                );
             }
         } //format(const ::net::telnet::option&, FormatContext&)
     }; //class formatter<::net::telnet::option>

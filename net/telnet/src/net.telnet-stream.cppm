@@ -113,11 +113,12 @@ export namespace net::telnet {
             option::id_num opt,
             std::optional<typename fsm_type::option_enablement_handler_type> enable_handler,
             std::optional<typename fsm_type::option_disablement_handler_type> disable_handler,
-            std::optional<typename fsm_type::subnegotiation_handler_type> subneg_handler = std::nullopt) {
-            fsm_.register_option_handlers(opt,
-                                          std::move(enable_handler),
-                                          std::move(disable_handler),
-                                          std::move(subneg_handler));
+            std::optional<typename fsm_type::subnegotiation_handler_type> subneg_handler = std::nullopt
+        )
+        {
+            fsm_.register_option_handlers(
+                opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler)
+            );
         }
 
         ///@brief Unregisters handlers for an option.
@@ -202,17 +203,21 @@ export namespace net::telnet {
 
         ///@brief Asynchronously writes a Telnet subnegotiation command.
         template<WriteToken CompletionToken>
-        auto async_write_subnegotiation(option opt,
-                                        const std::vector<byte_t>& subnegotiation_buffer,
-                                        CompletionToken&& token);
+        auto async_write_subnegotiation(
+            option opt,
+            const std::vector<byte_t>& subnegotiation_buffer,
+            CompletionToken&& token
+        );
 
         ///@brief Synchronously writes a Telnet subnegotiation command.
         std::size_t write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer);
 
         ///@brief Synchronously writes a Telnet subnegotiation command.
-        std::size_t write_subnegotiation(option opt,
-                                         const std::vector<byte_t>& subnegotiation_buffer,
-                                         std::error_code& ec) noexcept;
+        std::size_t write_subnegotiation(
+            option opt,
+            const std::vector<byte_t>& subnegotiation_buffer,
+            std::error_code& ec
+        ) noexcept;
 
         ///@brief Asynchronously sends Telnet Synch sequence (NUL bytes and IAC DM).
         template<WriteToken CompletionToken>
@@ -255,7 +260,8 @@ export namespace net::telnet {
                 void saw_data_mark();
 
                 ///@brief Reports if the urgent notification is currently active.
-                [[nodiscard]] bool has_urgent_data() const noexcept {
+                [[nodiscard]] bool has_urgent_data() const noexcept
+                {
                     return (state_.load(std::memory_order_relaxed) == urgent_data_state::has_urgent_data);
                 }
 
@@ -281,10 +287,12 @@ export namespace net::telnet {
         class input_processor {
         public:
             ///@brief Constructs an `input_processor` with the parent stream, FSM, and buffers.
-            input_processor(stream& parent_stream,
-                           stream::fsm_type& fsm,
-                           stream::context_type& context,
-                           MBufSeq buffers);
+            input_processor(
+                stream& parent_stream,
+                stream::fsm_type& fsm,
+                stream::context_type& context,
+                MBufSeq buffers
+            );
 
             ///@brief Asynchronous operation handler for processing Telnet input.
             template<typename Self>
@@ -297,9 +305,11 @@ export namespace net::telnet {
 
             ///@brief Handles processing of the `reading` state.
             template<typename Self>
-            void handle_processor_state_reading(Self& self,
-                                                std::error_code ec_in         = {},
-                                                std::size_t bytes_transferred = 0);
+            void handle_processor_state_reading(
+                Self& self,
+                std::error_code ec_in         = {},
+                std::size_t bytes_transferred = 0
+            );
 
             ///@brief Handles processing of the `processing` state.
             template<typename Self>
@@ -329,9 +339,13 @@ export namespace net::telnet {
 
             ///@brief Handle any `tagged_awaitable` with optional `negotiation_response`.
             template<typename Self, typename Tag, typename T, typename Awaitable>
-            void do_response(std::tuple<awaitables::tagged_awaitable<Tag, T, Awaitable>,
-                                        std::optional<typename stream::fsm_type::negotiation_response>> response,
-                             Self&& self);
+            void do_response(
+                std::tuple<
+                    awaitables::tagged_awaitable<Tag, T, Awaitable>,
+                    std::optional<typename stream::fsm_type::negotiation_response>
+                > response,
+                Self&& self
+            );
 
             static constexpr std::size_t read_block_size = 1024;
 
@@ -365,8 +379,8 @@ export namespace net::telnet {
 
         ///@brief Escapes Telnet output data by duplicating 0xFF (IAC) bytes into a provided vector.
         template<ConstBufferSequence CBufSeq>
-        std::tuple<std::error_code, std::vector<byte_t>&> escape_telnet_output(std::vector<byte_t>& escaped_data,
-                                                                               const CBufSeq& data) const noexcept;
+        std::tuple<std::error_code, std::vector<byte_t>&>
+            escape_telnet_output(std::vector<byte_t>& escaped_data, const CBufSeq& data) const noexcept;
 
         ///@brief Escapes Telnet output data by duplicating 0xFF (IAC) bytes.
         template<ConstBufferSequence CBufSeq>

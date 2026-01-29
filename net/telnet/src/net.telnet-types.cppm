@@ -85,13 +85,14 @@ export namespace std {
          * @remark Supports 'd' (default: name (0xXX)), 'n' (name only), and 'x' (hex only, 0xXX).
          */
         //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
-        constexpr auto parse(format_parse_context& ctx) {
+        constexpr auto parse(format_parse_context& ctx)
+        {
             auto view = std::ranges::subrange(ctx.begin(), ctx.end());
             if (!view.empty()) {
                 const char c = view.front(); //NOLINT(readability-identifier-length): Idiomatic
                 if (c == 'n' || c == 'x' || c == 'd') {
                     presentation_ = c;
-                    view = view.advance(1);
+                    view          = view.advance(1);
                 }
             }
             if (!view.empty() && view.front() != '}') {
@@ -113,7 +114,8 @@ export namespace std {
          */
         //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         template<typename FormatContext>
-        auto format(::net::telnet::command cmd, FormatContext& ctx) const {
+        auto format(::net::telnet::command cmd, FormatContext& ctx) const
+        {
             std::string_view name;
             switch (cmd) {
                 case ::net::telnet::command::eor:
@@ -196,7 +198,8 @@ export namespace std {
          * @throws std::format_error if the specifier is not '}' (only default {} is supported).
          */
         //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
-        constexpr auto parse(format_parse_context& ctx) {
+        constexpr auto parse(format_parse_context& ctx)
+        {
             auto view = std::ranges::subrange(ctx.begin(), ctx.end());
             if (!view.empty() && view.front() != '}') {
                 throw std::format_error("Invalid format specifier for NegotiationDirection");
@@ -211,7 +214,8 @@ export namespace std {
          * @return Output iterator after formatting.
          */
         template<typename FormatContext>
-        auto format(::net::telnet::negotiation_direction dir, FormatContext& ctx) const {
+        auto format(::net::telnet::negotiation_direction dir, FormatContext& ctx) const
+        {
             std::string_view name = (dir == ::net::telnet::negotiation_direction::local ? "local" : "remote");
             return std::format_to(ctx.out(), "{}", name);
         } //format(::net::telnet::negotiation_direction, FormatContext&)

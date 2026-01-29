@@ -42,7 +42,7 @@ export namespace net::telnet::awaitables {
 
     public:
         //NOLINTBEGIN(google-explicit-constructor): Implicit conversion to/from our `awaitable_type` is the point.
-    
+
         ///@brief Default constructor.
         tagged_awaitable() = default;
 
@@ -57,7 +57,7 @@ export namespace net::telnet::awaitables {
 
         ///@brief Implicit conversion to underlying awaitable (rvalue).
         operator awaitable_type&&() noexcept { return std::move(awaitable_); }
-        
+
         //NOLINTEND(google-explicit-constructor)
 
         ///@brief Supports co_await for lvalue.
@@ -107,5 +107,6 @@ export namespace net::telnet::awaitables {
      * @brief Awaitable type for subnegotiation handlers.
      * @see `tagged_awaitable`, `tags::subnegotiation_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using subnegotiation_awaitable = tagged_awaitable<tags::subnegotiation_tag, std::tuple<option, std::vector<byte_t>>>;
+    using subnegotiation_awaitable =
+        tagged_awaitable<tags::subnegotiation_tag, std::tuple<option, std::vector<byte_t>>>;
 } //namespace net::telnet::awaitables

@@ -95,21 +95,27 @@ export namespace net::telnet::concepts {
      */
     template<typename T>
     concept ProtocolFSMConfig =
-        requires(T& config,
-                 telnet::command cmd,
-                 option full_opt,
-                 option::id_num opt,
-                 std::error_code& ec_out,
-                 std::error_code ec,
-                 byte_t byte,
-                 std::string msg) {
+        requires(
+            T& config,
+            telnet::command cmd,
+            option full_opt,
+            option::id_num opt,
+            std::error_code& ec_out,
+            std::error_code ec,
+            byte_t byte,
+            std::string msg
+        ) {
             typename T::unknown_option_handler_type;
-            requires std::convertible_to<typename T::unknown_option_handler_type,
-                                         typename protocol_fsm<T>::unknown_option_handler_type>;
+            requires std::convertible_to<
+                typename T::unknown_option_handler_type,
+                typename protocol_fsm<T>::unknown_option_handler_type
+            >;
             typename T::error_logger_type;
             requires std::convertible_to<typename T::error_logger_type, typename protocol_fsm<T>::error_logger_type>;
             { T::initialize() } -> std::same_as<void>;
-            { T::set_unknown_option_handler(std::declval<typename T::unknown_option_handler_type>()) } -> std::same_as<void>;
+            {
+                T::set_unknown_option_handler(std::declval<typename T::unknown_option_handler_type>())
+            } -> std::same_as<void>;
             { T::set_error_logger(std::declval<typename T::error_logger_type>()) } -> std::same_as<void>;
             {
                 T::get_unknown_option_handler()

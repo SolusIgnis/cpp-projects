@@ -42,7 +42,8 @@ namespace net::telnet {
      * @see `async_request_option` in "net.telnet-stream-async-impl.cpp".
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::request_option(option::id_num opt, negotiation_direction direction) {
+    std::size_t stream<NLS, PC>::request_option(option::id_num opt, negotiation_direction direction)
+    {
         auto [ec, bytes] = sync_await(async_request_option(opt, direction, asio::use_awaitable));
         if (ec) {
             throw std::system_error(ec);
@@ -56,7 +57,8 @@ namespace net::telnet {
      * @see `async_disable_option` in "net.telnet-stream-async-impl.cpp".
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::disable_option(option::id_num opt, negotiation_direction direction) {
+    std::size_t stream<NLS, PC>::disable_option(option::id_num opt, negotiation_direction direction)
+    {
         auto [ec, bytes] = sync_await(async_disable_option(opt, direction, asio::use_awaitable));
         if (ec) {
             throw std::system_error(ec);
@@ -71,7 +73,8 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBufSeq>
-    std::size_t stream<NLS, PC>::read_some(MBufSeq&& buffers) {
+    std::size_t stream<NLS, PC>::read_some(MBufSeq&& buffers)
+    {
         return sync_await(async_read_some(std::forward<MBufSeq>(buffers), asio::use_awaitable));
     } //stream::read_some(MBufSeq&&)
 
@@ -82,7 +85,8 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<ConstBufferSequence CBufSeq>
-    std::size_t stream<NLS, PC>::write_some(const CBufSeq& data) {
+    std::size_t stream<NLS, PC>::write_some(const CBufSeq& data)
+    {
         return sync_await(async_write_some(data, asio::use_awaitable));
     } //stream::write_some(const CBufSeq&)
 
@@ -93,7 +97,8 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<ConstBufferSequence CBufSeq>
-    std::size_t stream<NLS, PC>::write_raw(const CBufSeq& data) {
+    std::size_t stream<NLS, PC>::write_raw(const CBufSeq& data)
+    {
         return sync_await(async_write_raw(data, asio::use_awaitable));
     } //stream::write_raw(const CBufSeq&)
 
@@ -103,7 +108,8 @@ namespace net::telnet {
      * @see `async_write_command` in "net.telnet-stream-async-impl.cpp".
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::write_command(telnet::command cmd) {
+    std::size_t stream<NLS, PC>::write_command(telnet::command cmd)
+    {
         return sync_await(async_write_command(cmd, asio::use_awaitable));
     } //stream::write_command(telnet::command)
 
@@ -113,7 +119,8 @@ namespace net::telnet {
      * @see `async_write_subnegotiation` in "net.telnet-stream-async-impl.cpp".
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer) {
+    std::size_t stream<NLS, PC>::write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer)
+    {
         return sync_await(async_write_subnegotiation(opt, subnegotiation_buffer, asio::use_awaitable));
     } //stream::write_subnegotiation(option, const std::vector<byte_t>&)
 
@@ -123,7 +130,8 @@ namespace net::telnet {
      * @see `async_send_synch` in "net.telnet-stream-async-impl.cpp".
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::send_synch() {
+    std::size_t stream<NLS, PC>::send_synch()
+    {
         return sync_await(async_send_synch(asio::use_awaitable));
     } //stream::send_synch()
 
@@ -137,9 +145,12 @@ namespace net::telnet {
      * @see `request_option` for throwing version, `async_request_option` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::request_option(option::id_num opt,
-                                                negotiation_direction direction,
-                                                std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::request_option(
+        option::id_num opt,
+        negotiation_direction direction,
+        std::error_code& ec
+    ) noexcept
+    {
         try {
             return request_option(opt, direction);
         } catch (const std::system_error& e) {
@@ -157,9 +168,12 @@ namespace net::telnet {
      * @see `disable_option` for throwing version, `async_disable_option` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::disable_option(option::id_num opt,
-                                                negotiation_direction direction,
-                                                std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::disable_option(
+        option::id_num opt,
+        negotiation_direction direction,
+        std::error_code& ec
+    ) noexcept
+    {
         try {
             return disable_option(opt, direction);
         } catch (const std::system_error& e) {
@@ -178,7 +192,8 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBufSeq>
-    std::size_t stream<NLS, PC>::read_some(MBufSeq&& buffers, std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::read_some(MBufSeq&& buffers, std::error_code& ec) noexcept
+    {
         try {
             return read_some(std::forward<MBufSeq>(buffers));
         } catch (const std::system_error& e) {
@@ -200,7 +215,8 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<ConstBufferSequence CBufSeq>
-    std::size_t stream<NLS, PC>::write_some(const CBufSeq& data, std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::write_some(const CBufSeq& data, std::error_code& ec) noexcept
+    {
         try {
             return write_some(data);
         } catch (const std::system_error& e) {
@@ -222,7 +238,8 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<ConstBufferSequence CBufSeq>
-    std::size_t stream<NLS, PC>::write_raw(const CBufSeq& data, std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::write_raw(const CBufSeq& data, std::error_code& ec) noexcept
+    {
         try {
             return write_raw(data);
         } catch (const std::system_error& e) {
@@ -243,7 +260,8 @@ namespace net::telnet {
      * @see `write_command` for throwing version, `async_write_command` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::write_command(telnet::command cmd, std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::write_command(telnet::command cmd, std::error_code& ec) noexcept
+    {
         try {
             return write_command(cmd);
         } catch (const std::system_error& e) {
@@ -264,9 +282,12 @@ namespace net::telnet {
      * @see `write_subnegotiation` for throwing version, `async_write_subnegotiation` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::write_subnegotiation(option opt,
-                                                      const std::vector<byte_t>& subnegotiation_buffer,
-                                                      std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::write_subnegotiation(
+        option opt,
+        const std::vector<byte_t>& subnegotiation_buffer,
+        std::error_code& ec
+    ) noexcept
+    {
         try {
             return write_subnegotiation(opt, subnegotiation_buffer);
         } catch (const std::system_error& e) {
@@ -287,7 +308,8 @@ namespace net::telnet {
      * @see `send_synch` for throwing version, `async_send_synch` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::send_synch(std::error_code& ec) noexcept {
+    std::size_t stream<NLS, PC>::send_synch(std::error_code& ec) noexcept
+    {
         try {
             return send_synch();
         } catch (const std::system_error& e) {

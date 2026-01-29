@@ -37,7 +37,8 @@ namespace net::telnet {
      * Moves the provided `next_layer_stream` into `next_layer_`, default-constructs `fsm_`, and enables SO_OOBINLINE.
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    stream<NLS, PC>::stream(next_layer_type&& next_layer_stream) : next_layer_(std::move(next_layer_stream)), fsm_() {
+    stream<NLS, PC>::stream(next_layer_type&& next_layer_stream) : next_layer_(std::move(next_layer_stream)), fsm_()
+    {
         std::error_code ec;
         next_layer_.lowest_layer().set_option(lowest_layer_type::out_of_band_inline(true), ec);
         if (ec) {
@@ -54,25 +55,25 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<typename Awaitable>
-    auto stream<NLS, PC>::sync_await(Awaitable&& awaitable) {
+    auto stream<NLS, PC>::sync_await(Awaitable&& awaitable)
+    {
         using result_type = typename Awaitable::value_type;
         asio::io_context temp_ctx;
         std::promise<result_type> promise;
         std::future<result_type> future = promise.get_future();
 
-        asio::co_spawn(temp_ctx,
-                       std::forward<Awaitable>(awaitable),
-                       [&promise](std::exception_ptr excpt, auto... result) {
-                           if (excpt) {
-                               promise.set_exception(excpt);
-                           } else {
-                               if constexpr (std::is_void_v<result_type>) {
-                                   promise.set_value();
-                               } else {
-                                   promise.set_value(std::get<0>(std::make_tuple(result...)));
-                               }
-                           }
-                       } //lambda
+        asio::co_spawn(
+            temp_ctx, std::forward<Awaitable>(awaitable), [&promise](std::exception_ptr excpt, auto... result) {
+                if (excpt) {
+                    promise.set_exception(excpt);
+                } else {
+                    if constexpr (std::is_void_v<result_type>) {
+                        promise.set_value();
+                    } else {
+                        promise.set_value(std::get<0>(std::make_tuple(result...)));
+                    }
+                }
+            } //lambda
         ); //co_spawn
 
         std::jthread runner_thread([&temp_ctx] { temp_ctx.run(); });
@@ -89,7 +90,8 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<ConstBufferSequence CBufSeq>
     std::tuple<std::error_code, std::vector<byte_t>&>
-        stream<NLS, PC>::escape_telnet_output(std::vector<byte_t>& escaped_data, const CBufSeq& data) const noexcept {
+        stream<NLS, PC>::escape_telnet_output(std::vector<byte_t>& escaped_data, const CBufSeq& data) const noexcept
+    {
         try {
             for (auto iter = asio::buffers_begin(data), end = asio::buffers_end(data); iter != end; ++iter) {
                 if ((*iter == static_cast<byte_t>('\n'))
@@ -124,7 +126,8 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<ConstBufferSequence CBufSeq>
     std::tuple<std::error_code, std::vector<byte_t>>
-        stream<NLS, PC>::escape_telnet_output(const CBufSeq& data) const noexcept {
+        stream<NLS, PC>::escape_telnet_output(const CBufSeq& data) const noexcept
+    {
         std::vector<byte_t> escaped_data;
         try {
             constexpr double escaping_cushion_factor = 1.1;
@@ -143,15 +146,15 @@ namespace net::telnet {
      * @remark Only launches the async_receive if another one is not already in progress and there is not already urgent data in the byte stream.
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    void stream<NLS, PC>::launch_wait_for_urgent_data() {
+    void stream<NLS, PC>::launch_wait_for_urgent_data()
+    {
         if (!context_.waiting_for_urgent_data.exchange(true, std::memory_order_relaxed)
             && !context_.urgent_data_state) {
             this->lowest_layer().async_receive(
                 asio::mutable_buffer(nullptr, 0),
                 asio::socket_base::message_out_of_band,
                 asio::bind_executor(
-                    this->get_executor(),
-                    [this](std::error_code ec, std::size_t) {
+                    this->get_executor(), [this](std::error_code ec, std::size_t) {
                         this->context_.waiting_for_urgent_data.store(false, std::memory_order_relaxed);
                         if (!ec) {
                             this->context_.urgent_data_state.saw_urgent();
@@ -162,7 +165,8 @@ namespace net::telnet {
                             } //If there is already a transport error deferred, ignore this one as it’s likely redundant.
                         }
                     } //[this](std::error_code, std::size_t)
-                    ));
+                )
+            );
         }
     } //stream::launch_urgent_wait()
 
@@ -174,7 +178,8 @@ namespace net::telnet {
      * It can't already be `has_urgent_data` without a major bug.
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    void stream<NLS, PC>::context_type::urgent_data_tracker::saw_urgent() {
+    void stream<NLS, PC>::context_type::urgent_data_tracker::saw_urgent()
+    {
         urgent_data_state expected_state{};
         urgent_data_state desired_state{};
         bool success = false;
@@ -190,22 +195,26 @@ namespace net::telnet {
                 //The DM arrived first; this is the delayed notification. Reset.
                 protocol_config_type::log_error(
                     processing_signal::data_mark,
-                    "DM already arrived before current TCP urgent notification. Assuming Synch is already complete.");
+                    "DM already arrived before current TCP urgent notification. Assuming Synch is already complete."
+                );
                 desired_state = urgent_data_state::no_urgent_data;
             } else {
                 //CANT HAPPEN: state is `has_urgent_data`. This means another saw_urgent fired without saw_data_mark in between, or a logic error.
                 //We cannot transition and must exit.
                 protocol_config_type::log_error(
                     error::internal_error,
-                    "Invalid state in saw_urgent: has_urgent_data already set; implies launch_wait_for_urgent_data was " "called while urgent data was already in the byte stream.");
+                    "Invalid state in saw_urgent: has_urgent_data already set; implies launch_wait_for_urgent_data was " "called while urgent data was already in the byte stream."
+                );
                 return;
             }
 
             //Atomically attempt the transition
-            success = state_.compare_exchange_strong(expected_state,
-                                                     desired_state,
-                                                     std::memory_order_release, //Ensure subsequent reads see the change
-                                                     std::memory_order_relaxed);
+            success = state_.compare_exchange_strong(
+                expected_state,
+                desired_state,
+                std::memory_order_release, //Ensure subsequent reads see the change
+                std::memory_order_relaxed
+            );
 
         } while (!success);
     } //stream::context_type::urgent_data_tracker::saw_urgent()
@@ -217,7 +226,8 @@ namespace net::telnet {
      * If `state_` was `has_urgent_data`, it resets to `no_urgent_data`.
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    void stream<NLS, PC>::context_type::urgent_data_tracker::saw_data_mark() {
+    void stream<NLS, PC>::context_type::urgent_data_tracker::saw_data_mark()
+    {
         urgent_data_state expected_state{};
         urgent_data_state desired_state{};
         bool success = false;
@@ -236,16 +246,19 @@ namespace net::telnet {
             } else {
                 //State is `unexpected_data_mark`. This means another `saw_data_mark` fired without `saw_urgent` in between, or a logic error. The peer likely sent 2 data marks in quick succession, but this is safe.
                 //We cannot transition and must exit.
-                protocol_config_type::log_error(processing_signal::data_mark,
-                                          "Subsequent DM received while expecting TCP urgent.");
+                protocol_config_type::log_error(
+                    processing_signal::data_mark, "Subsequent DM received while expecting TCP urgent."
+                );
                 return;
             }
 
             //Atomically attempt the transition
-            success = state_.compare_exchange_strong(expected_state,
-                                                     desired_state,
-                                                     std::memory_order_release, //Ensure subsequent reads see the change
-                                                     std::memory_order_relaxed);
+            success = state_.compare_exchange_strong(
+                expected_state,
+                desired_state,
+                std::memory_order_release, //Ensure subsequent reads see the change
+                std::memory_order_relaxed
+            );
 
         } while (!success);
     } //stream::context_type::urgent_data_tracker::saw_data_mark()
@@ -256,11 +269,14 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
-    stream<NLS, PC>::input_processor<MBS>::input_processor(stream& parent_stream,
-                                                         stream::fsm_type& fsm,
-                                                         stream::context_type& context,
-                                                         MBS buffers)
-        : parent_stream_(parent_stream), fsm_(fsm), context_(context), buffers_(buffers), state_(state::initializing) {}
+    stream<NLS, PC>::input_processor<MBS>::input_processor(
+        stream& parent_stream,
+        stream::fsm_type& fsm,
+        stream::context_type& context,
+        MBS buffers
+    )
+        : parent_stream_(parent_stream), fsm_(fsm), context_(context), buffers_(buffers), state_(state::initializing)
+    {}
 
     /**
      * @internal
@@ -272,9 +288,12 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::input_processor<MBS>::operator()(Self& self,
-                                                          std::error_code ec_in,
-                                                          std::size_t bytes_transferred) {
+    void stream<NLS, PC>::input_processor<MBS>::operator()(
+        Self& self,
+        std::error_code ec_in,
+        std::size_t bytes_transferred
+    )
+    {
         if (state_ == state::done) [[unlikely]] {
             return; //complete has already been called; unsafe to do anything else
         }
@@ -301,7 +320,8 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::input_processor<MBS>::handle_processor_state_initializing(Self& self) {
+    void stream<NLS, PC>::input_processor<MBS>::handle_processor_state_initializing(Self& self)
+    {
         state_ = state::reading;
         if (context_.input_side_buffer.size() == 0) {
             if (context_.deferred_transport_error) {
@@ -313,9 +333,8 @@ namespace net::telnet {
             parent_stream_.launch_wait_for_urgent_data();
 
             auto read_buffer = context_.input_side_buffer.prepare(input_processor::read_block_size);
-            parent_stream_.next_layer().async_read_some(read_buffer,
-                                                        asio::bind_executor(parent_stream_.get_executor(),
-                                                                            std::move(self)));
+            parent_stream_.next_layer()
+                .async_read_some(read_buffer, asio::bind_executor(parent_stream_.get_executor(), std::move(self)));
             return; //Wait for next_layer async_read_some to complete.
         }
         //If the buffer already has data, there is no need to wait for a network read.
@@ -330,9 +349,12 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::input_processor<MBS>::handle_processor_state_reading(Self& self,
-                                                                              std::error_code ec_in,
-                                                                              std::size_t bytes_transferred) {
+    void stream<NLS, PC>::input_processor<MBS>::handle_processor_state_reading(
+        Self& self,
+        std::error_code ec_in,
+        std::size_t bytes_transferred
+    )
+    {
         context_.input_side_buffer.commit(bytes_transferred);
 
         if (context_.input_side_buffer.size() == 0) {
@@ -368,7 +390,8 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::input_processor<MBS>::handle_processor_state_processing(Self& self, std::error_code ec_in) {
+    void stream<NLS, PC>::input_processor<MBS>::handle_processor_state_processing(Self& self, std::error_code ec_in)
+    {
         if (ec_in) { //This has to be a write error.
             process_write_error(ec_in);
         }
@@ -425,7 +448,8 @@ namespace net::telnet {
                         [this, self = std::move(self)](auto&& arg) mutable {
                             this->do_response(std::forward<decltype(arg)>(arg), std::move(self));
                         },
-                        *response);
+                        *response
+                    );
                     return; //Wait for async operation to complete
                 } //if (response)
             } //for
@@ -450,9 +474,12 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::input_processor<MBS>::complete(Self& self,
-                                                        const std::error_code& ec,
-                                                        std::size_t bytes_transferred) {
+    void stream<NLS, PC>::input_processor<MBS>::complete(
+        Self& self,
+        const std::error_code& ec,
+        std::size_t bytes_transferred
+    )
+    {
         state_ = state::done;
         self.complete(ec, bytes_transferred);
     } //stream::input_processor::complete(Self&, const std::error_code&, std::size_t)
@@ -463,14 +490,16 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
-    void stream<NLS, PC>::input_processor<MBS>::process_write_error(std::error_code ec) {
+    void stream<NLS, PC>::input_processor<MBS>::process_write_error(std::error_code ec)
+    {
         if (context_.deferred_transport_error) {
             //We have a new write error on top of a previously deferred error.
             //Log it and attempt to continue processing the buffered byte stream.
             fsm_type::protocol_config_type::log_error(
                 ec,
                 "Error writing Telnet response with error {} previously deferred " "for reporting after processing the buffered byte stream.",
-                context_.deferred_transport_error);
+                context_.deferred_transport_error
+            );
         } else {
             //Defer the write error.
             context_.deferred_transport_error = ec;
@@ -484,7 +513,8 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
-    void stream<NLS, PC>::input_processor<MBS>::process_fsm_signals(std::error_code& signal_ec) {
+    void stream<NLS, PC>::input_processor<MBS>::process_fsm_signals(std::error_code& signal_ec)
+    {
         //Handle `processing_signal`s that modify the buffer directly.
         if (signal_ec == processing_signal::carriage_return) {
             //A previously discarded '\r' byte must be inserted into the user's buffer.
@@ -515,8 +545,11 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::input_processor<MBS>::do_response(typename stream::fsm_type::negotiation_response response,
-                                                           Self&& self) {
+    void stream<NLS, PC>::input_processor<MBS>::do_response(
+        typename stream::fsm_type::negotiation_response response,
+        Self&& self
+    )
+    {
         parent_stream_.async_write_negotiation(response, std::forward<Self>(self));
     } //stream::input_processor::do_response(negotiation_response, Self&&)
 
@@ -529,7 +562,8 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::input_processor<MBS>::do_response(std::string response, Self&& self) {
+    void stream<NLS, PC>::input_processor<MBS>::do_response(std::string response, Self&& self)
+    {
         static std::string resp = std::move(response);
         parent_stream_.async_write_raw(asio::buffer(resp), std::forward<Self>(self));
     } //stream::input_processor::do_response(std::string, Self&&)
@@ -543,7 +577,8 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::input_processor<MBS>::do_response(awaitables::subnegotiation_awaitable awaitable, Self&& self) {
+    void stream<NLS, PC>::input_processor<MBS>::do_response(awaitables::subnegotiation_awaitable awaitable, Self&& self)
+    {
         asio::co_spawn(
             parent_stream_.get_executor(),
             //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): Lambda closure lifetime is ensured by Asio. `this` lifetime is bound to parent operation which will not continue until the coroutine returns.
@@ -551,9 +586,8 @@ namespace net::telnet {
                 try {
                     auto [opt, subneg_buffer] = co_await handler_awaitable;
                     if (!subneg_buffer.empty()) {
-                        co_return co_await parent_stream_.async_write_subnegotiation(opt,
-                                                                                     subneg_buffer,
-                                                                                     asio::use_awaitable);
+                        co_return co_await parent_stream_
+                            .async_write_subnegotiation(opt, subneg_buffer, asio::use_awaitable);
                     }
                     co_return std::size_t{0};
                 } catch (const std::system_error& se) {
@@ -562,7 +596,8 @@ namespace net::telnet {
                     throw std::system_error(error::internal_error);
                 }
             },
-            std::forward<Self>(self));
+            std::forward<Self>(self)
+        );
     } //stream::input_processor::do_response(awaitables::subnegotiation_awaitable, Self&&)
 
     /**
@@ -575,9 +610,13 @@ namespace net::telnet {
     template<MutableBufferSequence MBS>
     template<typename Self, typename Tag, typename T, typename Awaitable>
     void stream<NLS, PC>::input_processor<MBS>::do_response(
-        std::tuple<awaitables::tagged_awaitable<Tag, T, Awaitable>,
-                   std::optional<typename stream::fsm_type::negotiation_response>> response,
-        Self&& self) {
+        std::tuple<
+            awaitables::tagged_awaitable<Tag, T, Awaitable>,
+            std::optional<typename stream::fsm_type::negotiation_response>
+        > response,
+        Self&& self
+    )
+    {
         auto [awaitable, negotiation] = std::move(response);
         asio::co_spawn(
             parent_stream_.get_executor(),
@@ -588,7 +627,8 @@ namespace net::telnet {
                 try {
                     std::size_t bytes_transferred = 0;
                     if (negotiation) {
-                        bytes_transferred += co_await parent_stream_.async_write_negotiation(*negotiation, asio::use_awaitable);
+                        bytes_transferred +=
+                            co_await parent_stream_.async_write_negotiation(*negotiation, asio::use_awaitable);
                     }
                     co_await awaitable;
                     co_return bytes_transferred;
@@ -598,6 +638,7 @@ namespace net::telnet {
                     throw std::system_error(error::internal_error);
                 }
             },
-            std::forward<Self>(self));
+            std::forward<Self>(self)
+        );
     } //stream::input_processor::do_response(tagged_awaitable<Tag, T, Awaitable>, Self&&)
 } //namespace net::telnet
