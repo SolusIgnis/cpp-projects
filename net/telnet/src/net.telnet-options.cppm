@@ -61,7 +61,7 @@ export namespace net::telnet {
             enable_predicate_type local_pred  = always_reject,
             enable_predicate_type remote_pred = always_reject,
             bool subneg_supported             = false,
-            size_t max_subneg_size            = max_subnegotiation_size_
+            size_t max_subneg_size            = max_subnegotiation_buffer_size
         )
             : id_(id),
               name_(std::move(name)),
@@ -78,7 +78,7 @@ export namespace net::telnet {
             bool local_supported   = false,
             bool remote_supported  = false,
             bool subneg_supported  = false,
-            size_t max_subneg_size = max_subnegotiation_size_
+            size_t max_subneg_size = max_subnegotiation_buffer_size
         )
         {
             enable_predicate_type local_pred  = local_supported ? always_accept : always_reject;
@@ -122,13 +122,13 @@ export namespace net::telnet {
         [[nodiscard]] bool supports_subnegotiation() const noexcept { return supports_subnegotiation_; }
 
         ///@brief Predicate that always accepts the `option`.
-        [[nodiscard]] static bool always_accept(id_num) noexcept { return true; }
+        [[nodiscard]] static bool always_accept(id_num /*unused*/) noexcept { return true; }
 
         ///@brief Predicate that always rejects the `option`.
-        [[nodiscard]] static bool always_reject(id_num) noexcept { return false; }
+        [[nodiscard]] static bool always_reject(id_num /*unused*/) noexcept { return false; }
 
     private:
-        static constexpr size_t max_subnegotiation_size_ = 1024;
+        static constexpr size_t max_subnegotiation_buffer_size = 1024;
 
         id_num id_;
         std::string name_;
@@ -352,9 +352,9 @@ export namespace net::telnet {
         std::optional<option> get(option::id_num opt_id) const noexcept
         {
             std::shared_lock<std::shared_mutex> lock(mutex_);
-            auto it = registry_.find(opt_id);
-            if (it != registry_.end()) {
-                return *it;
+            auto iter = registry_.find(opt_id);
+            if (iter != registry_.end()) {
+                return *iter;
             } else {
                 return std::nullopt;
             }
@@ -388,7 +388,7 @@ export namespace net::telnet {
                 upsert(opt); // the mutex is locked inside this call
             } catch (const std::system_error& e) {
                 ec = e.code();
-            } catch (std::bad_alloc) {
+            } catch (std::bad_alloc& e) {
                 ec = make_error_code(std::errc::not_enough_memory);
             } catch (...) {
                 ec = make_error_code(telnet::error::internal_error);
@@ -480,8 +480,9 @@ export namespace std {
      */
     template<>
     struct formatter<::net::telnet::option, char> {
+    private:
         char presentation_ = 'd'; ///< Format specifier: 'd' for 0xXX (name), 'n' for name only, 'x' for hex only.
-
+    public:
         /**
          * @brief Parses the format specifier for `option`.
          * @param ctx The format parse context.
