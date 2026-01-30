@@ -349,7 +349,7 @@ CheckOptions:
   readability-enum-initial-value.AllowExplicitZeroFirstInitialValue:   'true'
   
   readability-identifier-length.IgnoredParameterNames:        '^[n]$|^ec$'
-  readability-identifier-length.IgnoredVariableNames:         '^ec$'
+  readability-identifier-length.IgnoredVariableNames:         '^ec$|^id$'
   readability-identifier-length.MinimumExceptionNameLength:   '2'
   readability-identifier-length.MinimumLoopCounterNameLength: '2'
   readability-identifier-length.MinimumParameterNameLength:   '3'
