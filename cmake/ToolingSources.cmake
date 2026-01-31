@@ -33,3 +33,9 @@ endforeach()
 
 # Deduplicate source files.
 list(REMOVE_DUPLICATES ALL_TOOLING_SOURCES)
+
+option(SHOW_TOOLING_SOURCES "Display a list of sources passed to clang-format or clang-tidy." OFF)
+# Display tooling sources.
+if (SHOW_TOOLING_SOURCES)
+  message(STATUS "Tooling sources as passed to clang-format or clang-tidy: ${ALL_TOOLING_SOURCES}")
+endif()
