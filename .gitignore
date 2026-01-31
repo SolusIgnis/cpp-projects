@@ -64,6 +64,7 @@ gcm.cache/
 *.pcm
 *.modulemap
 .clangd/
+.cache/
 
 # MSVC
 *.ifc
