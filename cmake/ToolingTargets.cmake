@@ -2,6 +2,8 @@
 # Create tooling targets for clang-format (real and check) and clang-tidy.
 # ===========================================================================
 
+get_property(ALL_TOOLING_SOURCES GLOBAL PROPERTY ALL_TOOLING_SOURCES)
+
 # Target to run clang-format (for real).
 add_custom_target(format
   COMMAND clang-format -i

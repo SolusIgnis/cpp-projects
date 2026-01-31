@@ -13,24 +13,22 @@ set(TOOLING_EXTENSIONS
 )
 
 # Tooling target registries
-set(TOOLING_TARGETS "")
-set(TOOLING_EXAMPLE_TARGETS "")
-set(TOOLING_TEST_TARGETS "")
+set_property(GLOBAL PROPERTY TOOLING_TARGETS "")
+set_property(GLOBAL PROPERTY TOOLING_EXAMPLE_TARGETS "")
+set_property(GLOBAL PROPERTY TOOLING_TEST_TARGETS "")
 
 # Helper function to register a tooling target.
 function(register_tooling_target target)
-  list(APPEND TOOLING_TARGETS ${target})
-  set(TOOLING_TARGETS "${TOOLING_TARGETS}" PARENT_SCOPE)
+  set_property(GLOBAL APPEND PROPERTY TOOLING_TARGETS ${target})
+  get_property(TOOLING_TARGETS GLOBAL PROPERTY TOOLING_TARGETS)
 endfunction()
 
 # Helper function to register a tooling "example" target.
 function(register_tooling_demo target)
-  list(APPEND TOOLING_EXAMPLE_TARGETS ${target})
-  set(TOOLING_EXAMPLE_TARGETS "${TOOLING_EXAMPLE_TARGETS}" PARENT_SCOPE)
+  set_property(GLOBAL APPEND PROPERTY TOOLING_EXAMPLE_TARGETS ${target})
 endfunction()
 
 # Helper function to register a tooling "test" target.
 function(register_tooling_test target)
-  list(APPEND TOOLING_TEST_TARGETS ${target})
-  set(TOOLING_TEST_TARGETS "${TOOLING_TEST_TARGETS}" PARENT_SCOPE)
+  set_property(GLOBAL APPEND PROPERTY TOOLING_TEST_TARGETS ${target})
 endfunction()
