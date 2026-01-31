@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<meta charset="utf-8"/>
+<title>class urgent_data_tracker</title>
+<link rel="stylesheet" href="../../../../clang-doc-default-stylesheet.css"/>
+<script src="../../../../index_json.js"></script>
+<script src="../../../../index.js"></script>
+<header id="project-title"></header>
+<main>
+  <div id="sidebar-left" path="net/telnet/stream/context_type" class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left"></div>
+  <div id="main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
+    <h1>class urgent_data_tracker</h1>
+    <p>
+      Defined at line 
+      <a href="net/telnet/src/net.telnet-stream.cppm#246">246</a>
+       of file 
+      <a href="net/telnet/src/net.telnet-stream.cppm">net.telnet-stream.cppm</a>
+    </p>
+    <h2 id="Members">Members</h2>
+    <ul>
+      <li>
+        <div>private std::atomic&lt;urgent_data_state&gt; state_</div>
+      </li>
+    </ul>
+    <h2 id="Functions">Functions</h2>
+    <div>
+      <h3 id="F954F4EF7B137C1602C71CFA8F22A488C5E5BCF4">saw_urgent</h3>
+      <p>public void saw_urgent()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#180">180</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Updates the state when the OOB notification arrives.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="19332569BD5D578EF372672A2F624CB3D991CD11">saw_data_mark</h3>
+      <p>public void saw_data_mark()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#228">228</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Updates the state when the `telnet::command::dm` arrives.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="C12C23C40527F270E69A97DCDE410B675AD4CF15">has_urgent_data</h3>
+      <p>public bool has_urgent_data()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-stream.cppm#265">265</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-stream.cppm">net.telnet-stream.cppm</a>
+      </p>
+      <h3 id="4F80A6FEF2F553168C5C7B277FF38B7419B4ED8B">operator bool</h3>
+      <p>public bool operator bool()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-stream.cppm#273">273</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-stream.cppm">net.telnet-stream.cppm</a>
+      </p>
+    </div>
+    <h2 id="Enums">Enums</h2>
+    <div>
+      <table id="E0CFA3F1CE26797BDADF6D6BA4ABE13DA8A7D03D">
+        <thead>
+          <tr>
+            <th colspan="2">enum class urgent_data_state</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>no_urgent_data</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>has_urgent_data</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>unexpected_data_mark</td>
+            <td>0</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-stream.cppm#252">252</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-stream.cppm">net.telnet-stream.cppm</a>
+      </p>
+    </div>
+  </div>
+  <div id="sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+    <ol>
+      <li>
+        <span>
+          <a href="#Members">Members</a>
+        </span>
+      </li>
+      <li>
+        <span>
+          <a href="#Functions">Functions</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#F954F4EF7B137C1602C71CFA8F22A488C5E5BCF4">saw_urgent</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#19332569BD5D578EF372672A2F624CB3D991CD11">saw_data_mark</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#C12C23C40527F270E69A97DCDE410B675AD4CF15">has_urgent_data</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#4F80A6FEF2F553168C5C7B277FF38B7419B4ED8B">operator bool</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <span>
+          <a href="#Enums">Enums</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#E0CFA3F1CE26797BDADF6D6BA4ABE13DA8A7D03D">urgent_data_state</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+</main>
+<footer>
+  <span class="no-break">clang-doc version 21.1.6</span>
+</footer>

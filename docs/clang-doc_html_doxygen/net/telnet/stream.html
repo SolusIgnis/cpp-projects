@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<meta charset="utf-8"/>
+<title>class stream</title>
+<link rel="stylesheet" href="../../clang-doc-default-stylesheet.css"/>
+<script src="../../index_json.js"></script>
+<script src="../../index.js"></script>
+<header id="project-title"></header>
+<main>
+  <div id="sidebar-left" path="net/telnet" class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left"></div>
+  <div id="main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
+    <h1>class stream</h1>
+    <p>
+      Defined at line 
+      <a href="net/telnet/src/net.telnet-stream.cppm#55">55</a>
+       of file 
+      <a href="net/telnet/src/net.telnet-stream.cppm">net.telnet-stream.cppm</a>
+    </p>
+    <h2 id="Members">Members</h2>
+    <ul>
+      <li>
+        <div>private next_layer_type next_layer_</div>
+      </li>
+      <li>
+        <div>private fsm_type fsm_</div>
+      </li>
+      <li>
+        <div>
+          private 
+          <a href="../../net/telnet/stream/context_type.html">context_type</a>
+           context_
+        </div>
+      </li>
+    </ul>
+    <h2 id="Records">Records</h2>
+    <ul>
+      <li>
+        <a href="../../net/telnet/stream/context_type.html">context_type</a>
+      </li>
+      <li>
+        <a href="../../net/telnet/stream/input_processor.html">input_processor</a>
+      </li>
+    </ul>
+    <h2 id="Functions">Functions</h2>
+    <div>
+      <h3 id="E79491E7D3F939EC657C9D5BF76F8CB300F4509F">stream&lt;NextLayerT, ProtocolConfigT&gt;</h3>
+      <p>public void stream&lt;NextLayerT, ProtocolConfigT&gt;(next_layer_type &amp;&amp; next_layer_stream)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#39">39</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Constructs a stream with a next-layer stream.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="A264DBB19691397CA4DF97DA23BB6A89AC33D8A5">async_request_option</h3>
+      <p>
+        public auto async_request_option(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt, 
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         direction, CompletionToken &amp;&amp; token)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp#43">43</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp">net.telnet-stream-async-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously requests or offers an option, sending IAC WILL/DO.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="29507053BA12E1434103C12F58D2DE574066A8BE">request_option</h3>
+      <p>
+        public std::size_t request_option(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt, 
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         direction)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#44">44</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously requests or offers an option, sending IAC WILL/DO.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="A27CC5942E8B38D5005BC13851F909BF64455977">request_option</h3>
+      <p>
+        public std::size_t request_option(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt, 
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         direction, std::error_code &amp; ec)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#147">147</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously requests or offers an option, sending IAC WILL/DO.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="35BECB59EEE46A34F5F6CC512FB91E839A4DC67A">async_disable_option</h3>
+      <p>
+        public auto async_disable_option(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt, 
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         direction, CompletionToken &amp;&amp; token)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp#69">69</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp">net.telnet-stream-async-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously disables an option, sending IAC WONT/DONT.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="CCBB68D39DBE8A4EC50853161EC94DCA9A54B190">disable_option</h3>
+      <p>
+        public std::size_t disable_option(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt, 
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         direction)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#59">59</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously disables an option, sending IAC WONT/DONT.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="6EC8F4ED5E92F13C447BB4436FB0C935C5F98DF9">lowest_layer</h3>
+      <p>public lowest_layer_type &amp; lowest_layer()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-stream.cppm#106">106</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-stream.cppm">net.telnet-stream.cppm</a>
+      </p>
+      <h3 id="29C98ADE5B9F59D047F82D925FC26166F7DB5BA9">next_layer</h3>
+      <p>public next_layer_type &amp; next_layer()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-stream.cppm#109">109</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-stream.cppm">net.telnet-stream.cppm</a>
+      </p>
+      <h3 id="51C96AAD56EA1C8F41B22B31AF2D90CAE64B467E">register_option_handlers</h3>
+      <p>
+        public void register_option_handlers(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt, std::optional&lt;typename fsm_type::option_enablement_handler_type&gt; enable_handler, std::optional&lt;typename fsm_type::option_disablement_handler_type&gt; disable_handler, std::optional&lt;typename fsm_type::subnegotiation_handler_type&gt; subneg_handler)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-stream.cppm#112">112</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-stream.cppm">net.telnet-stream.cppm</a>
+      </p>
+      <h3 id="E76FEDEFC9A74A13937379751E467B75C800C429">unregister_option_handlers</h3>
+      <p>
+        public void unregister_option_handlers(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-stream.cppm#125">125</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-stream.cppm">net.telnet-stream.cppm</a>
+      </p>
+      <h3 id="A99D456627DD89E51518B0802D43401E248429B4">disable_option</h3>
+      <p>
+        public std::size_t disable_option(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt, 
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         direction, std::error_code &amp; ec)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#170">170</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously disables an option, sending IAC WONT/DONT.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="DE3D66B0EB65208E88FB477FA024E8B88A22EB9B">async_read_some</h3>
+      <p>public auto async_read_some(const MBufSeq &amp; buffers, CompletionToken &amp;&amp; token)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp#112">112</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp">net.telnet-stream-async-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously reads some data with Telnet processing.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="5078122794DF33F69E2E35E69E11667301441FF7">read_some</h3>
+      <p>public std::size_t read_some(MBufSeq &amp;&amp; buffers)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#74">74</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously reads some data with Telnet processing.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="EB8D858283142BB80BA6D036AA1A03D430F0E960">read_some</h3>
+      <p>public std::size_t read_some(MBufSeq &amp;&amp; buffers, std::error_code &amp; ec)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#193">193</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously reads some data with Telnet processing.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="A46123888E89AE599BFCEB3FEA5847C3C6AB113C">async_write_some</h3>
+      <p>public auto async_write_some(const CBufSeq &amp; data, CompletionToken &amp;&amp; token)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp#128">128</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp">net.telnet-stream-async-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously writes some data with Telnet-specific IAC escaping.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="EB62E23B7B50721937068D0290D0BE57CFF16BD8">write_some</h3>
+      <p>public std::size_t write_some(const CBufSeq &amp; data)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#86">86</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously writes some data with Telnet-specific IAC escaping.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="6FD8058AE971D677C70102A268AA69E76EE44316">write_some</h3>
+      <p>public std::size_t write_some(const CBufSeq &amp; data, std::error_code &amp; ec)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#216">216</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously writes some data with Telnet-specific IAC escaping.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="0C7AF7B8CEE1B8B9DF2988A7EC9122D95B0AF6D8">async_write_raw</h3>
+      <p>public auto async_write_raw(const CBufSeq &amp; data, CompletionToken &amp;&amp; token)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp#144">144</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp">net.telnet-stream-async-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously writes a pre-escaped buffer containing data and raw Telnet commands.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="0980E52A3C2BB82FF496C71E80CC9B748A48699C">write_raw</h3>
+      <p>public std::size_t write_raw(const CBufSeq &amp; data)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#98">98</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously writes a pre-escaped buffer containing data and raw Telnet commands.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="D99F70133DC00A34D2AF4AD67A2576A737A0C55A">get_executor</h3>
+      <p>public executor_type get_executor()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-stream.cppm#103">103</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-stream.cppm">net.telnet-stream.cppm</a>
+      </p>
+      <h3 id="63279EFFE4FBE43FC40351A2322D2FDB8AA72941">write_raw</h3>
+      <p>public std::size_t write_raw(const CBufSeq &amp; data, std::error_code &amp; ec)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#239">239</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously writes a pre-escaped buffer containing data and raw Telnet commands.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="47F968B6DFCDAA2552C5DB55CF8EA92CCA01B02A">async_write_command</h3>
+      <p>
+        public auto async_write_command(
+        <a href="command.html">command</a>
+         cmd, CompletionToken &amp;&amp; token)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp#158">158</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp">net.telnet-stream-async-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously writes a Telnet command.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="ACFCB04E76C5868E9CA51DA5D0469449B8ABB7DA">write_command</h3>
+      <p>
+        public std::size_t write_command(
+        <a href="command.html">command</a>
+         cmd)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#110">110</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously writes a Telnet command.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="D6310D37D6C0F6AD2F1F3B9495813B22ECDB7A6F">write_command</h3>
+      <p>
+        public std::size_t write_command(
+        <a href="command.html">command</a>
+         cmd, std::error_code &amp; ec)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#262">262</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously writes a Telnet command.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="36A0044B885EC7FBB4B469614A8CEE9FDFD497CE">async_write_negotiation</h3>
+      <p>public auto async_write_negotiation(typename fsm_type::negotiation_response response, CompletionToken &amp;&amp; token)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp#315">315</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp">net.telnet-stream-async-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>todo</div>
+            <p> Future Development: make this private</p>
+          </div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously writes a Telnet negotiation command with an option.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="FBAFC1BB13BE5FB6DBE55026FB641B65EE040069">write_negotiation</h3>
+      <p>public std::size_t write_negotiation(typename fsm_type::negotiation_response response)</p>
+      <div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously writes a Telnet negotiation command with an option.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="389E13C3037FEEBFEA8643D3637FF26792F48171">write_negotiation</h3>
+      <p>public std::size_t write_negotiation(typename fsm_type::negotiation_response response, std::error_code &amp; ec)</p>
+      <div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously writes a Telnet negotiation command with an option.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="926CA5B233BC2768E285958AFD595857BDBF5ED2">async_write_subnegotiation</h3>
+      <p>
+        public auto async_write_subnegotiation(
+        <a href="option.html">option</a>
+         opt, const std::vector&lt;byte_t&gt; &amp; subnegotiation_buffer, CompletionToken &amp;&amp; token)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp#180">180</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp">net.telnet-stream-async-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously writes a Telnet subnegotiation command.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="4B9049969803E99038E924EFEB2C9B85B78E9F3F">write_subnegotiation</h3>
+      <p>
+        public std::size_t write_subnegotiation(
+        <a href="option.html">option</a>
+         opt, const std::vector&lt;byte_t&gt; &amp; subnegotiation_buffer)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#121">121</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously writes a Telnet subnegotiation command.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="E0944E727E22F5F8A7EE07ECA91429A1B8B48DA3">write_subnegotiation</h3>
+      <p>
+        public std::size_t write_subnegotiation(
+        <a href="option.html">option</a>
+         opt, const std::vector&lt;byte_t&gt; &amp; subnegotiation_buffer, std::error_code &amp; ec)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#284">284</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously writes a Telnet subnegotiation command.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="E9790EDED681467F4EB94C6C1EB2882C3A1B3AA5">async_send_synch</h3>
+      <p>public auto async_send_synch(CompletionToken &amp;&amp; token)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp#241">241</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp">net.telnet-stream-async-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously sends Telnet Synch sequence (NUL bytes and IAC DM).</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="A4F553D5565BA520521FC5FC688DD0F999CEE59B">send_synch</h3>
+      <p>public std::size_t send_synch()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#132">132</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously sends Telnet Synch sequence (NUL bytes and IAC DM).</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="4E96595FB7E13844A56DD8B74D86F62337BD16CD">send_synch</h3>
+      <p>public std::size_t send_synch(std::error_code &amp; ec)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp#310">310</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-sync-impl.cpp">net.telnet-stream-sync-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously sends Telnet Synch sequence (NUL bytes and IAC DM).</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="F98C3E45065FE5E6DA6DEDDF4D4E53DD5E983B5A">launch_wait_for_urgent_data</h3>
+      <p>public void launch_wait_for_urgent_data()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#148">148</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously waits (via 0-byte receive) for notification that OOB data is in the stream.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="D3AFE2E219EC21F279B4211696BA3E2BF3A1C4AC">async_send_nul</h3>
+      <p>private auto async_send_nul(bool urgent, CompletionToken &amp;&amp; token)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp#295">295</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp">net.telnet-stream-async-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously sends a single NUL byte, optionally as OOB.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="B9A748FFC941D82278D2BF0901BF16C5965BEB8E">sync_await</h3>
+      <p>private static auto sync_await(Awaitable &amp;&amp; awaitable)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#56">56</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Synchronously awaits the completion of an awaitable operation.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="68DAD11D7D70C9DF0707FE58B6AC502DDFBF5F4D">escape_telnet_output</h3>
+      <p>private std::tuple&lt;std::error_code, std::vector&lt;byte_t&gt; &amp;&gt; escape_telnet_output(std::vector&lt;byte_t&gt; &amp; escaped_data, const CBufSeq &amp; data)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#90">90</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Escapes Telnet output data by duplicating 0xFF (IAC) bytes into a provided vector.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="71504BAF0B7DC3A73AF815215469398E49050157">escape_telnet_output</h3>
+      <p>private std::tuple&lt;std::error_code, std::vector&lt;byte_t&gt;&gt; escape_telnet_output(const CBufSeq &amp; data)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#126">126</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Escapes Telnet output data by duplicating 0xFF (IAC) bytes.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="3D5FE31ACBFE8873206938199D9753FCD791B5E5">async_write_temp_buffer</h3>
+      <p>private auto async_write_temp_buffer(std::vector&lt;byte_t&gt; &amp;&amp; temp_buffer, CompletionToken &amp;&amp; token)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp#341">341</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp">net.telnet-stream-async-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously writes a temporary buffer to the next layer.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="D32DA77E68784E5F3E2C922052C37B1477D7ABBE">async_report_error</h3>
+      <p>
+        private auto async_report_error(
+        <a href="../../std/__1/error_code.html">error_code</a>
+         ec, CompletionToken &amp;&amp; token)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp#365">365</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-async-impl.cpp">net.telnet-stream-async-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronously reports an error via the completion token.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+    <ol>
+      <li>
+        <span>
+          <a href="#Members">Members</a>
+        </span>
+      </li>
+      <li>
+        <span>
+          <a href="#Records">Records</a>
+        </span>
+      </li>
+      <li>
+        <span>
+          <a href="#Functions">Functions</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#E79491E7D3F939EC657C9D5BF76F8CB300F4509F">stream&lt;NextLayerT, ProtocolConfigT&gt;</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#A264DBB19691397CA4DF97DA23BB6A89AC33D8A5">async_request_option</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#29507053BA12E1434103C12F58D2DE574066A8BE">request_option</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#A27CC5942E8B38D5005BC13851F909BF64455977">request_option</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#35BECB59EEE46A34F5F6CC512FB91E839A4DC67A">async_disable_option</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#CCBB68D39DBE8A4EC50853161EC94DCA9A54B190">disable_option</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#6EC8F4ED5E92F13C447BB4436FB0C935C5F98DF9">lowest_layer</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#29C98ADE5B9F59D047F82D925FC26166F7DB5BA9">next_layer</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#51C96AAD56EA1C8F41B22B31AF2D90CAE64B467E">register_option_handlers</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#E76FEDEFC9A74A13937379751E467B75C800C429">unregister_option_handlers</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#A99D456627DD89E51518B0802D43401E248429B4">disable_option</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#DE3D66B0EB65208E88FB477FA024E8B88A22EB9B">async_read_some</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#5078122794DF33F69E2E35E69E11667301441FF7">read_some</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#EB8D858283142BB80BA6D036AA1A03D430F0E960">read_some</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#A46123888E89AE599BFCEB3FEA5847C3C6AB113C">async_write_some</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#EB62E23B7B50721937068D0290D0BE57CFF16BD8">write_some</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#6FD8058AE971D677C70102A268AA69E76EE44316">write_some</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#0C7AF7B8CEE1B8B9DF2988A7EC9122D95B0AF6D8">async_write_raw</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#0980E52A3C2BB82FF496C71E80CC9B748A48699C">write_raw</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#D99F70133DC00A34D2AF4AD67A2576A737A0C55A">get_executor</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#63279EFFE4FBE43FC40351A2322D2FDB8AA72941">write_raw</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#47F968B6DFCDAA2552C5DB55CF8EA92CCA01B02A">async_write_command</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#ACFCB04E76C5868E9CA51DA5D0469449B8ABB7DA">write_command</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#D6310D37D6C0F6AD2F1F3B9495813B22ECDB7A6F">write_command</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#36A0044B885EC7FBB4B469614A8CEE9FDFD497CE">async_write_negotiation</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#FBAFC1BB13BE5FB6DBE55026FB641B65EE040069">write_negotiation</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#389E13C3037FEEBFEA8643D3637FF26792F48171">write_negotiation</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#926CA5B233BC2768E285958AFD595857BDBF5ED2">async_write_subnegotiation</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#4B9049969803E99038E924EFEB2C9B85B78E9F3F">write_subnegotiation</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#E0944E727E22F5F8A7EE07ECA91429A1B8B48DA3">write_subnegotiation</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#E9790EDED681467F4EB94C6C1EB2882C3A1B3AA5">async_send_synch</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#A4F553D5565BA520521FC5FC688DD0F999CEE59B">send_synch</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#4E96595FB7E13844A56DD8B74D86F62337BD16CD">send_synch</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#F98C3E45065FE5E6DA6DEDDF4D4E53DD5E983B5A">launch_wait_for_urgent_data</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#D3AFE2E219EC21F279B4211696BA3E2BF3A1C4AC">async_send_nul</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#B9A748FFC941D82278D2BF0901BF16C5965BEB8E">sync_await</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#68DAD11D7D70C9DF0707FE58B6AC502DDFBF5F4D">escape_telnet_output</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#71504BAF0B7DC3A73AF815215469398E49050157">escape_telnet_output</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#3D5FE31ACBFE8873206938199D9753FCD791B5E5">async_write_temp_buffer</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#D32DA77E68784E5F3E2C922052C37B1477D7ABBE">async_report_error</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+</main>
+<footer>
+  <span class="no-break">clang-doc version 21.1.6</span>
+</footer>

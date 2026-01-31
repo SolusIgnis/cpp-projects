@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<meta charset="utf-8"/>
+<title>class option</title>
+<link rel="stylesheet" href="../../clang-doc-default-stylesheet.css"/>
+<script src="../../index_json.js"></script>
+<script src="../../index.js"></script>
+<header id="project-title"></header>
+<main>
+  <div id="sidebar-left" path="net/telnet" class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left"></div>
+  <div id="main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
+    <h1>class option</h1>
+    <p>
+      Defined at line 
+      <a href="net/telnet/src/net.telnet-options.cppm#39">39</a>
+       of file 
+      <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+    </p>
+    <h2 id="Members">Members</h2>
+    <ul>
+      <li>
+        <div>
+          private 
+          <a href="../../net/telnet/option/id_num.html">id_num</a>
+           id_
+        </div>
+      </li>
+      <li>
+        <div>
+          private 
+          <a href="../../std/__1/basic_string.html">basic_string</a>
+           name_
+        </div>
+      </li>
+      <li>
+        <div>
+          private 
+          <a href="../../std/__1/function.html">function</a>
+           local_predicate_
+        </div>
+      </li>
+      <li>
+        <div>
+          private 
+          <a href="../../std/__1/function.html">function</a>
+           remote_predicate_
+        </div>
+      </li>
+      <li>
+        <div>private bool supports_subnegotiation_</div>
+      </li>
+      <li>
+        <div>private size_t max_subneg_size_</div>
+      </li>
+      <li>
+        <div>private static const size_t max_subnegotiation_size_</div>
+      </li>
+    </ul>
+    <h2 id="Functions">Functions</h2>
+    <div>
+      <h3 id="9F03C86830FF2F8FDB5110D9DE501563E6052EEC">option</h3>
+      <p>
+        public void option(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         id, 
+        <a href="../../std/__1/basic_string.html">basic_string</a>
+         name, 
+        <a href="../../std/__1/function.html">function</a>
+         local_pred, 
+        <a href="../../std/__1/function.html">function</a>
+         remote_pred, bool subneg_supported, size_t max_subneg_size)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#58">58</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="8E2C5B42C7CCCEB98EEB6CAB723E8970C1243E96">make_option</h3>
+      <p>
+        public static 
+        <a href="option.html">option</a>
+         make_option(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         id, 
+        <a href="../../std/__1/basic_string.html">basic_string</a>
+         name, bool local_supported, bool remote_supported, bool subneg_supported, size_t max_subneg_size)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#74">74</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="461D5E70E7C3FC299C7270854AD4859D58D71965">operator&lt;=&gt;</h3>
+      <p>
+        public 
+        <a href="../../std/__1/strong_ordering.html">strong_ordering</a>
+         operator&lt;=&gt;(const option &amp; other)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#94">94</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="AA92294D13CE3831BB601CC2512432DBF74D0909">operator&lt;=&gt;</h3>
+      <p>
+        public 
+        <a href="../../std/__1/strong_ordering.html">strong_ordering</a>
+         operator&lt;=&gt;(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         other_id)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#97">97</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="8D6A9B1EC5BDA9C63E9118B0CE08AF445022732E">operator net::telnet::option::id_num</h3>
+      <p>
+        public 
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         operator net::telnet::option::id_num()
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#100">100</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="0B30A97CAF0EB5680514069F6FF8D58049713603">get_id</h3>
+      <p>
+        public 
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         get_id()
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#104">104</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="BFFFADA78462501D3B534ECAAC338C0C09868538">get_name</h3>
+      <p>public const std::string &amp; get_name()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#106">106</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="E0EC17E99EA104D0666EE70E2BCEAD2A363AA9C5">supports_local</h3>
+      <p>public bool supports_local()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#109">109</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="6138E2DC0AD6C37019B1B957C44B9673BA51DADD">supports_remote</h3>
+      <p>public bool supports_remote()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#112">112</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="E8CA719925AD06E825B53C0CDAE9E7B66D71E909">supports</h3>
+      <p>
+        public bool supports(
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         direction)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#115">115</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="19F00630EE91CB1E7E99446B4AE989C6D4AE2F7E">max_subnegotiation_size</h3>
+      <p>public size_t max_subnegotiation_size()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#121">121</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="7715C199CC850AEAC3A73BA1C806D0375912A2D6">supports_subnegotiation</h3>
+      <p>public bool supports_subnegotiation()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#124">124</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="E6955B5A5AB7BBF0A0F5BCFE7A749AB87555DF9B">always_accept</h3>
+      <p>
+        public static bool always_accept(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         )
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#127">127</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+      <h3 id="D7CDE5B449E3300DCAE2287E8DD81F5FAD289F4F">always_reject</h3>
+      <p>
+        public static bool always_reject(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         )
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#131">131</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+    </div>
+    <h2 id="Enums">Enums</h2>
+    <div>
+      <table id="2E78560029B320D5CC59FA8C40AD5B47F8C6A96E">
+        <thead>
+          <tr>
+            <th colspan="2">enum class id_num</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>binary</td>
+            <td>@</td>
+          </tr>
+          <tr>
+            <td>echo</td>
+            <td>91</td>
+          </tr>
+          <tr>
+            <td>reconnection</td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td>suppress_go_ahead</td>
+            <td>essage</td>
+          </tr>
+          <tr>
+            <td>approx_message_size_negotiation</td>
+            <td>0x05</td>
+          </tr>
+          <tr>
+            <td>status</td>
+            <td>FC</td>
+          </tr>
+          <tr>
+            <td>timing_mark</td>
+            <td>led</td>
+          </tr>
+          <tr>
+            <td>remote_controlled_trans_and_echo</td>
+            <td>,</td>
+          </tr>
+          <tr>
+            <td>output_line_width</td>
+            <td>//&lt; Output Page Size (NIC 20197 of August 1978)</td>
+          </tr>
+          <tr>
+            <td>output_page_size</td>
+            <td>/</td>
+          </tr>
+          <tr>
+            <td>output_carriage_return_disposition</td>
+            <td>0B</td>
+          </tr>
+          <tr>
+            <td>output_horizontal_tab_stops</td>
+            <td>&lt;</td>
+          </tr>
+          <tr>
+            <td>output_horizontal_tab_disposition</td>
+            <td>D</td>
+          </tr>
+          <tr>
+            <td>output_formfeed_disposition</td>
+            <td>&lt;</td>
+          </tr>
+          <tr>
+            <td>output_vertical_tabstops</td>
+            <td>utput</td>
+          </tr>
+          <tr>
+            <td>output_vertical_tab_disposition</td>
+            <td>15</td>
+          </tr>
+          <tr>
+            <td>output_linefeed_disposition</td>
+            <td>&lt;</td>
+          </tr>
+          <tr>
+            <td>extended_ascii</td>
+            <td>e</td>
+          </tr>
+          <tr>
+            <td>logout</td>
+            <td>C</td>
+          </tr>
+          <tr>
+            <td>byte_macro</td>
+            <td>inal</td>
+          </tr>
+          <tr>
+            <td>data_entry_terminal</td>
+            <td>//&lt; SUPDUP (@see RFC 736, RFC 734)</td>
+          </tr>
+          <tr>
+            <td>supdup</td>
+            <td>put</td>
+          </tr>
+          <tr>
+            <td>supdup_output</td>
+            <td>n</td>
+          </tr>
+          <tr>
+            <td>send_location</td>
+            <td>e</td>
+          </tr>
+          <tr>
+            <td>terminal_type</td>
+            <td>rd</td>
+          </tr>
+          <tr>
+            <td>end_of_record</td>
+            <td>Identification</td>
+          </tr>
+          <tr>
+            <td>tacacs_user_identification</td>
+            <td>26</td>
+          </tr>
+          <tr>
+            <td>output_marking</td>
+            <td>cation</td>
+          </tr>
+          <tr>
+            <td>terminal_location_number</td>
+            <td>elnet</td>
+          </tr>
+          <tr>
+            <td>telnet_3270_regime</td>
+            <td>D</td>
+          </tr>
+          <tr>
+            <td>x_3_pad</td>
+            <td>indow</td>
+          </tr>
+          <tr>
+            <td>negotiate_about_window_size</td>
+            <td>/</td>
+          </tr>
+          <tr>
+            <td>terminal_speed</td>
+            <td>w</td>
+          </tr>
+          <tr>
+            <td>remote_flow_control</td>
+            <td>ode</td>
+          </tr>
+          <tr>
+            <td>linemode</td>
+            <td>on</td>
+          </tr>
+          <tr>
+            <td>x_display_location</td>
+            <td>nment</td>
+          </tr>
+          <tr>
+            <td>environment_option</td>
+            <td>tication</td>
+          </tr>
+          <tr>
+            <td>authentication</td>
+            <td>ryption</td>
+          </tr>
+          <tr>
+            <td>encrypt_deprecated</td>
+            <td>38</td>
+          </tr>
+          <tr>
+            <td>new_environment_option</td>
+            <td>tn3270e</td>
+          </tr>
+          <tr>
+            <td>tn3270e</td>
+            <td>t</td>
+          </tr>
+          <tr>
+            <td>xauth</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>charset</td>
+            <td>ial</td>
+          </tr>
+          <tr>
+            <td>telnet_remote_serial_port</td>
+            <td>43</td>
+          </tr>
+          <tr>
+            <td>com_port_control_option</td>
+            <td>elnet</td>
+          </tr>
+          <tr>
+            <td>telnet_suppress_local_echo</td>
+            <td>elnet</td>
+          </tr>
+          <tr>
+            <td>telnet_start_tls</td>
+            <td>ee</td>
+          </tr>
+          <tr>
+            <td>kermit</td>
+            <td>oft</td>
+          </tr>
+          <tr>
+            <td>send_url</td>
+            <td>48</td>
+          </tr>
+          <tr>
+            <td>forward_x</td>
+            <td>49</td>
+          </tr>
+          <tr>
+            <td>msdp</td>
+            <td>s</td>
+          </tr>
+          <tr>
+            <td>mssp</td>
+            <td>70</td>
+          </tr>
+          <tr>
+            <td>gssapi</td>
+            <td>79</td>
+          </tr>
+          <tr>
+            <td>mccp1</td>
+            <td>lient</td>
+          </tr>
+          <tr>
+            <td>mccp2</td>
+            <td>lient</td>
+          </tr>
+          <tr>
+            <td>mccp3</td>
+            <td>87</td>
+          </tr>
+          <tr>
+            <td>msp</td>
+            <td>90</td>
+          </tr>
+          <tr>
+            <td>mxp</td>
+            <td>91</td>
+          </tr>
+          <tr>
+            <td>zmp</td>
+            <td>)</td>
+          </tr>
+          <tr>
+            <td>pueblo</td>
+            <td>94</td>
+          </tr>
+          <tr>
+            <td>aardwolf_102</td>
+            <td>agma_logon</td>
+          </tr>
+          <tr>
+            <td>telopt_pragma_logon</td>
+            <td>OPT</td>
+          </tr>
+          <tr>
+            <td>telopt_sspi_logon</td>
+            <td>T</td>
+          </tr>
+          <tr>
+            <td>telopt_pragma_heartbeat</td>
+            <td>sl_deprecated</td>
+          </tr>
+          <tr>
+            <td>ssl_deprecated</td>
+            <td>145</td>
+          </tr>
+          <tr>
+            <td>mcp</td>
+            <td>160</td>
+          </tr>
+          <tr>
+            <td>atcp</td>
+            <td>ric</td>
+          </tr>
+          <tr>
+            <td>gmcp</td>
+            <td>201</td>
+          </tr>
+          <tr>
+            <td>extended_options_list</td>
+            <td>m</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-options.cppm#242">242</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-options.cppm">net.telnet-options.cppm</a>
+      </p>
+    </div>
+  </div>
+  <div id="sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+    <ol>
+      <li>
+        <span>
+          <a href="#Members">Members</a>
+        </span>
+      </li>
+      <li>
+        <span>
+          <a href="#Functions">Functions</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#9F03C86830FF2F8FDB5110D9DE501563E6052EEC">option</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#8E2C5B42C7CCCEB98EEB6CAB723E8970C1243E96">make_option</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#461D5E70E7C3FC299C7270854AD4859D58D71965">operator&lt;=&gt;</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#AA92294D13CE3831BB601CC2512432DBF74D0909">operator&lt;=&gt;</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#8D6A9B1EC5BDA9C63E9118B0CE08AF445022732E">operator net::telnet::option::id_num</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#0B30A97CAF0EB5680514069F6FF8D58049713603">get_id</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#BFFFADA78462501D3B534ECAAC338C0C09868538">get_name</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#E0EC17E99EA104D0666EE70E2BCEAD2A363AA9C5">supports_local</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#6138E2DC0AD6C37019B1B957C44B9673BA51DADD">supports_remote</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#E8CA719925AD06E825B53C0CDAE9E7B66D71E909">supports</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#19F00630EE91CB1E7E99446B4AE989C6D4AE2F7E">max_subnegotiation_size</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#7715C199CC850AEAC3A73BA1C806D0375912A2D6">supports_subnegotiation</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#E6955B5A5AB7BBF0A0F5BCFE7A749AB87555DF9B">always_accept</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#D7CDE5B449E3300DCAE2287E8DD81F5FAD289F4F">always_reject</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <span>
+          <a href="#Enums">Enums</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#2E78560029B320D5CC59FA8C40AD5B47F8C6A96E">id_num</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+</main>
+<footer>
+  <span class="no-break">clang-doc version 21.1.6</span>
+</footer>

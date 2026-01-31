@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<meta charset="utf-8"/>
+<title>class tagged_awaitable</title>
+<link rel="stylesheet" href="../../../clang-doc-default-stylesheet.css"/>
+<script src="../../../index_json.js"></script>
+<script src="../../../index.js"></script>
+<header id="project-title"></header>
+<main>
+  <div id="sidebar-left" path="net/telnet/awaitables" class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left"></div>
+  <div id="main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
+    <h1>class tagged_awaitable</h1>
+    <p>
+      Defined at line 
+      <a href="net/telnet/src/net.telnet-awaitables.cppm#37">37</a>
+       of file 
+      <a href="net/telnet/src/net.telnet-awaitables.cppm">net.telnet-awaitables.cppm</a>
+    </p>
+    <div>
+      <div>
+        <div>
+          <div>brief</div>
+          <p> Wrapper for an awaitable with a semantic tag for type safety.</p>
+        </div>
+        <div>
+          <div>remark</div>
+          <p> Provides implicit conversion to/from the underlying awaitable and supports direct `co_await`.</p>
+        </div>
+        <div>
+          <div>see</div>
+          <p> `tags` namespace for semantic tag types, `:protocol_fsm`, `:internal`</p>
+        </div>
+      </div>
+    </div>
+    <h2 id="Members">Members</h2>
+    <ul>
+      <li>
+        <div>
+          <div>
+            <p> The wrapped awaitable</p>
+          </div>
+        </div>
+        <div>private awaitable_type awaitable_</div>
+      </li>
+    </ul>
+    <h2 id="Functions">Functions</h2>
+    <div>
+      <h3 id="AFD11E259CEB8827243793887F736C9A777581C5">tagged_awaitable&lt;Tag, T, Awaitable&gt;</h3>
+      <p>public void tagged_awaitable&lt;Tag, T, Awaitable&gt;()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm#47">47</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm">net.telnet-awaitables.cppm</a>
+      </p>
+      <div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Default constructor.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="F4CD9118632E358EDCEE02F898510677DE4E8801">tagged_awaitable&lt;Tag, T, Awaitable&gt;</h3>
+      <p>public void tagged_awaitable&lt;Tag, T, Awaitable&gt;(awaitable_type awaitable)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm#50">50</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm">net.telnet-awaitables.cppm</a>
+      </p>
+      <div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Constructs from an awaitable.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="4AE13B21CB3A76AE561E3ED5827DD715C8BBE34F">operator type-parameter-0-2 &amp;</h3>
+      <p>public awaitable_type &amp; operator type-parameter-0-2 &amp;()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm#53">53</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm">net.telnet-awaitables.cppm</a>
+      </p>
+      <div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Implicit conversion to underlying awaitable (lvalue).</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="A5FF832071093565E0B424F380458101163D777F">operator const type-parameter-0-2 &amp;</h3>
+      <p>public const awaitable_type &amp; operator const type-parameter-0-2 &amp;()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm#56">56</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm">net.telnet-awaitables.cppm</a>
+      </p>
+      <div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Implicit conversion to underlying awaitable (const lvalue).</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="A2EF50B40C1668974FA33FFE0E527EE4A960BC37">operator type-parameter-0-2 &amp;&amp;</h3>
+      <p>public awaitable_type &amp;&amp; operator type-parameter-0-2 &amp;&amp;()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm#59">59</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm">net.telnet-awaitables.cppm</a>
+      </p>
+      <div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Implicit conversion to underlying awaitable (rvalue).</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="FF3765C750AA246E02014964563F234E2DAA6F27">operator co_await</h3>
+      <p>public auto operator co_await()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm#64">64</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm">net.telnet-awaitables.cppm</a>
+      </p>
+      <div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Supports co_await for lvalue.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="B46A4DD114310D76BB880ADD8DC9A08A997C483C">operator co_await</h3>
+      <p>public auto operator co_await()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm#67">67</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm">net.telnet-awaitables.cppm</a>
+      </p>
+      <div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Supports co_await for const lvalue.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="B8E46CBC977C46FF88C614F35EEF2A4CEA3A9A63">operator co_await</h3>
+      <p>public auto operator co_await()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm#70">70</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-awaitables.cppm">net.telnet-awaitables.cppm</a>
+      </p>
+      <div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Supports co_await for rvalue.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+    <ol>
+      <li>
+        <span>
+          <a href="#Members">Members</a>
+        </span>
+      </li>
+      <li>
+        <span>
+          <a href="#Functions">Functions</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#AFD11E259CEB8827243793887F736C9A777581C5">tagged_awaitable&lt;Tag, T, Awaitable&gt;</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#F4CD9118632E358EDCEE02F898510677DE4E8801">tagged_awaitable&lt;Tag, T, Awaitable&gt;</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#4AE13B21CB3A76AE561E3ED5827DD715C8BBE34F">operator type-parameter-0-2 &amp;</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#A5FF832071093565E0B424F380458101163D777F">operator const type-parameter-0-2 &amp;</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#A2EF50B40C1668974FA33FFE0E527EE4A960BC37">operator type-parameter-0-2 &amp;&amp;</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#FF3765C750AA246E02014964563F234E2DAA6F27">operator co_await</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#B46A4DD114310D76BB880ADD8DC9A08A997C483C">operator co_await</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#B8E46CBC977C46FF88C614F35EEF2A4CEA3A9A63">operator co_await</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+</main>
+<footer>
+  <span class="no-break">clang-doc version 21.1.6</span>
+</footer>
