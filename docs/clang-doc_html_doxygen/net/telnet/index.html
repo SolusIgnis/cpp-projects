@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<meta charset="utf-8"/>
+<title>namespace telnet</title>
+<link rel="stylesheet" href="../../clang-doc-default-stylesheet.css"/>
+<script src="../../index_json.js"></script>
+<script src="../../index.js"></script>
+<header id="project-title"></header>
+<main>
+  <div id="sidebar-left" path="net/telnet" class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left"></div>
+  <div id="main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
+    <h1>namespace telnet</h1>
+    <h2 id="Namespaces">Namespaces</h2>
+    <ul>
+      <li>
+        <a href="awaitables/index.html">awaitables</a>
+      </li>
+      <li>
+        <a href="concepts/index.html">concepts</a>
+      </li>
+    </ul>
+    <h2 id="Records">Records</h2>
+    <ul>
+      <li>
+        <a href="default_protocol_fsm_config.html">default_protocol_fsm_config</a>
+      </li>
+      <li>
+        <a href="option.html">option</a>
+      </li>
+      <li>
+        <a href="option_handler_registry.html">option_handler_registry</a>
+      </li>
+      <li>
+        <a href="option_registry.html">option_registry</a>
+      </li>
+      <li>
+        <a href="option_status_db.html">option_status_db</a>
+      </li>
+      <li>
+        <a href="option_status_record.html">option_status_record</a>
+      </li>
+      <li>
+        <a href="protocol_fsm.html">protocol_fsm</a>
+      </li>
+      <li>
+        <a href="stream.html">stream</a>
+      </li>
+      <li>
+        <a href="telnet_error_category.html">telnet_error_category</a>
+      </li>
+      <li>
+        <a href="telnet_processing_signal_category.html">telnet_processing_signal_category</a>
+      </li>
+    </ul>
+    <h2 id="Functions">Functions</h2>
+    <div>
+      <h3 id="ADB8453C201969A7946F3A8CC85470336685D68A">make_error_code</h3>
+      <p>
+        <a href="../../std/__1/error_code.html">error_code</a>
+         make_error_code(
+        <a href="error.html">error</a>
+         ec)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-errors.cppm#222">222</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-errors.cppm">net.telnet-errors.cppm</a>
+      </p>
+      <h3 id="BEA6C1F6ED71FEDBB94350A84C34875E0762CF02">make_error_code</h3>
+      <p>
+        <a href="../../std/__1/error_code.html">error_code</a>
+         make_error_code(
+        <a href="processing_signal.html">processing_signal</a>
+         ec)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-errors.cppm#233">233</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-errors.cppm">net.telnet-errors.cppm</a>
+      </p>
+    </div>
+    <h2 id="Enums">Enums</h2>
+    <div>
+      <table id="E97EBB83230B7BAA8EDB5E6A58FFA8DD9EF1457A">
+        <thead>
+          <tr>
+            <th colspan="2">enum class error</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>protocol_violation</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td>internal_error</td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td>invalid_command</td>
+            <td>3</td>
+          </tr>
+          <tr>
+            <td>invalid_negotiation</td>
+            <td>4</td>
+          </tr>
+          <tr>
+            <td>option_not_available</td>
+            <td>5</td>
+          </tr>
+          <tr>
+            <td>invalid_subnegotiation</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>subnegotiation_overflow</td>
+            <td>7</td>
+          </tr>
+          <tr>
+            <td>ignored_go_ahead</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>user_handler_forbidden</td>
+            <td>9</td>
+          </tr>
+          <tr>
+            <td>user_handler_not_found</td>
+            <td>10</td>
+          </tr>
+          <tr>
+            <td>negotiation_queue_error</td>
+            <td>11</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-errors.cppm#27">27</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-errors.cppm">net.telnet-errors.cppm</a>
+      </p>
+      <table id="DD613FC94781CE37AF1DFCACC9753CA38A601289">
+        <thead>
+          <tr>
+            <th colspan="2">enum class command</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>eor</td>
+            <td>0xEF</td>
+          </tr>
+          <tr>
+            <td>se</td>
+            <td>0xF0</td>
+          </tr>
+          <tr>
+            <td>nop</td>
+            <td>0xF1</td>
+          </tr>
+          <tr>
+            <td>dm</td>
+            <td>0xF2</td>
+          </tr>
+          <tr>
+            <td>brk</td>
+            <td>0xF3</td>
+          </tr>
+          <tr>
+            <td>ip</td>
+            <td>0xF4</td>
+          </tr>
+          <tr>
+            <td>ao</td>
+            <td>0xF5</td>
+          </tr>
+          <tr>
+            <td>ayt</td>
+            <td>0xF6</td>
+          </tr>
+          <tr>
+            <td>ec</td>
+            <td>0xF7</td>
+          </tr>
+          <tr>
+            <td>el</td>
+            <td>0xF8</td>
+          </tr>
+          <tr>
+            <td>ga</td>
+            <td>0xF9</td>
+          </tr>
+          <tr>
+            <td>sb</td>
+            <td>0xFA</td>
+          </tr>
+          <tr>
+            <td>will_opt</td>
+            <td>0xFB</td>
+          </tr>
+          <tr>
+            <td>wont_opt</td>
+            <td>0xFC</td>
+          </tr>
+          <tr>
+            <td>do_opt</td>
+            <td>0xFD</td>
+          </tr>
+          <tr>
+            <td>dont_opt</td>
+            <td>0xFE</td>
+          </tr>
+          <tr>
+            <td>iac</td>
+            <td>0xFF</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-types.cppm#38">38</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-types.cppm">net.telnet-types.cppm</a>
+      </p>
+      <table id="4160033CBCF1627A836EF124362DE19DD6C02D12">
+        <thead>
+          <tr>
+            <th colspan="2">enum class processing_signal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>end_of_line</td>
+            <td>Encountered</td>
+          </tr>
+          <tr>
+            <td>carriage_return</td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td>end_of_record</td>
+            <td>3</td>
+          </tr>
+          <tr>
+            <td>go_ahead</td>
+            <td>4</td>
+          </tr>
+          <tr>
+            <td>erase_character</td>
+            <td>5</td>
+          </tr>
+          <tr>
+            <td>erase_line</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>abort_output</td>
+            <td>7</td>
+          </tr>
+          <tr>
+            <td>interrupt_process</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>telnet_break</td>
+            <td>9</td>
+          </tr>
+          <tr>
+            <td>data_mark</td>
+            <td>10</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-errors.cppm#46">46</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-errors.cppm">net.telnet-errors.cppm</a>
+      </p>
+      <table id="1F92B89E9AC4FFF05D87FBEE31DE4E03F4F0D00A">
+        <thead>
+          <tr>
+            <th colspan="2">enum class negotiation_direction</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>local</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>remote</td>
+            <td>1</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-types.cppm#63">63</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-types.cppm">net.telnet-types.cppm</a>
+      </p>
+    </div>
+  </div>
+  <div id="sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+    <ol>
+      <li>
+        <span>
+          <a href="#Namespaces">Namespaces</a>
+        </span>
+      </li>
+      <li>
+        <span>
+          <a href="#Records">Records</a>
+        </span>
+      </li>
+      <li>
+        <span>
+          <a href="#Functions">Functions</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#ADB8453C201969A7946F3A8CC85470336685D68A">make_error_code</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#BEA6C1F6ED71FEDBB94350A84C34875E0762CF02">make_error_code</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <span>
+          <a href="#Enums">Enums</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#E97EBB83230B7BAA8EDB5E6A58FFA8DD9EF1457A">error</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#DD613FC94781CE37AF1DFCACC9753CA38A601289">command</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#4160033CBCF1627A836EF124362DE19DD6C02D12">processing_signal</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#1F92B89E9AC4FFF05D87FBEE31DE4E03F4F0D00A">negotiation_direction</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+</main>
+<footer>
+  <span class="no-break">clang-doc version 21.1.6</span>
+</footer>
