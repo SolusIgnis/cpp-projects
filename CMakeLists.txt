@@ -1,4 +1,7 @@
+# ===========================================================================
 # Repository-Level CML
+# ===========================================================================
+
 cmake_minimum_required(VERSION 4.1.2)
 # Will be bumped to 4.3 most likely when "import std;" is no longer experimental
 
@@ -15,36 +18,29 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 #For "import std"
 set(CMAKE_CXX_MODULE_STD 1)
 
-message(STATUS "Configuring with ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
+# ===========================================================================
+# Check for adequate compilers supporting C++23 and "import std;".
+# ===========================================================================
+include(cmake/CompilerValidation.cmake)
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18)
-    message(FATAL_ERROR
-      "Clang 18 or newer is required for full C++23 module + import std support.\n"
-      "Detected: ${CMAKE_CXX_COMPILER_VERSION}")
-  endif()
+# ===========================================================================
+# Tooling Infrastructure (Options, Cache Variables, Registries, and Helper Functions)
+# ===========================================================================
+include(cmake/ToolingInfrastructure.cmake)
 
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14)
-    message(FATAL_ERROR
-      "GCC 14 or newer is required for full C++23 module + import std support.\n"
-      "Detected: ${CMAKE_CXX_COMPILER_VERSION}\n"
-      "Note: libstdc++ must be built with std module support.")
-  endif()
-
-elseif (MSVC)
-  # MSVC version numbers are weird; CMake exposes them cleanly
-  if (MSVC_VERSION LESS 1940)
-    message(FATAL_ERROR
-      "MSVC 19.40 (Visual Studio 2022 17.10) or newer is required for import std.\n"
-      "Detected MSVC_VERSION: ${MSVC_VERSION}")
-  endif()
-
-else()
-  message(WARNING
-    "Unrecognized compiler ${CMAKE_CXX_COMPILER_ID}. "
-        "C++23 module and import std support may not work. Proceeding anyway.")
-endif()
+# ===========================================================================
+# Add module group subdirectories.
+# ===========================================================================
 
 # Add the "net" module group.
 add_subdirectory(net)
+
+# ===========================================================================
+# Aggregate the tooling-registered targets and their sources.
+# ===========================================================================
+include(cmake/ToolingSources.cmake)
+
+# ===========================================================================
+# Create tooling targets for clang-format (real and check) and clang-tidy.
+# ===========================================================================
+include(cmake/ToolingTargets.cmake)
