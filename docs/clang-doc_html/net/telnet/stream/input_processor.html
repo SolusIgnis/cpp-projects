@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<meta charset="utf-8"/>
+<title>class input_processor</title>
+<link rel="stylesheet" href="../../../clang-doc-default-stylesheet.css"/>
+<script src="../../../index_json.js"></script>
+<script src="../../../index.js"></script>
+<header id="project-title"></header>
+<main>
+  <div id="sidebar-left" path="net/telnet/stream" class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left"></div>
+  <div id="main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
+    <h1>class input_processor</h1>
+    <p>
+      Defined at line 
+      <a href="net/telnet/src/net.telnet-stream.cppm#289">289</a>
+       of file 
+      <a href="net/telnet/src/net.telnet-stream.cppm">net.telnet-stream.cppm</a>
+    </p>
+    <h2 id="Members">Members</h2>
+    <ul>
+      <li>
+        <div>private stream&lt;NextLayerT, ProtocolConfigT&gt; &amp; parent_stream_</div>
+      </li>
+      <li>
+        <div>private fsm_type &amp; fsm_</div>
+      </li>
+      <li>
+        <div>private context_type &amp; context_</div>
+      </li>
+      <li>
+        <div>private MBufSeq buffers_</div>
+      </li>
+      <li>
+        <div>private iterator_type user_buf_begin_</div>
+      </li>
+      <li>
+        <div>private iterator_type user_buf_end_</div>
+      </li>
+      <li>
+        <div>private iterator_type write_it_</div>
+      </li>
+      <li>
+        <div>
+          private 
+          <a href="../../../net/telnet/stream/input_processor/state.html">state</a>
+           state_
+        </div>
+      </li>
+      <li>
+        <div>private static const std::size_t read_block_size</div>
+      </li>
+    </ul>
+    <h2 id="Functions">Functions</h2>
+    <div>
+      <h3 id="77F0BEC2A0E95639295E0FB5D3C772770B4B5200">input_processor&lt;MBufSeq&gt;</h3>
+      <p>public void input_processor&lt;MBufSeq&gt;(stream&lt;NextLayerT, ProtocolConfigT&gt; &amp; parent_stream, stream&lt;NextLayerT, ProtocolConfigT&gt;::fsm_type &amp; fsm, stream&lt;NextLayerT, ProtocolConfigT&gt;::context_type &amp; context, MBufSeq buffers)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#270">270</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Constructs an `input_processor` with the parent stream, FSM, and buffers.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="9987EF3F8883DF47F1529404BB104A1207E5BF0B">operator()</h3>
+      <p>
+        public void operator()(Self &amp; self, 
+        <a href="../../../std/__1/error_code.html">error_code</a>
+         ec_in, std::size_t bytes_transferred)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#288">288</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Asynchronous operation handler for processing Telnet input.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="C38A94E310C519D2CDC5BF015389818EAA01647E">handle_processor_state_initializing</h3>
+      <p>private void handle_processor_state_initializing(Self &amp; self)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#320">320</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handles processing of the `initializing` state.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="3C474DA7C11869C133D7CCA71011943131A0A67F">handle_processor_state_reading</h3>
+      <p>
+        private void handle_processor_state_reading(Self &amp; self, 
+        <a href="../../../std/__1/error_code.html">error_code</a>
+         ec_in, std::size_t bytes_transferred)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#349">349</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handles processing of the `reading` state.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="8664913052CF4C2C77F18CFDABAA96AFFA105B62">handle_processor_state_processing</h3>
+      <p>
+        private void handle_processor_state_processing(Self &amp; self, 
+        <a href="../../../std/__1/error_code.html">error_code</a>
+         ec_in)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#390">390</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handles processing of the `processing` state.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="B10C5B7D19B7418F3100DF71D413FA53C0C9C786">complete</h3>
+      <p>private void complete(Self &amp; self, const std::error_code &amp; ec, std::size_t bytes_transferred)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#474">474</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Completes the asynchronous operation with error code and bytes transferred.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="59B6BA0FB77EA6E2489494B0E4EAF1B866E3A0E7">process_write_error</h3>
+      <p>
+        private void process_write_error(
+        <a href="../../../std/__1/error_code.html">error_code</a>
+         ec)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#491">491</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Defers write errors for later reporting and logs multi-error pile-ups.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="D2699BC190792E23ED70720F23517CF6664ABC32">process_fsm_signals</h3>
+      <p>private void process_fsm_signals(std::error_code &amp; signal_ec)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#514">514</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handles processing_signal error codes from fsm_.process_byte, modifying the user buffer or urgent data state.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="4DAE32E94E9B25D2EAD0324766427BFC41A3D048">do_response</h3>
+      <p>private void do_response(typename stream&lt;NextLayerT, ProtocolConfigT&gt;::fsm_type::negotiation_response response, Self &amp;&amp; self)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#545">545</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handle a `negotiation_response` by initiating an async write of the negotiation.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="20BFBDA6BABC5B5C48D10C723F345DC70E48E201">do_response</h3>
+      <p>
+        private void do_response(
+        <a href="../../../std/__1/basic_string.html">basic_string</a>
+         response, Self &amp;&amp; self)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#562">562</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handle a `std::string` by initiating an async write of raw data.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="29590787DC06FDFDA40E9980EA645F3C74A594C7">do_response</h3>
+      <p>
+        private void do_response(
+        <a href="../../../net/telnet/awaitables/tagged_awaitable.html">tagged_awaitable</a>
+         awaitable, Self &amp;&amp; self)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#577">577</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handle a `subnegotiation_awaitable` by spawning a coroutine to process it.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="9C0EA96DA5DB81B01830C6489B39909F95DD8DA0">do_response</h3>
+      <p>private void do_response(std::tuple&lt;awaitables::tagged_awaitable&lt;Tag, T, Awaitable&gt;, std::optional&lt;typename stream&lt;NextLayerT, ProtocolConfigT&gt;::fsm_type::negotiation_response&gt;&gt; response, Self &amp;&amp; self)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp#609">609</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-stream-impl.cpp">net.telnet-stream-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handle any `tagged_awaitable` with optional `negotiation_response`.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h2 id="Enums">Enums</h2>
+    <div>
+      <table id="17BBEBE4C6CC8CA21D140324766F56FBDE0EB60C">
+        <thead>
+          <tr>
+            <th colspan="2">enum class state</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>initializing</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>reading</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>processing</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>done</td>
+            <td>0</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-stream.cppm#368">368</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-stream.cppm">net.telnet-stream.cppm</a>
+      </p>
+    </div>
+  </div>
+  <div id="sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+    <ol>
+      <li>
+        <span>
+          <a href="#Members">Members</a>
+        </span>
+      </li>
+      <li>
+        <span>
+          <a href="#Functions">Functions</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#77F0BEC2A0E95639295E0FB5D3C772770B4B5200">input_processor&lt;MBufSeq&gt;</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#9987EF3F8883DF47F1529404BB104A1207E5BF0B">operator()</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#C38A94E310C519D2CDC5BF015389818EAA01647E">handle_processor_state_initializing</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#3C474DA7C11869C133D7CCA71011943131A0A67F">handle_processor_state_reading</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#8664913052CF4C2C77F18CFDABAA96AFFA105B62">handle_processor_state_processing</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#B10C5B7D19B7418F3100DF71D413FA53C0C9C786">complete</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#59B6BA0FB77EA6E2489494B0E4EAF1B866E3A0E7">process_write_error</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#D2699BC190792E23ED70720F23517CF6664ABC32">process_fsm_signals</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#4DAE32E94E9B25D2EAD0324766427BFC41A3D048">do_response</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#20BFBDA6BABC5B5C48D10C723F345DC70E48E201">do_response</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#29590787DC06FDFDA40E9980EA645F3C74A594C7">do_response</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#9C0EA96DA5DB81B01830C6489B39909F95DD8DA0">do_response</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <span>
+          <a href="#Enums">Enums</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#17BBEBE4C6CC8CA21D140324766F56FBDE0EB60C">state</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+</main>
+<footer>
+  <span class="no-break">clang-doc version 21.1.6</span>
+</footer>

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<meta charset="utf-8"/>
+<title>class protocol_fsm</title>
+<link rel="stylesheet" href="../../clang-doc-default-stylesheet.css"/>
+<script src="../../index_json.js"></script>
+<script src="../../index.js"></script>
+<header id="project-title"></header>
+<main>
+  <div id="sidebar-left" path="net/telnet" class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left"></div>
+  <div id="main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
+    <h1>class protocol_fsm</h1>
+    <p>
+      Defined at line 
+      <a href="net/telnet/src/net.telnet-protocol_fsm.cppm#51">51</a>
+       of file 
+      <a href="net/telnet/src/net.telnet-protocol_fsm.cppm">net.telnet-protocol_fsm.cppm</a>
+    </p>
+    <h2 id="Members">Members</h2>
+    <ul>
+      <li>
+        <div>private option_handler_registry&lt;protocol_config_type, option_enablement_handler_type, option_disablement_handler_type, subnegotiation_handler_type&gt; option_handler_registry_</div>
+      </li>
+      <li>
+        <div>
+          private 
+          <a href="option_status_db.html">option_status_db</a>
+           option_status_
+        </div>
+      </li>
+      <li>
+        <div>
+          private 
+          <a href="../../net/telnet/protocol_fsm/protocol_state.html">protocol_state</a>
+           current_state_
+        </div>
+      </li>
+      <li>
+        <div>
+          private 
+          <a href="../../std/__1/optional.html">optional</a>
+           current_command_
+        </div>
+      </li>
+      <li>
+        <div>
+          private 
+          <a href="../../std/__1/optional.html">optional</a>
+           current_option_
+        </div>
+      </li>
+      <li>
+        <div>
+          private 
+          <a href="../../std/__1/vector.html">vector</a>
+           subnegotiation_buffer_
+        </div>
+      </li>
+    </ul>
+    <h2 id="Functions">Functions</h2>
+    <div>
+      <h3 id="56BA477FE17686D5F2318DD94E951E29461A9641">make_negotiation_command</h3>
+      <p>
+        public static 
+        <a href="command.html">command</a>
+         make_negotiation_command(
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         direction, bool enable)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#31">31</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Makes a negotiation response command</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="F1CFFFF96EE1F8326AB91FFFB3E0190009207124">register_option_handlers</h3>
+      <p>
+        public void register_option_handlers(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt, 
+        <a href="../../std/__1/optional.html">optional</a>
+         enable_handler, 
+        <a href="../../std/__1/optional.html">optional</a>
+         disable_handler, 
+        <a href="../../std/__1/optional.html">optional</a>
+         subneg_handler)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-protocol_fsm.cppm#132">132</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-protocol_fsm.cppm">net.telnet-protocol_fsm.cppm</a>
+      </p>
+      <h3 id="6C66B20E1209BB4A069AD7CBE54474ECE3D29109">unregister_option_handlers</h3>
+      <p>
+        public void unregister_option_handlers(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-protocol_fsm.cppm#148">148</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-protocol_fsm.cppm">net.telnet-protocol_fsm.cppm</a>
+      </p>
+      <h3 id="1BC39DCEDBF3BEBC9C75E49928CADCDF4F9E3747">is_enabled</h3>
+      <p>
+        public bool is_enabled(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-protocol_fsm.cppm#154">154</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-protocol_fsm.cppm">net.telnet-protocol_fsm.cppm</a>
+      </p>
+      <h3 id="1B46F053C99E3F33E036F7FB5B926A65546E58E3">is_enabled</h3>
+      <p>
+        public bool is_enabled(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt, 
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         dir)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-protocol_fsm.cppm#157">157</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-protocol_fsm.cppm">net.telnet-protocol_fsm.cppm</a>
+      </p>
+      <h3 id="A90771229B9B62AE7EC5C6F053086A8ABB437AC0">process_byte</h3>
+      <p>public std::tuple&lt;std::error_code, bool, std::optional&lt;processing_return_variant&gt;&gt; process_byte(byte_t byte)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#224">224</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Processes a single byte of Telnet input.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="2386CED684B02DDB4530E0612BD0853C65A03E1B">request_option</h3>
+      <p>
+        public std::tuple&lt;std::error_code, std::optional&lt;negotiation_response_type&gt;&gt; request_option(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt, 
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         direction)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#50">50</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Requests an option to be enabled (WILL/DO), synchronously updating option_status_db and returning a negotiation response.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="7F920BE3C5FDF639EF504147B52FFA3EF80B845B">disable_option</h3>
+      <p>
+        public std::tuple&lt;std::error_code, std::optional&lt;negotiation_response_type&gt;, std::optional&lt;awaitables::option_disablement_awaitable&gt;&gt; disable_option(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt, 
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         direction)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#128">128</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Disables an option (WONT/DONT), synchronously updating option_status_db and returning a negotiation response and optional disablement awaitable.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="1D0AF45043233004E3637ECB3CE57FBDFC09BF89">protocol_fsm&lt;ConfigT&gt;</h3>
+      <p>public void protocol_fsm&lt;ConfigT&gt;()</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-protocol_fsm.cppm#129">129</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-protocol_fsm.cppm">net.telnet-protocol_fsm.cppm</a>
+      </p>
+      <h3 id="997355B8BBF979EAD07753C5B81A6EAA4F140351">change_state</h3>
+      <p>
+        private void change_state(
+        <a href="../../net/telnet/protocol_fsm/protocol_state.html">protocol_state</a>
+         next_state)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#207">207</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Changes the FSM state.</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="919D25DFC74ECBCBDD234BA67092B32F0158A3B7">handle_state_normal</h3>
+      <p>private std::tuple&lt;std::error_code, bool, std::optional&lt;processing_return_variant&gt;&gt; handle_state_normal(byte_t byte)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#263">263</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handles bytes in the `Normal` state (data or IAC).</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="54B251827CB830DFF530C4530D0D41C04D6008E5">handle_state_has_cr</h3>
+      <p>private std::tuple&lt;std::error_code, bool, std::optional&lt;processing_return_variant&gt;&gt; handle_state_has_cr(byte_t byte)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#288">288</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handles bytes immediately after &apos;&apos; (&apos;\0&apos;, &apos;&apos;, or error)</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="F77297CB19DBE0F40E5801AED170CED422C1900F">handle_state_iac</h3>
+      <p>private std::tuple&lt;std::error_code, bool, std::optional&lt;processing_return_variant&gt;&gt; handle_state_iac(byte_t byte)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#339">339</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handles bytes after IAC (commands like WILL, DO, SB, etc.).</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="45E27773383E67648938D541BFB395E795895ABA">handle_state_option_negotiation</h3>
+      <p>private std::tuple&lt;std::error_code, bool, std::optional&lt;processing_return_variant&gt;&gt; handle_state_option_negotiation(byte_t byte)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#454">454</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handles bytes in the `OptionNegotiation` state (option ID after WILL/WONT/DO/DONT).</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="D057E60778087D0AFD005FE715D7EEB814C5A1F6">handle_state_subnegotiation_option</h3>
+      <p>private std::tuple&lt;std::error_code, bool, std::optional&lt;processing_return_variant&gt;&gt; handle_state_subnegotiation_option(byte_t byte)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#603">603</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handles bytes in the `SubnegotiationOption` state (option ID after IAC SB).</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="C15FAE85B45556C310B06C88702B365FD5E21E1D">handle_state_subnegotiation</h3>
+      <p>private std::tuple&lt;std::error_code, bool, std::optional&lt;processing_return_variant&gt;&gt; handle_state_subnegotiation(byte_t byte)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#641">641</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handles bytes in the `Subnegotiation` state (data after option ID).</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="7DF208DCDECD41D00AD0F9CE6E4CDF6D16F4EEB5">handle_state_subnegotiation_iac</h3>
+      <p>private std::tuple&lt;std::error_code, bool, std::optional&lt;processing_return_variant&gt;&gt; handle_state_subnegotiation_iac(byte_t byte)</p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#681">681</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handles bytes in the `SubnegotiationIAC` state (IAC in subnegotiation data).</p>
+          </div>
+        </div>
+      </div>
+      <h3 id="3DCB66B1E2E816F65920C3DA658CF39B944914D4">handle_status_subnegotiation</h3>
+      <p>
+        private 
+        <a href="../../net/telnet/awaitables/tagged_awaitable.html">tagged_awaitable</a>
+         handle_status_subnegotiation(
+        <a href="option.html">option</a>
+         opt, 
+        <a href="../../std/__1/vector.html">vector</a>
+         buffer)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp#746">746</a>
+         of file 
+        <a href="net/telnet/src/impl/net.telnet-protocol_fsm-impl.cpp">net.telnet-protocol_fsm-impl.cpp</a>
+      </p>
+      <div>
+        <div></div>
+        <div>
+          <div>
+            <div>brief</div>
+            <p> Handles STATUS subnegotiation (RFC 859), returning an awaitable with the IS [list] payload or user-handled result.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <h2 id="Enums">Enums</h2>
+    <div>
+      <table id="FE678388ABDF2EF58C923685F8A212266E2CC3AC">
+        <thead>
+          <tr>
+            <th colspan="2">enum class protocol_state</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>normal</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>has_cr</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>has_iac</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>option_negotiation</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>subnegotiation_option</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>subnegotiation</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>subnegotiation_iac</td>
+            <td>0</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-protocol_fsm.cppm#175">175</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-protocol_fsm.cppm">net.telnet-protocol_fsm.cppm</a>
+      </p>
+    </div>
+  </div>
+  <div id="sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+    <ol>
+      <li>
+        <span>
+          <a href="#Members">Members</a>
+        </span>
+      </li>
+      <li>
+        <span>
+          <a href="#Functions">Functions</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#56BA477FE17686D5F2318DD94E951E29461A9641">make_negotiation_command</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#F1CFFFF96EE1F8326AB91FFFB3E0190009207124">register_option_handlers</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#6C66B20E1209BB4A069AD7CBE54474ECE3D29109">unregister_option_handlers</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#1BC39DCEDBF3BEBC9C75E49928CADCDF4F9E3747">is_enabled</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#1B46F053C99E3F33E036F7FB5B926A65546E58E3">is_enabled</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#A90771229B9B62AE7EC5C6F053086A8ABB437AC0">process_byte</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#2386CED684B02DDB4530E0612BD0853C65A03E1B">request_option</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#7F920BE3C5FDF639EF504147B52FFA3EF80B845B">disable_option</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#1D0AF45043233004E3637ECB3CE57FBDFC09BF89">protocol_fsm&lt;ConfigT&gt;</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#997355B8BBF979EAD07753C5B81A6EAA4F140351">change_state</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#919D25DFC74ECBCBDD234BA67092B32F0158A3B7">handle_state_normal</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#54B251827CB830DFF530C4530D0D41C04D6008E5">handle_state_has_cr</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#F77297CB19DBE0F40E5801AED170CED422C1900F">handle_state_iac</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#45E27773383E67648938D541BFB395E795895ABA">handle_state_option_negotiation</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#D057E60778087D0AFD005FE715D7EEB814C5A1F6">handle_state_subnegotiation_option</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#C15FAE85B45556C310B06C88702B365FD5E21E1D">handle_state_subnegotiation</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#7DF208DCDECD41D00AD0F9CE6E4CDF6D16F4EEB5">handle_state_subnegotiation_iac</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#3DCB66B1E2E816F65920C3DA658CF39B944914D4">handle_status_subnegotiation</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+      <li>
+        <span>
+          <a href="#Enums">Enums</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#FE678388ABDF2EF58C923685F8A212266E2CC3AC">protocol_state</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+</main>
+<footer>
+  <span class="no-break">clang-doc version 21.1.6</span>
+</footer>

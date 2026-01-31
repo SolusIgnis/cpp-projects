@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<meta charset="utf-8"/>
+<title>class option_handler_registry</title>
+<link rel="stylesheet" href="../../clang-doc-default-stylesheet.css"/>
+<script src="../../index_json.js"></script>
+<script src="../../index.js"></script>
+<header id="project-title"></header>
+<main>
+  <div id="sidebar-left" path="net/telnet" class="col-xs-6 col-sm-3 col-md-2 sidebar sidebar-offcanvas-left"></div>
+  <div id="main-content" class="col-xs-12 col-sm-9 col-md-8 main-content">
+    <h1>class option_handler_registry</h1>
+    <p>
+      Defined at line 
+      <a href="net/telnet/src/net.telnet-internal.cppm#50">50</a>
+       of file 
+      <a href="net/telnet/src/net.telnet-internal.cppm">net.telnet-internal.cppm</a>
+    </p>
+    <h2 id="Members">Members</h2>
+    <ul>
+      <li>
+        <div>private std::map&lt;option::id_num, option_handler_record&gt; handlers_</div>
+      </li>
+    </ul>
+    <h2 id="Records">Records</h2>
+    <ul>
+      <li>
+        <a href="../../net/telnet/option_handler_registry/option_handler_record.html">option_handler_record</a>
+      </li>
+    </ul>
+    <h2 id="Functions">Functions</h2>
+    <div>
+      <h3 id="1EFF7E0904BD3B47AB0CBFDC222FA06CAE74699E">register_handlers</h3>
+      <p>
+        public void register_handlers(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt, std::optional&lt;OptionEnablementHandler&gt; enablement_handler, std::optional&lt;OptionDisablementHandler&gt; disablement_handler, std::optional&lt;SubnegotiationHandler&gt; subnegotiation_handler)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-internal.cppm#73">73</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-internal.cppm">net.telnet-internal.cppm</a>
+      </p>
+      <h3 id="AAE980FD3E2374DB6DF3435697146CC7BA43DB51">unregister_handlers</h3>
+      <p>
+        public void unregister_handlers(
+        <a href="../../net/telnet/option/id_num.html">id_num</a>
+         opt)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-internal.cppm#91">91</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-internal.cppm">net.telnet-internal.cppm</a>
+      </p>
+      <h3 id="0D4975A33DB23DE063D3415F01814A0F9E312436">handle_enablement</h3>
+      <p>
+        public 
+        <a href="../../net/telnet/awaitables/tagged_awaitable.html">tagged_awaitable</a>
+         handle_enablement(
+        <a href="option.html">option</a>
+         opt, 
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         direction)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-internal.cppm#94">94</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-internal.cppm">net.telnet-internal.cppm</a>
+      </p>
+      <h3 id="F257AD3AAF77890B9D2C7C5CC39B0E130DDEE3F7">handle_disablement</h3>
+      <p>
+        public 
+        <a href="../../net/telnet/awaitables/tagged_awaitable.html">tagged_awaitable</a>
+         handle_disablement(
+        <a href="option.html">option</a>
+         opt, 
+        <a href="negotiation_direction.html">negotiation_direction</a>
+         direction)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-internal.cppm#105">105</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-internal.cppm">net.telnet-internal.cppm</a>
+      </p>
+      <h3 id="AFD1525CF8EBEC71F80E461F30044FFA764FA87E">handle_subnegotiation</h3>
+      <p>
+        public 
+        <a href="../../net/telnet/awaitables/tagged_awaitable.html">tagged_awaitable</a>
+         handle_subnegotiation(
+        <a href="option.html">option</a>
+         opt, 
+        <a href="../../std/__1/vector.html">vector</a>
+         data)
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-internal.cppm#116">116</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-internal.cppm">net.telnet-internal.cppm</a>
+      </p>
+      <h3 id="E61638F9991E159ECB9C03A29183B5209F0B9EE8">undefined_subnegotiation_handler</h3>
+      <p>
+        private 
+        <a href="../../net/telnet/awaitables/tagged_awaitable.html">tagged_awaitable</a>
+         undefined_subnegotiation_handler(
+        <a href="option.html">option</a>
+         opt, 
+        <a href="../../std/__1/vector.html">vector</a>
+         )
+      </p>
+      <p>
+        Defined at line 
+        <a href="net/telnet/src/net.telnet-internal.cppm#129">129</a>
+         of file 
+        <a href="net/telnet/src/net.telnet-internal.cppm">net.telnet-internal.cppm</a>
+      </p>
+    </div>
+  </div>
+  <div id="sidebar-right" class="col-xs-6 col-sm-6 col-md-2 sidebar sidebar-offcanvas-right">
+    <ol>
+      <li>
+        <span>
+          <a href="#Members">Members</a>
+        </span>
+      </li>
+      <li>
+        <span>
+          <a href="#Records">Records</a>
+        </span>
+      </li>
+      <li>
+        <span>
+          <a href="#Functions">Functions</a>
+        </span>
+        <ul>
+          <li>
+            <span>
+              <a href="#1EFF7E0904BD3B47AB0CBFDC222FA06CAE74699E">register_handlers</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#AAE980FD3E2374DB6DF3435697146CC7BA43DB51">unregister_handlers</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#0D4975A33DB23DE063D3415F01814A0F9E312436">handle_enablement</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#F257AD3AAF77890B9D2C7C5CC39B0E130DDEE3F7">handle_disablement</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#AFD1525CF8EBEC71F80E461F30044FFA764FA87E">handle_subnegotiation</a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="#E61638F9991E159ECB9C03A29183B5209F0B9EE8">undefined_subnegotiation_handler</a>
+            </span>
+          </li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+</main>
+<footer>
+  <span class="no-break">clang-doc version 21.1.6</span>
+</footer>
