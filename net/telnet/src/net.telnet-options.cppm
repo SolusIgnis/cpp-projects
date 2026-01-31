@@ -83,9 +83,9 @@ export namespace net::telnet {
         {
             enable_predicate_type local_pred  = local_supported ? always_accept : always_reject;
             enable_predicate_type remote_pred = remote_supported ? always_accept : always_reject;
-            return option(
+            return {
                 id, std::move(name), std::move(local_pred), std::move(remote_pred), subneg_supported, max_subneg_size
-            );
+            };
         }
 
         ///@brief Three-way comparison operator for ordering and equality.
@@ -351,7 +351,7 @@ export namespace net::telnet {
         ///@brief Retrieves an `option` by its ID.
         std::optional<option> get(option::id_num opt_id) const noexcept
         {
-            std::shared_lock<std::shared_mutex> lock(mutex_);
+            const std::shared_lock<std::shared_mutex> lock(mutex_);
             auto iter = registry_.find(opt_id);
             if (iter != registry_.end()) {
                 return *iter;
@@ -363,14 +363,14 @@ export namespace net::telnet {
         ///@brief Checks if an `option` is present in the registry.
         [[nodiscard]] bool has(option::id_num opt_id) const noexcept
         {
-            std::shared_lock<std::shared_mutex> lock(mutex_);
+            const std::shared_lock<std::shared_mutex> lock(mutex_);
             return (registry_.find(opt_id) != registry_.end());
         } //has(option::id_num)
 
         ///@brief Inserts or updates an `option` in the registry.
         const option& upsert(const option& opt)
         {
-            std::lock_guard<std::shared_mutex> lock(mutex_);
+            const std::lock_guard<std::shared_mutex> lock(mutex_);
             auto [add_result, success] = registry_.insert(opt);
             if (success) {
                 return *add_result;
