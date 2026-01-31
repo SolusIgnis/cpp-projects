@@ -117,6 +117,7 @@ ImplementationFileExtensions:
   - cpp      # Modern C++ source files
   - cxx      # Alternate modern C++ source files
   - cppm     # Modern (>= C++20) module interface units
+  - ixx      # Alternate module interface units
 HeaderFilterRegex: '^(?!.*(usr/|lib/|v1/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|std\.cppm|std\.compat\.cppm)).*$'
 ExcludeHeaderFilterRegex: '/include/c\+\+/v1/'
 FormatStyle: file
