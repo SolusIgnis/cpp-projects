@@ -22,7 +22,7 @@ add_custom_target(format-check
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   add_custom_target(tidy
     COMMAND clang-tidy
-      -p ${CMAKE_BINARY_DIR}
+      --use-color -p ${CMAKE_BINARY_DIR}
       ${ALL_TOOLING_SOURCES}
     COMMENT "Running clang-tidy"
   )
