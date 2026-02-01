@@ -22,6 +22,10 @@ jobs:
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh 21
+          which clang-21
+          which clang++-21
+          which clang-format-21
+          which clang-tidy-21
           sudo apt install -y ninja-build
           
       - name: Set Clang 21 as default
