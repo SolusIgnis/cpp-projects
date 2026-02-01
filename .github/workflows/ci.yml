@@ -43,7 +43,7 @@ jobs:
       - name: Install standalone Asio
         run: |
           ASIO_VERSION=1.36.0
-          wget -q https://github.com/chriskohlhoff/asio/releases/download/asio-$ASIO_VERSION/asio-$ASIO_VERSION.tar.gz
+          wget -q https://sourceforge.net/projects/asio/files/asio/$ASIO_VERSION%28Stable%29/asio-$ASIO_VERSION.tar.gz/download
           tar xf asio-$ASIO_VERSION.tar.gz
           sudo cp -r asio-$ASIO_VERSION/asio/include/asio /usr/local/include/
 
