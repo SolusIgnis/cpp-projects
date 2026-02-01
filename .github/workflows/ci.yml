@@ -15,6 +15,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Get CMake 4.1.2
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: 4.1.2
+
       - name: Install Clang 21 and tools
         run: |
           sudo apt update
@@ -23,10 +28,6 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh 21
           sudo apt install clang-format-21 clang-tidy-21
-          which clang-21
-          which clang++-21
-          clang-format --version
-          which clang-tidy-21
           sudo apt install -y ninja-build
           
       - name: Set Clang 21 as default
