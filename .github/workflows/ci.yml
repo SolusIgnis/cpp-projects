@@ -26,10 +26,17 @@ jobs:
           sudo mv cmake-${CMAKE_VERSION}-linux-x86_64 /opt/cmake
           echo "/opt/cmake/bin" >> $GITHUB_PATH
 
+      - name: Install libc++
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libc++-21-dev libc++abi-21-dev
+
       - name: Verify toolchain
         run: |
           cmake --version
           clang++ --version
+          clang-format --version
+          clang-tidy --version
           find / -name std.cppm 2>/dev/null | head -n 5
           
       - name: Configure
@@ -47,4 +54,5 @@ jobs:
       - name: clang-tidy
         run: |
           cmake --build --preset=clang-debug --target=tidy
+
 
