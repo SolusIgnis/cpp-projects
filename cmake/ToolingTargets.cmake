@@ -13,7 +13,7 @@ add_custom_target(format
 
 # Target to run clang-format in checking mode.
 add_custom_target(format-check
-  COMMAND clang-format --dry-run --Werror
+  COMMAND clang-format --dry-run --Werror --Wno-error=unknown
           ${ALL_TOOLING_SOURCES}
   COMMENT "Checking clang-format"
 )
