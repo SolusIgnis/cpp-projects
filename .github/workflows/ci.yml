@@ -33,36 +33,25 @@ jobs:
           
       - name: Set Clang 21 as default
         run: |
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 65536
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 65536
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 65536
-          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 65536
-
-      - name: Verify compiler
-        run: |
-          clang++ --version
-      - name: Verify formatter
-        run: |
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 100
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 100
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 100
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 100
           clang-format --version
-      - name: Verify tidy
-        run: |
           clang-tidy --version
-      - name: Verify libc++
-        run: |
-          find / -name std.cppm 2>/dev/null | head -n 5
 
       - name: Configure
         run: |
-          cmake --preset=clang-debug
+          cmake --preset clang-debug
 
       - name: clang-format check
         run: |
-          cmake --build --preset=clang-debug --target=format-check
+          cmake --build --preset clang-debug --target format-check
 
       - name: Build
         run: |
-          cmake --build --preset=clang-debug
+          cmake --build --preset clang-debug
 
       - name: clang-tidy
         run: |
-          cmake --build --preset=clang-debug --target=tidy
+          cmake --build --preset clang-debug --target tidy
