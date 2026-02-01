@@ -26,6 +26,14 @@ jobs:
           sudo mv cmake-${CMAKE_VERSION}-linux-x86_64 /opt/cmake
           echo "/opt/cmake/bin" >> $GITHUB_PATH
 
+      - name: Add LLVM apt repo (21)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget gnupg lsb-release
+          sudo wget https://apt.llvm.org/llvm.sh
+          sudo chmod +x llvm.sh
+          sudo ./llvm.sh 21
+
       - name: Install libc++
         run: |
           sudo apt-get update
@@ -54,5 +62,6 @@ jobs:
       - name: clang-tidy
         run: |
           cmake --build --preset=clang-debug --target=tidy
+
 
 
