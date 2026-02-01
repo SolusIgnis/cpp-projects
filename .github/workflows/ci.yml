@@ -15,6 +15,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          
+      - name: Install Clang 21 and tools
+        run: |
+          sudo apt update
+          sudo apt install -y wget lsb-release software-properties-common
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 21
+          sudo apt-get install -y libc++-dev libc++abi-dev
 
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
@@ -23,7 +32,11 @@ jobs:
           clang-format: 21
           clang-tidy: 21
           ninja: true
-          cmake: 4.1.2
+
+      - name: Get CMake 4.1.2
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: 4.1.2
 
       - name: Configure
         run: |
@@ -40,6 +53,7 @@ jobs:
       - name: clang-tidy
         run: |
           cmake --build --preset=clang-debug --target=tidy
+
 
 
 
