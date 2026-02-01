@@ -2,15 +2,12 @@
 # cpp-projects .clang-format
 # This file is normative and MUST NOT be changed without discussion.
 # @see STYLE.md for rationale and elaboration on guidelines.
-# @note Commented-out lines can be safely restored once clang-format
-#       version >= 22.0.0 is ubiquitous. AlignAfterOpenBracket should
-#       change from BlockIndent to true.
 # -------------------------------------------------------------------
 
 BasedOnStyle: LLVM
 
 Language: Cpp
-Standard: Latest
+Standard: c++20
 
 # -------------------------------------------------------------------
 # Indentation
@@ -67,11 +64,6 @@ ColumnLimit: 120
 BreakTemplateDeclarations:       Yes
 BreakAdjacentStringLiterals:     false
 BreakAfterAttributes:            Leave
-#BreakAfterOpenBracketBracedList: false
-#BreakAfterOpenBracketFunction:   false
-#BreakAfterOpenBracketIf:         false
-#BreakAfterOpenBracketLoop:       false
-#BreakAfterOpenBracketSwitch:     false
 BreakAfterReturnType:            ExceptShortType
 
 BinPackArguments:      false
@@ -109,11 +101,6 @@ AllowShortLambdasOnASingleLine:             All
 AllowShortLoopsOnASingleLine:               true
 
 BreakBeforeBinaryOperators:        NonAssignment
-#BreakBeforeCloseBracketBracedList: true
-#BreakBeforeCloseBracketFunction:   true
-#BreakBeforeCloseBracketIf:         true
-#BreakBeforeCloseBracketLoop:       true
-#BreakBeforeCloseBracketSwitch:     true
 BreakBeforeTemplateCloser:         true
 BreakBeforeTernaryOperators:       true
 BreakBinaryOperations:             Never
@@ -131,8 +118,7 @@ SeparateDefinitionBlocks: Always
 # -------------------------------------------------------------------
 # Alignment
 # -------------------------------------------------------------------
-AlignAfterOpenBracket: BlockIndent
-#AlignAfterOpenBracket: true
+AlignAfterOpenBracket:  BlockIndent
 AlignArrayOfStructures: Right
 
 AlignConsecutiveAssignments:
@@ -200,7 +186,6 @@ SpaceBeforeRangeBasedForLoopColon: true
 SpaceBeforeSquareBrackets:         false
 SpacesBeforeTrailingComments:      1
 
-#SpaceInEmptyBraces:        false
 SpaceInEmptyParentheses:   false
 SpacesInAngles:            Never
 SpacesInContainerLiterals: false
@@ -219,11 +204,6 @@ SpacesInSquareBrackets:    false
 PointerAlignment:   Left
 ReferenceAlignment: Pointer
 QualifierAlignment: Left
-
-# -------------------------------------------------------------------
-# Switch / attributes
-# -------------------------------------------------------------------
-
 
 # -------------------------------------------------------------------
 # Comments & documentation
@@ -248,7 +228,6 @@ CommentPragmas: '^@'
 SortIncludes:
   Enabled:         false
   IgnoreCase:      false
-#  IgnoreExtension: true
 SortUsingDeclarations: Never
 IncludeBlocks: Preserve
 
@@ -261,7 +240,6 @@ IndentRequiresClause: true
 RequiresExpressionIndentation: Keyword
 
 BreakBeforeConceptDeclarations: Always
-#Cpp11BracedListStyle: FunctionCall
 Cpp11BracedListStyle: true
 
 # -------------------------------------------------------------------
@@ -272,11 +250,72 @@ LineEnding: DeriveLF
 
 IntegerLiteralSeparator:
   Binary:                 0
-#  BinaryMinDigitsInsert:  0
-#  BinaryMaxDigitsRemove:  0
   Decimal:                0
-#  DecimalMinDigitsInsert: 0
-#  DecimalMaxDigitsRemove: 0
   Hex:                    0
-#  HexMinDigitsInsert:     0
-#  HexMaxDigitsRemove:     0
+
+---
+Attribute:
+  ClangFormatVersion: 21
+  
+Standard: Latest
+
+
+  
+---
+Attribute:
+  ClangFormatVersion: 22
+
+# -------------------------------------------------------------------
+# Line breaking
+# -------------------------------------------------------------------
+BreakAfterOpenBracketBracedList: false
+BreakAfterOpenBracketFunction:   false
+BreakAfterOpenBracketIf:         false
+BreakAfterOpenBracketLoop:       false
+BreakAfterOpenBracketSwitch:     false
+
+# -------------------------------------------------------------------
+# Control flow readability (FSM-friendly)
+# -------------------------------------------------------------------
+BreakBeforeCloseBracketBracedList: true
+BreakBeforeCloseBracketFunction:   true
+BreakBeforeCloseBracketIf:         true
+BreakBeforeCloseBracketLoop:       true
+BreakBeforeCloseBracketSwitch:     true
+
+# -------------------------------------------------------------------
+# Alignment
+# -------------------------------------------------------------------
+AlignAfterOpenBracket: true
+
+# -------------------------------------------------------------------
+# Spacing
+# -------------------------------------------------------------------
+SpaceInEmptyBraces:        false
+
+# -------------------------------------------------------------------
+# Includes / imports
+# -------------------------------------------------------------------
+SortIncludes:
+  Enabled:         false
+  IgnoreCase:      false
+  IgnoreExtension: true
+
+# -------------------------------------------------------------------
+# Modern C++ / modules
+# -------------------------------------------------------------------
+Cpp11BracedListStyle: FunctionCall
+
+# -------------------------------------------------------------------
+# Misc
+# -------------------------------------------------------------------
+IntegerLiteralSeparator:
+  Binary:                 0
+  BinaryMinDigitsInsert:  0
+  BinaryMaxDigitsRemove:  0
+  Decimal:                0
+  DecimalMinDigitsInsert: 0
+  DecimalMaxDigitsRemove: 0
+  Hex:                    0
+  HexMinDigitsInsert:     0
+  HexMaxDigitsRemove:     0
