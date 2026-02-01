@@ -43,11 +43,10 @@ jobs:
       - name: Install Asio
         run: |
           ASIO_VERSION=1.36.0
-          ASIO_URL="https://downloads.sourceforge.net/project/asio/asio/${ASIO_VERSION}/asio-${ASIO_VERSION}.zip"
-          curl -L -o asio.zip $ASIO_URL
-          unzip asio.zip
-          sudo mkdir -p /usr/local/include/asio
-          sudo cp -r asio-${ASIO_VERSION}/asio /usr/local/include/
+          ASIO_URL="https://downloads.sourceforge.net/project/asio/asio/${ASIO_VERSION}/asio-${ASIO_VERSION}.tar.gz"
+          curl -L -o asio.tar.gz "$ASIO_URL"
+          tar xf asio.tar.gz
+          sudo cp -r asio-${ASIO_VERSION}/asio/include/asio /usr/local/include/
 
       - name: Configure
         run: |
