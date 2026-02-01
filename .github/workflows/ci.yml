@@ -33,14 +33,13 @@ jobs:
 
       - name: Set Clang 21 as default
         run: |
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 100
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 100
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 100
-          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 100
+          sudo update-alternatives --install /usr/bin/clang clang /usr/lib/llvm-21/bin/clang++ 100
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-21/bin/clang++-21 100
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/lib/llvm-21/bin/clang-format-21 100
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/lib/llvm-21/bin/clang-tidy-21 100
 
       - name: Verify toolchain
         run: |
-          cmake --version
           clang++ --version
           clang-format --version
           clang-tidy --version
