@@ -1,83 +1,439 @@
 ---
-Checks: >
-  -*,
+#21.1.6
+Checks:
+  - '-*'
 
-  # ---------- Core correctness ----------
-  clang-diagnostic-*,
-  clang-analyzer-*,
+  # ============================================================
+  # Core correctness (always-on, non-negotiable)
+  # ============================================================
+  - 'clang-diagnostic-*'
+  - 'clang-analyzer-*'
+  - 'bugprone-*'
+  - 'concurrency-*'
+  
+  # Alias of bugprone-unused-return-value: duplicated intentionally due to differing configured functions.
+  - 'cert-err33-c'
 
-  # ---------- Thread safety (Clang capability analysis) ----------
-  clang-analyzer-core.CallAndMessage,
-  clang-analyzer-core.NonNullParamChecker,
-  clang-analyzer-core.NullDereference,
-  clang-analyzer-core.StackAddressEscape,
-  clang-analyzer-core.UndefinedBinaryOperatorResult,
+  # ============================================================
+  # Language modernization (C++17 → C++23)
+  # ============================================================
+  - 'modernize-*'
+  - '-modernize-use-trailing-return-type'
 
-  clang-analyzer-deadcode.*,
+  # ============================================================
+  # Performance correctness (non-micro-optimizing)
+  # ============================================================
+  - 'performance-*'
 
-  clang-analyzer-unix.Malloc,
-  clang-analyzer-unix.MallocSizeof,
+  # ============================================================
+  # API & lifetime rules (selective core guidelines)
+  # ============================================================
+  - 'cppcoreguidelines-*'
+  
+  # Do-While loops are idiomatic for compare-exchange.
+  - '-cppcoreguidelines-avoid-do-while'
+  
+  # ============================================================
+  # Readability & maintainability (policy-driven)
+  # ============================================================
+  - 'readability-*'
+  
+  # Const parameters may be necessary with contract post-conditions
+  - '-readability-avoid-const-params-in-decls'
 
-  # Enable mutex / lock analysis
-  clang-analyzer-core.Lock,
-  clang-analyzer-core.DynamicTypePropagation,
+  # Judicious and well-formatted uses only please
+  - '-readability-avoid-nested-conditional-operator'
+  
+  # Else after return sometimes enhances readability
+  - '-readability-else-after-return'
+  
+  # Pointers that act like iterators should hide being raw pointers
+  #- '-readability-qualified-auto'
+  
+  # Redundant continue and return sometimes enhance readability
+  - '-readability-redundant-control-flow'
 
-  # ---------- Modern C++ ----------
-  modernize-use-nullptr,
-  modernize-use-override,
-  modernize-use-using,
-  modernize-use-equals-default,
-  modernize-use-equals-delete,
-  modernize-use-default-member-init,
-  modernize-avoid-c-arrays,
-  modernize-return-braced-init-list,
-  modernize-use-nodiscard,
+  # Redundant declarations are generally benign, and this check does not play well with `import std;` 
+  - '-readability-redundant-declaration'
 
-  # ---------- Bug-prone constructs ----------
-  bugprone-*,
-  -bugprone-easily-swappable-parameters,
-  -bugprone-narrowing-conversions,
+  # ============================================================
+  # Vendor / legacy rule sets (TEMPORARY, prune later)
+  # ============================================================
+  - 'google-build-explicit-make-pair'
+  - 'google-build-using-namespace'
+  - 'google-default-arguments'
+  - 'google-explicit-constructor'
+  - 'google-runtime-float'
+  - 'google-runtime-int'
+  
+  - 'google-readability-avoid-underscore-in-googletest-name'
+  - 'google-upgrade-googletest-case'
+  
+  - 'hicpp-exception-baseclass'
+  - 'hicpp-multiway-paths-covered'
+  - 'hicpp-no-assembler'
+  - 'hicpp-signed-bitwise'
+  
+  # Alias of bugprone-unused-return-value: duplicated intentionally due to differing configured functions.
+  - 'hicpp-ignored-remove-result'
+  
+  - 'llvm-namespace-comment'
 
-  # ---------- Performance ----------
-  performance-*,
-  -performance-unnecessary-value-param,
+  # ============================================================
+  # Misc & portability
+  # ============================================================
+  - 'misc-*'
 
-  # ---------- Readability (low-noise only) ----------
-  readability-const-return-type,
-  readability-redundant-declaration,
-  readability-redundant-string-init,
-  readability-static-accessed-through-instance,
+  # Multiple inheritance is part of the language for a reason.
+  - '-misc-multiple-inheritance'
 
-  # ---------- C++ Core Guidelines (selective) ----------
-  cppcoreguidelines-*,
-  -cppcoreguidelines-owning-memory,
-  -cppcoreguidelines-avoid-magic-numbers,
-  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
-  -cppcoreguidelines-pro-type-reinterpret-cast,
-  -cppcoreguidelines-pro-type-vararg,
-  -cppcoreguidelines-avoid-non-const-global-variables,
+  # Recursion is perfectly valid.
+  - '-misc-no-recursion'
+  
+  # Unfortunately, this doesn't work with import std yet.
+  - '-misc-include-cleaner'
+  
+  - 'portability-*'
 
-  # ---------- CERT (thread & exception safety) ----------
-  cert-err33-c,
-  cert-oop54-cpp
+  # This check has no utility at this time.
+  - '-portability-restrict-system-includes'
 
+  # This is noisy and doesn't play well with asio.
+  - '-portability-template-virtual-member-function'
+  
+  - 'boost-use-to-string'
+  
 WarningsAsErrors: ''
-
-HeaderFilterRegex: '.*'
-AnalyzeTemporaryDtors: true
-
-CheckOptions:
-  # Performance / correctness tuning
-  - key: performance-move-const-arg
-    value: 'true'
-
-  # Enforce [[nodiscard]] meaningfully
-  - key: modernize-use-nodiscard.AllowDiscardedReturnValues
-    value: 'false'
-
-  # Special member functions
-  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
-    value: 'true'
-
+HeaderFileExtensions:
+  - ''       # Catch-all for unnamed extensions, sometimes needed
+  - h        # Traditional C headers
+  - hh       # Older C++ headers
+  - hpp      # Modern C++ headers
+  - hxx      # Alternate modern C++ headers
+  - inc      # Header fragment include files
+ImplementationFileExtensions:
+  - c        # C source files
+  - cc       # Older C++ source files
+  - cpp      # Modern C++ source files
+  - cxx      # Alternate modern C++ source files
+  - cppm     # Modern (>= C++20) module interface units
+  - ixx      # Alternate module interface units
+HeaderFilterRegex: '^(?!.*(usr/|lib/|v1/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|std\.cppm|std\.compat\.cppm)).*$'
+ExcludeHeaderFilterRegex: '/include/c\+\+/v1/'
 FormatStyle: file
+CheckOptions:
+  bugprone-argument-comment.CommentBoolLiterals:        '1'
+  bugprone-argument-comment.CommentCharacterLiterals:   '1'
+  bugprone-argument-comment.CommentFloatLiterals:       '1'
+  bugprone-argument-comment.CommentIntegerLiterals:     '1'
+  bugprone-argument-comment.CommentNullPtrs:            '1'
+  bugprone-argument-comment.CommentStringLiterals:      '1'
+  bugprone-argument-comment.CommentUserDefinedLiterals: '1'
+  bugprone-argument-comment.IgnoreSingleArgument:       '1'
+  bugprone-argument-comment.StrictMode:                 '1'
+  
+  bugprone-assert-side-effect.CheckFunctionCalls: 'false'
+  
+  bugprone-easily-swappable-parameters.MinimumLength:                  '2'
+  bugprone-easily-swappable-parameters.ModelImplicitConversions:       'true'
+  bugprone-easily-swappable-parameters.QualifiersMix:                  'true'
+  bugprone-easily-swappable-parameters.SuppressParametersUsedTogether: 'false'
+  
+  bugprone-implicit-widening-of-multiplication-result.IgnoreConstantIntExpr:         'false'
+  bugprone-implicit-widening-of-multiplication-result.UseCXXHeadersInCppSources:     'true'
+  bugprone-implicit-widening-of-multiplication-result.UseCXXStaticCastsInCppSources: 'true'
+
+  bugprone-lambda-function-name.IgnoreMacros: 'false'
+
+  bugprone-misplaced-widening-cast.CheckImplicitCasts: 'true'
+
+  bugprone-narrowing-conversions.PedanticMode:                                    'true'
+  bugprone-narrowing-conversions.WarnOnEquivalentBitWidth:                        'true'
+  bugprone-narrowing-conversions.WarnOnFloatingPointNarrowingConversion:          'true'
+  bugprone-narrowing-conversions.WarnOnIntegerNarrowingConversion:                'true'
+  bugprone-narrowing-conversions.WarnOnIntegerToFloatingPointNarrowingConversion: 'true'
+  bugprone-narrowing-conversions.WarnWithinTemplateInstantiation:                 'false'
+  
+  bugprone-non-zero-enum-to-bool-conversion.EnumIgnoreList: ''
+  
+  bugprone-not-null-terminated-result.WantToUseSafeFunctions: 'true'
+  
+  bugprone-pointer-arithmetic-on-polymorphic-object.IgnoreInheritedVirtualFunctions: 'false'
+  
+  bugprone-reserved-identifier.AllowedIdentifiers: ''
+  bugprone-reserved-identifier.Invert:             'false'
+  
+  bugprone-signed-char-misuse.DiagnoseSignedUnsignedCharComparisons: 'true'
+  
+  bugprone-sizeof-expression.WarnOnOffsetDividedBySizeOf:    'true'
+  bugprone-sizeof-expression.WarnOnSizeOfCompareToConstant:  'true'
+  bugprone-sizeof-expression.WarnOnSizeOfConstant:           'true'
+  bugprone-sizeof-expression.WarnOnSizeOfInLoopTermination:  'true'
+  bugprone-sizeof-expression.WarnOnSizeOfIntegerExpression:  'true'
+  bugprone-sizeof-expression.WarnOnSizeOfPointer:            'false'
+  bugprone-sizeof-expression.WarnOnSizeOfPointerToAggregate: 'true'
+  bugprone-sizeof-expression.WarnOnSizeOfThis:               'true'
+  
+  bugprone-string-constructor.WarnOnLargeLength: 'true'
+
+  bugprone-suspicious-string-compare.WarnOnImplicitComparison:   'true'
+  bugprone-suspicious-string-compare.WarnOnLogicalNotComparison: 'true'
+  
+  bugprone-too-small-loop-variable.MagnitudeBitsUpperLimit: '32'
+  
+  bugprone-unhandled-self-assignment.WarnOnlyIfThisHasSuspiciousField: 'true'
+  
+  bugprone-unsafe-functions.CustomFunctions:           ''
+  bugprone-unsafe-functions.ReportDefaultFunctions:    'true'
+  bugprone-unsafe-functions.ReportMoreUnsafeFunctions: 'true'
+  
+  bugprone-unused-return-value.AllowCastToVoid: 'false'
+  
+  cert-err33-c.AllowCastToVoid: 'true'
+
+  concurrency-mt-unsafe.FunctionSet: any
+  
+  cppcoreguidelines-avoid-goto.IgnoreMacros: 'false'
+  
+  cppcoreguidelines-avoid-non-const-global-variables.AllowInternalLinkage: 'false'
+  cppcoreguidelines-avoid-non-const-global-variables.AllowThreadLocal:     'false'
+  
+  cppcoreguidelines-macro-usage.CheckCapsOnly:           'false'
+  cppcoreguidelines-macro-usage.IgnoreCommandLineMacros: 'true'
+
+  cppcoreguidelines-pro-type-const-cast.StrictMode: 'false'
+  
+  cppcoreguidelines-pro-type-member-init.IgnoreArrays:  'false'
+  cppcoreguidelines-pro-type-member-init.UseAssignment: 'false'
+  
+  cppcoreguidelines-pro-type-static-cast-downcast.StrictMode: 'true'
+  
+  cppcoreguidelines-rvalue-reference-param-not-moved.AllowPartialMove:              'false'
+  cppcoreguidelines-rvalue-reference-param-not-moved.IgnoreNonDeducedTemplateTypes: 'false'
+  cppcoreguidelines-rvalue-reference-param-not-moved.IgnoreUnnamedParams:           'false'
+  
+  cppcoreguidelines-special-member-functions.AllowImplicitlyDeletedCopyOrMove:           'false'
+  cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions:                  'false'
+  cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted: 'false'
+  cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor:                       'false'
+  cppcoreguidelines-special-member-functions.IgnoreMacros:                               'false'
+  
+  cppcoreguidelines-use-enum-class.IgnoreUnscopedEnumsInClasses: 'false'
+  
+  hicpp-ignored-remove-result.AllowCastToVoid: 'true'
+
+  hicpp-multiway-paths-covered.WarnOnMissingElse: 'false'
+  
+  hicpp-signed-bitwise.IgnorePositiveIntegerLiterals: 'false'
+  
+  llvm-namespace-comment.AllowOmittingNamespaceComments: 'false'
+  llvm-namespace-comment.ShortNamespaceLines:            '0'
+  llvm-namespace-comment.SpacesBeforeComments:           '1'
+
+  misc-const-correctness.AllowedTypes:                ''
+  misc-const-correctness.AnalyzePointers:             'true'
+  misc-const-correctness.AnalyzeReferences:           'true'
+  misc-const-correctness.AnalyzeValues:               'true'
+  misc-const-correctness.TransformPointersAsPointers: 'true'
+  misc-const-correctness.TransformPointersAsValues:   'true'
+  misc-const-correctness.TransformReferences:         'true'
+  misc-const-correctness.TransformValues:             'true'
+  misc-const-correctness.WarnPointersAsPointers:      'true'
+  misc-const-correctness.WarnPointersAsValues:        'true'
+  
+  misc-header-include-cycle.IgnoredFilesList: ''
+  
+  misc-include-cleaner.DeduplicateFindings: 'true'
+  misc-include-cleaner.IgnoreHeaders:       ''
+  misc-include-cleaner.MissingIncludes:     'true'
+  misc-include-cleaner.UnusedIncludes:      'true'
+  
+  misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: 'false'
+  misc-non-private-member-variables-in-classes.IgnorePublicMemberVariables:                    'false'
+  
+  misc-throw-by-value-catch-by-reference.CheckThrowTemporaries: 'true'
+  misc-throw-by-value-catch-by-reference.WarnOnLargeObjects:    'true'
+  
+  misc-unused-parameters.IgnoreVirtual: 'false'
+  misc-unused-parameters.StrictMode:    'true'
+  
+  modernize-avoid-c-arrays.AllowStringArrays: 'false'
+  
+  modernize-deprecated-headers.CheckHeaderFile: 'false'
+  
+  modernize-loop-convert.MinConfidence:         safe
+  modernize-loop-convert.UseCxx20ReverseRanges: 'true'
+  
+  modernize-make-shared.IgnoreDefaultInitialization: 'true'
+  modernize-make-shared.IgnoreMacros:                'false'
+  
+  modernize-make-unique.IgnoreDefaultInitialization: 'true'
+  modernize-make-unique.IgnoreMacros:                'false'
+  
+  modernize-min-max-use-initializer-list.IgnoreNonTrivialTypes:         'false'
+  modernize-min-max-use-initializer-list.IgnoreTrivialTypesOfSizeAbove: '32'
+  
+  modernize-pass-by-value.ValuesOnly: 'false'
+  
+  modernize-raw-string-literal.DelimiterStem: lit
+  modernize-raw-string-literal.ReplaceShorterLiterals: 'false'
+  
+  modernize-type-traits.IgnoreMacros: 'false'
+  
+  modernize-use-auto.MinTypeNameLength: '5'
+  modernize-use-auto.RemoveStars:       'false'
+  
+  modernize-use-bool-literals.IgnoreMacros: 'false'
+  
+  modernize-use-default-member-init.IgnoreMacros:  'false'
+  modernize-use-default-member-init.UseAssignment: 'false'
+  
+  modernize-use-designated-initializers.IgnoreMacros:                  'false'
+  modernize-use-designated-initializers.IgnoreSingleElementAggregates: 'true'
+  modernize-use-designated-initializers.RestrictToPODTypes:            'false'
+  modernize-use-designated-initializers.StrictCStandardCompliance:     'true'
+  modernize-use-designated-initializers.StrictCppStandardCompliance:   'true'
+  
+  modernize-use-emplace.IgnoreImplicitConstructors: 'false'
+  
+  modernize-use-equals-default.IgnoreMacros: 'false'
+  
+  modernize-use-equals-delete.IgnoreMacros: 'false'
+  
+  modernize-use-noexcept.UseNoexceptFalse: 'true'
+  
+  modernize-use-override.AllowOverrideAndFinal:        'false'
+  modernize-use-override.IgnoreDestructors:            'false'
+  modernize-use-override.IgnoreTemplateInstantiations: 'false'
+  
+  modernize-use-ranges.UseReversePipe: 'false'
+  
+  modernize-use-scoped-lock.WarnOnSingleLocks:     'false'
+  modernize-use-scoped-lock.WarnOnUsingAndTypedef: 'true'
+  
+  modernize-use-std-format.StrictMode: 'false'
+  
+  modernize-use-std-print.StrictMode: 'false'
+  
+  modernize-use-using.IgnoreExternC: 'false'
+  modernize-use-using.IgnoreMacros:  'false'
+  
+  performance-enum-size.EnumIgnoreList: ''
+  
+  performance-for-range-copy.AllowedTypes:        ''
+  performance-for-range-copy.WarnOnAllAutoCopies: 'true'
+  
+  performance-inefficient-string-concatenation.StrictMode: 'false'
+  
+  performance-inefficient-vector-operation.EnableProto: 'false'
+  
+  performance-move-const-arg.CheckMoveToConstRef:        'true'
+  performance-move-const-arg.CheckTriviallyCopyableMove: 'true'
+  
+  performance-no-automatic-move.AllowedTypes: ''
+  
+  performance-unnecessary-value-param.IgnoreCoroutines: 'true'
+  
+  portability-simd-intrinsics.Suggest: 'true'
+
+  readability-avoid-return-with-void-value.IgnoreMacros: 'false'
+  readability-avoid-return-with-void-value.StrictMode:   'true'
+  
+  readability-braces-around-statements.ShortStatementLines: '1'
+  
+  readability-const-return-type.IgnoreMacros: 'false'
+  
+  readability-else-after-return.WarnOnConditionVariables: 'true'
+  readability-else-after-return.WarnOnUnfixable:          'true'
+  
+  readability-enum-initial-value.AllowExplicitSequentialInitialValues: 'true'
+  readability-enum-initial-value.AllowExplicitZeroFirstInitialValue:   'true'
+  
+  readability-identifier-length.IgnoredParameterNames:        '^[n]$|^ec$|^id$'
+  readability-identifier-length.IgnoredVariableNames:         '^ec$|^id$'
+  readability-identifier-length.MinimumExceptionNameLength:   '2'
+  readability-identifier-length.MinimumLoopCounterNameLength: '2'
+  readability-identifier-length.MinimumParameterNameLength:   '3'
+  readability-identifier-length.MinimumVariableNameLength:    '3'
+  
+  readability-identifier-naming.AggressiveDependentMemberLookup: 'true'
+  readability-identifier-naming.CheckAnonFieldInParent:          'false'
+  readability-identifier-naming.GetConfigPerFile:                'true'
+  readability-identifier-naming.IgnoreMainLikeFunctions:         'true'
+  readability-identifier-naming.DefaultCase:                     lower_case
+  # ---------- Types ----------
+  readability-identifier-naming.NamespaceCase:                   lower_case
+  readability-identifier-naming.ClassCase:                       lower_case
+  readability-identifier-naming.StructCase:                      lower_case
+  readability-identifier-naming.UnionCase:                       lower_case
+  readability-identifier-naming.EnumCase:                        lower_case
+  readability-identifier-naming.EnumConstantCase:                lower_case
+  readability-identifier-naming.TypedefCase:                     lower_case
+  readability-identifier-naming.TypeAliasCase:                   lower_case
+  readability-identifier-naming.ConceptCase:                     CamelCase
+  # ---------- Functions ----------
+  readability-identifier-naming.FunctionCase:                    lower_case
+  readability-identifier-naming.MethodCase:                      lower_case
+  readability-identifier-naming.StaticMethodCase:                lower_case
+  readability-identifier-naming.VirtualMethodCase:               lower_case
+  # ---------- Variables ----------
+  readability-identifier-naming.VariableCase:                    lower_case
+  readability-identifier-naming.GlobalVariableCase:              lower_case
+  readability-identifier-naming.StaticVariableCase:              lower_case
+  readability-identifier-naming.LocalVariableCase:               lower_case
+  readability-identifier-naming.ParameterCase:                   lower_case
+  # ---------- Data members ----------
+  readability-identifier-naming.MemberCase:                      lower_case
+  readability-identifier-naming.PrivateMemberSuffix:             _
+  readability-identifier-naming.ProtectedMemberSuffix:           _
+  # ---------- Constants ----------
+  readability-identifier-naming.ConstantCase:                    lower_case
+  readability-identifier-naming.StaticConstantCase:              lower_case
+  # ---------- Templates ----------
+  readability-identifier-naming.TemplateParameterCase:           CamelCase
+  readability-identifier-naming.TemplateTemplateParameterCase:   CamelCase
+  readability-identifier-naming.TemplateTypeParameterCase:       CamelCase
+  readability-identifier-naming.TemplateValueParameterCase:      CamelCase
+  # ---------- Macros ----------
+  readability-identifier-naming.MacroDefinitionCase:             UPPER_CASE
+  
+  readability-implicit-bool-conversion.AllowIntegerConditions:    'false'
+  readability-implicit-bool-conversion.AllowPointerConditions:    'false'
+  readability-implicit-bool-conversion.UseUpperCaseLiteralSuffix: 'false'
+  
+  readability-inconsistent-declaration-parameter-name.IgnoreMacros: 'false'
+  readability-inconsistent-declaration-parameter-name.Strict:       'true'
+  
+  readability-magic-numbers.IgnoreAllFloatingPointValues: 'false'
+  readability-magic-numbers.IgnoreBitFieldsWidths:        'true'
+  readability-magic-numbers.IgnorePowersOf2IntegerValues: 'false'
+  readability-magic-numbers.IgnoreTypeAliases:            'false'
+  readability-magic-numbers.IgnoreUserDefinedLiterals:    'false'
+  readability-magic-numbers.IgnoredFloatingPointValues:   '1.0;100.0;'
+  readability-magic-numbers.IgnoredIntegerValues:         '1;2;3;4;'
+  
+  readability-named-parameter.InsertPlainNamesInForwardDecls: 'false'
+  
+  readability-operators-representation.BinaryOperators:     ''
+  readability-operators-representation.OverloadedOperators: ''
+  
+  readability-qualified-auto.AddConstToQualified: true
+  
+  readability-redundant-casting.IgnoreMacros:      'true'
+  readability-redundant-casting.IgnoreTypeAliases: 'false'
+  
+  readability-redundant-member-init.IgnoreBaseInCopyConstructors: 'true'
+  
+  readability-simplify-boolean-expr.ChainedConditionalAssignment: 'false'
+  readability-simplify-boolean-expr.ChainedConditionalReturn:     'false'
+  readability-simplify-boolean-expr.IgnoreMacros:                 'false'
+  readability-simplify-boolean-expr.SimplifyDeMorgan:             'true'
+  readability-simplify-boolean-expr.SimplifyDeMorganRelaxed:      'false'
+  
+  readability-uniqueptr-delete-release.PreferResetCall: 'false'
+  
+  readability-uppercase-literal-suffix.IgnoreMacros: 'true'
+  readability-uppercase-literal-suffix.NewSuffixes:  ''
+
+SystemHeaders:   false
 ...

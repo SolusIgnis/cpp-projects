@@ -18,6 +18,8 @@ endif()
 add_library(net.telnet STATIC)
 add_library(net::telnet ALIAS net.telnet)
 
+register_tooling_target(net.telnet)
+
 # C++23 required for "import std;"
 target_compile_features(net.telnet
   PUBLIC cxx_std_23
@@ -46,10 +48,10 @@ target_sources(net.telnet
 # Implementation Units
 target_sources(net.telnet
   PRIVATE
-      src/impl/net.telnet-protocol_fsm-impl.cpp
-      src/impl/net.telnet-stream-impl.cpp
-      src/impl/net.telnet-stream-async-impl.cpp
-      src/impl/net.telnet-stream-sync-impl.cpp
+    src/impl/net.telnet-protocol_fsm-impl.cpp
+    src/impl/net.telnet-stream-impl.cpp
+    src/impl/net.telnet-stream-async-impl.cpp
+    src/impl/net.telnet-stream-sync-impl.cpp
 )
 
 target_link_libraries(net.telnet

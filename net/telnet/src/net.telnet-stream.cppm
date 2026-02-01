@@ -5,13 +5,13 @@
  *
  * @brief Interface for Telnet stream operations.
  * @remark Defines `telnet::stream` class to provide a Telnet-aware stream wrapper around a lower-layer stream-oriented socket.
- * @remark Defines `stream::InputProcessor` for composed Telnet-aware async_read_some.
+ * @remark Defines `stream::input_processor` for composed Telnet-aware async_read_some.
  * @see Partition implementation units "net.telnet-stream-impl.cpp", "net.telnet-stream-async-impl.cpp", and "net.telnet-stream-sync-impl.cpp" for function definitions.
- 
+
  * @copyright (c) 2025 [it's mine!]. All rights reserved.
  * @license See LICENSE file for details
  *
- * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:protocol_fsm` for `ProtocolFSM`, `:types` for `telnet::command`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:internal` for implementation classes
+ * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:protocol_fsm` for `protocol_fsm`, `:types` for `telnet::command`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:internal` for implementation classes
  * @todo Phase 6: Hand-tune next-layer stream constraints to exactly match Boost.Asio stream sockets.
  * @todo Phase 6: Add concept for TLS-aware next-layer stream to implement conditional TLS support.
  * @todo Future Development: Monitor `asio::async_result_t` compatibility with evolving Boost.Asio and `std::execution` for potential transition to awaitable or standard async frameworks.
@@ -24,14 +24,14 @@ module; //Including Asio in the Global Module Fragment until importable header u
 //Module partition interface unit
 export module net.telnet:stream;
 
-import std; //For std::error_code, std::size_t, std::vector, std::same_as
+import std; //NOLINT For std::error_code, std::size_t, std::vector, std::same_as
 
-export import :types;        ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
-export import :errors;       ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-export import :concepts;     ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
-export import :options;      ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
-export import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for `ProtocolFSM`
-export import :awaitables;   ///< @see "net.telnet-awaitables.cppm" for `TaggedAwaitable`
+export import :types;    ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
+export import :errors;   ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+export import :concepts; ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
+export import :options;  ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
+export import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for `protocol_fsm`
+export import :awaitables;   ///< @see "net.telnet-awaitables.cppm" for `tagged_awaitable`
 
 //namespace asio = boost::asio;
 
@@ -42,16 +42,16 @@ namespace net::telnet {
     using concepts::ConstBufferSequence;
     using concepts::ReadToken;
     using concepts::WriteToken;
-    using concepts::ProtocolFSMConfig; 
+    using concepts::ProtocolFSMConfig;
 } //namespace net::telnet
 
 export namespace net::telnet {
     /**
      * @brief Stream class wrapping a next-layer stream/socket with Telnet protocol handling.
      * @remark Implements a stream interface (read/write) over a layered stream/socket.
-     * @see `:protocol_fsm` for `ProtocolFSM`, `:types` for `telnet::command`, `:options` for `option` and `option::id_num`, `:errors` for error codes
+     * @see `:protocol_fsm` for `protocol_fsm`, `:types` for `telnet::command`, `:options` for `option` and `option::id_num`, `:errors` for error codes
      */
-    template<LayerableSocketStream NextLayerT, ProtocolFSMConfig ProtocolConfigT = DefaultProtocolFSMConfig>
+    template<LayerableSocketStream NextLayerT, ProtocolFSMConfig ProtocolConfigT = default_protocol_fsm_config>
     class stream {
     private:
         /**
@@ -66,7 +66,7 @@ export namespace net::telnet {
          * @brief Type for input and output side buffers.
          */
         using side_buffer_type = asio::streambuf;
-        
+
     public:
         /**
          * @typedef next_layer_type
@@ -92,9 +92,9 @@ export namespace net::telnet {
         /**
          * @typedef fsm_type
          * @brief Type of the Telnet protocol finite state machine.
-         * @remark Configured with `ProtocolConfigT`, defaults to `DefaultProtocolFSMConfig`.
+         * @remark Configured with `ProtocolConfigT`, defaults to `default_protocol_fsm_config`.
          */
-        using fsm_type = ProtocolFSM<ProtocolConfigT>;
+        using fsm_type = protocol_fsm<ProtocolConfigT>;
 
         ///@brief Constructs a stream with a next-layer stream.
         explicit stream(next_layer_type&& next_layer_stream);
@@ -109,7 +109,17 @@ export namespace net::telnet {
         next_layer_type& next_layer() noexcept { return next_layer_; }
 
         ///@brief Registers handlers for option enablement, disablement, and subnegotiation.
-        void register_option_handlers(option::id_num opt, std::optional<typename fsm_type::OptionEnablementHandler> enable_handler, std::optional<typename fsm_type::OptionDisablementHandler> disable_handler, std::optional<typename fsm_type::SubnegotiationHandler> subneg_handler = std::nullopt) { fsm_.register_option_handlers(opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler)); }
+        void register_option_handlers(
+            option::id_num opt,
+            std::optional<typename fsm_type::option_enablement_handler_type> enable_handler,
+            std::optional<typename fsm_type::option_disablement_handler_type> disable_handler,
+            std::optional<typename fsm_type::subnegotiation_handler_type> subneg_handler = std::nullopt
+        )
+        {
+            fsm_.register_option_handlers(
+                opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler)
+            );
+        }
 
         ///@brief Unregisters handlers for an option.
         void unregister_option_handlers(option::id_num opt) { fsm_.unregister_option_handlers(opt); }
@@ -183,23 +193,31 @@ export namespace net::telnet {
         ///@todo Future Development: make this private
         ///@brief Asynchronously writes a Telnet negotiation command with an option.
         template<WriteToken CompletionToken>
-        auto async_write_negotiation(typename fsm_type::NegotiationResponse response, CompletionToken&& token);
+        auto async_write_negotiation(typename fsm_type::negotiation_response response, CompletionToken&& token);
 
         ///@brief Synchronously writes a Telnet negotiation command with an option.
-        std::size_t write_negotiation(typename fsm_type::NegotiationResponse response);
+        std::size_t write_negotiation(typename fsm_type::negotiation_response response);
 
         ///@brief Synchronously writes a Telnet negotiation command with an option.
-        std::size_t write_negotiation(typename fsm_type::NegotiationResponse response, std::error_code& ec) noexcept;
+        std::size_t write_negotiation(typename fsm_type::negotiation_response response, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously writes a Telnet subnegotiation command.
         template<WriteToken CompletionToken>
-        auto async_write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, CompletionToken&& token);
+        auto async_write_subnegotiation(
+            option opt,
+            const std::vector<byte_t>& subnegotiation_buffer,
+            CompletionToken&& token
+        );
 
         ///@brief Synchronously writes a Telnet subnegotiation command.
         std::size_t write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer);
 
         ///@brief Synchronously writes a Telnet subnegotiation command.
-        std::size_t write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, std::error_code& ec) noexcept;
+        std::size_t write_subnegotiation(
+            option opt,
+            const std::vector<byte_t>& subnegotiation_buffer,
+            std::error_code& ec
+        ) noexcept;
 
         ///@brief Asynchronously sends Telnet Synch sequence (NUL bytes and IAC DM).
         template<WriteToken CompletionToken>
@@ -216,7 +234,7 @@ export namespace net::telnet {
 
     private:
         /**
-         * @brief A private nested struct for holding processing context to share with `InputProcessor`.
+         * @brief A private nested struct for holding processing context to share with `input_processor`.
          */
         struct context_type {
         private:
@@ -225,117 +243,151 @@ export namespace net::telnet {
              */
             class urgent_data_tracker {
             private:
-                ///@typedef ProtocolConfig @brief Aliases `fsm_type::ProtocolConfig` to access the error logger.
-                using ProtocolConfig = fsm_type::ProtocolConfig;
+                ///@typedef protocol_config_type @brief Aliases `fsm_type::protocol_config_type` to access the error logger.
+                using protocol_config_type = fsm_type::protocol_config_type;
                 ///@brief Scoped enumeration for the urgent data tracking state.
-                enum class UrgentDataState : byte_t { NO_URGENT_DATA, HAS_URGENT_DATA, UNEXPECTED_DATA_MARK };
-                std::atomic<UrgentDataState> state_{UrgentDataState::NO_URGENT_DATA};
+                enum class urgent_data_state : byte_t {
+                    no_urgent_data,
+                    has_urgent_data,
+                    unexpected_data_mark
+                };
+                std::atomic<urgent_data_state> state_{urgent_data_state::no_urgent_data};
+
             public:
                 ///@brief Updates the state when the OOB notification arrives.
                 void saw_urgent();
                 ///@brief Updates the state when the `telnet::command::dm` arrives.
                 void saw_data_mark();
+
                 ///@brief Reports if the urgent notification is currently active.
-                bool has_urgent_data() const noexcept { return (state_.load(std::memory_order_relaxed) == UrgentDataState::HAS_URGENT_DATA); }
-                ///@brief Implicitly converts to bool reporting if the urgent notification is currently active.
-                operator bool() const noexcept { return has_urgent_data(); }
+                [[nodiscard]] bool has_urgent_data() const noexcept
+                {
+                    return (state_.load(std::memory_order_relaxed) == urgent_data_state::has_urgent_data);
+                }
+
+                ///@brief Converts to bool reporting if the urgent notification is currently active.
+                explicit operator bool() const noexcept { return has_urgent_data(); }
             };
+
         public:
-            side_buffer_type    input_side_buffer;
-            side_buffer_type    output_side_buffer;
-            std::error_code     deferred_transport_error;
-            std::error_code     deferred_processing_signal;
+            side_buffer_type input_side_buffer;
+            side_buffer_type output_side_buffer;
+            std::error_code deferred_transport_error;
+            std::error_code deferred_processing_signal;
             urgent_data_tracker urgent_data_state;
-            std::atomic<bool>   waiting_for_urgent_data{false};
+            std::atomic<bool> waiting_for_urgent_data{false};
         }; //struct context_type
-    
+
         /**
          * @brief A private nested class template for processing Telnet input asynchronously.
          * @remark Manages the stateful processing of Telnet input, handling reads and negotiation writes using `async_compose`.
-         * @see :protocol_fsm for `ProtocolFSM`, :errors for error codes
+         * @see :protocol_fsm for `protocol_fsm`, :errors for error codes
          */
         template<MutableBufferSequence MBufSeq>
-        class InputProcessor {
+        class input_processor {
         public:
-            ///@brief Constructs an `InputProcessor` with the parent stream, FSM, and buffers.
-            InputProcessor(stream& parent_stream, stream::fsm_type& fsm, stream::context_type& context, MBufSeq buffers);
+            ///@brief Constructs an `input_processor` with the parent stream, FSM, and buffers.
+            input_processor(
+                stream& parent_stream,
+                stream::fsm_type& fsm,
+                stream::context_type& context,
+                MBufSeq buffers
+            );
 
             ///@brief Asynchronous operation handler for processing Telnet input.
             template<typename Self>
-            void operator()(Self& self, std::error_code ec = {}, std::size_t bytes_transferred = 0);
+            void operator()(Self& self, std::error_code ec_in = {}, std::size_t bytes_transferred = 0);
 
         private:
-            ///@brief Handles processing of the INTIALIZING state.
+            ///@brief Handles processing of the `initializing` state.
             template<typename Self>
             void handle_processor_state_initializing(Self& self);
 
-            ///@brief Handles processing of the READING state.
+            ///@brief Handles processing of the `reading` state.
             template<typename Self>
-            void handle_processor_state_reading(Self& self, std::error_code ec_in = {}, std::size_t bytes_transferred = 0);
+            void handle_processor_state_reading(
+                Self& self,
+                std::error_code ec_in         = {},
+                std::size_t bytes_transferred = 0
+            );
 
-            ///@brief Handles processing of the PROCESSING state.
+            ///@brief Handles processing of the `processing` state.
             template<typename Self>
             void handle_processor_state_processing(Self& self, std::error_code ec_in = {});
 
             ///@brief Completes the asynchronous operation with error code and bytes transferred.
             template<typename Self>
             void complete(Self& self, const std::error_code& ec, std::size_t bytes_transferred);
-            
+
             ///@brief Defers write errors for later reporting and logs multi-error pile-ups.
             void process_write_error(std::error_code ec);
-            
+
             ///@brief Handles processing_signal error codes from fsm_.process_byte, modifying the user buffer or urgent data state.
             void process_fsm_signals(std::error_code& signal_ec);
 
-            ///@brief Handle a `NegotiationResponse` by initiating an async write of the negotiation.
+            ///@brief Handle a `negotiation_response` by initiating an async write of the negotiation.
             template<typename Self>
-            void do_response(typename stream::fsm_type::NegotiationResponse response, Self&& self);
-    
+            void do_response(typename stream::fsm_type::negotiation_response response, Self&& self);
+
             ///@brief Handle a `std::string` by initiating an async write of raw data.
             template<typename Self>
             void do_response(std::string response, Self&& self);
-    
-            ///@brief Handle a `SubnegotiationAwaitable` by spawning a coroutine to process it.
-            template<typename Self>
-            void do_response(awaitables::SubnegotiationAwaitable awaitable, Self&& self);
-    
-            ///@brief Handle any `TaggedAwaitable` with optional `NegotiationResponse`.
-            template<typename Self, typename Tag, typename T, typename Awaitable>
-            void do_response(std::tuple<awaitables::TaggedAwaitable<Tag, T, Awaitable>, std::optional<typename stream::fsm_type::NegotiationResponse>> response, Self&& self);
-    
-            static inline constexpr std::size_t READ_BLOCK_SIZE = 1024;
 
+            ///@brief Handle a `subnegotiation_awaitable` by spawning a coroutine to process it.
+            template<typename Self>
+            void do_response(awaitables::subnegotiation_awaitable awaitable, Self&& self);
+
+            ///@brief Handle any `tagged_awaitable` with optional `negotiation_response`.
+            template<typename Self, typename Tag, typename T, typename Awaitable>
+            void do_response(
+                std::tuple<
+                    awaitables::tagged_awaitable<Tag, T, Awaitable>,
+                    std::optional<typename stream::fsm_type::negotiation_response>
+                > response,
+                Self&& self
+            );
+
+            static constexpr std::size_t read_block_size = 1024;
+
+            //NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members): The lifetime of the input_processor instance is bound to the lifetime of the parent stream object whose members are aliased here.
             stream& parent_stream_;
             fsm_type& fsm_;
             context_type& context_;
-           
+            //NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members)
+
             MBufSeq buffers_;
             using iterator_type = asio::buffers_iterator<MBufSeq>;
             iterator_type user_buf_begin_;
             iterator_type user_buf_end_;
             iterator_type write_it_;
-            
-            enum class State { INITIALIZING, READING, PROCESSING, DONE } state_;
-        }; //class InputProcessor
+
+            enum class state : std::uint8_t {
+                initializing,
+                reading,
+                processing,
+                done
+            } state_;
+        }; //class input_processor
 
         ///@brief Asynchronously sends a single NUL byte, optionally as OOB.
         template<WriteToken CompletionToken>
-        auto async_send_nul(bool out_of_band, CompletionToken&& token);
+        auto async_send_nul(bool urgent, CompletionToken&& token);
 
         ///@brief Synchronously awaits the completion of an awaitable operation.
         template<typename Awaitable>
-        static auto sync_await(Awaitable&& a);
+        static auto sync_await(Awaitable&& awaitable);
 
         ///@brief Escapes Telnet output data by duplicating 0xFF (IAC) bytes into a provided vector.
         template<ConstBufferSequence CBufSeq>
-        std::tuple<std::error_code, std::vector<byte_t>&> escape_telnet_output(std::vector<byte_t>& escaped_data, const CBufSeq& data) const noexcept;
+        std::tuple<std::error_code, std::vector<byte_t>&>
+            escape_telnet_output(std::vector<byte_t>& escaped_data, const CBufSeq& data) const noexcept;
 
         ///@brief Escapes Telnet output data by duplicating 0xFF (IAC) bytes.
         template<ConstBufferSequence CBufSeq>
         std::tuple<std::error_code, std::vector<byte_t>> escape_telnet_output(const CBufSeq& data) const noexcept;
 
         ///@brief Asynchronously writes a temporary buffer to the next layer.
-        template<WriteToken CompletionToken> 
+        template<WriteToken CompletionToken>
         auto async_write_temp_buffer(std::vector<byte_t>&& temp_buffer, CompletionToken&& token);
 
         ///@brief Asynchronously reports an error via the completion token.
@@ -371,20 +423,20 @@ export namespace net::telnet {
      * @remark Provides direct access to the wrapped `next_layer_` stream.
      */
     /**
-     * @fn void stream::register_option_handlers(option::id_num opt, std::optional<fsm_type::OptionEnablementHandler> enable_handler, std::optional<fsm_type::OptionDisablementHandler> disable_handler, std::optional<fsm_type::SubnegotiationHandler> subneg_handler)
+     * @fn void stream::register_option_handlers(option::id_num opt, std::optional<fsm_type::option_enablement_handler_type> enable_handler, std::optional<fsm_type::option_disablement_handler_type> disable_handler, std::optional<fsm_type::subnegotiation_handler_type> subneg_handler)
      * @param opt The `option::id_num` for which to register handlers.
      * @param enable_handler Optional handler for option enablement.
      * @param disable_handler Optional handler for option disablement.
      * @param subneg_handler Optional handler for subnegotiation data (defaults to `std::nullopt`).
      * @remark Forwards to `fsm_.register_option_handlers` to register handlers for the specified option.
      * @remark Accepts `option::id_num` or `option` via implicit conversion.
-     * @see `:protocol_fsm` for `ProtocolFSM`, :options for `option`, "net.telnet-stream-impl.cpp" for implementation
+     * @see `:protocol_fsm` for `protocol_fsm`, :options for `option`, "net.telnet-stream-impl.cpp" for implementation
      */
     /**
      * @fn void stream::unregister_option_handlers(option::id_num opt)
      * @param opt The `option::id_num` for which to unregister handlers.
      * @remark Forwards to `fsm_.unregister_option_handlers` to remove handlers for the specified option.
-     * @see `:protocol_fsm` for `ProtocolFSM`, `:options` for `option`, "net.telnet-stream-impl.cpp" for implementation
+     * @see `:protocol_fsm` for `protocol_fsm`, `:options` for `option`, "net.telnet-stream-impl.cpp" for implementation
      */
     /**
      * @fn auto stream::async_request_option(option::id_num opt, negotiation_direction direction, CompletionToken&& token)
@@ -453,9 +505,9 @@ export namespace net::telnet {
      * @param buffers The mutable buffer sequence to read into.
      * @param token The completion token.
      * @return Result type deduced from the completion token.
-     * @remark Initiates an asynchronous read from `next_layer_` using `asio::async_compose` with `InputProcessor` to process Telnet data.
+     * @remark Initiates an asynchronous read from `next_layer_` using `asio::async_compose` with `input_processor` to process Telnet data.
      * @remark Binds the operation to the stream’s executor via `get_executor()`.
-     * @see `InputProcessor` for processing details, `:protocol_fsm` for `ProtocolFSM`, `:errors` for error codes, "net.telnet-stream-async-impl.cpp" for implementation
+     * @see `input_processor` for processing details, `:protocol_fsm` for `protocol_fsm`, `:errors` for error codes, "net.telnet-stream-async-impl.cpp" for implementation
      */
     /**
      * @fn std::size_t stream::read_some(MBufSeq&& buffers)
@@ -567,7 +619,7 @@ export namespace net::telnet {
      * @see `sync_await` for synchronous operation, :types for `telnet::command`, :errors for error codes, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
-     * @fn auto stream::async_write_negotiation(typename fsm_type::NegotiationResponse response, CompletionToken&& token)
+     * @fn auto stream::async_write_negotiation(typename fsm_type::negotiation_response response, CompletionToken&& token)
      * @tparam CompletionToken The type of completion token.
      * @param response The negotiation response to write.
      * @param token The completion token.
@@ -587,8 +639,8 @@ export namespace net::telnet {
      * @remark Validates that `opt` supports subnegotiation via `opt.supports_subnegotiation()` and is enabled via `fsm_.is_enabled(opt)`.
      * @remark Constructs a buffer by reserving space for `subnegotiation_buffer` plus 10% for escaping and 5 bytes (IAC SB, `opt`, IAC SE), appending IAC SB `opt`, escaping the subnegotiation data with `escape_telnet_output`, and appending IAC SE.
      * @remark Returns `telnet::error::invalid_subnegotiation` if `opt` does not support subnegotiation, `telnet::error::option_not_available` if `opt` is not enabled, `std::errc::not_enough_memory` on allocation failure, or `telnet::error::internal_error` for other exceptions, all via `async_report_error`.
-     * @note Subnegotiation overflow is handled by `ProtocolFSM::process_byte` for incoming subnegotiations, not outgoing writes.
-     * @see :options for `option` and `option::id_num`, :errors for error codes, `escape_telnet_output` for escaping, :protocol_fsm for `ProtocolFSM`, RFC 855 for subnegotiation, "net.telnet-stream-async-impl.cpp" for implementation
+     * @note Subnegotiation overflow is handled by `protocol_fsm::process_byte` for incoming subnegotiations, not outgoing writes.
+     * @see :options for `option` and `option::id_num`, :errors for error codes, `escape_telnet_output` for escaping, :protocol_fsm for `protocol_fsm`, RFC 855 for subnegotiation, "net.telnet-stream-async-impl.cpp" for implementation
      */
     /**
      * @fn std::size_t stream::write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer)
@@ -641,60 +693,60 @@ export namespace net::telnet {
      * @see `async_send_synch` for async implementation, `sync_await` for synchronous operation, :types for `telnet::command`, :errors for error codes, RFC 854 for Synch procedure, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
-     * @fn stream::InputProcessor::InputProcessor(stream& parent_stream, stream::fsm_type& fsm, context_type& context, MutableBufferSequence buffers)
+     * @fn stream::input_processor::input_processor(stream& parent_stream, stream::fsm_type& fsm, context_type& context, MutableBufferSequence buffers)
      * @param parent_stream Reference to the parent `stream` managing the connection.
-     * @param fsm Reference to the `ProtocolFSM` for Telnet state management.
+     * @param fsm Reference to the `protocol_fsm` for Telnet state management.
      * @param context Reference to the context containing input/output buffers and processing state.
      * @param buffers The mutable buffer sequence to read into.
-     * @remark Initializes `parent_stream_`, `fsm_`, `context_`, `buffers_`, and sets `state_` to `INITIALIZING`.
+     * @remark Initializes `parent_stream_`, `fsm_`, `context_`, `buffers_`, and sets `state_` to `initializing`.
      * @see `stream` for parent_stream, `context_type` for context, "net.telnet-stream-impl.cpp" for implementation
      */
     /**
-     * @fn void stream::InputProcessor::operator()(Self& self, std::error_code ec, std::size_t bytes_transferred)
+     * @fn void stream::input_processor::operator()(Self& self, std::error_code ec, std::size_t bytes_transferred)
      * @tparam Self The type of the coroutine self reference.
      * @param self Reference to the coroutine self.
      * @param ec The error code from the previous operation.
      * @param bytes_transferred The number of bytes transferred in the previous operation.
-     * @remark Manages state transitions (`INITIALIZING`, `READING`, `PROCESSING`, `DONE`), reading from `next_layer_` and processing bytes via `fsm_.process_byte`.
+     * @remark Manages state transitions (`initializing`, `reading`, `processing`, `done`), reading from `next_layer_` and processing bytes via `fsm_.process_byte`.
      * @note Loop guards against user buffer overrun via condition; response pausing consumes before async.
      * @remark Handles negotiation responses, raw writes, command handlers, and subnegotiation handlers via `std::visit` on `ProcessingReturnVariant`.
-     * @note Checks `DONE` state early to prevent reentrancy issues after completion.
-     * @see :protocol_fsm for `ProtocolFSM` processing, :errors for error codes, :options for `option::id_num`, RFC 854 for Telnet protocol, "net.telnet-stream-async-impl.cpp" for implementation
+     * @note Checks `done` state early to prevent reentrancy issues after completion.
+     * @see :protocol_fsm for `protocol_fsm` processing, :errors for error codes, :options for `option::id_num`, RFC 854 for Telnet protocol, "net.telnet-stream-async-impl.cpp" for implementation
      */
     /**
-     * @fn void stream::InputProcessor::complete(Self& self, const std::error_code& ec, std::size_t bytes_transferred)
+     * @fn void stream::input_processor::complete(Self& self, const std::error_code& ec, std::size_t bytes_transferred)
      * @tparam Self The type of the coroutine self reference.
      * @param self Reference to the coroutine self.
      * @param ec The error code to report.
      * @param bytes_transferred The number of bytes to report.
-     * @remark Sets `state_` to `DONE` and invokes `self.complete` with `ec` and `bytes_transferred`.
+     * @remark Sets `state_` to `done` and invokes `self.complete` with `ec` and `bytes_transferred`.
      * @see "net.telnet-stream-async-impl.cpp" for implementation
      */
     /**
-     * @fn void stream::InputProcessor::process_write_error(std::error_code ec)
+     * @fn void stream::input_processor::process_write_error(std::error_code ec)
      * @param ec The error code to defer.
-     * @remark Updates `context_.deferred_transport_error` with `ec` if no prior error exists, otherwise logs the new error using `ProtocolConfig::log_error` with the prior error as context.
+     * @remark Updates `context_.deferred_transport_error` with `ec` if no prior error exists, otherwise logs the new error using `protocol_config_type::log_error` with the prior error as context.
      * @pre `ec` is a write error from an asynchronous operation (e.g., `async_write_negotiation`).
      * @post If `context_.deferred_transport_error` was set, it is unchanged; otherwise, `context_.deferred_transport_error` is set to `ec`.
-     * @see `:errors` for error codes, `:protocol_fsm` for `ProtocolConfig`, "net.telnet-stream-impl.cpp" for implementation
+     * @see `:errors` for error codes, `:protocol_fsm` for `protocol_config_type`, "net.telnet-stream-impl.cpp" for implementation
      */
     /**
-     * @fn void stream::InputProcessor::process_fsm_signals(std::error_code& signal_ec)
+     * @fn void stream::input_processor::process_fsm_signals(std::error_code& signal_ec)
      * @param[in,out] signal_ec The error code from `fsm_.process_byte`, cleared for handled `processing_signal` values.
      * @remark Handles `processing_signal::carriage_return` by appending `\r` to the user buffer, `processing_signal::erase_character` by decrementing the write iterator if not at the buffer start, `processing_signal::erase_line` by resetting the write iterator to the buffer start, and `processing_signal::data_mark` by updating `context_.urgent_data_state` and relaunching urgent data wait.
      * @remark Unhandled signals (e.g., `processing_signal::abort_output`) are not cleared and propagate to the caller for higher-level notification.
-     * @see `:errors` for `processing_signal`, `:protocol_fsm` for `ProtocolFSM`, `:stream` for `context_type`, "net.telnet-stream-impl.cpp" for implementation, RFC 854 for Telnet protocol
-     */     
+     * @see `:errors` for `processing_signal`, `:protocol_fsm` for `protocol_fsm`, `:stream` for `context_type`, "net.telnet-stream-impl.cpp" for implementation, RFC 854 for Telnet protocol
+     */
     /**
-     * @fn void stream::InputProcessor::do_response(typename stream::fsm_type::NegotiationResponse response, Self&& self)
+     * @fn void stream::input_processor::do_response(typename stream::fsm_type::negotiation_response response, Self&& self)
      * @tparam Self The type of the coroutine self reference.
      * @param response The negotiation response to write (e.g., `WILL`/`DO`/`WONT`/`DONT` with option).
      * @param self The completion handler to forward.
      * @remark Initiates an asynchronous write of the negotiation response using `async_write_negotiation`.
-     * @see `:protocol_fsm` for `NegotiationResponse`, `:errors` for error codes, RFC 855 for negotiation, "net.telnet-stream-async-impl.cpp" for `async_write_negotiation`
+     * @see `:protocol_fsm` for `negotiation_response`, `:errors` for error codes, RFC 855 for negotiation, "net.telnet-stream-async-impl.cpp" for `async_write_negotiation`
      */
     /**
-     * @overload void stream::InputProcessor::do_response(std::string response, Self&& self)
+     * @overload void stream::input_processor::do_response(std::string response, Self&& self)
      * @tparam Self The type of the coroutine self reference.
      * @param response The string data to write (pre-escaped).
      * @param self The completion handler to forward.
@@ -702,7 +754,7 @@ export namespace net::telnet {
      * @see `:errors` for error codes, RFC 854 for IAC escaping, "net.telnet-stream-async-impl.cpp" for `async_write_raw`
      */
     /**
-     * @overload void stream::InputProcessor::do_response(awaitables::SubnegotiationAwaitable awaitable, Self&& self)
+     * @overload void stream::input_processor::do_response(awaitables::subnegotiation_awaitable awaitable, Self&& self)
      * @tparam Self The type of the coroutine self reference.
      * @param awaitable The subnegotiation awaitable to process.
      * @param self The completion handler to forward.
@@ -711,21 +763,21 @@ export namespace net::telnet {
      * @see `:awaitables` for `SubnegotiationAwaitable`, `:errors` for error codes, RFC 855 for subnegotiation, "net.telnet-stream-async-impl.cpp" for `async_write_subnegotiation`
      */
     /**
-     * @overload void stream::InputProcessor::do_response(std::tuple<awaitables::TaggedAwaitable<Tag, T, Awaitable>, std::optional<typename stream::fsm_type::NegotiationResponse>> response, Self&& self)
+     * @overload void stream::input_processor::do_response(std::tuple<awaitables::tagged_awaitable<Tag, T, Awaitable>, std::optional<typename stream::fsm_type::negotiation_response>> response, Self&& self)
      * @tparam Self The type of the coroutine self reference.
-     * @tparam Tag The semantic tag for TaggedAwaitable.
-     * @tparam T The underlying value type for TaggedAwaitable.
-     * @tparam Awaitable The underlying Awaitable type for TaggedAwaitable.
+     * @tparam Tag The semantic tag for `tagged_awaitable`.
+     * @tparam T The underlying value type for `tagged_awaitable`.
+     * @tparam Awaitable The underlying Awaitable type for `tagged_awaitable`.
      * @param response Tuple of awaitable and optional negotiation response.
      * @param self The completion handler to forward.
      * @remark Spawns a coroutine to process the awaitable, optionally writing a negotiation response via `async_write_negotiation`.
      * @throws `std::system_error` for system errors, `telnet::error::internal_error` for unexpected exceptions.
-     * @see `:awaitables` for `TaggedAwaitable`, `:protocol_fsm` for `NegotiationResponse`, `:errors` for error codes, RFC 855 for negotiation, "net.telnet-stream-async-impl.cpp" for `async_write_negotiation`
+     * @see `:awaitables` for `tagged_awaitable`, `:protocol_fsm` for `negotiation_response`, `:errors` for error codes, RFC 855 for negotiation, "net.telnet-stream-async-impl.cpp" for `async_write_negotiation`
      */
     /**
-     * @fn auto stream::sync_await(Awaitable&& a)
+     * @fn auto stream::sync_await(Awaitable&& awaitable)
      * @tparam Awaitable The type of awaitable to execute.
-     * @param a The awaitable to await.
+     * @param awaitable The awaitable to await.
      * @return The result of the awaitable operation.
      * @remark Uses a temporary `io_context` and a `jthread` to run the awaitable, capturing its result or exception.
      * @warning Incurs overhead from creating a new `io_context` and `jthread` per call, which may impact performance in high-frequency synchronous operations, though this is minimal compared to blocking network I/O latency. Synchronous I/O inherently scales poorly.
@@ -754,9 +806,9 @@ export namespace net::telnet {
      * @see `:errors` for error codes, RFC 854 for IAC escaping, "net.telnet-stream-impl.cpp" for implementation
      */
     /**
-     * @fn auto async_send_nul(bool out_of_band, CompletionToken&& token)
+     * @fn auto async_send_nul(bool urgent, CompletionToken&& token)
      * @tparam CompletionToken The type of completion token.
-     * @param out_of_band Is this byte OOB/Urgent?
+     * @param urgent Is this byte OOB/Urgent?
      * @param token The completion token.
      * @return Result type deduced from the completion token.
      * @remark Uses `asio::async_send` to write a NUL byte (`'\0'`) with optional urgent flag.
@@ -783,4 +835,4 @@ export namespace net::telnet {
      * @note Used by `async_write_some`, `async_write_command`, `async_write_negotiation`, and `async_write_subnegotiation` to report errors asynchronously.
      * @see :errors for error codes, "net.telnet-stream-async-impl.cpp" for implementation
      */
-} //export namespace net::telnet
+} //namespace net::telnet

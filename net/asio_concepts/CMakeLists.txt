@@ -18,6 +18,8 @@ endif()
 add_library(net.asio_concepts STATIC)
 add_library(net::asio_concepts ALIAS net.asio_concepts)
 
+register_tooling_target(net.asio_concepts)
+
 # C++23 required for "import std;"
 target_compile_features(net.asio_concepts
   PUBLIC cxx_std_23
