@@ -18,6 +18,20 @@ jobs:
         with:
           fetch-depth: 0
           
+      - name: Install CMake 4.1.2
+        run: |
+          CMAKE_VERSION=4.1.2
+          curl -fsSL https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz -o cmake.tar.gz
+          tar -xzf cmake.tar.gz
+          mv cmake-${CMAKE_VERSION}-linux-x86_64 /opt/cmake
+          echo "/opt/cmake/bin" >> $GITHUB_PATH
+
+      - name: Verify toolchain
+        run: |
+          cmake --version
+          clang++ --version
+          find / -name std.cppm 2>/dev/null | head -n 5
+          
       - name: Configure
         run: |
           cmake --preset=clang-debug
@@ -33,15 +47,3 @@ jobs:
       - name: clang-tidy
         run: |
           cmake --build --preset=clang-debug --target=tidy
-
-
-
-
-
-
-
-
-
-
-
-
