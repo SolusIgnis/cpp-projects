@@ -10,7 +10,7 @@ jobs:
   clang-ci:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/llvm/llvm-project:main
+      image: ghcr.io/llvm/ci-ubuntu-24.04:latest
 
     steps:
       - name: Checkout repository
@@ -42,6 +42,7 @@ jobs:
       - name: clang-tidy
         run: |
           cmake --build --preset=clang-debug --target=tidy
+
 
 
 
