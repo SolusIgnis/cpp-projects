@@ -28,6 +28,7 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh 21
           sudo apt install clang-format-21 clang-tidy-21
+          sudo apt-get install -y libc++-dev libc++abi-dev
           sudo apt install -y ninja-build
           
       - name: Set Clang 21 as default
