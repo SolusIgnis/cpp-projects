@@ -808,6 +808,5 @@ namespace net::telnet {
             co_return std::make_tuple(opt, std::vector<byte_t>{});
         }
     } //handle_status_subnegotiation(const option&, std::vector<byte_t>)
-
     //NOLINTEND(readability-function-cognitive-complexity)
 } //namespace net::telnet
