@@ -24,7 +24,7 @@ jobs:
           sudo ./llvm.sh 21
           which clang-21
           which clang++-21
-          which clang-format-21
+          clang-format --version
           which clang-tidy-21
           sudo apt install -y ninja-build
           
