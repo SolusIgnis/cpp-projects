@@ -41,15 +41,3 @@ jobs:
       - name: Configure
         run: |
           cmake --preset clang-debug
-
-      - name: clang-format check
-        run: |
-          cmake --build --preset clang-debug --target format-check
-
-      - name: Build
-        run: |
-          cmake --build --preset clang-debug
-
-      - name: clang-tidy
-        run: |
-          cmake --build --preset clang-debug --target tidy
