@@ -18,11 +18,6 @@ jobs:
         with:
           fetch-depth: 0
           
-      - name: Get CMake 4.1.2
-        uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: 4.1.2
-
       - name: Configure
         run: |
           cmake --preset=clang-debug
@@ -38,6 +33,7 @@ jobs:
       - name: clang-tidy
         run: |
           cmake --build --preset=clang-debug --target=tidy
+
 
 
 
