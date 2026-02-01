@@ -20,35 +20,27 @@ jobs:
         uses: aminya/setup-cpp@v1
         with:
           compiler: llvm-21
-          cmake: 4.1.2
           clang-format: 21
           clang-tidy: 21
           ninja: true
-
-      - name: Set Clang 21 as default
-        run: |
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 100
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 100
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 100
-          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 100
-          clang-format --version
-          clang-tidy --version
+          cmake: 4.1.2
 
       - name: Configure
         run: |
-          cmake --preset clang-debug
+          cmake --preset=clang-debug
 
       - name: clang-format check
         run: |
-          cmake --build --preset clang-debug --target format-check
+          cmake --build --preset=clang-debug --target=format-check
 
       - name: Build
         run: |
-          cmake --build --preset clang-debug
+          cmake --build --preset=clang-debug
 
       - name: clang-tidy
         run: |
-          cmake --build --preset clang-debug --target tidy
+          cmake --build --preset=clang-debug --target=tidy
+
 
 
 
