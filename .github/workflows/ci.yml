@@ -4,7 +4,8 @@ on:
   push:
     branches: [ main ]
   pull_request:
-
+  workflow_dispatch: 
+  
 jobs:
   clang-ci:
     runs-on: ubuntu-latest
@@ -51,5 +52,6 @@ jobs:
       - name: clang-tidy
         run: |
           cmake --build --preset clang-debug --target tidy
+
 
 
