@@ -4,40 +4,39 @@ on:
   push:
     branches: [ main ]
   pull_request:
-  workflow_dispatch: 
-  
+
 jobs:
   clang-ci:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/llvm/ci-ubuntu-24.04:latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
-      - name: Install CMake 4.1.2
-        run: |
-          CMAKE_VERSION=4.1.2
-          curl -fsSL https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz -o cmake.tar.gz
-          tar -xzf cmake.tar.gz
-          sudo mv cmake-${CMAKE_VERSION}-linux-x86_64 /opt/cmake
-          echo "/opt/cmake/bin" >> $GITHUB_PATH
 
-      - name: Add LLVM apt repo (21)
+      - name: Get CMake 4.1.2
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: 4.1.2
+
+      - name: Install Clang 21 and tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget gnupg lsb-release
-          sudo wget https://apt.llvm.org/llvm.sh
-          sudo chmod +x llvm.sh
+          sudo apt update
+          sudo apt install -y wget lsb-release software-properties-common
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
           sudo ./llvm.sh 21
+          sudo apt install -y clang-format-21 clang-tidy-21
+          sudo apt install -y libc++-21-dev libc++abi-21-dev
+          sudo apt install -y ninja-build
 
-      - name: Install libc++
+      - name: Set Clang 21 as default
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libc++-21-dev libc++abi-21-dev
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 100
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 100
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 100
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 100
 
       - name: Verify toolchain
         run: |
@@ -46,7 +45,7 @@ jobs:
           clang-format --version
           clang-tidy --version
           find / -name std.cppm 2>/dev/null | head -n 5
-          
+
       - name: Configure
         run: |
           cmake --preset=clang-debug
@@ -62,6 +61,3 @@ jobs:
       - name: clang-tidy
         run: |
           cmake --build --preset=clang-debug --target=tidy
-
-
-
