@@ -40,12 +40,14 @@ jobs:
           clang-format --version
           clang-tidy --version
 
-      - name: Install standalone Asio
+      - name: Install Asio
         run: |
           ASIO_VERSION=1.36.0
-          wget -q https://sourceforge.net/projects/asio/files/asio/$ASIO_VERSION%28Stable%29/asio-$ASIO_VERSION.tar.gz/download
-          tar xf asio-$ASIO_VERSION.tar.gz
-          sudo cp -r asio-$ASIO_VERSION/asio/include/asio /usr/local/include/
+          ASIO_URL="https://downloads.sourceforge.net/project/asio/asio/${ASIO_VERSION}/asio-${ASIO_VERSION}.zip"
+          curl -L -o asio.zip $ASIO_URL
+          unzip asio.zip
+          sudo mkdir -p /usr/local/include/asio
+          sudo cp -r asio-${ASIO_VERSION}/asio /usr/local/include/
 
       - name: Configure
         run: |
