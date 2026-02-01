@@ -502,7 +502,7 @@ export namespace std {
                 }
             }
             if (!view.empty() && view.front() != '}') {
-                throw std::format_error("Invalid format specifier for telnet::command");
+                throw std::format_error("Invalid format specifier for telnet::option");
             }
             return view.begin();
         } //parse(format_parse_context&)
