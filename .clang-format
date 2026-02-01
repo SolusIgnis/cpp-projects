@@ -135,7 +135,7 @@ AlignConsecutiveDeclarations:
   Enabled:          false
   AcrossEmptyLines: false
   AcrossComments:   false
-  AlignFunctionDeclarations: false
+#  AlignFunctionDeclarations: false
   AlignFunctionPointers: false
 AlignConsecutiveMacros:
   Enabled:          false
@@ -310,3 +310,4 @@ IntegerLiteralSeparator:
 #  Hex:                    0
 #  HexMinDigitsInsert:     0
 #  HexMaxDigitsRemove:     0
+
