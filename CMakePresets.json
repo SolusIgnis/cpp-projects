@@ -81,5 +81,32 @@
         "CMAKE_BUILD_TYPE": "Release"
       }
     }
+  ],
+
+  "buildPresets": [
+  {
+    "name": "clang-debug",
+    "configurePreset": "clang-debug"
+  },
+  {
+    "name": "clang-release",
+    "configurePreset": "clang-release"
+  },
+  {
+    "name": "gcc-debug",
+    "configurePreset": "gcc-debug"
+  },
+  {
+    "name": "gcc-release",
+    "configurePreset": "gcc-release"
+  },
+  {
+    "name": "msvc-debug",
+    "configurePreset": "msvc-debug"
+  },
+  {
+    "name": "msvc-release",
+    "configurePreset": "msvc-release"
+  }
   ]
 }
