@@ -23,7 +23,7 @@ jobs:
           CMAKE_VERSION=4.1.2
           curl -fsSL https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz -o cmake.tar.gz
           tar -xzf cmake.tar.gz
-          mv cmake-${CMAKE_VERSION}-linux-x86_64 /opt/cmake
+          sudo mv cmake-${CMAKE_VERSION}-linux-x86_64 /opt/cmake
           echo "/opt/cmake/bin" >> $GITHUB_PATH
 
       - name: Verify toolchain
@@ -47,3 +47,4 @@ jobs:
       - name: clang-tidy
         run: |
           cmake --build --preset=clang-debug --target=tidy
+
