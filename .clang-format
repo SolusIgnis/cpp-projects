@@ -254,7 +254,14 @@ IntegerLiteralSeparator:
   Hex:                    0
 
 ---
+# -------------------------------------------------------------------
 # ClangFormatVersion: 22
+#
+# Since clang-format isn't multi-version capable, the following
+# configuration options need to be uncommented and integrated into
+# the initial part of the document once clang-format version 22 is
+# readily available.
+# -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
 # Line breaking
