@@ -44,7 +44,7 @@ jobs:
         run: |
           git clone --depth=1 --branch asio-1-36-0 https://github.com/chriskohlhoff/asio.git
           sudo cp -r asio/asio/include/asio /usr/local/include/
-          ls /usr/local/include/asio.hpp
+          ls /usr/local/include/
           ls /usr/local/include/asio/
 
       - name: Configure
