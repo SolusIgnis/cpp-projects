@@ -7,7 +7,7 @@
 BasedOnStyle: LLVM
 
 Language: Cpp
-Standard: c++20
+Standard: Latest
 
 # -------------------------------------------------------------------
 # Indentation
@@ -254,68 +254,59 @@ IntegerLiteralSeparator:
   Hex:                    0
 
 ---
-Attribute:
-  ClangFormatVersion: 21
-  
-Standard: Latest
-
-
-  
----
-Attribute:
-  ClangFormatVersion: 22
+# ClangFormatVersion: 22
 
 # -------------------------------------------------------------------
 # Line breaking
 # -------------------------------------------------------------------
-BreakAfterOpenBracketBracedList: false
-BreakAfterOpenBracketFunction:   false
-BreakAfterOpenBracketIf:         false
-BreakAfterOpenBracketLoop:       false
-BreakAfterOpenBracketSwitch:     false
+#BreakAfterOpenBracketBracedList: false
+#BreakAfterOpenBracketFunction:   false
+#BreakAfterOpenBracketIf:         false
+#BreakAfterOpenBracketLoop:       false
+#BreakAfterOpenBracketSwitch:     false
 
 # -------------------------------------------------------------------
 # Control flow readability (FSM-friendly)
 # -------------------------------------------------------------------
-BreakBeforeCloseBracketBracedList: true
-BreakBeforeCloseBracketFunction:   true
-BreakBeforeCloseBracketIf:         true
-BreakBeforeCloseBracketLoop:       true
-BreakBeforeCloseBracketSwitch:     true
+#BreakBeforeCloseBracketBracedList: true
+#BreakBeforeCloseBracketFunction:   true
+#BreakBeforeCloseBracketIf:         true
+#BreakBeforeCloseBracketLoop:       true
+#BreakBeforeCloseBracketSwitch:     true
 
 # -------------------------------------------------------------------
 # Alignment
 # -------------------------------------------------------------------
-AlignAfterOpenBracket: true
+#AlignAfterOpenBracket: true
 
 # -------------------------------------------------------------------
 # Spacing
 # -------------------------------------------------------------------
-SpaceInEmptyBraces:        false
+#SpaceInEmptyBraces:        false
 
 # -------------------------------------------------------------------
 # Includes / imports
 # -------------------------------------------------------------------
-SortIncludes:
-  Enabled:         false
-  IgnoreCase:      false
-  IgnoreExtension: true
+#SortIncludes:
+#  Enabled:         false
+#  IgnoreCase:      false
+#  IgnoreExtension: true
 
 # -------------------------------------------------------------------
 # Modern C++ / modules
 # -------------------------------------------------------------------
-Cpp11BracedListStyle: FunctionCall
+#Cpp11BracedListStyle: FunctionCall
 
 # -------------------------------------------------------------------
 # Misc
 # -------------------------------------------------------------------
-IntegerLiteralSeparator:
-  Binary:                 0
-  BinaryMinDigitsInsert:  0
-  BinaryMaxDigitsRemove:  0
-  Decimal:                0
-  DecimalMinDigitsInsert: 0
-  DecimalMaxDigitsRemove: 0
-  Hex:                    0
-  HexMinDigitsInsert:     0
-  HexMaxDigitsRemove:     0
+#IntegerLiteralSeparator:
+#  Binary:                 0
+#  BinaryMinDigitsInsert:  0
+#  BinaryMaxDigitsRemove:  0
+#  Decimal:                0
+#  DecimalMinDigitsInsert: 0
+#  DecimalMaxDigitsRemove: 0
+#  Hex:                    0
+#  HexMinDigitsInsert:     0
+#  HexMaxDigitsRemove:     0
