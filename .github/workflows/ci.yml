@@ -82,30 +82,27 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh 21
           sudo apt install clang-format-21 clang-tidy-21
-          sudo apt-get install -y libc++-dev libc++abi-dev
+          # sudo apt-get install -y libc++-dev libc++abi-dev
           sudo apt install -y ninja-build
 
       - name: Download libc++ artifact
         uses: actions/download-artifact@v4
         with:
           name: libcxx-21
+          path: libcxx
 
-      - name: Install libc++ from artifact
-        run: |
-          sudo tar -C /usr/local -xzf libcxx-21.tar.gz
-          
-      - name: Export environment variables 
+      - name: Export environment variables for libc++ runtime
         run: |
           # Set environment variables for Clang to find this libc++
-          echo "export PATH=$INSTALL_DIR/bin:\$PATH" >> $GITHUB_ENV
-          echo "export CPLUS_INCLUDE_PATH=$INSTALL_DIR/include/c++/v1:\$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
-          echo "export LIBRARY_PATH=$INSTALL_DIR/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
-          echo "export LD_LIBRARY_PATH=$INSTALL_DIR/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV     
+          echo "LIBCXX_ROOT=$GITHUB_WORKSPACE/libcxx" >> $GITHUB_ENV
+          echo "export CPLUS_INCLUDE_PATH=$GITHUB_WORKSPACE/libcxx/include/c++/v1:\$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
+          echo "export LIBRARY_PATH=$GITHUB_WORKSPACE/libcxx/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
+          echo "export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/libcxx/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV     
 
       - name: Set Clang 21 as default
         run: |
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 100
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 100
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 65536
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 65536
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 65536
           sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 65536
           clang-format --version
