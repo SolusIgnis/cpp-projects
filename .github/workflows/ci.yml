@@ -91,6 +91,14 @@ jobs:
           name: libcxx-21
           path: libcxx
 
+      - name: Verify paths
+        run: ls /usr/lib/llvm*
+
+      - name: Install libc++
+        run: |
+          sudo rm -rf /usr/lib/llvm-21
+          sudo cp -r libcxx /usr/lib/llvm-21
+
       - name: Export environment variables for libc++ runtime
         run: |
           # Set environment variables for Clang to find this libc++
