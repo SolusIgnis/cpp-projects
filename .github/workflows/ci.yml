@@ -62,62 +62,12 @@ jobs:
           # Build libc++ and libc++abi only
           cmake -G Ninja ../llvm \
             -DCMAKE_BUILD_TYPE=Release \
-            -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
+            -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
             -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
             -DLLVM_ENABLE_RTTI=ON \
             -DLLVM_TARGETS_TO_BUILD="X86"
-          ninja cxx cxxabi
-          sudo ninja install-cxx install-cxxabi
-
-
-
-      - name: Install libc++21 + libc++abi21 from source
-        run: |
-          set -e
-
-          LLVM_PROJECT=llvm-project
-          LLVM_VERSION=main
-          INSTALL_PREFIX=/usr/local
-
-          # Install required build tools
-          # sudo apt-get update
-          # sudo apt-get install -y cmake ninja-build git build-essential python3
-
-          # Clone the LLVM monorepo
-          git clone --depth 1 --branch $LLVM_VERSION https://github.com/llvm/llvm-project.git
-
-          # Build libc++abi first
-          mkdir -p $LLVM_PROJECT/libcxxabi/build
-          cd $LLVM_PROJECT/libcxxabi/build
-          cmake -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX \
-            -DLIBCXXABI_ENABLE_SHARED=ON \
-            -DLIBCXXABI_ENABLE_STATIC=ON \
-            -DLIBCXXABI_ENABLE_EXCEPTIONS=ON \
-            -DLIBCXXABI_ENABLE_THREADS=ON \
-            ..
-          ninja
-          sudo ninja install
-          cd ../..
-
-          # Build libc++ next
-          mkdir -p $LLVM_PROJECT/libcxx/build
-          cd $LLVM_PROJECT/libcxx/build
-          cmake -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX \
-            -DLIBCXX_ENABLE_SHARED=ON \
-            -DLIBCXX_ENABLE_STATIC=ON \
-            -DLIBCXX_ENABLE_EXCEPTIONS=ON \
-            -DLIBCXX_ENABLE_RTTI=ON \
-            -DLIBCXX_CXX_ABI=libcxxabi \
-            -DLIBCXX_CXX_ABI_INCLUDE_PATHS=$INSTALL_PREFIX/include \
-            -DLIBCXX_LIBCXXABI_PATH=$INSTALL_PREFIX/lib/libc++abi.a \
-            ..
-          ninja
-          sudo ninja install
-          cd ../..
+          cmake --build . --target cxx
+          cmake --build . --target install-cxx install-cxxabi install-unwind
 
           # Set environment variables for Clang to find this libc++
           echo "export PATH=$INSTALL_DIR/bin:\$PATH" >> $GITHUB_ENV
