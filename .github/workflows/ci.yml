@@ -39,13 +39,46 @@ jobs:
           sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 65536
           clang-format --version
           clang-tidy --version
+          
+      - name: Build and Install libc++21
+        run: |
+          set -e
+
+          # Variables
+          LLVM_VERSION=21.1.8
+          LIBCXX_DIR=$HOME/libcxx-21
+          INSTALL_DIR=/usr/local/llvm-21
+
+          # Install dependencies
+          sudo apt-get update
+          # sudo apt-get install -y cmake ninja-build git build-essential python3
+
+          # Clone LLVM project
+          git clone --depth 1 --branch llvmorg-$LLVM_VERSION https://github.com/llvm/llvm-project.git $LIBCXX_DIR
+
+          # Create build dir
+          mkdir -p $LIBCXX_DIR/build && cd $LIBCXX_DIR/build
+
+          # Build libc++ and libc++abi only
+          cmake -G Ninja ../llvm \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
+            -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
+            -DLLVM_ENABLE_RTTI=ON \
+            -DLLVM_TARGETS_TO_BUILD="X86"
+          ninja cxx cxxabi
+          sudo ninja install-cxx install-cxxabi
+
+          # Set environment variables for Clang to find this libc++
+          echo "export PATH=$INSTALL_DIR/bin:\$PATH" >> $GITHUB_ENV
+          echo "export CPLUS_INCLUDE_PATH=$INSTALL_DIR/include/c++/v1:\$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
+          echo "export LIBRARY_PATH=$INSTALL_DIR/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
+          echo "export LD_LIBRARY_PATH=$INSTALL_DIR/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV
 
       - name: Install Asio
         run: |
           git clone --depth=1 --branch asio-1-36-0 https://github.com/chriskohlhoff/asio.git
           sudo cp -r asio/asio/include/* /usr/local/include/
-          ls /usr/local/include/
-          ls /usr/local/include/asio/
 
       - name: Configure
         run: |
