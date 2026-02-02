@@ -91,8 +91,8 @@ jobs:
           name: libcxx-21
           path: libcxx
 
-      #- name: Install libc++
-      #  run: sudo cp -rf libcxx/* /usr/lib/llvm-21
+      - name: Install libc++
+        run: sudo cp -rf libcxx/* /usr/lib/llvm-21
 
       - name: Export environment variables for libc++ runtime
         run: |
