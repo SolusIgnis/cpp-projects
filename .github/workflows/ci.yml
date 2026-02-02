@@ -92,11 +92,14 @@ jobs:
           path: libcxx
 
       - name: Verify paths
-        run: ls /usr/lib/llvm*
+        run: ls /usr/lib/llvm-21/*
 
       - name: Install libc++
         run: |
           sudo cp -rf libcxx/* /usr/lib/llvm-21
+
+      - name: Verify installation
+        run: ls /usr/lib/llvm-21/*
 
       - name: Export environment variables for libc++ runtime
         run: |
@@ -122,7 +125,7 @@ jobs:
 
       - name: Configure
         run: |
-          cmake --preset clang-debug
+          cmake --preset clang-debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx/include/c++/v1 -nostdlib++ -L $GITHUB_WORKSPACE/libcxx/lib -lc++ -Wl,-rpath,$GITHUB_WORKSPACE/libcxx/lib -Wall -Wextra -fcolor-diagnostics"
 
       - name: clang-format check
         run: |
