@@ -76,7 +76,7 @@ jobs:
 
       - name: Install Clang 21 and tools
         run: |
-          sudo apt updateinstall
+          sudo apt update
           sudo apt install -y wget lsb-release software-properties-common
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
