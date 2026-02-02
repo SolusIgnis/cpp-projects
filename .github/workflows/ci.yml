@@ -129,7 +129,7 @@ jobs:
         run: cmake --build --preset=clang-debug --target=format-check
 
       - name: Build
-        run: cmake --build --preset=clang-debug --parallel
+        run: cmake --build --preset=clang-debug
 
       #- name: clang-tidy
       #  run: cmake --build --preset=clang-debug --target=tidy

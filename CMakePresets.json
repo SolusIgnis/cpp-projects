@@ -85,11 +85,13 @@
   "buildPresets": [
     {
       "name": "clang-debug",
-      "configurePreset": "clang-debug"
+      "configurePreset": "clang-debug",
+      "jobs": 0
     },
     {
       "name": "clang-release",
-      "configurePreset": "clang-release"
+      "configurePreset": "clang-release",
+      "jobs": 0
     },
     {
       "name": "gcc-debug",
