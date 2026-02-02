@@ -65,10 +65,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Get CMake 4.1.2
         uses: lukka/get-cmake@latest
@@ -117,6 +113,11 @@ jobs:
         run: |
           git clone --depth=1 --branch asio-1-36-0 https://github.com/chriskohlhoff/asio.git
           sudo cp -r asio/asio/include/* /usr/local/include/
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configure
         run: |
