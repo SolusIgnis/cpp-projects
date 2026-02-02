@@ -6,7 +6,61 @@ on:
   pull_request:
 
 jobs:
+  build-libcxx:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Cpp Build Tools
+        uses: aminya/setup-cpp@v1
+        with:
+          compiler: llvm-21
+          cmake: 4.1.2
+          ninja: true
+
+      - name: Checkout LLVM Project
+        # Use actions/checkout to get the source code, including all subprojects
+        uses: actions/checkout@v4
+        with:
+          repository: llvm/llvm-project
+          ref: llvmorg-21.1.8
+          fetch-depth: 1 # Only get the latest commit for speed
+
+      - name: Create Build Directory
+        run: mkdir build
+
+      - name: Verify clang
+        run: clang++ --version
+        
+      - name: Verify cmake
+        run: cmake --version
+
+      - name: Configure libc++
+        working-directory: ./build
+        run: |
+          # Build libc++ and libc++abi only
+          cmake -G Ninja -S ../runtimes -B . \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/libcxx-install
+
+      - name: Build libc++
+        working-directory: ./build
+        run: cmake --build . --parallel --target cxx cxxabi unwind  
+          
+      - name: Install libc++
+        working-directory: ./build
+        run: cmake --build . --parallel --target install-cxx install-cxxabi install-unwind
+
+      - name: Upload libc++ artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libcxx-21
+          path: libcxx-install
+
   clang-ci:
+    needs: build-libcxx
     runs-on: ubuntu-latest
 
     steps:
@@ -30,7 +84,24 @@ jobs:
           sudo apt install clang-format-21 clang-tidy-21
           sudo apt-get install -y libc++-dev libc++abi-dev
           sudo apt install -y ninja-build
+
+      - name: Download libc++ artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: libcxx-21
+
+      - name: Install libc++ from artifact
+        run: |
+          sudo tar -C /usr/local -xzf libcxx-21.tar.gz
           
+      - name: Export environment variables 
+        run: |
+          # Set environment variables for Clang to find this libc++
+          echo "export PATH=$INSTALL_DIR/bin:\$PATH" >> $GITHUB_ENV
+          echo "export CPLUS_INCLUDE_PATH=$INSTALL_DIR/include/c++/v1:\$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
+          echo "export LIBRARY_PATH=$INSTALL_DIR/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
+          echo "export LD_LIBRARY_PATH=$INSTALL_DIR/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV     
+
       - name: Set Clang 21 as default
         run: |
           sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 100
@@ -40,41 +111,6 @@ jobs:
           clang-format --version
           clang-tidy --version
           
-      - name: Build and Install libc++21
-        run: |
-          set -e
-
-          # Variables
-          LLVM_VERSION=21.1.8
-          LIBCXX_DIR=$HOME/libcxx-21
-          INSTALL_DIR=/usr/local/llvm-21
-
-          # Install dependencies
-          sudo apt-get update
-          # sudo apt-get install -y cmake ninja-build git build-essential python3
-
-          # Clone LLVM project
-          git clone --depth 1 --branch llvmorg-$LLVM_VERSION https://github.com/llvm/llvm-project.git $LIBCXX_DIR
-
-          # Create build dir
-          mkdir -p $LIBCXX_DIR/build && cd $LIBCXX_DIR/build
-
-          # Build libc++ and libc++abi only
-          cmake -G Ninja ../llvm \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
-            -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR \
-            -DLLVM_ENABLE_RTTI=ON \
-            -DLLVM_TARGETS_TO_BUILD="X86"
-          cmake --build . --target cxx
-          cmake --build . --target install-cxx install-cxxabi install-unwind
-
-          # Set environment variables for Clang to find this libc++
-          echo "export PATH=$INSTALL_DIR/bin:\$PATH" >> $GITHUB_ENV
-          echo "export CPLUS_INCLUDE_PATH=$INSTALL_DIR/include/c++/v1:\$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
-          echo "export LIBRARY_PATH=$INSTALL_DIR/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
-          echo "export LD_LIBRARY_PATH=$INSTALL_DIR/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV
-
       - name: Install Asio
         run: |
           git clone --depth=1 --branch asio-1-36-0 https://github.com/chriskohlhoff/asio.git
