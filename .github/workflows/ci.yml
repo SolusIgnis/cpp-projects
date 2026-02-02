@@ -120,7 +120,8 @@ jobs:
       - name: Configure
         run: |
           cmake --preset clang-debug \
-            -DCMAKE_CXX_FLAGS="-stdlib=libc++ -nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx/include/c++/v1 -nostdlib++ -L $GITHUB_WORKSPACE/libcxx/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx/lib -Wall -Wextra -fcolor-diagnostics"
+            -DCMAKE_CXX_FLAGS="-stdlib=libc++ -nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx/include/c++/v1 -nostdlib++ -Wall -Wextra -fcolor-diagnostics" \
+            -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx/lib"
 
       - name: clang-format check
         run: |
