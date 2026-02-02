@@ -124,13 +124,10 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx/lib"
 
       - name: clang-format check
-        run: |
-          cmake --build --preset clang-debug --target format-check
+        run: cmake --build --preset clang-debug --target format-check
 
       - name: Build
-        run: |
-          cmake --build --preset clang-debug
+        run: cmake --build --preset clang-debug
 
       #- name: clang-tidy
-      #  run: |
-      #    cmake --build --preset clang-debug --target tidy
+      #  run: cmake --build --preset clang-debug --target tidy
