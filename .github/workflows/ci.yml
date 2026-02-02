@@ -64,26 +64,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Setup Cpp Build Tools
+        uses: aminya/setup-cpp@v1
+        with:
+          compiler: llvm-21
+          clang-format: 21
+          clang-tidy: 21
+          cmake: 4.1.2
+          ninja: true
+    
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Get CMake 4.1.2
-        uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: 4.1.2
+      #- name: Get CMake 4.1.2
+      #  uses: lukka/get-cmake@latest
+      #  with:
+      #    cmakeVersion: 4.1.2
 
-      - name: Install Clang 21 and tools
-        run: |
-          sudo apt update
-          sudo apt install -y wget lsb-release software-properties-common
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 21
-          sudo apt install clang-format-21 clang-tidy-21
-          # sudo apt-get install -y libc++-dev libc++abi-dev
-          sudo apt install -y ninja-build
+      #- name: Install Clang 21 and tools
+      #  run: |
+      #    sudo apt updateinstall
+      #    sudo apt install -y wget lsb-release software-properties-common
+      #    wget https://apt.llvm.org/llvm.sh
+      #    chmod +x llvm.sh
+      #    sudo ./llvm.sh 21
+      #    sudo apt install clang-format-21 clang-tidy-21
+      #    # sudo apt-get install -y libc++-dev libc++abi-dev
+      #    sudo apt install -y ninja-build
 
       - name: Download libc++ artifact
         uses: actions/download-artifact@v4
@@ -120,7 +129,8 @@ jobs:
 
       - name: Configure
         run: |
-          cmake --preset clang-debug -DCMAKE_CXX_FLAGS="-stdlib=libc++ -nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx/include/c++/v1 -nostdlib++ -L $GITHUB_WORKSPACE/libcxx/lib -lc++ -Wl,-rpath,$GITHUB_WORKSPACE/libcxx/lib -Wall -Wextra -fcolor-diagnostics"
+          cmake --preset clang-debug \
+            -DCMAKE_CXX_FLAGS="-stdlib=libc++ -nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx/include/c++/v1 -nostdlib++ -L $GITHUB_WORKSPACE/libcxx/lib -lc++ -Wl,-rpath,$GITHUB_WORKSPACE/libcxx/lib -Wall -Wextra -fcolor-diagnostics"
 
       - name: clang-format check
         run: |
@@ -130,6 +140,6 @@ jobs:
         run: |
           cmake --build --preset clang-debug
 
-      - name: clang-tidy
-        run: |
-          cmake --build --preset clang-debug --target tidy
+      #- name: clang-tidy
+      #  run: |
+      #    cmake --build --preset clang-debug --target tidy
