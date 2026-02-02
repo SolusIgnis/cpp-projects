@@ -91,15 +91,8 @@ jobs:
           name: libcxx-21
           path: libcxx
 
-      - name: Verify paths
-        run: ls /usr/lib/llvm-21/*
-
-      - name: Install libc++
-        run: |
-          sudo cp -rf libcxx/* /usr/lib/llvm-21
-
-      - name: Verify installation
-        run: ls /usr/lib/llvm-21/*
+      #- name: Install libc++
+      #  run: sudo cp -rf libcxx/* /usr/lib/llvm-21
 
       - name: Export environment variables for libc++ runtime
         run: |
@@ -115,8 +108,10 @@ jobs:
           sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 65536
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 65536
           sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 65536
-          clang-format --version
-          clang-tidy --version
+          sudo update-alternatives --set clang /usr/bin/clang-21
+          sudo update-alternatives --set clang++ /usr/bin/clang++-21
+          sudo update-alternatives --set clang-format /usr/bin/clang-format-21
+          sudo update-alternatives --set clang-tidy /usr/bin/clang-tidy-21
           
       - name: Install Asio
         run: |
