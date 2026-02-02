@@ -60,6 +60,14 @@ jobs:
         working-directory: ./build
         run: cmake --build . --parallel --target install-cxx install-cxxabi install-unwind
 
+      - name: Upload libc++ artifact
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        # This protects the main CI job against a cache miss since it runs immediately upon completion of this job.
+        uses: actions/upload-artifact@v4
+        with:
+          name: libcxx
+          path: $GITHUB_WORKSPACE/libcxx-21
+
   clang-ci:
     needs: build-libcxx
     runs-on: ubuntu-latest
@@ -90,6 +98,14 @@ jobs:
         with:
           path: ${{ github.workspace }}/libcxx-21
           key: libcxx-21.1.8-${{ runner.os }}
+
+      - name: Download libc++ artifact
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        # On cache miss, the build job stores an artifact to protect against this case.
+        uses: actions/download-artifact@v4
+        with:
+          name: libcxx
+          path: $GITHUB_WORKSPACE/libcxx-21
 
       - name: Install libc++
         run: sudo cp -rf libcxx-21/* /usr/lib/llvm-21
