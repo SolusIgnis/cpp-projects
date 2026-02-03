@@ -39,7 +39,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
   foreach(src IN LISTS ALL_TOOLING_SOURCES)
 #  foreach (i RANGE 0 3)
-    list(GET ALL_TOOLING_SOURCES ${i} src)
+#    list(GET ALL_TOOLING_SOURCES ${i} src)
     file(RELATIVE_PATH src_name ${CMAKE_SOURCE_DIR} ${src})
     string(REPLACE "/" "_" src_name ${src_name})
     string(REPLACE "\\" "_" src_name ${src_name})  # Windows path
