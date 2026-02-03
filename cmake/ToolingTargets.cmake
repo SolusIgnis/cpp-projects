@@ -15,7 +15,6 @@ add_custom_target(format-check
   TARGET format-check
   COMMAND clang-format --dry-run --Werror --Wno-error=unknown ${ALL_TOOLING_SOURCES}
   COMMENT "Checking clang-format"
-  VERBATIM
 )
 
 # Target to run clang-tidy if we're using clang as our compiler.
