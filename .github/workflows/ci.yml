@@ -6,7 +6,70 @@ on:
   pull_request:
 
 jobs:
+  build-libcxx:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cache libc++
+        id: cache-libcxx
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/libcxx-21
+          key: libcxx-21.1.8-${{ runner.os }}
+    
+      - name: Setup Cpp Build Tools
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        uses: aminya/setup-cpp@v1
+        with:
+          compiler: llvm-21
+          cmake: 4.1.2
+          ninja: true
+
+      - name: Checkout LLVM Project
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        # Use actions/checkout to get the source code, including all subprojects
+        uses: actions/checkout@v4
+        with:
+          repository: llvm/llvm-project
+          ref: llvmorg-21.1.8
+          fetch-depth: 1 # Only get the latest commit for speed
+
+      - name: Create Build Directory
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        run: mkdir build
+
+      - name: Configure libc++
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        working-directory: ./build
+        run: |
+          # Build libc++ and libc++abi only
+          cmake -G Ninja -S ../runtimes -B . \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/libcxx-21
+
+      - name: Build libc++
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        working-directory: ./build
+        run: cmake --build . --parallel --target cxx cxxabi unwind  
+          
+      - name: Install libc++
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        working-directory: ./build
+        run: cmake --build . --parallel --target install-cxx install-cxxabi install-unwind
+
+      - name: Upload libc++ artifact
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        # This protects the main CI job against a cache miss since it runs immediately upon completion of this job.
+        uses: actions/upload-artifact@v4
+        with:
+          name: libcxx
+          path: $GITHUB_WORKSPACE/libcxx-21
+
   clang-ci:
+    needs: build-libcxx
     runs-on: ubuntu-latest
 
     steps:
@@ -28,31 +91,62 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh 21
           sudo apt install clang-format-21 clang-tidy-21
-          sudo apt-get install -y libc++-dev libc++abi-dev
           sudo apt install -y ninja-build
-          
+
+      - name: Restore libc++ cache
+        id: cache-libcxx
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/libcxx-21
+          key: libcxx-21.1.8-${{ runner.os }}
+
+      - name: Download libc++ artifact
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        # On cache miss, the build job stores an artifact to protect against this case.
+        uses: actions/download-artifact@v4
+        with:
+          name: libcxx
+          path: $GITHUB_WORKSPACE/libcxx-21
+
+      - name: Install libc++
+        run: sudo cp -rf libcxx-21/* /usr/lib/llvm-21
+
+      - name: Export environment variables for libc++ runtime
+        run: |
+          # Set environment variables for Clang to find this libc++
+          echo "LIBCXX_ROOT=$GITHUB_WORKSPACE/libcxx-21" >> $GITHUB_ENV
+          echo "export CPLUS_INCLUDE_PATH=$GITHUB_WORKSPACE/libcxx-21/include/c++/v1:\$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
+          echo "export LIBRARY_PATH=$GITHUB_WORKSPACE/libcxx-21/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
+          echo "export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/libcxx-21/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV     
+
       - name: Set Clang 21 as default
         run: |
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 100
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 100
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 100
-          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 100
-          clang-format --version
-          clang-tidy --version
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 65536
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 65536
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 65536
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 65536
+          sudo update-alternatives --set clang /usr/bin/clang-21
+          sudo update-alternatives --set clang++ /usr/bin/clang++-21
+          sudo update-alternatives --set clang-format /usr/bin/clang-format-21
+          sudo update-alternatives --set clang-tidy /usr/bin/clang-tidy-21
+          
+      - name: Install Asio
+        run: |
+          git clone --depth=1 --branch asio-1-36-0 https://github.com/chriskohlhoff/asio.git
+          sudo cp -r asio/asio/include/* /usr/local/include/
+         
 
       - name: Configure
         run: |
-          cmake --preset clang-debug
+          cmake --preset=clang-debug \
+            -DCMAKE_CXX_FLAGS="-nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx-21/include/c++/v1 -nostdlib++ -Wall -Wextra -fcolor-diagnostics" \
+            -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx-21/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx-21/lib"
 
       - name: clang-format check
-        run: |
-          cmake --build --preset clang-debug --target format-check
+        run: cmake --build --preset=clang-debug --target=format-check
 
       - name: Build
-        run: |
-          cmake --build --preset clang-debug
+        run: cmake --build --preset=clang-debug
 
       - name: clang-tidy
-        run: |
-          cmake --build --preset clang-debug --target tidy
-
+        run: cmake --build --preset=clang-debug --target=tidy

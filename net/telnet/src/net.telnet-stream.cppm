@@ -30,8 +30,9 @@ export import :types;    ///< @see "net.telnet-types.cppm" for `byte_t` and `tel
 export import :errors;   ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
 export import :concepts; ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
 export import :options;  ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
-export import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for `protocol_fsm`
-export import :awaitables;   ///< @see "net.telnet-awaitables.cppm" for `tagged_awaitable`
+export import :protocol_config; ///< @see "net.telnet-protocol_config.cppm" for `default_protocol_fsm_config`
+export import :protocol_fsm;    ///< @see "net.telnet-protocol_fsm.cppm" for `protocol_fsm`
+export import :awaitables;      ///< @see "net.telnet-awaitables.cppm" for `tagged_awaitable`
 
 //namespace asio = boost::asio;
 
