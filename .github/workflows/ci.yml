@@ -148,5 +148,5 @@ jobs:
       - name: Build
         run: cmake --build --preset=clang-debug
 
-      #- name: clang-tidy
-      #  run: cmake --build --preset=clang-debug --target=tidy
+      - name: clang-tidy
+        run: cmake --build --preset=clang-debug --target=tidy
