@@ -1,7 +1,22 @@
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @file net.telnet-protocol_fsm.cppm
  * @version 0.5.7
- * @release_date October 30, 2025
+ * @date October 30, 2025
+ *
+ * @copyright Copyright (c) 2025-2026 Jeremy Murphy and any Contributors
+ * @par License: @parblock
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. @endparblock
  *
  * @brief Interface for the Telnet protocol finite state machine.
  * @remark Implements basic Telnet protocol (RFC 854) including IAC command processing and stateful negotiation.
@@ -10,9 +25,6 @@
  *   telnet::protocol_fsm<>::protocol_config_type::set_unknown_command_handler([](telnet::command cmd) { std::cout << "Custom: " << std::to_underlying(cmd) << "\n"; });
  *   telnet::protocol_fsm<>::protocol_config_type::registered_options.upsert(telnet::option::id_num::negotiate_about_window_size, "NAWS", telnet::option::always_accept, telnet::option::always_accept, true, 4);
  *   telnet::protocol_fsm<>::protocol_config_type::set_error_logger([](const std::error_code& ec, std::string msg) { std::cout << "Error: " << ec.message() << " - " << msg << std::endl; });
- *
- * @copyright (c) 2025 [it's mine!]. All rights reserved.
- * @license See LICENSE file for details
  *
  * @see RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, `:types` for `telnet::command` and `negotiation_direction`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:stream` for FSM usage, `:internal` for implementation classes, , `:protocol_config` for `default_protocol_fsm_config`, and `:concepts` for `ProtocolFSMConfig`
  * @todo Phase 6: Add optional half-duplex support (RFC 854) if legacy peer requirements arise.

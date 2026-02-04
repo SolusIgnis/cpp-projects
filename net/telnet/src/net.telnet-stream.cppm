@@ -1,15 +1,27 @@
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @file net.telnet-stream.cppm
  * @version 0.5.7
- * @release_date October 30, 2025
+ * @date October 30, 2025
+ *
+ * @copyright Copyright (c) 2025-2026 Jeremy Murphy and any Contributors
+ * @par License: @parblock
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. @endparblock
  *
  * @brief Interface for Telnet stream operations.
  * @remark Defines `telnet::stream` class to provide a Telnet-aware stream wrapper around a lower-layer stream-oriented socket.
  * @remark Defines `stream::input_processor` for composed Telnet-aware async_read_some.
  * @see Partition implementation units "net.telnet-stream-impl.cpp", "net.telnet-stream-async-impl.cpp", and "net.telnet-stream-sync-impl.cpp" for function definitions.
-
- * @copyright (c) 2025 [it's mine!]. All rights reserved.
- * @license See LICENSE file for details
  *
  * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:protocol_fsm` for `protocol_fsm`, `:types` for `telnet::command`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:internal` for implementation classes
  * @todo Phase 6: Hand-tune next-layer stream constraints to exactly match Boost.Asio stream sockets.

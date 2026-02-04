@@ -1,7 +1,22 @@
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @file net.telnet-protocol_config.cppm
  * @version 0.5.7
- * @release_date October 30, 2025
+ * @date October 30, 2025
+ *
+ * @copyright Copyright (c) 2025-2026 Jeremy Murphy and any Contributors
+ * @par License: @parblock
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. @endparblock
  *
  * @brief Default configuration implementation for `ProtocolFSM`.
  * @remark Provides thread-safe, static configuration with option registry and handlers.
@@ -10,9 +25,6 @@
  *   telnet::default_protocol_fsm_config::set_error_logger([](const std::error_code& ec, std::string msg) {
  *       std::cerr << "Error: " << ec.message() << " - " << msg << std::endl;
  *   });
- *
- * @copyright (c) 2025 [it's mine!]. All rights reserved.
- * @license See LICENSE file for details
  *
  * @see `:protocol_fsm` for `ProtocolFSM`, `:concepts` for `ProtocolFSMConfig`, `:options` for `option`
  */

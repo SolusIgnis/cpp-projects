@@ -1,15 +1,27 @@
+// SPDX-License-Identifier: Apache-2.0
 /**
  * @file net.telnet-concepts.cppm
  * @version 0.5.7
- * @release_date October 30, 2025
+ * @date October 30, 2025
+ *
+ * @copyright Copyright (c) 2025-2026 Jeremy Murphy and any Contributors
+ * @par License: @parblock
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. @endparblock
  *
  * @brief Module partition defining C++20 `concept`s for Telnet module type constraints.
  * @remark Defines concepts to constrain lower-layer stream/socket types for `telnet::stream`, ensuring compatibility with Boost.Asio stream socket requirements.
  * @remark Defines concept to constrain `ProtocolFSM` configurations.
  * @see RFC 854 for Telnet protocol requirements, `asio::ip::tcp::socket` for stream/socket interfaces, `:stream` for `telnet::stream` usage.
- *
- * @copyright (c) 2025 [it's mine!]. All rights reserved.
- * @license See LICENSE file for details
  *
  * @see `asio::ip::tcp::socket`, `asio::ssl::stream`, `:stream` for `telnet::stream`
  * @todo Future Development: Add concepts for TLS-specific stream requirements (e.g., for `boost::asio::ssl::stream` handshake methods).
