@@ -1,10 +1,11 @@
-
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors -->
 # cpp-projects
 C++ Libraries
 
 ---
 
-## License
+## License / Copying
 
 > *This section is meant to be helpful, not legal advice. It reflects how this project understands and applies the Apache-2.0 license. If you need actual legal advice, a real lawyer will do a much better job than a README.*
 
@@ -68,29 +69,33 @@ If you have questions about licensing or usage, feel free to open an issue for d
   Only if you redistribute those libraries yourself. Merely depending on or linking against third-party libraries does not transfer their license obligations to you. Each dependency’s license applies to copies of that dependency, not to code that merely uses it.
 
 ### How It’s Applied in This Repository
-1. **`LICENSE` file**
-   - See the `LICENSE` file at the repository root for the full text of the License.
+1. **`LICENSES/Apache-2.0.txt` file**
+   - See the `Apache-2.0.txt` file in the `LICENSES` subdirectory of the repository root for the full text of the License.
 
 2. **SPDX headers**  
-   - Every source file starts with a machine-readable SPDX identifier:
+   - Every source file starts with machine-readable SPDX License-Identifier and FileCopyrightText comment tags.
+   
+   - Example:
      ```cpp
      // SPDX-License-Identifier: Apache-2.0
+     // SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
      ```
 
    - This allows automated tools to detect the license reliably.
 
 3. **Per-file Doxygen license block**  
-   - Each file header comment contains a Doxygen-style paragraph block with the full Apache-2.0 boilerplate notice.
+   - Each file header comment contains a Doxygen-style copyright notice and paragraph block with the full Apache-2.0 boilerplate notice.
 
    - Example:
      ```cpp
      /**
+      * @copyright © 2025-2026 Jeremy Murphy and any Contributors
       * @par License: @parblock
       * Licensed under the Apache License, Version 2.0 (the "License");
       * you may not use this file except in compliance with the License.
       * You may obtain a copy of the License at
       *
-      * http://www.apache.org/licenses/LICENSE-2.0
+      *     http://www.apache.org/licenses/LICENSE-2.0
       *
       * Unless required by applicable law or agreed to in writing, software
       * distributed under the License is distributed on an "AS IS" BASIS,

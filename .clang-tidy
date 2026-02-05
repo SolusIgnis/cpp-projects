@@ -1,5 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
+# clang-tidy version 21.1.6
 ---
-#21.1.6
 Checks:
   - '-*'
 

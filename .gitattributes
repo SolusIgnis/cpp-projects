@@ -1,2 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: NONE
+
 *.cpp  text eol=lf
 *.cppm text eol=lf

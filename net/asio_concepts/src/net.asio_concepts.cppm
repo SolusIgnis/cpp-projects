@@ -1,9 +1,11 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: 2025 Jeremy Murphy and any Contributors
 /**
  * @file net.asio_concepts.cppm
  * @version 0.1.0
  * @date October 29, 2025
  *
- * @copyright Copyright (c) 2025-2026 Jeremy Murphy and any Contributors
+ * @copyright © 2025 Jeremy Murphy and any Contributors
  * @par License: @parblock
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +22,6 @@
  * @brief Module defining reusable C++20 `concept`s for Asio I/O object requirements.
  * @remark Provides fine-grained, composable concepts for Asio stream, socket, and layered types.
  * @see `asio::ip::tcp::socket`, `asio::ssl::stream`, `telnet:concepts`
- *
- * @copyright (c) 2025 [it's mine!]. All rights reserved.
- * @license See LICENSE file for details
  */
 
 module; // Including Asio in the Global Module Fragment until importable header units are reliable.

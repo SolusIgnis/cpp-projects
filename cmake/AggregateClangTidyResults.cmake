@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 if (NOT DEFINED STAMPS OR STAMPS STREQUAL "")
   message(FATAL_ERROR "STAMPS variable MUST be set to a list of stamp files")
 endif()

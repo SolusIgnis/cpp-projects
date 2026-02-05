@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
+
 # net/CMakeLists.txt
 
 cmake_minimum_required(VERSION 4.1.2)

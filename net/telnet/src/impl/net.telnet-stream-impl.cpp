@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 /**
  * @file net.telnet-stream-impl.cpp
  * @version 0.5.7
  * @date October 30, 2025
  *
- * @copyright Copyright (c) 2025-2026 Jeremy Murphy and any Contributors
+ * @copyright © 2025-2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
