@@ -138,8 +138,7 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<ConstBufferSequence CBufSeq>
-    std::tuple<std::error_code, std::vector<byte_t>>
-        stream<NLS, PC>::escape_telnet_output(const CBufSeq& data) const noexcept
+    std::tuple<std::error_code, std::vector<byte_t>> stream<NLS, PC>::escape_telnet_output(const CBufSeq& data) const noexcept
     {
         std::vector<byte_t> escaped_data;
         try {
@@ -161,8 +160,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     void stream<NLS, PC>::launch_wait_for_urgent_data()
     {
-        if (!context_.waiting_for_urgent_data.exchange(true, std::memory_order_relaxed)
-            && !context_.urgent_data_state) {
+        if (!context_.waiting_for_urgent_data.exchange(true, std::memory_order_relaxed) && !context_.urgent_data_state) {
             this->lowest_layer().async_receive(
                 asio::mutable_buffer(nullptr, 0),
                 asio::socket_base::message_out_of_band,
@@ -301,11 +299,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::input_processor<MBS>::operator()(
-        Self& self,
-        std::error_code ec_in,
-        std::size_t bytes_transferred
-    )
+    void stream<NLS, PC>::input_processor<MBS>::operator()(Self& self, std::error_code ec_in, std::size_t bytes_transferred)
     {
         if (state_ == state::done) [[unlikely]] {
             return; //complete has already been called; unsafe to do anything else
@@ -487,11 +481,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::input_processor<MBS>::complete(
-        Self& self,
-        const std::error_code& ec,
-        std::size_t bytes_transferred
-    )
+    void stream<NLS, PC>::input_processor<MBS>::complete(Self& self, const std::error_code& ec, std::size_t bytes_transferred)
     {
         state_ = state::done;
         self.complete(ec, bytes_transferred);
@@ -599,8 +589,7 @@ namespace net::telnet {
                 try {
                     auto [opt, subneg_buffer] = co_await handler_awaitable;
                     if (!subneg_buffer.empty()) {
-                        co_return co_await parent_stream_
-                            .async_write_subnegotiation(opt, subneg_buffer, asio::use_awaitable);
+                        co_return co_await parent_stream_.async_write_subnegotiation(opt, subneg_buffer, asio::use_awaitable);
                     }
                     co_return std::size_t{0};
                 } catch (const std::system_error& se) {
@@ -640,8 +629,7 @@ namespace net::telnet {
                 try {
                     std::size_t bytes_transferred = 0;
                     if (negotiation) {
-                        bytes_transferred +=
-                            co_await parent_stream_.async_write_negotiation(*negotiation, asio::use_awaitable);
+                        bytes_transferred += co_await parent_stream_.async_write_negotiation(*negotiation, asio::use_awaitable);
                     }
                     co_await awaitable;
                     co_return bytes_transferred;

@@ -138,12 +138,9 @@ export namespace net::telnet {
         } //handle_subnegotiation(option::id_num, std::vector<byte_t>)
     private:
         ///@brief Default handler for undefined subnegotiation.
-        awaitables::subnegotiation_awaitable
-            undefined_subnegotiation_handler(option opt, std::vector<byte_t> /*unused*/)
+        awaitables::subnegotiation_awaitable undefined_subnegotiation_handler(option opt, std::vector<byte_t> /*unused*/)
         {
-            ProtocolConfig::log_error(
-                make_error_code(error::user_handler_not_found), "cmd: {}, option: {}", command::se, opt
-            );
+            ProtocolConfig::log_error(make_error_code(error::user_handler_not_found), "cmd: {}, option: {}", command::se, opt);
             co_return;
         } //undefined_subnegotiation_handler(option::id_num opt, std::vector<byte_t>)
 
@@ -212,16 +209,10 @@ export namespace net::telnet {
 
         //Local state queries (us)
         ///@brief Checks if the option is enabled locally.
-        [[nodiscard]] bool local_enabled() const noexcept
-        {
-            return local_state_ == std::to_underlying(negotiation_state::yes);
-        }
+        [[nodiscard]] bool local_enabled() const noexcept { return local_state_ == std::to_underlying(negotiation_state::yes); }
 
         ///@brief Checks if the option is fully disabled locally. @note NOT equivalent to !local_enabled()
-        [[nodiscard]] bool local_disabled() const noexcept
-        {
-            return local_state_ == std::to_underlying(negotiation_state::no);
-        }
+        [[nodiscard]] bool local_disabled() const noexcept { return local_state_ == std::to_underlying(negotiation_state::no); }
 
         ///@brief Checks if a local enablement request is pending.
         [[nodiscard]] bool local_pending_enable() const noexcept
@@ -264,10 +255,7 @@ export namespace net::telnet {
         }
 
         ///@brief Checks if remote negotiation is pending (WANTNO or WANTYES).
-        [[nodiscard]] bool remote_pending() const noexcept
-        {
-            return remote_pending_enable() || remote_pending_disable();
-        }
+        [[nodiscard]] bool remote_pending() const noexcept { return remote_pending_enable() || remote_pending_disable(); }
 
         //Bidirectional state queries
         ///@brief Checks if the option is enabled in the designated direction.
@@ -724,8 +712,7 @@ export namespace net::telnet {
 
         //The underlying type of `option::id_num` should be 8 bits to hold the 256 possible options unless the Telnet specification is incomprehensibly rewritten, but we'll allow anything the machine can reason about.
         static_assert(
-            std::numeric_limits<std::underlying_type_t<option::id_num>>::digits
-                < std::numeric_limits<std::size_t>::digits,
+            std::numeric_limits<std::underlying_type_t<option::id_num>>::digits < std::numeric_limits<std::size_t>::digits,
             "The underlying type of `option::id_num` MUST have fewer value bits than `std::size_t` to compute its number of representable values."
         );
 
