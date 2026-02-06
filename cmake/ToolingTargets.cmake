@@ -7,26 +7,35 @@
 
 get_property(ALL_TOOLING_SOURCES GLOBAL PROPERTY ALL_TOOLING_SOURCES)
 
-# Target to run clang-format (for real).
-add_custom_target(format
+# Target to run clang-format in place on all sources.
+add_custom_target(format-fix
   COMMAND clang-format -i ${ALL_TOOLING_SOURCES}
-  COMMENT "Running clang-format"
+  COMMENT "Fixing code formatting with clang-format"
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
 # Target to run clang-format in checking mode.
 add_custom_target(format-check
   COMMAND clang-format --dry-run --Werror --Wno-error=unknown ${ALL_TOOLING_SOURCES}
-  COMMENT "Checking clang-format"
+  COMMENT "Checking code formatting compliance with clang-format"
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
 # Target to run clang-tidy if we're using clang as our compiler.
-# Invokes per file for parallelism, incrementalism, and granularity.
+# tidy-fast Invokes per file for parallelism, incrementalism, and granularity.
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  add_custom_target(tidy
+  add_custom_target(tidy-check
     COMMAND clang-tidy
-      --use-color -p ${CMAKE_BINARY_DIR}
-      ${ALL_TOOLING_SOURCES}
-    COMMENT "Running clang-tidy"
+      --use-color -p ${CMAKE_BINARY_DIR} ${ALL_TOOLING_SOURCES}
+    COMMENT "Checking code with clang-tidy"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
+  
+  add_custom_target(tidy-fix
+    COMMAND clang-tidy
+      -fix -p ${CMAKE_BINARY_DIR} ${ALL_TOOLING_SOURCES}
+    COMMENT "Checking code with clang-tidy in fix mode"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
 
   set(TIDY_STAMPS "")
