@@ -61,7 +61,7 @@ BraceWrapping:
 # -------------------------------------------------------------------
 # Line breaking
 # -------------------------------------------------------------------
-ColumnLimit: 120
+ColumnLimit: 128
 
 BreakTemplateDeclarations:       Yes
 BreakAdjacentStringLiterals:     false

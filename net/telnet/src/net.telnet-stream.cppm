@@ -39,10 +39,10 @@ export module net.telnet:stream;
 
 import std; //NOLINT For std::error_code, std::size_t, std::vector, std::same_as
 
-export import :types;    ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
-export import :errors;   ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-export import :concepts; ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
-export import :options;  ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
+export import :types;           ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
+export import :errors;          ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+export import :concepts;        ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
+export import :options;         ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
 export import :protocol_config; ///< @see "net.telnet-protocol_config.cppm" for `default_protocol_fsm_config`
 export import :protocol_fsm;    ///< @see "net.telnet-protocol_fsm.cppm" for `protocol_fsm`
 export import :awaitables;      ///< @see "net.telnet-awaitables.cppm" for `tagged_awaitable`
@@ -217,21 +217,14 @@ export namespace net::telnet {
 
         ///@brief Asynchronously writes a Telnet subnegotiation command.
         template<WriteToken CompletionToken>
-        auto async_write_subnegotiation(
-            option opt,
-            const std::vector<byte_t>& subnegotiation_buffer,
-            CompletionToken&& token
-        );
+        auto async_write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, CompletionToken&& token);
 
         ///@brief Synchronously writes a Telnet subnegotiation command.
         std::size_t write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer);
 
         ///@brief Synchronously writes a Telnet subnegotiation command.
-        std::size_t write_subnegotiation(
-            option opt,
-            const std::vector<byte_t>& subnegotiation_buffer,
-            std::error_code& ec
-        ) noexcept;
+        std::size_t
+            write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously sends Telnet Synch sequence (NUL bytes and IAC DM).
         template<WriteToken CompletionToken>
@@ -301,12 +294,7 @@ export namespace net::telnet {
         class input_processor {
         public:
             ///@brief Constructs an `input_processor` with the parent stream, FSM, and buffers.
-            input_processor(
-                stream& parent_stream,
-                stream::fsm_type& fsm,
-                stream::context_type& context,
-                MBufSeq buffers
-            );
+            input_processor(stream& parent_stream, stream::fsm_type& fsm, stream::context_type& context, MBufSeq buffers);
 
             ///@brief Asynchronous operation handler for processing Telnet input.
             template<typename Self>
@@ -319,11 +307,7 @@ export namespace net::telnet {
 
             ///@brief Handles processing of the `reading` state.
             template<typename Self>
-            void handle_processor_state_reading(
-                Self& self,
-                std::error_code ec_in         = {},
-                std::size_t bytes_transferred = 0
-            );
+            void handle_processor_state_reading(Self& self, std::error_code ec_in = {}, std::size_t bytes_transferred = 0);
 
             ///@brief Handles processing of the `processing` state.
             template<typename Self>

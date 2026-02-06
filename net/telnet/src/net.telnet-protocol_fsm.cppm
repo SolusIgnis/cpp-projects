@@ -36,10 +36,10 @@ export module net.telnet:protocol_fsm;
 
 import std; //NOLINT For std::function, std::optional, std::map, std::set, std::vector, std::shared_mutex, std::shared_lock, std::lock_guard, std::once_flag, std::cout, std::cerr, std::hex, std::setw, std::setfill, std::dec, std::format
 
-export import :types;    ///< @see "net.telnet-types.cppm" for `byte_t`, `telnet::command`, and `negotiation_direction`
-export import :errors;   ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-export import :concepts; ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
-export import :options;  ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
+export import :types;      ///< @see "net.telnet-types.cppm" for `byte_t`, `telnet::command`, and `negotiation_direction`
+export import :errors;     ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
+export import :concepts;   ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
+export import :options;    ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
 export import :awaitables; ///< @see "net.telnet-awaitables.cppm" for `TaggedAwaitable`, semantic tags, and type aliases
 
 import :internal;        ///< @see "net.telnet-internal.cppm" for implementation classes
@@ -78,9 +78,8 @@ export namespace net::telnet {
          * @param direction The negotiation direction (`local` or `remote`).
          * @return `option_enablement_awaitable` representing the asynchronous handling result.
          */
-        using option_enablement_handler_type = std::function<
-            awaitables::option_enablement_awaitable(option::id_num /*id*/, negotiation_direction /*direction*/)
-        >;
+        using option_enablement_handler_type =
+            std::function<awaitables::option_enablement_awaitable(option::id_num /*id*/, negotiation_direction /*direction*/)>;
 
         /**
          * @typedef option_disablement_handler_type
@@ -89,9 +88,8 @@ export namespace net::telnet {
          * @param direction The negotiation direction (`local` or `remote`).
          * @return `option_disablement_awaitable` representing the asynchronous handling result.
          */
-        using option_disablement_handler_type = std::function<
-            awaitables::option_disablement_awaitable(option::id_num /*id*/, negotiation_direction /*direction*/)
-        >;
+        using option_disablement_handler_type =
+            std::function<awaitables::option_disablement_awaitable(option::id_num /*id*/, negotiation_direction /*direction*/)>;
 
         /**
          * @typedef subnegotiation_handler_type
@@ -149,9 +147,8 @@ export namespace net::telnet {
             std::optional<subnegotiation_handler_type> subneg_handler = std::nullopt
         )
         {
-            option_handler_registry_.register_handlers(
-                opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler)
-            );
+            option_handler_registry_
+                .register_handlers(opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler));
         }
 
         ///@brief Unregisters handlers for an option.
@@ -212,16 +209,14 @@ export namespace net::telnet {
             handle_state_subnegotiation_option(byte_t byte);
 
         ///@brief Handles bytes in the `Subnegotiation` state (data after option ID).
-        std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_subnegotiation(byte_t byte);
+        std::tuple<std::error_code, bool, std::optional<processing_return_variant>> handle_state_subnegotiation(byte_t byte);
 
         ///@brief Handles bytes in the `SubnegotiationIAC` state (IAC in subnegotiation data).
         std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
             handle_state_subnegotiation_iac(byte_t byte);
 
         ///@brief Handles STATUS subnegotiation (RFC 859), returning an awaitable with the IS [list] payload or user-handled result.
-        auto handle_status_subnegotiation(option opt, std::vector<byte_t> buffer)
-            -> awaitables::subnegotiation_awaitable;
+        auto handle_status_subnegotiation(option opt, std::vector<byte_t> buffer) -> awaitables::subnegotiation_awaitable;
 
         //Data Members
         option_handler_registry<

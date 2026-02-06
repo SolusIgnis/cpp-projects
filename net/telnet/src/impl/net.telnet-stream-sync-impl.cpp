@@ -158,11 +158,8 @@ namespace net::telnet {
      * @see `request_option` for throwing version, `async_request_option` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::request_option(
-        option::id_num opt,
-        negotiation_direction direction,
-        std::error_code& ec
-    ) noexcept
+    std::size_t
+        stream<NLS, PC>::request_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept
     {
         try {
             return request_option(opt, direction);
@@ -181,11 +178,8 @@ namespace net::telnet {
      * @see `disable_option` for throwing version, `async_disable_option` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    std::size_t stream<NLS, PC>::disable_option(
-        option::id_num opt,
-        negotiation_direction direction,
-        std::error_code& ec
-    ) noexcept
+    std::size_t
+        stream<NLS, PC>::disable_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept
     {
         try {
             return disable_option(opt, direction);

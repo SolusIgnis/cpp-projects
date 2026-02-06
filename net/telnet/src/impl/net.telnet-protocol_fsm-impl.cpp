@@ -45,9 +45,7 @@ namespace net::telnet {
     telnet::command protocol_fsm<PC>::make_negotiation_command(negotiation_direction direction, bool enable) noexcept
     {
         using enum telnet::command;
-        return (
-            (direction == negotiation_direction::remote) ? (enable ? do_opt : dont_opt) : (enable ? will_opt : wont_opt)
-        );
+        return ((direction == negotiation_direction::remote) ? (enable ? do_opt : dont_opt) : (enable ? will_opt : wont_opt));
     } //make_negotiation_command(negotiation_direction, bool)
 
     /**
@@ -471,8 +469,7 @@ namespace net::telnet {
         std::optional<processing_return_variant> response = std::nullopt;
 
         if (current_command_) [[likely]] {
-            negotiation_direction direction = (*current_command_ == command::will_opt
-                                               || *current_command_ == command::wont_opt)
+            negotiation_direction direction = (*current_command_ == command::will_opt || *current_command_ == command::wont_opt)
                                                 ? negotiation_direction::remote
                                                 : negotiation_direction::local;
 
@@ -481,8 +478,7 @@ namespace net::telnet {
             if (current_option_) {
                 auto& current_status = option_status_[*current_option_];
 
-                bool request_to_enable =
-                    (*current_command_ == command::do_opt || *current_command_ == command::will_opt);
+                bool request_to_enable = (*current_command_ == command::do_opt || *current_command_ == command::will_opt);
 
                 if ((request_to_enable && current_status.enabled(direction))
                     || (!request_to_enable && current_status.disabled(direction))) {
@@ -587,8 +583,7 @@ namespace net::telnet {
                         direction
                     );
                 }
-                bool request_to_enable =
-                    (*current_command_ == command::do_opt || *current_command_ == command::will_opt);
+                bool request_to_enable = (*current_command_ == command::do_opt || *current_command_ == command::will_opt);
                 if (request_to_enable) { //Unregistered options are implicitly disabled, so requests to disable are ignored as redundant.
                     //Unregistered options MUST be refused per RFC 854 and RFC 1143
                     response = std::make_tuple(direction, false, static_cast<option::id_num>(byte));
@@ -710,8 +705,8 @@ namespace net::telnet {
                 if (*current_option_ == option::id_num::status) {
                     response = handle_status_subnegotiation(*current_option_, std::move(subnegotiation_buffer_));
                 } else {
-                    response = option_handler_registry_
-                                   .handle_subnegotiation(*current_option_, std::move(subnegotiation_buffer_));
+                    response =
+                        option_handler_registry_.handle_subnegotiation(*current_option_, std::move(subnegotiation_buffer_));
                 }
             }
             change_state(protocol_state::normal);
@@ -773,8 +768,7 @@ namespace net::telnet {
                 co_return co_await option_handler_registry_.handle_subnegotiation(opt, std::move(buffer));
             } else {
                 protocol_config_type::log_error(
-                    error::option_not_available,
-                    "STATUS subnegotiation IS received, but STATUS option is not remotely enabled."
+                    error::option_not_available, "STATUS subnegotiation IS received, but STATUS option is not remotely enabled."
                 );
                 co_return std::make_tuple(opt, std::vector<byte_t>{});
             }
@@ -788,8 +782,7 @@ namespace net::telnet {
                     if (status.local_enabled()) {
                         payload.push_back(std::to_underlying(telnet::command::will_opt));
                         if (std::to_underlying(opt_id) == std::to_underlying(telnet::command::iac)
-                            || std::to_underlying(opt_id)
-                                   == std::to_underlying(telnet::command::se)) { //Escape IAC or SE
+                            || std::to_underlying(opt_id) == std::to_underlying(telnet::command::se)) { //Escape IAC or SE
                             payload.push_back(std::to_underlying(opt_id));
                         }
                         payload.push_back(std::to_underlying(opt_id));
@@ -797,8 +790,7 @@ namespace net::telnet {
                     if (status.remote_enabled()) {
                         payload.push_back(std::to_underlying(telnet::command::do_opt));
                         if (std::to_underlying(opt_id) == std::to_underlying(telnet::command::iac)
-                            || std::to_underlying(opt_id)
-                                   == std::to_underlying(telnet::command::se)) { //Escape IAC or SE
+                            || std::to_underlying(opt_id) == std::to_underlying(telnet::command::se)) { //Escape IAC or SE
                             payload.push_back(std::to_underlying(opt_id));
                         }
                         payload.push_back(std::to_underlying(opt_id));

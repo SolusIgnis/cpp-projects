@@ -89,8 +89,7 @@ export namespace net::telnet {
 
         ///@brief Logs an error with the registered error logger using a formatted string.
         template<typename... Args>
-        static void
-            log_error(const std::error_code& ec, std::format_string<std::remove_cvref_t<Args>...> fmt, Args&&... args)
+        static void log_error(const std::error_code& ec, std::format_string<std::remove_cvref_t<Args>...> fmt, Args&&... args)
         {
             const std::shared_lock<std::shared_mutex> lock(mutex);
             if (error_logger) {
@@ -118,9 +117,7 @@ export namespace net::telnet {
         {
             return {
                 option{option::id_num::binary, "Binary Transmission", option::always_accept, option::always_accept},
-                option{
-                       option::id_num::suppress_go_ahead, "Suppress Go-Ahead", option::always_accept, option::always_accept
-                },
+                option{option::id_num::suppress_go_ahead, "Suppress Go-Ahead", option::always_accept, option::always_accept},
                 option{
                        option::id_num::status,
                        "Status", option::always_accept,
@@ -151,8 +148,7 @@ export namespace net::telnet {
         static inline error_logger_type error_logger;
         static inline std::string ayt_response = "Telnet system is active."; ///Default AYT response
         static inline std::shared_mutex mutex;                               ///Mutex to protect shared static members
-        static inline std::once_flag
-            initialization_flag; ///Ensures initialize() is idempotent; only invokes init() once
+        static inline std::once_flag initialization_flag; ///Ensures initialize() is idempotent; only invokes init() once
     }; //class default_protocol_fsm_config
 
     /**

@@ -55,11 +55,7 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<typename CompletionToken>
-    auto stream<NLS, PC>::async_request_option(
-        option::id_num opt,
-        negotiation_direction direction,
-        CompletionToken&& token
-    )
+    auto stream<NLS, PC>::async_request_option(option::id_num opt, negotiation_direction direction, CompletionToken&& token)
     {
         auto [ec, response] = fsm_.request_option(opt, direction);
         if (ec || !response) {
@@ -81,11 +77,7 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<typename CompletionToken>
-    auto stream<NLS, PC>::async_disable_option(
-        option::id_num opt,
-        negotiation_direction direction,
-        CompletionToken&& token
-    )
+    auto stream<NLS, PC>::async_disable_option(option::id_num opt, negotiation_direction direction, CompletionToken&& token)
     {
         auto [ec, response, awaitable] = fsm_.disable_option(opt, direction);
         if (ec || (!response && !awaitable)) {
@@ -199,14 +191,10 @@ namespace net::telnet {
     )
     {
         if (!opt.supports_subnegotiation()) {
-            return async_report_error(
-                make_error_code(error::invalid_subnegotiation), std::forward<CompletionToken>(token)
-            );
+            return async_report_error(make_error_code(error::invalid_subnegotiation), std::forward<CompletionToken>(token));
         }
         if (!fsm_.is_enabled(opt)) {
-            return async_report_error(
-                make_error_code(error::option_not_available), std::forward<CompletionToken>(token)
-            );
+            return async_report_error(make_error_code(error::option_not_available), std::forward<CompletionToken>(token));
         }
 
         std::vector<byte_t> escaped_buffer;
@@ -236,9 +224,7 @@ namespace net::telnet {
             escaped_buffer.push_back(std::to_underlying(telnet::command::iac));
             escaped_buffer.push_back(std::to_underlying(telnet::command::se));
         } catch (const std::bad_alloc&) {
-            return async_report_error(
-                make_error_code(std::errc::not_enough_memory), std::forward<CompletionToken>(token)
-            );
+            return async_report_error(make_error_code(std::errc::not_enough_memory), std::forward<CompletionToken>(token));
         } catch (...) {
             return async_report_error(make_error_code(error::internal_error), std::forward<CompletionToken>(token));
         }
@@ -327,10 +313,7 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<WriteToken CompletionToken>
-    auto stream<NLS, PC>::async_write_negotiation(
-        typename fsm_type::negotiation_response response,
-        CompletionToken&& token
-    )
+    auto stream<NLS, PC>::async_write_negotiation(typename fsm_type::negotiation_response response, CompletionToken&& token)
     {
         auto [dir, enable, opt] = response;
         static std::array<byte_t, 3>
@@ -361,9 +344,8 @@ namespace net::telnet {
                     this->next_layer_,
                     asio::buffer(temp_buffer),
                     asio::bind_executor(
-                        this->get_executor(), [handler](const std::error_code& ec, std::size_t bytes_written) mutable {
-                            handler(ec, bytes_written);
-                        }
+                        this->get_executor(),
+                        [handler](const std::error_code& ec, std::size_t bytes_written) mutable { handler(ec, bytes_written); }
                     )
                 );
             },
