@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
+
 # Sanity check the required variables.
 if (NOT DEFINED BUILD_DIR OR BUILD_DIR STREQUAL "")
   message(FATAL_ERROR "BUILD_DIR must be set to the build directory")

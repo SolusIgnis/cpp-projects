@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
+
 # ===========================================================================
 # Create tooling targets for clang-format (real and check) and clang-tidy.
 # ===========================================================================

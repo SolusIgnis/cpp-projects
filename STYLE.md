@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<!-- SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors -->
 # cpp-projects Coding Style Guide
 
 This document defines the **authoritative coding style** for the `net.telnet` project.
