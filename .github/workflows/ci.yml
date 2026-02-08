@@ -127,6 +127,7 @@ jobs:
           sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 65536
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 65536
           sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 65536
+          #sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 65536
           sudo update-alternatives --set clang /usr/bin/clang-21
           sudo update-alternatives --set clang++ /usr/bin/clang++-21
           sudo update-alternatives --set clang-format /usr/bin/clang-format-21
@@ -153,7 +154,7 @@ jobs:
       - name: check on run-clang-tidy
         run: |
           run-clang-tidy --help
-          run-clang-tidy --version
+          which run-clang-tidy
 
       - name: run-clang-tidy
         run: cmake --build --preset=clang-debug --target=tidy-py
