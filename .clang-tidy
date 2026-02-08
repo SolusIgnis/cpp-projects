@@ -121,7 +121,7 @@ ImplementationFileExtensions:
   - cppm     # Modern (>= C++20) module interface units
   - ixx      # Alternate module interface units
 HeaderFilterRegex: '^(?!.*(usr/|lib/|v1/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|std\.cppm|std\.compat\.cppm)).*$'
-ExcludeHeaderFilterRegex: '/include/c\+\+/v1/'
+#ExcludeHeaderFilterRegex: '/include/c\+\+/v1/'
 FormatStyle: file
 CheckOptions:
   bugprone-argument-comment.CommentBoolLiterals:        '1'

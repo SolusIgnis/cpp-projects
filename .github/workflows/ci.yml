@@ -127,10 +127,12 @@ jobs:
           sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 65536
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 65536
           sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 65536
+          sudo update-alternatives --install /usr/bin/run-clang-tidy run-clang-tidy /usr/bin/run-clang-tidy-21 65536
           sudo update-alternatives --set clang /usr/bin/clang-21
           sudo update-alternatives --set clang++ /usr/bin/clang++-21
           sudo update-alternatives --set clang-format /usr/bin/clang-format-21
           sudo update-alternatives --set clang-tidy /usr/bin/clang-tidy-21
+          sudo update-alternatives --set run-clang-tidy /usr/bin/run-clang-tidy-21
           
       - name: Install Asio
         run: |
@@ -150,5 +152,5 @@ jobs:
       - name: Build
         run: cmake --build --preset=clang-debug
 
-      - name: clang-tidy
-        run: cmake --build --preset=clang-debug --target=tidy-check
+      - name: clang-tidy checks
+        run: cmake --build --preset=clang-debug --target=tidy-check-fast
