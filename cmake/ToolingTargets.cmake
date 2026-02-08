@@ -37,6 +37,12 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     COMMENT "Checking code with clang-tidy in fix mode"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
+  
+  add_custom_target(tidy-py
+    COMMAND run-clang-tidy -p ${CMAKE_BINARY_DIR} -j0
+    COMMENT "Checking code with clang-tidy via script"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
 
   set(TIDY_STAMPS "")
   set(TIDY_LOGS "")
