@@ -1,0 +1,103 @@
+name: Create Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to tag"
+        required: true
+        default: "main"
+
+      tag:
+        description: "Tag name (e.g. group/module/vX.Y.Z)"
+        required: true
+
+      message:
+        description: "Annotated tag message"
+        required: true
+
+      commit:
+        description: "Optional commit hash (defaults to branch HEAD)"
+        required: false
+        default: ""
+
+      date:
+        description: "Optional tag date (YYYY-MM-DD or ISO8601)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch branch and tags
+        run: |
+          git fetch --tags origin
+          git fetch origin "${{ github.event.inputs.branch }}"
+
+      - name: Resolve commit
+        id: resolve_commit
+        run: |
+          BRANCH="${{ github.event.inputs.branch }}"
+          COMMIT="${{ github.event.inputs.commit }}"
+
+          if [ -z "$COMMIT" ]; then
+            COMMIT=$(git rev-parse "origin/$BRANCH")
+          fi
+
+          echo "Resolved commit: $COMMIT"
+          echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
+
+      - name: Fail if tag already exists
+        run: |
+          TAG="${{ github.event.inputs.tag }}"
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag already exists locally: $TAG"
+            exit 1
+          fi
+
+          if git ls-remote --tags origin | grep -q "refs/tags/$TAG$"; then
+            echo "Tag already exists on origin: $TAG"
+            exit 1
+          fi
+
+      - name: Verify commit reachable from branch
+        run: |
+          BRANCH="${{ github.event.inputs.branch }}"
+          COMMIT="${{ steps.resolve_commit.outputs.commit }}"
+
+          if ! git merge-base --is-ancestor "$COMMIT" "origin/$BRANCH"; then
+            echo "Commit $COMMIT is NOT reachable from origin/$BRANCH"
+            exit 1
+          fi
+
+      - name: Create annotated tag
+        run: |
+          TAG="${{ github.event.inputs.tag }}"
+          MESSAGE="${{ github.event.inputs.message }}"
+          COMMIT="${{ steps.resolve_commit.outputs.commit }}"
+          DATE="${{ github.event.inputs.date }}"
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          if [ -n "$DATE" ]; then
+            export GIT_COMMITTER_DATE="$DATE"
+            git tag -a "$TAG" "$COMMIT" -m "$MESSAGE"
+          else
+            git tag -a "$TAG" "$COMMIT" -m "$MESSAGE"
+          fi
+
+      - name: Push tag
+        run: |
+          git push origin "${{ github.event.inputs.tag }}"
