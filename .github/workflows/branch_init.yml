@@ -21,27 +21,29 @@ jobs:
           BRANCH="${GITHUB_REF_NAME}"  # e.g. foo/bar/release/v0.5.7
           echo "Full branch name: $BRANCH"
 
-          # Split at /release/
-          MODULE_PATH="${BRANCH%/release/*}"   # foo/bar
-          VERSION_TAG="${BRANCH##*/release/}"  # v0.5.7
+          # Match branches with an optional prefix path, release/, and a valid semantic version.
+          REGEX="^(.*\/)?release\/v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-.]+)?$"
 
-          # Remove leading 'v' for pure X.Y.Z
-          VERSION_NUMBER="${VERSION_TAG#v}"
+          if [[ "$BRANCH" =~ $REGEX ]]; then
+            echo "Branch matches release branch pattern."
 
-          echo "module_path=$MODULE_PATH" >> $GITHUB_OUTPUT
-          echo "version_number=$VERSION_NUMBER" >> $GITHUB_OUTPUT
+            # Optional prefix before release/, strip trailing slash if any
+            MODULE_PATH="${BASH_REMATCH[1]%/}"
+            
+            # Version comes from everything after release/
+            VERSION_TAG="${BRANCH##*/release/}"
+            
+            # Remove leading 'v' for pure X.Y.Z
+            VERSION_NUMBER="${VERSION_TAG#v}"
 
-      - name: Verify VERSION file exists
-        run: |
-          MODULE_PATH="${{ steps.parse_branch.outputs.module_path }}"
-          VERSION_FILE="${MODULE_PATH}/VERSION"
-
-          if [ ! -f "$VERSION_FILE" ]; then
-            echo "ERROR: VERSION file does not exist in $MODULE_PATH"
+            echo "module_path=$MODULE_PATH" >> $GITHUB_OUTPUT
+            echo "version_number=$VERSION_NUMBER" >> $GITHUB_OUTPUT
+          else
+            echo "ERROR: Invalid branch name. Release branches should have the form module/release/v0.0.0 (for a valid semantic version (the 'v' character is optional) and with 'module' as the optional module pathname including any separating / between segments."
             exit 1
           fi
 
-      - name: Update VERSION file
+      - name: Update version data
         id: update_version
         run: |
           MODULE_PATH="${{ steps.parse_branch.outputs.module_path }}"
