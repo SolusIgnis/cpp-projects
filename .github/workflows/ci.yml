@@ -45,7 +45,7 @@ jobs:
             # Version comes from everything after release/
             VERSION_TAG="${BRANCH##*/release/}"
             
-            # Remove leading v if present
+            # Remove leading 'v' for pure X.Y.Z
             RELEASE_VERSION="${VERSION_TAG#v}"
             
             echo "module_path=$MODULE_PATH" >> $GITHUB_OUTPUT
