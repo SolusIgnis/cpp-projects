@@ -35,8 +35,11 @@ jobs:
           # Only run for PRs from release branches
           if [[ ! "$BRANCH" =~ /release/ ]]; then
             echo "Not a release branch PR, skipping."
+            echo "release_branch=false" >> $GITHUB_OUTPUT
             exit 0
           fi
+          
+          echo "release_branch=true" >> $GITHUB_OUTPUT
 
           MODULE_PATH="${BRANCH%/release/*}"
           VERSION_TAG="${BRANCH##*/release/}"
@@ -47,6 +50,7 @@ jobs:
 
       - name: Check and fix VERSION file
         id: fix_version
+        if: steps.parse_branch.outputs.release_branch == 'true'
         run: |
           MODULE_PATH="${{ steps.parse_branch.outputs.module_path }}"
           RELEASE_VERSION="${{ steps.parse_branch.outputs.release_version }}"
