@@ -471,7 +471,7 @@ namespace net::telnet {
 
         bytes_to_transfer = std::distance(user_buf_begin_, write_it_);
         context_.input_side_buffer.consume(bytes_consumed);
-        
+
         if (!result_ec && (bytes_to_transfer == 0)) {
             //Re-initialize the processor for another underlying read if we haven't written into the user's buffer.
             return handle_processor_state_initializing(self);
