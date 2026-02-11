@@ -1,0 +1,83 @@
+name: Initialize Release Branch
+
+on:
+  create:
+    branches:
+      - '**/release/*'   # matches foo/bar/release/vX.Y.Z
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract module path and version
+        id: parse_branch
+        run: |
+          BRANCH="${GITHUB_REF_NAME}"  # e.g. foo/bar/release/v0.5.7
+          echo "Full branch name: $BRANCH"
+
+          # Split at /release/
+          MODULE_PATH="${BRANCH%/release/*}"   # foo/bar
+          VERSION_TAG="${BRANCH##*/release/}"  # v0.5.7
+
+          # Remove leading 'v' for pure X.Y.Z
+          VERSION_NUMBER="${VERSION_TAG#v}"
+
+          echo "module_path=$MODULE_PATH" >> $GITHUB_OUTPUT
+          echo "version_number=$VERSION_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Verify VERSION file exists
+        run: |
+          MODULE_PATH="${{ steps.parse_branch.outputs.module_path }}"
+          VERSION_FILE="${MODULE_PATH}/VERSION"
+
+          if [ ! -f "$VERSION_FILE" ]; then
+            echo "ERROR: VERSION file does not exist in $MODULE_PATH"
+            exit 1
+          fi
+
+      - name: Update VERSION file
+        id: update_version
+        run: |
+          MODULE_PATH="${{ steps.parse_branch.outputs.module_path }}"
+          VERSION_NUMBER="${{ steps.parse_branch.outputs.version_number }}"
+          VERSION_FILE="${MODULE_PATH}/VERSION"
+
+          if [ -f "$VERSION_FILE" ]; then
+            echo "Updating VERSION file..."
+            echo "${VERSION_NUMBER}-dev" > "$VERSION_FILE"
+            git add "$VERSION_FILE"
+          fi
+
+          echo "Updating @version headers..."
+          find "$MODULE_PATH/src" \
+            \( -name '*.cppm' -o -name '*.cpp' \) \
+            -exec sed -i -E \
+              "s|^([[:space:]]*)\*[[:space:]]*@version[[:space:]:=]*.*$|\1* @version $VERSION_NUMBER|" {} +
+
+          git add "$MODULE_PATH/src"
+          
+          # Check if file actually changed
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Files updated."
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit version updates
+        if: steps.update_version.outputs.changed == 'true'
+        run: |
+          MODULE_PATH="${{ steps.parse_branch.outputs.module_path }}"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git commit -m "Bump ${MODULE_PATH} VERSION to ${{ steps.parse_branch.outputs.version_number }}-dev and source file @version tags to ${{ steps.parse_branch.outputs.version_number }}"
+          git push origin "${GITHUB_REF_NAME}"
+          
