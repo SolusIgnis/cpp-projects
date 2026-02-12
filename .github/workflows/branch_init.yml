@@ -27,13 +27,13 @@ jobs:
           echo "Full branch name: $BRANCH"
 
           # Match branches with an optional prefix path, release/, and a valid semantic version.
-          REGEX="^(.*\/)?release\/v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-.]+)?$"
+          REGEX='^(.*\/)?release\/v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$'
 
-          if [[ "$BRANCH" =~ $REGEX ]]; then
+          if echo "$BRANCH" | grep -Eq "$REGEX"; then
             echo "Branch matches release branch pattern."
 
             # Optional prefix before release/, strip trailing slash if any
-            MODULE_PATH="${BASH_REMATCH[1]%/}"
+            MODULE_PATH="${BRANCH%/release/*}"
             
             # Version comes from everything after release/
             VERSION_TAG="${BRANCH##*/release/}"
