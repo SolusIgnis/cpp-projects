@@ -17,6 +17,58 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Get CMake 4.1.2
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: 4.1.2
+
+      - name: Install Clang 21 and tools
+        run: |
+          sudo apt update
+          sudo apt install -y wget lsb-release software-properties-common
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 21
+          sudo apt install clang-format-21 clang-tidy-21
+          sudo apt install -y ninja-build
+
+      - name: Restore libc++ cache
+        id: cache-libcxx
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/libcxx-21
+          key: libcxx-21.1.8-${{ runner.os }}
+
+      - name: Install libc++
+        run: sudo cp -rf libcxx-21/* /usr/lib/llvm-21
+
+      - name: Export environment variables for libc++ runtime
+        run: |
+          # Set environment variables for Clang to find this libc++
+          echo "LIBCXX_ROOT=$GITHUB_WORKSPACE/libcxx-21" >> $GITHUB_ENV
+          echo "export CPLUS_INCLUDE_PATH=$GITHUB_WORKSPACE/libcxx-21/include/c++/v1:\$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
+          echo "export LIBRARY_PATH=$GITHUB_WORKSPACE/libcxx-21/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
+          echo "export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/libcxx-21/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV     
+
+      - name: Set Clang 21 as default
+        run: |
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 65536
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 65536
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 65536
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 65536
+          sudo update-alternatives --install /usr/bin/run-clang-tidy run-clang-tidy /usr/bin/run-clang-tidy-21 65536
+          sudo update-alternatives --set clang /usr/bin/clang-21
+          sudo update-alternatives --set clang++ /usr/bin/clang++-21
+          sudo update-alternatives --set clang-format /usr/bin/clang-format-21
+          sudo update-alternatives --set clang-tidy /usr/bin/clang-tidy-21
+          sudo update-alternatives --set run-clang-tidy /usr/bin/run-clang-tidy-21
+
+      - name: Configure
+        run: |
+          cmake --preset=clang-debug \
+            -DCMAKE_CXX_FLAGS="-nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx-21/include/c++/v1 -nostdlib++ -Wall -Wextra -fcolor-diagnostics" \
+            -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx-21/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx-21/lib"
+
       - name: Run clang-format
         run: |
           cmake --build --preset=clang-debug --target=format-fix
