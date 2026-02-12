@@ -103,7 +103,7 @@ jobs:
         id: cache-libcxx
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/libcxx-21
+          path: ${{ github.workspace }}/.tmp/libcxx-21
           key: libcxx-21.1.8-${{ runner.os }}
     
       - name: Setup Cpp Build Tools
@@ -137,7 +137,7 @@ jobs:
             -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
             -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_C_COMPILER=clang \
-            -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/libcxx-21
+            -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/.tmp/libcxx-21
 
       - name: Build libc++
         if: steps.cache-libcxx.outputs.cache-hit != 'true'
@@ -155,7 +155,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: libcxx
-          path: $GITHUB_WORKSPACE/libcxx-21
+          path: $GITHUB_WORKSPACE/.tmp/libcxx-21
 
   clang-ci:
     needs: build-libcxx
