@@ -22,8 +22,13 @@ jobs:
         uses: lukka/get-cmake@latest
         with:
           cmakeVersion: 4.1.2
+          
+      - name: Create Temporary Directory
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        run: mkdir .tmp
 
       - name: Install Clang 21 and tools
+        working-directory: ./.tmp
         run: |
           sudo apt update
           sudo apt install -y wget lsb-release software-properties-common
@@ -37,19 +42,28 @@ jobs:
         id: cache-libcxx
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/libcxx-21
+          path: ${{ github.workspace }}/.tmp/libcxx-21
           key: libcxx-21.1.8-${{ runner.os }}
 
+      - name: Download libc++ artifact
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        # On cache miss, the build job stores an artifact to protect against this case.
+        uses: actions/download-artifact@v4
+        with:
+          name: libcxx
+          path: $GITHUB_WORKSPACE/.tmp/libcxx-21
+
       - name: Install libc++
+        working-directory: ./.tmp
         run: sudo cp -rf libcxx-21/* /usr/lib/llvm-21
 
       - name: Export environment variables for libc++ runtime
         run: |
           # Set environment variables for Clang to find this libc++
-          echo "LIBCXX_ROOT=$GITHUB_WORKSPACE/libcxx-21" >> $GITHUB_ENV
-          echo "export CPLUS_INCLUDE_PATH=$GITHUB_WORKSPACE/libcxx-21/include/c++/v1:\$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
-          echo "export LIBRARY_PATH=$GITHUB_WORKSPACE/libcxx-21/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
-          echo "export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/libcxx-21/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV     
+          echo "LIBCXX_ROOT=$GITHUB_WORKSPACE/.tmp/libcxx-21" >> $GITHUB_ENV
+          echo "export CPLUS_INCLUDE_PATH=$GITHUB_WORKSPACE/.tmp/libcxx-21/include/c++/v1:\$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
+          echo "export LIBRARY_PATH=$GITHUB_WORKSPACE/.tmp/libcxx-21/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
+          echo "export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/.tmp/libcxx-21/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV     
 
       - name: Set Clang 21 as default
         run: |
@@ -73,7 +87,7 @@ jobs:
       - name: Run clang-format
         run: |
           cmake --build --preset=clang-debug --target=format-fix
-          git add .
+          git add net
           
           if git diff --cached --quiet; then
             echo "No changes to commit."
