@@ -3,8 +3,6 @@
 name: Fix Formatting
 
 on:
-  push: 
-    branches: [release/0.5.7]
   workflow_dispatch:
 
 jobs:
