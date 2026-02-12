@@ -64,13 +64,15 @@ jobs:
             git add "$VERSION_FILE"
           fi
 
-          echo "Updating @version headers..."
-          find "$MODULE_PATH/src" \
-            \( -name '*.cppm' -o -name '*.cpp' \) \
-            -exec sed -i -E \
-              "s|^([[:space:]]*)\*[[:space:]]*@version[[:space:]:=]*.*$|\1* @version $VERSION_NUMBER|" {} +
+          if [ -d "$MODULE_PATH/src" ]; then
+            echo "Updating @version headers..."
+            find "$MODULE_PATH/src" \
+              \( -name '*.cppm' -o -name '*.cpp' \) \
+              -exec sed -i -E \
+                "s|^([[:space:]]*)\*[[:space:]]*@version[[:space:]:=]*.*$|\1* @version $VERSION_NUMBER|" {} +
 
-          git add "$MODULE_PATH/src"
+            git add "$MODULE_PATH/src"
+          fi
           
           # Check if file actually changed
           if git diff --cached --quiet; then
