@@ -4,12 +4,18 @@ name: Initialize Release Branch
 
 on:
   create:
-    branches:
-      - '**/release/*'   # matches foo/bar/release/vX.Y.Z
+    # GitHub Actions will ignore this, so we simulate it with a job-level if
+    #branches:
+    #  - '**/release/*'   # matches foo/bar/release/vX.Y.Z
 
 jobs:
   update-version:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    if: github.ref_type == 'branch' && contains(github.ref_name, 'release/')
 
     steps:
       - name: Checkout repository
@@ -24,13 +30,13 @@ jobs:
           echo "Full branch name: $BRANCH"
 
           # Match branches with an optional prefix path, release/, and a valid semantic version.
-          REGEX="^(.*\/)?release\/v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-.]+)?$"
+          REGEX='^(.*\/)?release\/v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$'
 
-          if [[ "$BRANCH" =~ $REGEX ]]; then
+          if echo "$BRANCH" | grep -Eq "$REGEX"; then
             echo "Branch matches release branch pattern."
 
             # Optional prefix before release/, strip trailing slash if any
-            MODULE_PATH="${BASH_REMATCH[1]%/}"
+            MODULE_PATH="${BRANCH%/release/*}"
             
             # Version comes from everything after release/
             VERSION_TAG="${BRANCH##*/release/}"
@@ -84,4 +90,3 @@ jobs:
 
           git commit -m "Bump ${MODULE_PATH} VERSION to ${{ steps.parse_branch.outputs.version_number }}-dev and source file @version tags to ${{ steps.parse_branch.outputs.version_number }}"
           git push origin "${GITHUB_REF_NAME}"
-          

@@ -1,0 +1,103 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 Jeremy Murphy
+name: Fix Formatting
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix-formatting:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get CMake 4.1.2
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: 4.1.2
+          
+      - name: Create Temporary Directory
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        run: mkdir .tmp
+
+      - name: Install Clang 21 and tools
+        working-directory: ./.tmp
+        run: |
+          sudo apt update
+          sudo apt install -y wget lsb-release software-properties-common
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 21
+          sudo apt install clang-format-21 clang-tidy-21
+          sudo apt install -y ninja-build
+
+      - name: Restore libc++ cache
+        id: cache-libcxx
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.tmp/libcxx-21
+          key: libcxx-21.1.8-${{ runner.os }}
+
+      - name: Download libc++ artifact
+        if: steps.cache-libcxx.outputs.cache-hit != 'true'
+        # On cache miss, the build job stores an artifact to protect against this case.
+        uses: actions/download-artifact@v4
+        with:
+          name: libcxx
+          path: $GITHUB_WORKSPACE/.tmp/libcxx-21
+
+      - name: Install libc++
+        working-directory: ./.tmp
+        run: sudo cp -rf libcxx-21/* /usr/lib/llvm-21
+
+      - name: Export environment variables for libc++ runtime
+        run: |
+          # Set environment variables for Clang to find this libc++
+          echo "LIBCXX_ROOT=$GITHUB_WORKSPACE/.tmp/libcxx-21" >> $GITHUB_ENV
+          echo "export CPLUS_INCLUDE_PATH=$GITHUB_WORKSPACE/.tmp/libcxx-21/include/c++/v1:\$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
+          echo "export LIBRARY_PATH=$GITHUB_WORKSPACE/.tmp/libcxx-21/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
+          echo "export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/.tmp/libcxx-21/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV     
+
+      - name: Set Clang 21 as default
+        run: |
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 65536
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 65536
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 65536
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 65536
+          sudo update-alternatives --install /usr/bin/run-clang-tidy run-clang-tidy /usr/bin/run-clang-tidy-21 65536
+          sudo update-alternatives --set clang /usr/bin/clang-21
+          sudo update-alternatives --set clang++ /usr/bin/clang++-21
+          sudo update-alternatives --set clang-format /usr/bin/clang-format-21
+          sudo update-alternatives --set clang-tidy /usr/bin/clang-tidy-21
+          sudo update-alternatives --set run-clang-tidy /usr/bin/run-clang-tidy-21
+
+      - name: Configure
+        run: |
+          cmake --preset=clang-debug \
+            -DCMAKE_CXX_FLAGS="-nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx-21/include/c++/v1 -nostdlib++ -Wall -Wextra -fcolor-diagnostics" \
+            -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx-21/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx-21/lib"
+
+      - name: Run clang-format
+        run: |
+          cmake --build --preset=clang-debug --target=format-fix
+          git add net
+          
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git commit -m "Ran clang-format."
+          git push origin "${GITHUB_REF_NAME}"
+          echo "Committed format fixes."
+          
