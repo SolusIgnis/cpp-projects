@@ -34,11 +34,14 @@ jobs:
           BRANCH="${{ github.head_ref }}" # PR source branch
 
           echo "Source branch: $BRANCH"
+          printf 'Raw branch value (quoted): "%q"\n' "$BRANCH"
+          printf 'Hex dump:\n'
+          echo -n "$BRANCH" | od -An -t x1
 
           # Match branches with an optional prefix path, release/, and a valid semantic version.
-          REGEX="^(.*\/)?release\/v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-.]+)?$"
+          REGEX='^(.*\/)?release\/v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-.]+)?$'
 
-          if [[ $BRANCH =~ ^(.*\/)?release\/v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-.]+)?$ ]]; then
+          if [[ $BRANCH =~ $REGEX ]]; then
             echo "PR branch matches release branch pattern."
             RELEASE_BRANCH=true
 
