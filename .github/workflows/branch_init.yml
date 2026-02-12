@@ -11,6 +11,9 @@ jobs:
   update-version:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -84,4 +87,5 @@ jobs:
 
           git commit -m "Bump ${MODULE_PATH} VERSION to ${{ steps.parse_branch.outputs.version_number }}-dev and source file @version tags to ${{ steps.parse_branch.outputs.version_number }}"
           git push origin "${GITHUB_REF_NAME}"
+
           
