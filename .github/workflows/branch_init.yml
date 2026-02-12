@@ -4,8 +4,9 @@ name: Initialize Release Branch
 
 on:
   create:
-    branches:
-      - '**/release/*'   # matches foo/bar/release/vX.Y.Z
+    # GitHub Actions will ignore this, so we simulate it with a job-level if
+    #branches:
+    #  - '**/release/*'   # matches foo/bar/release/vX.Y.Z
 
 jobs:
   update-version:
@@ -13,6 +14,8 @@ jobs:
 
     permissions:
       contents: write
+
+    if: github.ref_type == 'branch' && contains(github.ref_name, 'release/')
 
     steps:
       - name: Checkout repository
@@ -87,5 +90,3 @@ jobs:
 
           git commit -m "Bump ${MODULE_PATH} VERSION to ${{ steps.parse_branch.outputs.version_number }}-dev and source file @version tags to ${{ steps.parse_branch.outputs.version_number }}"
           git push origin "${GITHUB_REF_NAME}"
-
-          
