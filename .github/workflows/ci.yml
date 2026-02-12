@@ -19,6 +19,9 @@ jobs:
   fix-version:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,7 +38,7 @@ jobs:
           # Match branches with an optional prefix path, release/, and a valid semantic version.
           REGEX="^(.*\/)?release\/v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-.]+)?$"
 
-          if [[ "$BRANCH" =~ $REGEX ]]; then
+          if [[ $BRANCH =~ $REGEX ]]; then
             echo "PR branch matches release branch pattern."
             RELEASE_BRANCH=true
 
