@@ -2,6 +2,10 @@
 # SPDX-FileCopyrightText: 2026 Jeremy Murphy
 name: Initialize Release Branch
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   create:
     # GitHub Actions will ignore this, so we simulate it with a job-level if
@@ -23,31 +27,54 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract module path and version
+      - name: Extract module path and version data
         id: parse_branch
         run: |
           BRANCH="${GITHUB_REF_NAME}"  # e.g. foo/bar/release/v0.5.7
           echo "Full branch name: $BRANCH"
 
-          # Match branches with an optional prefix path, release/, and a valid semantic version.
-          REGEX='^(.*\/)?release\/v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$'
+          # Match branches with an optional prefix path, release/, and a valid semantic version (X.Y.Z[-pre.release][+build]).
+          REGEX='^(.*\/)?release\/(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$'
 
-          if echo "$BRANCH" | grep -Eq "$REGEX"; then
+          if grep -Eq "$REGEX" <<< "$BRANCH"; then
             echo "Branch matches release branch pattern."
+            # Following branch name parsing assumes branch validation by regex above.
 
             # Optional prefix before release/, strip trailing slash if any
-            MODULE_PATH="${BRANCH%/release/*}"
+            MODULE_PATH="${BRANCH%release/*}"
+            MODULE_PATH="${MODULE_PATH%/}"
             
             # Version comes from everything after release/
-            VERSION_TAG="${BRANCH##*/release/}"
+            VERSION_TAG="${BRANCH##*release/}"
             
-            # Remove leading 'v' for pure X.Y.Z
-            VERSION_NUMBER="${VERSION_TAG#v}"
+            # Split build metadata (+...)
+            if [[ "$VERSION_TAG" == *"+"* ]]; then
+              VERSION_CORE="${VERSION_TAG%%+*}"
+              VERSION_BUILD="${VERSION_TAG#*+}"
+              VERSION_BUILD_TAG="+$VERSION_BUILD"
+            else
+              VERSION_CORE="$VERSION_TAG"
+              VERSION_BUILD=""
+              VERSION_BUILD_TAG=""
+            fi
 
-            echo "module_path=$MODULE_PATH" >> $GITHUB_OUTPUT
-            echo "version_number=$VERSION_NUMBER" >> $GITHUB_OUTPUT
+            # Split prerelease (-...)
+            if [[ "$VERSION_CORE" == *"-"* ]]; then
+              VERSION_NUMBER="${VERSION_CORE%%-*}"
+              VERSION_PRERELEASE="${VERSION_CORE#*-}"
+              VERSION_PRERELEASE_TAG="-$VERSION_PRERELEASE"
+            else
+              VERSION_NUMBER="$VERSION_CORE"
+              VERSION_PRERELEASE=""
+              VERSION_PRERELEASE_TAG=""
+            fi
+
+            echo "module_path=$MODULE_PATH" >> "$GITHUB_OUTPUT"
+            echo "version_number=$VERSION_NUMBER" >> "$GITHUB_OUTPUT"
+            echo "version_prerelease_tag=$VERSION_PRERELEASE_TAG" >> "$GITHUB_OUTPUT"
+            echo "version_build_tag=$VERSION_BUILD_TAG" >> "$GITHUB_OUTPUT"
           else
-            echo "ERROR: Invalid branch name. Release branches should have the form module/release/v0.0.0 (for a valid semantic version (the 'v' character is optional) and with 'module' as the optional module pathname including any separating / between segments."
+            echo "ERROR: Invalid branch name. Expected: [module/.../]release/X.Y.Z[-prerelease][+build]"
             exit 1
           fi
 
@@ -56,7 +83,10 @@ jobs:
         run: |
           MODULE_PATH="${{ steps.parse_branch.outputs.module_path }}"
           VERSION_NUMBER="${{ steps.parse_branch.outputs.version_number }}"
-          VERSION_FILE="${MODULE_PATH}/VERSION"
+          VERSION_PRERELEASE_TAG="${{ steps.parse_branch.outputs.version_prerelease_tag }}"
+          # Write the @version tags with only the version number and prerelease components.
+          FULL_VERSION="$VERSION_NUMBER$VERSION_PRERELEASE_TAG"
+          VERSION_FILE="${MODULE_PATH:+$MODULE_PATH/}VERSION"
 
           if [ -f "$VERSION_FILE" ]; then
             echo "Updating VERSION file..."
@@ -69,7 +99,7 @@ jobs:
             find "$MODULE_PATH/src" \
               \( -name '*.cppm' -o -name '*.cpp' \) \
               -exec sed -i -E \
-                "s|^([[:space:]]*)\*[[:space:]]*@version[[:space:]:=]*.*$|\1* @version $VERSION_NUMBER|" {} +
+                "s|^([[:space:]]*)\*[[:space:]]*@version[[:space:]:=]*.*$|\1* @version $FULL_VERSION|" {} +
 
             git add "$MODULE_PATH/src"
           fi
@@ -77,18 +107,21 @@ jobs:
           # Check if file actually changed
           if git diff --cached --quiet; then
             echo "Nothing changed."
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "Files updated."
-            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Commit version updates
         if: steps.update_version.outputs.changed == 'true'
         run: |
           MODULE_PATH="${{ steps.parse_branch.outputs.module_path }}"
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
 
-          git commit -m "Bump ${MODULE_PATH} VERSION to ${{ steps.parse_branch.outputs.version_number }}-dev and source file @version tags to ${{ steps.parse_branch.outputs.version_number }}"
+          # Using the official GitHub Actions Bot identity
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git commit -m "chore: Bump ${MODULE_PATH:+$MODULE_PATH/}VERSION file (if present) to ${{ steps.parse_branch.outputs.version_number }}-dev and source file @version tags (if any) to ${{ steps.parse_branch.outputs.version_number }}${{ steps.parse_branch.outputs.version_prerelease_tag }}"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "${GITHUB_REF_NAME}"
