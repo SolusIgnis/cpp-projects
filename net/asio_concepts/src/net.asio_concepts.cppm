@@ -31,7 +31,11 @@ module; // Including Asio in the Global Module Fragment until importable header 
  * @brief Macro to DRY the unevaluated immediately-invoked lambdas that create placeholders for concept-constrained templated parameters in concept definitions.
  * This only works when the lambda "definition" appears textually inside the scope of the requires expression so that it is unevaluated.
  */
-#define CONCEPT_ARG(Concept) ([] -> decltype(auto) { Concept auto& unevaluated_function(); return unevaluated_function(); }())
+#define CONCEPT_ARG(Concept)                  \
+    ([] -> decltype(auto) {                   \
+        Concept auto& unevaluated_function(); \
+        return unevaluated_function();        \
+    }())
 
 // Primary module interface unit
 export module net.asio_concepts;
@@ -387,14 +391,15 @@ export namespace net::asio_concepts {
          * @see `boost::asio::ip::tcp::socket`
          */
         template<typename T>
-        concept AsioAsyncReadStream = AsioExecutorAssociated<T>
-                                   && requires(T& temp) {
-                                          temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), CONCEPT_ARG(AsioReadToken));
-                                          temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), asio::deferred);
-                                          temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), asio::detached);
-                                          temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), asio::use_awaitable);
-                                          temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), asio::use_future);
-                                      };
+        concept AsioAsyncReadStream =
+            AsioExecutorAssociated<T>
+            && requires(T& temp) {
+                   temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), CONCEPT_ARG(AsioReadToken));
+                   temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), asio::deferred);
+                   temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), asio::detached);
+                   temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), asio::use_awaitable);
+                   temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), asio::use_future);
+               };
 
         /**
          * @concept AsioSyncReadStream
