@@ -426,14 +426,15 @@ export namespace net::asio_concepts {
          * @see `boost::asio::ip::tcp::socket`
          */
         template<typename T>
-        concept AsioAsyncWriteStream = AsioExecutorAssociated<T>
-                                    && requires(T& temp) {
-                                           temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), CONCEPT_ARG(AsioWriteToken));
-                                           temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), asio::deferred);
-                                           temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), asio::detached);
-                                           temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), asio::use_awaitable);
-                                           temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), asio::use_future);
-                                       };
+        concept AsioAsyncWriteStream =
+            AsioExecutorAssociated<T>
+            && requires(T& temp) {
+                   temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), CONCEPT_ARG(AsioWriteToken));
+                   temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), asio::deferred);
+                   temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), asio::detached);
+                   temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), asio::use_awaitable);
+                   temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), asio::use_future);
+               };
 
         /**
          * @concept AsioSyncWriteStream
