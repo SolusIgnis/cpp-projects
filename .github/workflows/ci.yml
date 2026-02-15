@@ -19,65 +19,103 @@ jobs:
   fix-version:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref }}  # ensures local branch exists
           fetch-depth: 0
 
       - name: Extract module path and release version
         id: parse_branch
         run: |
           BRANCH="${{ github.head_ref }}" # PR source branch
+          TARGET="${{ github.base_ref }}" # PR target branch
+
+          if [ -z "$BRANCH" ]; then
+            echo "Not a PR. Skipping."
+            echo "release_branch=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          
+          if [[ "$TARGET" != "main" ]]; then
+            echo "PR branch not merging to main. Skipping."
+            echo "release_branch=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
           echo "Source branch: $BRANCH"
 
-          # Match branches with an optional prefix path, release/, and a valid semantic version.
-          REGEX="^(.*\/)?release\/v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-.]+)?$"
+          # Match branches with an optional prefix path, release/, and a valid semantic version (X.Y.Z[-pre.release][+build]).
+          REGEX='^(.*\/)?release\/(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$'
 
-          if [[ "$BRANCH" =~ $REGEX ]]; then
+          if grep -Eq "$REGEX" <<< "$BRANCH"; then
             echo "PR branch matches release branch pattern."
             RELEASE_BRANCH=true
+            # Following branch name parsing assumes branch validation by regex above.
 
             # Optional prefix before release/, strip trailing slash if any
-            MODULE_PATH="${BASH_REMATCH[1]%/}"
+            MODULE_PATH="${BRANCH%release/*}"
+            MODULE_PATH="${MODULE_PATH%/}"
             
             # Version comes from everything after release/
-            VERSION_TAG="${BRANCH##*/release/}"
+            VERSION_TAG="${BRANCH##*release/}"
             
-            # Remove leading 'v' for pure X.Y.Z
-            RELEASE_VERSION="${VERSION_TAG#v}"
-            
-            echo "module_path=$MODULE_PATH" >> $GITHUB_OUTPUT
-            echo "release_version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+            # Split build metadata (+...)
+            if [[ "$VERSION_TAG" == *"+"* ]]; then
+              VERSION_CORE="${VERSION_TAG%%+*}"
+              VERSION_BUILD="${VERSION_TAG#*+}"
+              VERSION_BUILD_TAG="+$VERSION_BUILD"
+            else
+              VERSION_CORE="$VERSION_TAG"
+              VERSION_BUILD=""
+              VERSION_BUILD_TAG=""
+            fi
+
+            # Split prerelease (-...)
+            if [[ "$VERSION_CORE" == *"-"* ]]; then
+              VERSION_NUMBER="${VERSION_CORE%%-*}"
+              VERSION_PRERELEASE="${VERSION_CORE#*-}"
+              VERSION_PRERELEASE_TAG="-$VERSION_PRERELEASE"
+            else
+              VERSION_NUMBER="$VERSION_CORE"
+              VERSION_PRERELEASE=""
+              VERSION_PRERELEASE_TAG=""
+            fi
+
+            RELEASE_VERSION="$VERSION_NUMBER$VERSION_PRERELEASE_TAG"
+
+            echo "module_path=$MODULE_PATH" >> "$GITHUB_OUTPUT"
+            echo "release_version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
           else
-            echo "Push event or PR branch does NOT match release branch pattern — skipping job."
+            echo "PR branch does NOT match release branch pattern. Skipping."
             RELEASE_BRANCH=false
           fi
 
-          echo "release_branch=$RELEASE_BRANCH" >> $GITHUB_OUTPUT
+          echo "release_branch=$RELEASE_BRANCH" >> "$GITHUB_OUTPUT"
 
       - name: Check and fix VERSION file
         if: steps.parse_branch.outputs.release_branch == 'true'
         run: |
           MODULE_PATH="${{ steps.parse_branch.outputs.module_path }}"
           RELEASE_VERSION="${{ steps.parse_branch.outputs.release_version }}"
-          VERSION_FILE="${MODULE_PATH}/VERSION"
+          VERSION_FILE="${MODULE_PATH:+$MODULE_PATH/}VERSION"
 
           if [ ! -f "$VERSION_FILE" ]; then
             echo "VERSION file missing — nothing to fix."
             exit 0
           fi
 
-          CURRENT_VERSION=$(cat "$VERSION_FILE" | tr -d '[:space:]')
-          FIXED_VERSION="${CURRENT_VERSION%-dev}"  # strip -dev if present
+          CURRENT_VERSION=$(tr -d '[:space:]' < "$VERSION_FILE")
 
-          if [ "$FIXED_VERSION" = "$CURRENT_VERSION" ]; then
-            echo "VERSION file already correct — nothing to do."
+          if [[ "$RELEASE_VERSION" == "$CURRENT_VERSION" ]]; then
+            echo "VERSION file already matches branch ($RELEASE_VERSION) — nothing to do."
             exit 0
           fi
 
-          echo "$FIXED_VERSION" > "$VERSION_FILE"
+          echo "$RELEASE_VERSION" > "$VERSION_FILE"
           git add "$VERSION_FILE"
 
           if git diff --cached --quiet; then
@@ -85,9 +123,12 @@ jobs:
             exit 0
           fi
 
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git commit -m "Remove -dev suffix from VERSION for release"
+          # Using the official GitHub Actions Bot identity
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git commit -m "chore: Update ${MODULE_PATH:+$MODULE_PATH/}VERSION file to $RELEASE_VERSION for release"
+          git pull --rebase origin "${GITHUB_HEAD_REF}"
           git push origin "${GITHUB_HEAD_REF}"
           echo "Committed VERSION update."
 

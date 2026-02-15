@@ -9,6 +9,7 @@
 /cmake-build-*/
 /out/
 /dist/
+.tmp/
 
 # ===============================
 # CMake generated files

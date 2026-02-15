@@ -3,6 +3,11 @@
 # Changelog.md
 
 ## [Unreleased] - TBD
+
+## [0.5.7] - February 11, 2026
+### Added
+- Set up GitHub repository with CMake, clang tooling, and Continuous Integration workflows.
+
 ### Changed
 - Updated names to reflect "net" module family:
   - Namespace `::net::telnet` instead of `::telnet`.
@@ -21,10 +26,6 @@
   - Template parameters and concepts use `CamelCase`, macros use `ALL_CAPS`, and all other identifiers use `snake_case`.
   - Also, nested type aliases use a `_type` suffix unless the word type would be a stutter (e.g. `processing_return_variant` instead of `processing_return_variant_type` since a variant is inherently a type).
 - Added a lot of `[[nodiscard]]` attributes on functions.
-
-# [0.5.7] - October 30, 2025
-### Changed
-- No changes. After analysis, `spawn_handler` would be counterproductive. Implementation declined.
 
 ## [0.5.6] - October 30, 2025
 ### Removed
