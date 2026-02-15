@@ -30,7 +30,7 @@ module; // Including Asio in the Global Module Fragment until importable header 
 /**
  * @brief Macro to DRY the IIFE pattern unevaluated immediately-invoked lambdas that create placeholders for concept-constrained templated parameters in concept definitions.
  */
-//NOLINTNEXTLINE(cppcoreguidelines-macro-usage): This only works when the lambda "definition" appears textually inside the scope of the requires expression so that it is unevaluated.)
+//NOLINTNEXTLINE(cppcoreguidelines-macro-usage, bugprone-macro-parentheses): This only works when the lambda "definition" appears textually inside the scope of the requires expression so that it is unevaluated. Macro parentheses would actually break the type syntax.
 #define CONCEPT_ARG(Concept)                  \
     ([] -> decltype(auto) {                   \
         Concept auto& unevaluated_function(); \
