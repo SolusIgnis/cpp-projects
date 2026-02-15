@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2025 Jeremy Murphy and any Contributors
+// SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 /**
  * @file net.asio_concepts.cppm
  * @version 0.1.1
- * @date October 29, 2025
+ * @date February 14, 2026
  *
- * @copyright © 2025 Jeremy Murphy and any Contributors
+ * @copyright © 2025-2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ module; // Including Asio in the Global Module Fragment until importable header 
 #include <asio.hpp>
 
 /**
- * @brief Macro to DRY the unevaluated immediately-invoked lambdas that create placeholders for concept-constrained templated parameters in concept definitions.
+ * @brief Macro to DRY the IIFE pattern unevaluated immediately-invoked lambdas that create placeholders for concept-constrained templated parameters in concept definitions.
  * This only works when the lambda "definition" appears textually inside the scope of the requires expression so that it is unevaluated.
  */
 #define CONCEPT_ARG(Concept)                  \
