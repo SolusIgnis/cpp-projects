@@ -118,7 +118,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
     - Use the IIFE lambda trick to model the template parameters in the concept definitions.
   - **Dependencies**: `net.asio_concepts` and `:concepts`
   - **Priority**: Medium (concept refinement is useful ahead of TLS implementation)
-  - **Estimated Effort**: 1 day
+  - **Estimated Effort**: Completed in 1 day
   
 ### Phase 7 Milestones 
 01. [ ] **Implement a strand in `telnet::stream`**:
