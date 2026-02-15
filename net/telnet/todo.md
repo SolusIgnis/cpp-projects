@@ -120,7 +120,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: Medium (concept refinement is useful ahead of TLS implementation)
   - **Estimated Effort**: Completed in 1 day
   
-### Phase 7 Milestones 
+### Phase 7 Milestones
 01. [ ] **Implement a strand in `telnet::stream`**:
   - **Task**: Implement a strand as the executor type for `telnet::stream`.
   - **Steps**:
