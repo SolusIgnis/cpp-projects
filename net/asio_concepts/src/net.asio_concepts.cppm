@@ -42,8 +42,6 @@ export module net.asio_concepts;
 
 import std; // For std::error_code, std::size_t, std::same_as, std::convertible_to
 
-//namespace asio = boost::asio; //only if asio not standalone
-
 namespace net::asio_concepts {
     /**
      * @typedef asio_read_completion_signature
