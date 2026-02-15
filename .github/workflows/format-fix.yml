@@ -23,12 +23,7 @@ jobs:
         with:
           cmakeVersion: 4.1.2
           
-      - name: Create Temporary Directory
-        if: steps.cache-libcxx.outputs.cache-hit != 'true'
-        run: mkdir .tmp
-
       - name: Install Clang 21 and tools
-        working-directory: ./.tmp
         run: |
           sudo apt update
           sudo apt install -y wget lsb-release software-properties-common
@@ -42,19 +37,10 @@ jobs:
         id: cache-libcxx
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/.tmp/libcxx-21
+          path: ${{ github.workspace }}/libcxx-21
           key: libcxx-21.1.8-${{ runner.os }}
 
-      - name: Download libc++ artifact
-        if: steps.cache-libcxx.outputs.cache-hit != 'true'
-        # On cache miss, the build job stores an artifact to protect against this case.
-        uses: actions/download-artifact@v4
-        with:
-          name: libcxx
-          path: $GITHUB_WORKSPACE/.tmp/libcxx-21
-
       - name: Install libc++
-        working-directory: ./.tmp
         run: sudo cp -rf libcxx-21/* /usr/lib/llvm-21
 
       - name: Export environment variables for libc++ runtime
@@ -94,10 +80,10 @@ jobs:
             exit 0
           fi
 
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          # Using the official GitHub Actions Bot identity
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git commit -m "Ran clang-format."
+          git commit -m "chore: Ran clang-format."
           git push origin "${GITHUB_REF_NAME}"
           echo "Committed format fixes."
-          

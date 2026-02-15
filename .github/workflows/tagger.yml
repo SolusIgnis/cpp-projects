@@ -88,8 +88,9 @@ jobs:
           COMMIT="${{ steps.resolve_commit.outputs.commit }}"
           DATE="${{ github.event.inputs.date }}"
 
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          # Using the official GitHub Actions Bot identity
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           if [ -n "$DATE" ]; then
             export GIT_COMMITTER_DATE="$DATE"
