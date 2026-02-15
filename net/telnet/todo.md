@@ -92,7 +92,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: Medium (code reuse, consistency, and future extensibility).
   - **Estimated Effort**: Completed in 0 days. (Prior refactoring made this unnecessary/impractical.)
   
-08. [ ] **Implement Tagged Predicates for telnet::option Local/Remote Enablement Predicates**
+08. [ ] **Implement Tagged Predicates for telnet::option Local/Remote Enablement Predicates**:
   - **Task**:
   - **Steps**:
     - Define a nested template class for `option::enable_predicate` to own the `std::function`.
@@ -111,7 +111,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: Low (curiosity and minor redundancy reduction)
   - **Estimated Effort**: 1 hour
 
-10. [✔️] **Refine Socket Concepts for MutableBufferSequence, ConstBufferSequence, and CompletionToken Method Parameters**:
+10. [✔️] **Refine Socket Concepts for MutableBufferSequence, ConstBufferSequence, and CompletionToken Method Parameters** (Completed February 14, 2026):
   - **Task**: Use the unevaluated immediately-invoked lambda trick from the Orcs/Heroes CPPCon24 talk to refine the socket concepts from the `net.asio_concepts` module.
   - **Steps**:
     - Identify concepts with templated member functions.
