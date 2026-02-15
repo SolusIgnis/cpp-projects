@@ -46,13 +46,6 @@ import std; // For std::error_code, std::size_t, std::same_as, std::convertible_
 
 namespace net::asio_concepts {
     /**
-     * @typedef asio_sample_completion_token
-     * Canonical default completion token with general completion executor.
-     * @warning This is used to test for a CompletionToken template parameter in some `concept`s.
-     */
-    using asio_sample_completion_token = asio::default_completion_token_t<asio::any_completion_executor>;
-
-    /**
      * @typedef asio_read_completion_signature
      * @brief Completion handler signature for Boost.Asio asynchronous read operations.
      * @remark Defines the signature `void(std::error_code, std::size_t)` for completion handlers.
