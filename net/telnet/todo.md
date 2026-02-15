@@ -92,7 +92,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: Medium (code reuse, consistency, and future extensibility).
   - **Estimated Effort**: Completed in 0 days. (Prior refactoring made this unnecessary/impractical.)
   
-08. [ ] **Implement Tagged Predicates for telnet::option Local/Remote Enablement Predicates**
+08. [ ] **Implement Tagged Predicates for telnet::option Local/Remote Enablement Predicates**:
   - **Task**:
   - **Steps**:
     - Define a nested template class for `option::enable_predicate` to own the `std::function`.
@@ -107,21 +107,21 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Task**: Investigate whether the tag types for TaggedAwaitable need to be declared or defined to be used.
   - **Steps**:
     - See if the tag types work as incomplete types or if they need definitions.
-  **Dependencies**: `:awaitables`
-  **Priority**: Low (curiosity and minor redundancy reduction)
-  **Estimated Effort**: 1 hour
-  
-### Phase 7 Milestones
-01. [ ] **Refine Socket Concepts for MutableBufferSequence, ConstBufferSequence, and CompletionToken Method Parameters**:
-  - **Task**: Use the lambda trick from the Orcs/Heroes CPPCon24 talk to refine the socket concepts from the `asio_concepts` module.
+  - **Dependencies**: `:awaitables`
+  - **Priority**: Low (curiosity and minor redundancy reduction)
+  - **Estimated Effort**: 1 hour
+
+10. [✔️] **Refine Socket Concepts for MutableBufferSequence, ConstBufferSequence, and CompletionToken Method Parameters** (Completed February 14, 2026):
+  - **Task**: Use the unevaluated immediately-invoked lambda trick from the Orcs/Heroes CPPCon24 talk to refine the socket concepts from the `net.asio_concepts` module.
   - **Steps**:
     - Identify concepts with templated member functions.
-    - Use the lambda trick to model the template parameters in the concept definitions.
-  **Dependencies**: `asio_concepts` and `:concepts`
-  **Priority**: Medium (concept refinement is useful ahead of TLS implementation)
-  **Estimated Effort**: 1 day
+    - Use the IIFE lambda trick to model the template parameters in the concept definitions.
+  - **Dependencies**: `net.asio_concepts` and `:concepts`
+  - **Priority**: Medium (concept refinement is useful ahead of TLS implementation)
+  - **Estimated Effort**: Completed in 1 day
   
-02. [ ] **Implement a strand in `telnet::stream`**:
+### Phase 7 Milestones
+01. [ ] **Implement a strand in `telnet::stream`**:
   - **Task**: Implement a strand as the executor type for `telnet::stream`.
   - **Steps**:
     - Change `telnet::stream::executor_type` to `asio::strand<typename next_layer_type::executor_type>`.
@@ -131,7 +131,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: High (enhances protocol correctness and thread-safety by explicitly sequencing operations)
   - **Estimated Effort**: 1 day.
   
-03. [ ] **Refactor Asynchronous Write Methods to Use the Side Buffer**:
+02. [ ] **Refactor Asynchronous Write Methods to Use the Side Buffer**:
   - **Task**: Implement an `OutputProcessor` class to manage writes through the side buffer, and send all writes through it.
   - **Steps**:
     - Implement an `OutputProcessor` class analogous to `InputProcessor`.
@@ -142,7 +142,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: High (enhances safety by controlling buffer lifetimes)
   - **Estimated Effort**: 2 day.
 
-04. [ ] **TLS Support**:
+03. [ ] **TLS Support**:
   - **Task**: Implement option `TELNET_START_TLS` using `LayeredTLSStream` for conditional TLS support.
   - **Steps**:
     - Define `LayeredTLSStream` for `boost::asio::ssl::stream`.
@@ -154,7 +154,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: Medium (enhances security, optional for core functionality).
   - **Estimated Effort**: 4–5 days (1 for design, 2–2.5 for implementation, 1–1.5 for testing).
 
-05. [ ] **Half-Duplex Support**:
+04. [ ] **Half-Duplex Support**:
   - **Task**: Add optional half-duplex support per RFC 854 for legacy peers.
   - **Steps**:
     - Evaluate legacy peer requirements.
