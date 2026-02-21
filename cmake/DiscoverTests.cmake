@@ -81,7 +81,7 @@ endforeach()
 # Verify framework availability.
 # ============================================================
 foreach(dialect IN LISTS TEST_DIALECTS)
-  set(framework_target TEST_FRAMEWORK.${dialect})
+  set(framework_target ${TEST_FRAMEWORK.${dialect}})
   if(TARGET ${framework_target})
     list(APPEND FILTERED_DIALECTS ${dialect})
   else()
