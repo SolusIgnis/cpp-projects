@@ -61,13 +61,8 @@ endif()
 find_package(ut QUIET)
 
 if(NOT TARGET ut::ut)
-  message(STATUS "Fetching qlibs/ut via FetchContent")
-  FetchContent_Declare(
-    ut
-    GIT_REPOSITORY https://github.com/qlibs/ut.git
-    GIT_TAG v2.1.6
-  )
-  FetchContent_MakeAvailable(ut)
+  include(cmake/FetchUT.cmake)
+  fetch_ut()
 endif()
 
 # ===========================================================================
