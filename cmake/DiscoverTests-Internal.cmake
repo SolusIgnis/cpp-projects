@@ -145,7 +145,7 @@ function(_create_test_from_file module_target test_file)
   _validate_test_dialect("${TEST_DIALECT}" "${filename}")
   if(NOT TEST_DIALECT_VALID)
     return()
-  endif
+  endif()
 
   if(NOT TEST_KIND)
     set(TEST_KIND unit)
