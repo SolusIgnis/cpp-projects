@@ -14,7 +14,7 @@ function(fetch_ut)
     GIT_TAG v2.1.6
   )
 
-  FetchContent_MakeAvailable((ut)
+  FetchContent_MakeAvailable(ut)
 
   # Create module target
   add_library(qlibs.ut STATIC)
