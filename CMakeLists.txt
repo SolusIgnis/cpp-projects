@@ -27,6 +27,11 @@ set(CMAKE_CXX_MODULE_STD 1)
 include(cmake/CompilerValidation.cmake)
 
 # ===========================================================================
+# Test Discovery / Target Generation
+# ===========================================================================
+include(cmake/DiscoverTests.cmake)
+
+# ===========================================================================
 # Tooling Infrastructure (Options, Cache Variables, Registries, and Helper Functions)
 # ===========================================================================
 include(cmake/ToolingInfrastructure.cmake)

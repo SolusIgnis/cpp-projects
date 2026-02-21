@@ -37,3 +37,5 @@ target_sources(net.asio_concepts
       # Primary Module Interface Unit
       src/net.asio_concepts.cppm
 )
+
+add_tests_for_module(net.asio_concepts)
