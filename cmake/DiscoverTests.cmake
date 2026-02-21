@@ -80,29 +80,25 @@ endforeach()
 # ============================================================
 # Verify framework availability.
 # ============================================================
+message(STATUS "DIALECTS BEFORE: " ${TEST_DIALECTS})
 foreach(dialect IN LISTS TEST_DIALECTS)
   set(framework_target ${TEST_FRAMEWORK.${dialect}})
-  if(TARGET ${framework_target})
-    list(APPEND FILTERED_DIALECTS ${dialect})
-  else()
+  if(NOT TARGET ${framework_target})
     string(REPLACE "::" ";" target_list "${framework_target}")
     list(GET target_list 0 framework_package)
     find_package(${framework_package} QUIET)
-    if(TARGET ${framework_target})
-      list(APPEND FILTERED_DIALECTS ${dialect})
-    else()
+    if(NOT TARGET ${framework_target})
       message(WARNING
         "Framework for dialect '${dialect}' not found. "
         "Target '${framework_target}' is missing. "
         "find_package(${framework_package}) failed to produce it. "
         "'${dialect}' tests are unavailable."
       )
+      list(REMOVE_ITEM TEST_DIALECTS ${dialect})
     endif()
   endif()
 endforeach()
-
-set(TEST_DIALECTS ${FILTERED_DIALECTS})
-
+message(STATUS "DIALECTS AFTER: " ${TEST_DIALECTS})
 # ============================================================
 # Include the internal implementation helpers
 # ============================================================
