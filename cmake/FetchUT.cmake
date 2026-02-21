@@ -14,11 +14,7 @@ function(fetch_ut)
     GIT_TAG v2.1.6
   )
 
-  FetchContent_GetProperties(ut)
-
-  if(NOT ut_POPULATED)
-    FetchContent_Populate(ut)
-  endif()
+  FetchContent_MakeAvailable((ut)
 
   # Create module target
   add_library(qlibs.ut STATIC)
