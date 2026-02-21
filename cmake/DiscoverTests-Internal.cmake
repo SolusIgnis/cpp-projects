@@ -35,7 +35,7 @@ endif()
 function(_parse_test_filename filename)
 
   string(REGEX MATCH
-    "^(.+)\\.test(-([^.]+))?\\.([^.]+)\\.cpp$"
+    "^((.+)\\.test(-([^.]+))?\\.([^.]+))\\.cpp$"
     match
     "${filename}"
   )
@@ -50,14 +50,16 @@ function(_parse_test_filename filename)
 
   # Groups:
   #
-  # 1 = base name
-  # 2 = ignored but required by POSIX-ERE
-  # 3 = kind (optional)
-  # 4 = dialect
+  # 1 = test name
+  # 2 = base name
+  # 3 = ignored but required by POSIX-ERE
+  # 4 = kind (optional)
+  # 5 = dialect
 
-  set(TEST_BASE_NAME "${CMAKE_MATCH_1}" PARENT_SCOPE)
-  set(TEST_KIND      "${CMAKE_MATCH_3}" PARENT_SCOPE)
-  set(TEST_DIALECT   "${CMAKE_MATCH_4}" PARENT_SCOPE)
+  set(TEST_NAME      "${CMAKE_MATCH_1}" PARENT_SCOPE)
+  set(TEST_BASE_NAME "${CMAKE_MATCH_2}" PARENT_SCOPE)
+  set(TEST_KIND      "${CMAKE_MATCH_4}" PARENT_SCOPE)
+  set(TEST_DIALECT   "${CMAKE_MATCH_5}" PARENT_SCOPE)
 
 endfunction()
 
@@ -136,7 +138,6 @@ function(_create_test_from_file module_target test_file)
   get_target_property(module_name ${module_target} NAME)
 
   get_filename_component(filename "${test_file}" NAME)
-  get_filename_component(test_name "${test_file}" NAME_WE)
 
   _parse_test_filename("${filename}")
   if(NOT TEST_BASE_NAME)
@@ -152,12 +153,12 @@ function(_create_test_from_file module_target test_file)
     set(TEST_KIND unit)
   endif()
 
-  set(target "${test_name}")
+  
+  set(target "${TEST_NAME}")
 
 message(STATUS "Module Name: ${module_name}")
 message(STATUS "Module Target: ${module_target}")
 message(STATUS "Test File: ${filename}")
-message(STATUS "Test Name: ${test_name}")
 message(STATUS "Test Base Name: ${TEST_BASE_NAME}")
 message(STATUS "Test Kind: ${TEST_KIND}")
 message(STATUS "Test Dialect: ${TEST_DIALECT}")
