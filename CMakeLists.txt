@@ -65,7 +65,7 @@ if(NOT TARGET ut::ut)
   FetchContent_Declare(
     ut
     GIT_REPOSITORY https://github.com/qlibs/ut.git
-    GIT_TAG v2.3.1
+    GIT_TAG v2.1.6
   )
   FetchContent_MakeAvailable(ut)
 endif()
