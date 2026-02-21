@@ -35,7 +35,7 @@ endif()
 function(_parse_test_filename filename)
 
   string(REGEX MATCH
-    "^(.+)\\.test(?:-([^.]+))?\\.([^.]+)\\.cpp$"
+    "^(.+)\\.test(-([^.]+))?\\.([^.]+)\\.cpp$"
     match
     "${filename}"
   )
@@ -51,12 +51,13 @@ function(_parse_test_filename filename)
   # Groups:
   #
   # 1 = base name
-  # 2 = kind (optional)
-  # 3 = dialect
+  # 2 = ignored but required by POSIX-ERE
+  # 3 = kind (optional)
+  # 4 = dialect
 
   set(TEST_BASE_NAME "${CMAKE_MATCH_1}" PARENT_SCOPE)
-  set(TEST_KIND      "${CMAKE_MATCH_2}" PARENT_SCOPE)
-  set(TEST_DIALECT   "${CMAKE_MATCH_3}" PARENT_SCOPE)
+  set(TEST_KIND      "${CMAKE_MATCH_3}" PARENT_SCOPE)
+  set(TEST_DIALECT   "${CMAKE_MATCH_4}" PARENT_SCOPE)
 
 endfunction()
 
