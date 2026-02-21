@@ -16,6 +16,22 @@ function(fetch_ut)
 
   FetchContent_MakeAvailable(ut)
 
+message(STATUS "ut_SOURCE_DIR = ${ut_SOURCE_DIR}")
+
+file(GLOB_RECURSE ut_contents
+  RELATIVE "${ut_SOURCE_DIR}"
+  "${ut_SOURCE_DIR}/*"
+)
+
+foreach(item IN LISTS ut_contents)
+  if(IS_DIRECTORY "${ut_SOURCE_DIR}/${item}")
+    message(STATUS "[DIR ] ${item}")
+  else()
+    message(STATUS "[FILE] ${item}")
+  endif()
+endforeach()
+
+
   # Create module target
   add_library(qlibs.ut STATIC)
 
