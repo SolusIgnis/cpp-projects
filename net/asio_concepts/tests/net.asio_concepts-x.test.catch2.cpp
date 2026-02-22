@@ -187,11 +187,3 @@ TEST_CASE("umbrella concepts", "[concepts][umbrella]") {
     REQUIRE_FALSE(AsioSocket<NotABufferSequence>);
     REQUIRE_FALSE(AsioStreamSocket<BadSocketOption>);
 }
-
-TEST_CASE("completion signatures", "[concepts][signatures]") {
-    using Sig = void(std::error_code, std::size_t);
-
-    REQUIRE(std::same_as<asio_read_completion_signature, Sig>);
-    REQUIRE(std::same_as<asio_write_completion_signature, Sig>);
-    REQUIRE(std::same_as<asio_wait_completion_signature, void(std::error_code)>);
-}

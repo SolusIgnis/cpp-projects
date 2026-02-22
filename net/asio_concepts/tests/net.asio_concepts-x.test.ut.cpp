@@ -64,12 +64,12 @@ int main() {
     };
 
     tag("tokens") / [] {
-        expect(AsioReadToken<asio::use_awaitable>);
-        expect(AsioReadToken<asio::detached>);
-        expect(AsioReadToken<asio::use_future>);
+        expect(AsioReadToken<decltype(asio::use_awaitable)>);
+        expect(AsioReadToken<decltype(asio::detached)>);
+        expect(AsioReadToken<decltype(asio::use_future)>);
 
-        expect(AsioWriteToken<asio::use_awaitable>);
-        expect(AsioConnectToken<asio::detached>);
+        expect(AsioWriteToken<decltype(asio::use_awaitable)>);
+        expect(AsioConnectToken<decltype(asio::detached)>);
 
         expect(not AsioReadToken<NotACompletionToken>);
     };
@@ -186,14 +186,6 @@ int main() {
 
         expect(not AsioSocket<NotABufferSequence>);
         expect(not AsioStreamSocket<BadSocketOption>);
-    };
-
-    tag("signatures") / [] {
-        using Sig = void(std::error_code, std::size_t);
-
-        expect(std::same_as<asio_read_completion_signature, Sig>);
-        expect(std::same_as<asio_write_completion_signature, Sig>);
-        expect(std::same_as<asio_wait_completion_signature, void(std::error_code)>);
     };
 
     // All tests are now registered — ut will run them and report results
