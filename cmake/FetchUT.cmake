@@ -94,10 +94,11 @@ function(fetch_ut)
      "#if 0\nnamespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std\n#endif"
   )
 
-  file(READ "${UT_CPPM}" UT_M_CONTENTS)
-  message(STATUS "${UT_M_CONTENTS}")
-  file(READ "${UT_HEADER}" UT_H_CONTENTS)
-  message(STATUS "${UT_H_CONTENTS}")
+  # Uncomment below to dump file contents to check patch results.
+  #file(READ "${UT_CPPM}" UT_M_CONTENTS)
+  #message(STATUS "${UT_CPPM} Contents:" "${UT_M_CONTENTS}")
+  #file(READ "${UT_HEADER}" UT_H_CONTENTS)
+  #message(STATUS "${UT_HEADER} Contents:" "${UT_H_CONTENTS}")
 
   # ----------------------------------------------------------
   # Create module target
