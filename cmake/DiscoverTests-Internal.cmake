@@ -22,6 +22,11 @@ if(NOT DEFINED TEST_DIALECTS)
 endif()
 
 # ============================================================
+# Make sure we have our tooling registration function.
+# ============================================================
+include(${CMAKE_CURRENT_LIST_DIR}/ToolingInfrastructure.cmake)
+
+# ============================================================
 # Internal: Parse filename metadata
 #
 # Outputs:
@@ -190,7 +195,9 @@ function(_create_test_from_file module_target test_file)
       RUNTIME_OUTPUT_DIRECTORY
         "${CMAKE_BINARY_DIR}/tests"
   )
-
+  
+  register_tooling_test(${target})
+  
   # ----------------------------------------------------------
   # Labels
   # ----------------------------------------------------------
