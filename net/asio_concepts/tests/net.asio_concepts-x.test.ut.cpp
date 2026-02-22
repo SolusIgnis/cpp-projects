@@ -19,7 +19,7 @@ import ut;
 
 import net.asio_concepts; // Module under test
 
-using namespace boost::ut;  // or using namespace ut; depending on your ut version
+using namespace ut;
 using namespace net::asio_concepts;
 
 // ─────────────────────────────────────────────────────────────────────────────

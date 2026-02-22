@@ -64,12 +64,12 @@ TEST_CASE("buffers", "[concepts][buffers]") {
 }
 
 TEST_CASE("tokens", "[concepts][tokens]") {
-    REQUIRE(AsioReadToken<asio::use_awaitable>);
-    REQUIRE(AsioReadToken<asio::detached>);
-    REQUIRE(AsioReadToken<asio::use_future>);
+    REQUIRE(AsioReadToken<decltype(asio::use_awaitable)>);
+    REQUIRE(AsioReadToken<decltype(asio::detached)>);
+    REQUIRE(AsioReadToken<decltype(asio::use_future)>);
 
-    REQUIRE(AsioWriteToken<asio::use_awaitable>);
-    REQUIRE(AsioConnectToken<asio::detached>);
+    REQUIRE(AsioWriteToken<decltype(asio::use_awaitable)>);
+    REQUIRE(AsioConnectToken<decltype(asio::detached)>);
 
     REQUIRE_FALSE(AsioReadToken<NotACompletionToken>);
 }
