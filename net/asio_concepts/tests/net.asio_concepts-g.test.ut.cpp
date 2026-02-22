@@ -32,61 +32,61 @@ using namespace ut;
 using namespace net::asio_concepts;
 
 int main() {
-    "Asio Buffer Sequence Concepts"_test = [] {
-        "Mutable Buffers"_test = [] {
+    "Asio Buffer Sequence Concepts"_test = [] mutable {
+        "Mutable Buffers"_test = [] mutable {
             expect(_b{true} == AsioMutableBufferSequence<asio::mutable_buffer>);
             expect(_b{true} == AsioMutableBufferSequence<std::array<asio::mutable_buffer, 2>>);
-            expect(_b{true} == !AsioMutableBufferSequence<asio::const_buffer>);
+            expect(_b{false} == AsioMutableBufferSequence<asio::const_buffer>);
         };
 
-        "Const Buffers"_test = [] {
+        "Const Buffers"_test = [] mutable {
             expect(_b{true} == AsioConstBufferSequence<asio::const_buffer>);
             expect(_b{true} == AsioConstBufferSequence<asio::mutable_buffer>);
             expect(_b{true} == AsioConstBufferSequence<std::vector<asio::const_buffer>>);
         };
     };
 
-    "Asio Completion Token Concepts"_test = [] {
-        "Read/Write Tokens"_test = [] {
+    "Asio Completion Token Concepts"_test = [] mutable {
+        "Read/Write Tokens"_test = [] mutable {
             expect(_b{true} == AsioReadToken<asio::detached_t>);
             expect(_b{true} == AsioWriteToken<asio::use_awaitable_t<>>);
         };
 
-        "Connect/Wait Tokens"_test = [] {
+        "Connect/Wait Tokens"_test = [] mutable {
             expect(_b{true} == AsioConnectToken<asio::use_future_t<>>);
             expect(_b{true} == AsioWaitToken<asio::detached_t>);
         };
     };
 
-    "Socket Option Concepts"_test = [] {
-        "Boolean Options"_test = [] {
+    "Socket Option Concepts"_test = [] mutable {
+        "Boolean Options"_test = [] mutable {
             expect(_b{true} == BooleanSocketOption<asio::socket_base::keep_alive>);
             expect(_b{true} == BooleanSocketOption<asio::socket_base::reuse_address>);
         };
 
-        "Integral Options"_test = [] {
+        "Integral Options"_test = [] mutable {
             expect(_b{true} == IntegralSocketOption<asio::socket_base::receive_buffer_size>);
             expect(_b{true} == IntegralSocketOption<asio::socket_base::send_low_watermark>);
         };
 
-        "Composite Options"_test = [] {
+        "Composite Options"_test = [] mutable {
             expect(_b{true} == CompositeSocketOption<asio::socket_base::linger>);
         };
 
-        "Provider and Interfaces"_test = [] {
+        "Provider and Interfaces"_test = [] mutable {
             expect(_b{true} == SocketOptionProvider<asio::socket_base>);
             expect(_b{true} == SocketOptionGetter<asio::ip::tcp::socket>);
             expect(_b{true} == SocketOptionSetter<asio::ip::tcp::socket>);
         };
     };
 
-    "I/O Object Capabilities"_test = [] {
-        "Executor Providers"_test = [] {
+    "I/O Object Capabilities"_test = [] mutable {
+        "Executor Providers"_test = [] mutable {
             expect(_b{true} == AsioExecutorProvider<asio::ip::tcp::socket>);
             expect(_b{true} == AsioExecutorProvider<asio::steady_timer>);
         };
 
-        "Stream Identification"_test = [] {
+        "Stream Identification"_test = [] mutable {
             using tcp_sock = asio::ip::tcp::socket;
             expect(_b{true} == AsioAsyncReadStream<tcp_sock>);
             expect(_b{true} == AsioAsyncWriteStream<tcp_sock>);
@@ -94,20 +94,20 @@ int main() {
             expect(_b{false} == AsioStream<asio::ip::udp::socket>);
         };
 
-        "Waitable Identification"_test = [] {
+        "Waitable Identification"_test = [] mutable {
             expect(_b{true} == AsioAsyncTimedWaitable<asio::steady_timer>);
             expect(_b{true} == AsioAsyncActivityWaitable<asio::ip::tcp::socket>);
         };
     };
 
-    "Layering and Protocol Concepts"_test = [] {
-        "Basic Layering"_test = [] {
+    "Layering and Protocol Concepts"_test = [] mutable {
+        "Basic Layering"_test = [] mutable {
             expect(_b{true} == LayerableObject<asio::ip::tcp::socket>);
-            expect(_b{true} == !LayeredObject<asio::ip::tcp::socket>);
+            expect(_b{false} == LayeredObject<asio::ip::tcp::socket>);
         };
 
         #if defined(ASIO_HAS_OPENSSL)
-        "SSL Layering"_test = [] {
+        "SSL Layering"_test = [] mutable {
             using ssl_stream = asio::ssl::stream<asio::ip::tcp::socket>;
             expect(_b{true} == LayerableObject<ssl_stream>);
             expect(_b{true} == LayeredObject<ssl_stream>);
@@ -116,8 +116,8 @@ int main() {
         #endif
     };
 
-    "Composite Socket Requirements"_test = [] {
-        "Full Socket Definitions"_test = [] {
+    "Composite Socket Requirements"_test = [] mutable {
+        "Full Socket Definitions"_test = [] mutable {
             expect(_b{true} == AsioSocket<asio::ip::tcp::socket>);
             expect(_b{true} == AsioSocket<asio::ip::udp::socket>);
             expect(_b{true} == AsioStreamSocket<asio::ip::tcp::socket>);
@@ -125,7 +125,7 @@ int main() {
         };
     };
 
-    "Lifecycle and Resource Management"_test = [] {
+    "Lifecycle and Resource Management"_test = [] mutable {
         expect(_b{true} == ClosableResource<asio::ip::tcp::socket>);
         expect(_b{true} == CancellableResource<asio::ip::tcp::socket>);
         expect(_b{true} == EndpointProvider<asio::ip::tcp::socket>);

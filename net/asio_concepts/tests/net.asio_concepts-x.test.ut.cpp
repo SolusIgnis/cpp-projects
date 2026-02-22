@@ -47,141 +47,141 @@ struct FakeWaitableNoWait {
 // ─────────────────────────────────────────────────────────────────────────────
 
 int main() {
-    "buffers"_test = [] {
-        expect(true_b == AsioMutableBufferSequence<asio::mutable_buffer>);
-        expect(true_b == AsioMutableBufferSequence<std::array<asio::mutable_buffer, 4>>);
-        expect(true_b == AsioMutableBufferSequence<std::vector<asio::mutable_buffer>>);
+    "buffers"_test = [] mutable {
+        expect(_b{true} == AsioMutableBufferSequence<asio::mutable_buffer>);
+        expect(_b{true} == AsioMutableBufferSequence<std::array<asio::mutable_buffer, 4>>);
+        expect(_b{true} == AsioMutableBufferSequence<std::vector<asio::mutable_buffer>>);
 
-        expect(true_b == AsioConstBufferSequence<asio::const_buffer>);
-        expect(true_b == AsioConstBufferSequence<std::span<const asio::const_buffer>>);
+        expect(_b{true} == AsioConstBufferSequence<asio::const_buffer>);
+        expect(_b{true} == AsioConstBufferSequence<std::span<const asio::const_buffer>>);
 
-        expect(false_b == AsioMutableBufferSequence<NotABufferSequence>);
-        expect(false_b == AsioConstBufferSequence<NotABufferSequence>);
+        expect(_b{false} == AsioMutableBufferSequence<NotABufferSequence>);
+        expect(_b{false} == AsioConstBufferSequence<NotABufferSequence>);
     };
 
-    "tokens"_test = [] {
-        expect(true_b == AsioReadToken<decltype(asio::use_awaitable)>);
-        expect(true_b == AsioReadToken<decltype(asio::detached)>);
-        expect(true_b == AsioReadToken<decltype(asio::use_future)>);
+    "tokens"_test = [] mutable {
+        expect(_b{true} == AsioReadToken<decltype(asio::use_awaitable)>);
+        expect(_b{true} == AsioReadToken<decltype(asio::detached)>);
+        expect(_b{true} == AsioReadToken<decltype(asio::use_future)>);
 
-        expect(true_b == AsioWriteToken<decltype(asio::use_awaitable)>);
-        expect(true_b == AsioConnectToken<decltype(asio::detached)>);
+        expect(_b{true} == AsioWriteToken<decltype(asio::use_awaitable)>);
+        expect(_b{true} == AsioConnectToken<decltype(asio::detached)>);
 
-        expect(false_b == AsioReadToken<NotACompletionToken>);
+        expect(_b{false} == AsioReadToken<NotACompletionToken>);
     };
 
-    "socket_options"_test = [] {
+    "socket_options"_test = [] mutable {
         using broadcast   = asio::socket_base::broadcast;
         using linger      = asio::socket_base::linger;
         using recv_buf    = asio::socket_base::receive_buffer_size;
         using join_group  = asio::ip::multicast::join_group;
 
-        expect(true_b == BooleanSocketOption<broadcast>);
-        expect(true_b == CompositeSocketOption<linger>);
-        expect(true_b == IntegralSocketOption<recv_buf>);
-        expect(true_b == AsioAddressibleSocketOption<join_group>);
+        expect(_b{true} == BooleanSocketOption<broadcast>);
+        expect(_b{true} == CompositeSocketOption<linger>);
+        expect(_b{true} == IntegralSocketOption<recv_buf>);
+        expect(_b{true} == AsioAddressibleSocketOption<join_group>);
 
-        expect(true_b == SocketOption<broadcast>);
-        expect(true_b == SocketOption<linger>);
+        expect(_b{true} == SocketOption<broadcast>);
+        expect(_b{true} == SocketOption<linger>);
 
-        expect(true_b == SocketOptionProvider<asio::socket_base>);
+        expect(_b{true} == SocketOptionProvider<asio::socket_base>);
 
         using tcp_socket = asio::ip::tcp::socket;
-        expect(true_b == SocketOptionGetter<tcp_socket>);
-        expect(true_b == SocketOptionSetter<tcp_socket>);
+        expect(_b{true} == SocketOptionGetter<tcp_socket>);
+        expect(_b{true} == SocketOptionSetter<tcp_socket>);
 
-        expect(false_b == BooleanSocketOption<BadSocketOption>);
+        expect(_b{false} == BooleanSocketOption<BadSocketOption>);
     };
 
-    "io_flags_executor"_test = [] {
+    "io_flags_executor"_test = [] mutable {
         using tcp_socket = asio::ip::tcp::socket;
 
-        expect(true_b == IOController<tcp_socket>);
-        expect(true_b == MessageFlagProvider<tcp_socket>);
-        expect(true_b == AsioExecutorProvider<tcp_socket>);
-        expect(true_b == AsioExecutorAssociated<tcp_socket>);
+        expect(_b{true} == IOController<tcp_socket>);
+        expect(_b{true} == MessageFlagProvider<tcp_socket>);
+        expect(_b{true} == AsioExecutorProvider<tcp_socket>);
+        expect(_b{true} == AsioExecutorAssociated<tcp_socket>);
 
-        expect(false_b == AsioExecutorAssociated<NoExecutorType>);
+        expect(_b{false} == AsioExecutorAssociated<NoExecutorType>);
     };
 
-    "streams"_test = [] {
+    "streams"_test = [] mutable {
         using tcp_socket = asio::ip::tcp::socket;
 
-        expect(true_b == AsioAsyncReadStream<tcp_socket>);
-        expect(true_b == AsioSyncReadStream<tcp_socket>);
-        expect(true_b == AsioAsyncWriteStream<tcp_socket>);
-        expect(true_b == AsioSyncWriteStream<tcp_socket>);
+        expect(_b{true} == AsioAsyncReadStream<tcp_socket>);
+        expect(_b{true} == AsioSyncReadStream<tcp_socket>);
+        expect(_b{true} == AsioAsyncWriteStream<tcp_socket>);
+        expect(_b{true} == AsioSyncWriteStream<tcp_socket>);
 
-        expect(true_b == AsioStream<tcp_socket>);
+        expect(_b{true} == AsioStream<tcp_socket>);
 
-        expect(false_b == AsioAsyncReadStream<NoExecutorType>);
+        expect(_b{false} == AsioAsyncReadStream<NoExecutorType>);
     };
 
-    "waitables"_test = [] {
+    "waitables"_test = [] mutable {
         using timer      = asio::steady_timer;
         using tcp_socket = asio::ip::tcp::socket;
 
-        expect(true_b == AsioAsyncTimedWaitable<timer>);
-        expect(true_b == AsioSyncTimedWaitable<timer>);
+        expect(_b{true} == AsioAsyncTimedWaitable<timer>);
+        expect(_b{true} == AsioSyncTimedWaitable<timer>);
 
-        expect(true_b == AsioAsyncActivityWaitable<tcp_socket>);
-        expect(true_b == AsioSyncActivityWaitable<tcp_socket>);
+        expect(_b{true} == AsioAsyncActivityWaitable<tcp_socket>);
+        expect(_b{true} == AsioSyncActivityWaitable<tcp_socket>);
 
-        expect(false_b == AsioAsyncTimedWaitable<FakeWaitableNoWait>);
+        expect(_b{false} == AsioAsyncTimedWaitable<FakeWaitableNoWait>);
     };
 
-    "transmission"_test = [] {
+    "transmission"_test = [] mutable {
         using tcp_socket = asio::ip::tcp::socket;
 
-        expect(true_b == AsioAsyncSender<tcp_socket>);
-        expect(true_b == AsioSyncSender<tcp_socket>);
-        expect(true_b == AsioAsyncReceiver<tcp_socket>);
-        expect(true_b == AsioSyncReceiver<tcp_socket>);
+        expect(_b{true} == AsioAsyncSender<tcp_socket>);
+        expect(_b{true} == AsioSyncSender<tcp_socket>);
+        expect(_b{true} == AsioAsyncReceiver<tcp_socket>);
+        expect(_b{true} == AsioSyncReceiver<tcp_socket>);
 
-        expect(true_b == HasAtMark<tcp_socket>);
-        expect(true_b == HasAvailable<tcp_socket>);
+        expect(_b{true} == HasAtMark<tcp_socket>);
+        expect(_b{true} == HasAvailable<tcp_socket>);
     };
 
-    "lifecycle"_test = [] {
+    "lifecycle"_test = [] mutable {
         using tcp_socket = asio::ip::tcp::socket;
 
-        expect(true_b == CancellableResource<tcp_socket>);
-        expect(true_b == ClosableResource<tcp_socket>);
-        expect(true_b == EndpointProvider<tcp_socket>);
+        expect(_b{true} == CancellableResource<tcp_socket>);
+        expect(_b{true} == ClosableResource<tcp_socket>);
+        expect(_b{true} == EndpointProvider<tcp_socket>);
     };
 
-    "connection"_test = [] {
+    "connection"_test = [] mutable {
         using tcp_socket = asio::ip::tcp::socket;
 
-        expect(true_b == AsioAsyncConnectable<tcp_socket>);
-        expect(true_b == AsioSyncConnectable<tcp_socket>);
-        expect(true_b == NativeSocketWrapper<tcp_socket>);
+        expect(_b{true} == AsioAsyncConnectable<tcp_socket>);
+        expect(_b{true} == AsioSyncConnectable<tcp_socket>);
+        expect(_b{true} == NativeSocketWrapper<tcp_socket>);
     };
 
-    "layering"_test = [] {
-        using tcp_socket = asio::ip::tcp::socket;
-        using ssl_stream = asio::ssl::stream<tcp_socket>;
-
-        expect(true_b == LayerableObject<tcp_socket>);
-        expect(true_b == LayerableObject<ssl_stream>);
-
-        expect(true_b == LayeredObject<ssl_stream>);
-
-        expect(true_b == AsioLayerableSocket<ssl_stream>);
-        expect(true_b == AsioLayerableStreamSocket<ssl_stream>);
-    };
-
-    "umbrella"_test = [] {
+    "layering"_test = [] mutable {
         using tcp_socket = asio::ip::tcp::socket;
         using ssl_stream = asio::ssl::stream<tcp_socket>;
 
-        expect(true_b == AsioSocket<tcp_socket>);
-        expect(true_b == AsioStreamSocket<tcp_socket>);
+        expect(_b{true} == LayerableObject<tcp_socket>);
+        expect(_b{true} == LayerableObject<ssl_stream>);
 
-        expect(true_b == AsioLayerableStreamSocket<ssl_stream>);
+        expect(_b{true} == LayeredObject<ssl_stream>);
 
-        expect(false_b == AsioSocket<NotABufferSequence>);
-        expect(false_b == AsioStreamSocket<BadSocketOption>);
+        expect(_b{true} == AsioLayerableSocket<ssl_stream>);
+        expect(_b{true} == AsioLayerableStreamSocket<ssl_stream>);
+    };
+
+    "umbrella"_test = [] mutable {
+        using tcp_socket = asio::ip::tcp::socket;
+        using ssl_stream = asio::ssl::stream<tcp_socket>;
+
+        expect(_b{true} == AsioSocket<tcp_socket>);
+        expect(_b{true} == AsioStreamSocket<tcp_socket>);
+
+        expect(_b{true} == AsioLayerableStreamSocket<ssl_stream>);
+
+        expect(_b{false} == AsioSocket<NotABufferSequence>);
+        expect(_b{false} == AsioStreamSocket<BadSocketOption>);
     };
 
     // All tests are now registered — ut will run them and report results
