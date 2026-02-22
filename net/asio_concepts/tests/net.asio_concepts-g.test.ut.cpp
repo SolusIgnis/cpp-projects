@@ -32,17 +32,14 @@ using namespace ut;
 using namespace net::asio_concepts;
 
 int main() {
-    // In ut, 'expect' replaces 'CHECK'. 
-    // It uses operator overloading for a natural syntax.
-
     "Asio Buffer Sequence Concepts"_test = [] {
-        should("Mutable Buffers") = [] {
+        "Mutable Buffers"_test = [] {
             expect(AsioMutableBufferSequence<asio::mutable_buffer>);
             expect(AsioMutableBufferSequence<std::array<asio::mutable_buffer, 2>>);
             expect(!AsioMutableBufferSequence<asio::const_buffer>);
         };
 
-        should("Const Buffers") = [] {
+        "Const Buffers"_test = [] {
             expect(AsioConstBufferSequence<asio::const_buffer>);
             expect(AsioConstBufferSequence<asio::mutable_buffer>);
             expect(AsioConstBufferSequence<std::vector<asio::const_buffer>>);
@@ -50,34 +47,34 @@ int main() {
     };
 
     "Asio Completion Token Concepts"_test = [] {
-        should("Read/Write Tokens") = [] {
+        "Read/Write Tokens"_test = [] {
             expect(AsioReadToken<asio::detached_t>);
             expect(AsioWriteToken<asio::use_awaitable_t<>>);
             expect(AsioReadToken<asio::yield_context>);
         };
 
-        should("Connect/Wait Tokens") = [] {
+        "Connect/Wait Tokens"_test = [] {
             expect(AsioConnectToken<asio::use_future_t<>>);
             expect(AsioWaitToken<asio::detached_t>);
         };
     };
 
     "Socket Option Concepts"_test = [] {
-        should("Boolean Options") = [] {
+        "Boolean Options"_test = [] {
             expect(BooleanSocketOption<asio::socket_base::keep_alive>);
             expect(BooleanSocketOption<asio::socket_base::reuse_address>);
         };
 
-        should("Integral Options") = [] {
+        "Integral Options"_test = [] {
             expect(IntegralSocketOption<asio::socket_base::receive_buffer_size>);
             expect(IntegralSocketOption<asio::socket_base::send_low_watermark>);
         };
 
-        should("Composite Options") = [] {
+        "Composite Options"_test = [] {
             expect(CompositeSocketOption<asio::socket_base::linger>);
         };
 
-        should("Provider and Interfaces") = [] {
+        "Provider and Interfaces"_test = [] {
             expect(SocketOptionProvider<asio::socket_base>);
             expect(SocketOptionGetter<asio::ip::tcp::socket>);
             expect(SocketOptionSetter<asio::ip::tcp::socket>);
@@ -85,12 +82,12 @@ int main() {
     };
 
     "I/O Object Capabilities"_test = [] {
-        should("Executor Providers") = [] {
+        "Executor Providers"_test = [] {
             expect(AsioExecutorProvider<asio::ip::tcp::socket>);
             expect(AsioExecutorProvider<asio::steady_timer>);
         };
 
-        should("Stream Identification") = [] {
+        "Stream Identification"_test = [] {
             using tcp_sock = asio::ip::tcp::socket;
             expect(AsioAsyncReadStream<tcp_sock>);
             expect(AsioAsyncWriteStream<tcp_sock>);
@@ -98,20 +95,20 @@ int main() {
             expect(!AsioStream<asio::ip::udp::socket>);
         };
 
-        should("Waitable Identification") = [] {
+        "Waitable Identification"_test = [] {
             expect(AsioAsyncTimedWaitable<asio::steady_timer>);
             expect(AsioAsyncActivityWaitable<asio::ip::tcp::socket>);
         };
     };
 
     "Layering and Protocol Concepts"_test = [] {
-        should("Basic Layering") = [] {
+        "Basic Layering"_test = [] {
             expect(LayerableObject<asio::ip::tcp::socket>);
             expect(!LayeredObject<asio::ip::tcp::socket>);
         };
 
         #if defined(ASIO_HAS_OPENSSL)
-        should("SSL Layering") = [] {
+        "SSL Layering"_test = [] {
             using ssl_stream = asio::ssl::stream<asio::ip::tcp::socket>;
             expect(LayerableObject<ssl_stream>);
             expect(LayeredObject<ssl_stream>);
@@ -121,7 +118,7 @@ int main() {
     };
 
     "Composite Socket Requirements"_test = [] {
-        should("Full Socket Definitions") = [] {
+        "Full Socket Definitions"_test = [] {
             expect(AsioSocket<asio::ip::tcp::socket>);
             expect(AsioSocket<asio::ip::udp::socket>);
             expect(AsioStreamSocket<asio::ip::tcp::socket>);
