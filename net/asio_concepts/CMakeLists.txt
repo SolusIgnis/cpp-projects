@@ -38,4 +38,11 @@ target_sources(net.asio_concepts
       src/net.asio_concepts.cppm
 )
 
+# Link OpenSSL if we have it. (Tests will need it.)
+find_package(OpenSSL)
+target_link_libraries(net.asio_concepts
+  PUBLIC
+    $<$<BOOL:${OPENSSL_FOUND}>:OpenSSL::SSL OpenSSL::Crypto>
+)
+
 add_tests_for_module(net.asio_concepts)
