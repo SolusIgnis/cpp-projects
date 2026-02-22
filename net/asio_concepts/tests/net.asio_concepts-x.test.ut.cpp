@@ -22,7 +22,7 @@ import ut;
 
 import net.asio_concepts; // Code under test.
 
-using namespace ut; //NOLINT(google-build-using-namespace)
+using namespace ut;                 //NOLINT(google-build-using-namespace)
 using namespace net::asio_concepts; //NOLINT(google-build-using-namespace)
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -34,7 +34,7 @@ struct NotABufferSequence {};
 struct NotACompletionToken {};
 
 struct BadSocketOption {
-    int value() const { return 42; }  // wrong return type for most cases
+    int value() const { return 42; } // wrong return type for most cases
 };
 
 struct NoExecutorType {
@@ -49,7 +49,8 @@ struct FakeWaitableNoWait {
 // Main test suite
 // ─────────────────────────────────────────────────────────────────────────────
 
-int main() {
+int main()
+{
     "buffers"_test = [] mutable {
         expect(_b{true} == AsioMutableBufferSequence<asio::mutable_buffer>);
         expect(_b{true} == AsioMutableBufferSequence<std::array<asio::mutable_buffer, 4>>);
@@ -74,10 +75,10 @@ int main() {
     };
 
     "socket_options"_test = [] mutable {
-        using broadcast   = asio::socket_base::broadcast;
-        using linger      = asio::socket_base::linger;
-        using recv_buf    = asio::socket_base::receive_buffer_size;
-        using join_group  = asio::ip::multicast::join_group;
+        using broadcast  = asio::socket_base::broadcast;
+        using linger     = asio::socket_base::linger;
+        using recv_buf   = asio::socket_base::receive_buffer_size;
+        using join_group = asio::ip::multicast::join_group;
 
         expect(_b{true} == BooleanSocketOption<broadcast>);
         expect(_b{true} == CompositeSocketOption<linger>);
@@ -165,8 +166,8 @@ int main() {
         using tcp_socket = asio::ip::tcp::socket;
 
         expect(_b{true} == LayerableObject<tcp_socket>);
-        
-        #ifdef ASIO_HAS_OPENSSL
+
+#ifdef ASIO_HAS_OPENSSL
         using ssl_stream = asio::ssl::stream<tcp_socket>;
         expect(_b{true} == LayerableObject<ssl_stream>);
 
@@ -174,7 +175,7 @@ int main() {
 
         expect(_b{true} == AsioLayerableSocket<ssl_stream>);
         expect(_b{true} == AsioLayerableStreamSocket<ssl_stream>);
-        #endif
+#endif
     };
 
     "umbrella"_test = [] mutable {
@@ -183,10 +184,10 @@ int main() {
         expect(_b{true} == AsioSocket<tcp_socket>);
         expect(_b{true} == AsioStreamSocket<tcp_socket>);
 
-        #ifdef ASIO_HAS_OPENSSL
+#ifdef ASIO_HAS_OPENSSL
         using ssl_stream = asio::ssl::stream<tcp_socket>;
         expect(_b{true} == AsioLayerableStreamSocket<ssl_stream>);
-        #endif
+#endif
 
         expect(_b{false} == AsioSocket<NotABufferSequence>);
         expect(_b{false} == AsioStreamSocket<BadSocketOption>);

@@ -27,14 +27,15 @@
 //NOLINTEND
 
 import std;
-import ut;                // Named module for qlibs/ut
+import ut; // Named module for qlibs/ut
 
 import net.asio_concepts; // Code under test.
 
-using namespace ut; //NOLINT(google-build-using-namespace)
+using namespace ut;                 //NOLINT(google-build-using-namespace)
 using namespace net::asio_concepts; //NOLINT(google-build-using-namespace)
 
-int main() {
+int main()
+{
     "Asio Buffer Sequence Concepts"_test = [] mutable {
         "Mutable Buffers"_test = [] mutable {
             expect(_b{true} == AsioMutableBufferSequence<asio::mutable_buffer>);
@@ -72,9 +73,7 @@ int main() {
             expect(_b{true} == IntegralSocketOption<asio::socket_base::send_low_watermark>);
         };
 
-        "Composite Options"_test = [] mutable {
-            expect(_b{true} == CompositeSocketOption<asio::socket_base::linger>);
-        };
+        "Composite Options"_test = [] mutable { expect(_b{true} == CompositeSocketOption<asio::socket_base::linger>); };
 
         "Provider and Interfaces"_test = [] mutable {
             expect(_b{true} == SocketOptionProvider<asio::socket_base>);
@@ -109,14 +108,14 @@ int main() {
             expect(_b{false} == LayeredObject<asio::ip::tcp::socket>);
         };
 
-        #ifdef ASIO_HAS_OPENSSL
+#ifdef ASIO_HAS_OPENSSL
         "SSL Layering"_test = [] mutable {
             using ssl_stream = asio::ssl::stream<asio::ip::tcp::socket>;
             expect(_b{true} == LayerableObject<ssl_stream>);
             expect(_b{true} == LayeredObject<ssl_stream>);
             expect(_b{true} == AsioLayerableStreamSocket<ssl_stream>);
         };
-        #endif
+#endif
     };
 
     "Composite Socket Requirements"_test = [] mutable {
