@@ -21,9 +21,12 @@
  * @brief Unit tests for the net.asio_concepts module using Catch2.
  */
 
+//NOLINTBEGIN: Ignore tidy for dependency includes.
 #include <catch2/catch_test_macros.hpp>
 
 #include <asio.hpp>
+#include <asio/ssl.hpp>
+//NOLINTEND
 
 import std;
 

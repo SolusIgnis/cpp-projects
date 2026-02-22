@@ -21,7 +21,10 @@
  * @brief Unit tests for the net.asio_concepts module using qlibs/ut.
  */
 
+//NOLINTBEGIN: Ignore tidy for dependency includes.
 #include <asio.hpp>
+#include <asio/ssl.hpp>
+//NOLINTEND
 
 import std;
 import ut;                // Named module for qlibs/ut

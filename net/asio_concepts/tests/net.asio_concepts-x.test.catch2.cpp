@@ -16,10 +16,13 @@
  *   target_link_libraries(your_test Catch2::Catch2WithMain)
  */
 
+//NOLINTBEGIN: Ignore tidy for dependency includes.
 #include <catch2/catch_test_macros.hpp>   // Core macros: TEST_CASE, REQUIRE, CHECK, ...
 #include <catch2/catch_template_test_macros.hpp>  // TEMPLATE_TEST_CASE if needed later
 
 #include <asio.hpp>
+#include <asio/ssl.hpp>
+//NOLINTEND
 
 import net.asio_concepts;   // your module
 import std;

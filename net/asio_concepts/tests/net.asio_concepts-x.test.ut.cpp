@@ -12,7 +12,10 @@
  *       test_net.asio_concepts.cpp -o test_concepts && ./test_concepts
  */
 
+//NOLINTBEGIN: Ignore tidy for dependency includes.
 #include <asio.hpp>
+#include <asio/ssl.hpp>
+//NOLINTEND
 
 import std;
 import ut;
