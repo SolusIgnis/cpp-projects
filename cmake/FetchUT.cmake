@@ -21,11 +21,9 @@ include_guard(GLOBAL)
 include(FetchContent)
 
 function(fetch_ut)
-
   # ----------------------------------------------------------
   # Fast exit if already available
   # ----------------------------------------------------------
-
   if(TARGET ut::ut)
     return()
   endif()
@@ -35,11 +33,10 @@ function(fetch_ut)
   # ----------------------------------------------------------
   # Declare dependency (pinned commit with module support)
   # ----------------------------------------------------------
-
   FetchContent_Declare(
     ut
     GIT_REPOSITORY https://github.com/qlibs/ut.git
-    GIT_TAG c6752919724ad5e33199751b0b224efb40647539
+    GIT_TAG main
     GIT_SHALLOW TRUE
   )
 
@@ -48,7 +45,6 @@ function(fetch_ut)
   # ----------------------------------------------------------
   # Verify module exists
   # ----------------------------------------------------------
-
   if(NOT DEFINED ut_SOURCE_DIR)
     message(FATAL_ERROR "FetchContent failed: ut_SOURCE_DIR undefined")
   endif()
@@ -64,7 +60,6 @@ function(fetch_ut)
   # ----------------------------------------------------------
   # Create module target
   # ----------------------------------------------------------
-
   add_library(qlibs.ut STATIC)
 
   target_sources(qlibs.ut
@@ -88,13 +83,10 @@ function(fetch_ut)
   # ----------------------------------------------------------
   # Create canonical alias
   # ----------------------------------------------------------
-
   add_library(ut::ut ALIAS qlibs.ut)
 
   # ----------------------------------------------------------
   # Export status
   # ----------------------------------------------------------
-
   message(STATUS "qlibs/ut fetched and ut::ut target created")
-
 endfunction()
