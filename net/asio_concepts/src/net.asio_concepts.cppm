@@ -32,10 +32,10 @@ module; // Including Asio in the Global Module Fragment until importable header 
  */
 //NOLINTBEGIN(bugprone-macro-parentheses): Parentheses around `Concept` (i.e. `(Concept) auto& unevaluated_function();`) here would break the return type syntax.
 //NOLINTNEXTLINE(cppcoreguidelines-macro-usage): This only works when the lambda "definition" appears textually inside the scope of the requires expression so that it is unevaluated. A constexpr/consteval function would require a definition for `unevaluated_function`.
-#define CONCEPT_ARG(Concept)                  \
-    ([] -> decltype(auto) {                   \
-        Concept auto& unevaluated_function(); \
-        return unevaluated_function();        \
+#define CONCEPT_ARG(Concept)                        \
+    ([] -> decltype(auto) {                         \
+        Concept auto* unevaluated_pointer{nullptr}; \
+        return *unevaluated_pointer;                \
     }())
 //NOLINTEND(bugprone-macro-parentheses)
 
