@@ -18,7 +18,7 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   )
 endif()
 
-add_library(net.asio_concepts STATIC)
+add_library(net.asio_concepts OBJECT)
 add_library(net::asio_concepts ALIAS net.asio_concepts)
 
 register_tooling_target(net.asio_concepts)
