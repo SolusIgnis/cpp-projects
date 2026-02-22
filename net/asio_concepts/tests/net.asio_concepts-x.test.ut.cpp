@@ -20,10 +20,10 @@
 import std;
 import ut;
 
-import net.asio_concepts; // Module under test
+import net.asio_concepts; // Code under test.
 
-using namespace ut;
-using namespace net::asio_concepts;
+using namespace ut; //NOLINT(google-build-using-namespace)
+using namespace net::asio_concepts; //NOLINT(google-build-using-namespace)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Minimal dummy types for negative testing (intentionally fail concepts)
@@ -166,7 +166,7 @@ int main() {
 
         expect(_b{true} == LayerableObject<tcp_socket>);
         
-        #if defined(ASIO_HAS_OPENSSL)
+        #ifdef ASIO_HAS_OPENSSL
         using ssl_stream = asio::ssl::stream<tcp_socket>;
         expect(_b{true} == LayerableObject<ssl_stream>);
 
@@ -183,7 +183,7 @@ int main() {
         expect(_b{true} == AsioSocket<tcp_socket>);
         expect(_b{true} == AsioStreamSocket<tcp_socket>);
 
-        #if defined(ASIO_HAS_OPENSSL)
+        #ifdef ASIO_HAS_OPENSSL
         using ssl_stream = asio::ssl::stream<tcp_socket>;
         expect(_b{true} == AsioLayerableStreamSocket<ssl_stream>);
         #endif

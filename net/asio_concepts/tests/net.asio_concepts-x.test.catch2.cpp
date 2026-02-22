@@ -24,10 +24,10 @@
 #include <asio/ssl.hpp>
 //NOLINTEND
 
-import net.asio_concepts;   // your module
+import net.asio_concepts; // Code under test.
 import std;
 
-using namespace net::asio_concepts;
+using namespace net::asio_concepts; //NOLINT(google-build-using-namespace)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Minimal dummy types for negative testing
@@ -169,7 +169,7 @@ TEST_CASE("layering", "[concepts][layering]") {
 
     REQUIRE(LayerableObject<tcp_socket>);
     
-    #if defined(ASIO_HAS_OPENSSL)
+    #ifdef ASIO_HAS_OPENSSL
     using ssl_stream = asio::ssl::stream<tcp_socket>;
     
     REQUIRE(LayerableObject<ssl_stream>);
@@ -187,7 +187,7 @@ TEST_CASE("umbrella concepts", "[concepts][umbrella]") {
     REQUIRE(AsioSocket<tcp_socket>);
     REQUIRE(AsioStreamSocket<tcp_socket>);
 
-    #if defined(ASIO_HAS_OPENSSL)
+    #ifdef ASIO_HAS_OPENSSL
     using ssl_stream = asio::ssl::stream<tcp_socket>;
     REQUIRE(AsioLayerableStreamSocket<ssl_stream>);
     #endif

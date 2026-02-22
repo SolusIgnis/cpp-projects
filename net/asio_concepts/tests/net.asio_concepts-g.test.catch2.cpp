@@ -32,7 +32,7 @@ import std;
 
 import net.asio_concepts; // Code under test.
 
-using namespace net::asio_concepts;
+using namespace net::asio_concepts; //NOLINT(google-build-using-namespace)
 
 TEST_CASE("Asio Buffer Sequence Concepts", "[net][concepts][buffers]") {
     SECTION("Mutable Buffers") {
@@ -110,14 +110,14 @@ TEST_CASE("Layering and Protocol Concepts", "[net][concepts][layering]") {
         CHECK_FALSE(LayeredObject<asio::ip::tcp::socket>); // Base socket isn't layered
     }
 
-#if defined(ASIO_HAS_OPENSSL)
+    #ifdef ASIO_HAS_OPENSSL
     SECTION("SSL Layering") {
         using ssl_stream = asio::ssl::stream<asio::ip::tcp::socket>;
         CHECK(LayerableObject<ssl_stream>);
         CHECK(LayeredObject<ssl_stream>);
         CHECK(AsioLayerableStreamSocket<ssl_stream>);
     }
-#endif
+    #endif
 }
 
 TEST_CASE("Composite Socket Requirements", "[net][concepts][composition]") {

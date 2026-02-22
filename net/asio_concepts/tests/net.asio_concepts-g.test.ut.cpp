@@ -31,8 +31,8 @@ import ut;                // Named module for qlibs/ut
 
 import net.asio_concepts; // Code under test.
 
-using namespace ut;
-using namespace net::asio_concepts;
+using namespace ut; //NOLINT(google-build-using-namespace)
+using namespace net::asio_concepts; //NOLINT(google-build-using-namespace)
 
 int main() {
     "Asio Buffer Sequence Concepts"_test = [] mutable {
@@ -109,7 +109,7 @@ int main() {
             expect(_b{false} == LayeredObject<asio::ip::tcp::socket>);
         };
 
-        #if defined(ASIO_HAS_OPENSSL)
+        #ifdef ASIO_HAS_OPENSSL
         "SSL Layering"_test = [] mutable {
             using ssl_stream = asio::ssl::stream<asio::ip::tcp::socket>;
             expect(_b{true} == LayerableObject<ssl_stream>);
