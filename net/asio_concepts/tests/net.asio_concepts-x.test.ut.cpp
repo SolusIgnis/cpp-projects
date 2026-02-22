@@ -160,25 +160,30 @@ int main() {
 
     "layering"_test = [] mutable {
         using tcp_socket = asio::ip::tcp::socket;
-        using ssl_stream = asio::ssl::stream<tcp_socket>;
 
         expect(_b{true} == LayerableObject<tcp_socket>);
+        
+        #if defined(ASIO_HAS_OPENSSL)
+        using ssl_stream = asio::ssl::stream<tcp_socket>;
         expect(_b{true} == LayerableObject<ssl_stream>);
 
         expect(_b{true} == LayeredObject<ssl_stream>);
 
         expect(_b{true} == AsioLayerableSocket<ssl_stream>);
         expect(_b{true} == AsioLayerableStreamSocket<ssl_stream>);
+        #endif
     };
 
     "umbrella"_test = [] mutable {
         using tcp_socket = asio::ip::tcp::socket;
-        using ssl_stream = asio::ssl::stream<tcp_socket>;
 
         expect(_b{true} == AsioSocket<tcp_socket>);
         expect(_b{true} == AsioStreamSocket<tcp_socket>);
 
+        #if defined(ASIO_HAS_OPENSSL)
+        using ssl_stream = asio::ssl::stream<tcp_socket>;
         expect(_b{true} == AsioLayerableStreamSocket<ssl_stream>);
+        #endif
 
         expect(_b{false} == AsioSocket<NotABufferSequence>);
         expect(_b{false} == AsioStreamSocket<BadSocketOption>);
