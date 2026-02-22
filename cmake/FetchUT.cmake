@@ -81,43 +81,18 @@ function(fetch_ut)
     )
     file(WRITE "${filepath}" "${FILE_CONTENTS}")
   endfunction()
-  
-  # Read the file
-#  file(READ "${UT_CPPM}" UT_CONTENTS)
 
   # Insert #include <iostream> after 'module;' and before '#include "ut"'
   _patch("${UT_CPPM}"
     "module;\n#include \"ut\"\n"
     "module;\n#include <iostream>\n#include \"ut\"\n"
   )
-  
-#  string(REPLACE
-#    "module;\n#include \"ut\"\n"
-#    "module;\n#include <iostream>\n#include \"ut\"\n"
-#    UT_CONTENTS
-#    "${UT_CONTENTS}"
-#  )
-#  string(REPLACE
-#    "module;\n#include \"ut\"\nexport module ut;\n"
-#    "module;\n#include \"ut\"\nexport module ut;\nimport std;\n"
-#    UT_CONTENTS
-#    "${UT_CONTENTS}"
-#  )
 
   # Patch out the ambiguous forward declarations in ut.cppm
-#  string(REGEX REPLACE
-#    "namespace std \\{[ \t\n]*template<class> struct char_traits;[ \t\n]*template<class, class> class basic_ostream;[ \t\n]*extern basic_ostream<char, char_traits<char>> clog;[ \t\n]*\\}"
-#    "#if 0\nnamespace std {\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog;\n}\n#endif"
-#    UT_CONTENTS
-#    "${UT_CONTENTS}"
-#  )
   _patch("${UT_HEADER}"
     "namespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std"
      "#if 0\nnamespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std\n#endif"
   )
-
-  # Write it back
-#  file(WRITE "${UT_CPPM}" "${UT_CONTENTS}")
 
   file(READ "${UT_CPPM}" UT_M_CONTENTS)
   message(STATUS "${UT_M_CONTENTS}")
