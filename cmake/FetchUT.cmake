@@ -50,6 +50,7 @@ function(fetch_ut)
   endif()
   
   set(UT_CPPM "${ut_SOURCE_DIR}/ut.cppm")
+  set(UT_HEADER "${ut_SOURCE_DIR}/ut")
 
   if(NOT EXISTS "${UT_CPPM}")
     message(FATAL_ERROR
@@ -58,27 +59,50 @@ function(fetch_ut)
       "Repository layout may have changed."
     )
   endif()
+  if(NOT EXISTS "${UT_HEADER}")
+    message(FATAL_ERROR
+      "qlibs/ut header file ut not found at expected location:\n"
+      "  ${UT_HEADER}\n"
+      "Repository layout may have changed."
+    )
+  endif()
   
   # ----------------------------------------------------------
   # Patch module to fix #include <iostream> bug
   # ----------------------------------------------------------
   
+  function(_patch filepath old_code new_code)
+    file(READ "${filepath}" FILE_CONTENTS)
+    string(REPLACE
+      "${old_code}"
+      "${new_code}"
+      FILE_CONTENTS
+      "${FILE_CONTENTS}"
+    )
+    file(WRITE "${filepath}" "${FILE_CONTENTS}")
+  endfunction()
+  
   # Read the file
-  file(READ "${UT_CPPM}" UT_CONTENTS)
+#  file(READ "${UT_CPPM}" UT_CONTENTS)
 
   # Insert #include <iostream> after 'module;' and before '#include "ut"'
+  _patch("${UT_CPPM}"
+    "module;\n#include \"ut\"\n"
+    "module;\n#include <iostream>\n#include \"ut\"\n"
+  )
+  
 #  string(REPLACE
 #    "module;\n#include \"ut\"\n"
 #    "module;\n#include <iostream>\n#include \"ut\"\n"
 #    UT_CONTENTS
 #    "${UT_CONTENTS}"
 #  )
-  string(REPLACE
-    "module;\n#include \"ut\"\nexport module ut;\n"
-    "module;\n#include \"ut\"\nexport module ut;\nimport std;\n"
-    UT_CONTENTS
-    "${UT_CONTENTS}"
-  )
+#  string(REPLACE
+#    "module;\n#include \"ut\"\nexport module ut;\n"
+#    "module;\n#include \"ut\"\nexport module ut;\nimport std;\n"
+#    UT_CONTENTS
+#    "${UT_CONTENTS}"
+#  )
 
   # Patch out the ambiguous forward declarations in ut.cppm
 #  string(REGEX REPLACE
@@ -87,12 +111,18 @@ function(fetch_ut)
 #    UT_CONTENTS
 #    "${UT_CONTENTS}"
 #  )
-
-#message(STATUS "${UT_CONTENTS}")
-
+  _patch("${UT_HEADER}"
+    "namespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std"
+     "#if 0\nnamespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std\n#endif"
+  )
 
   # Write it back
-  file(WRITE "${UT_CPPM}" "${UT_CONTENTS}")
+#  file(WRITE "${UT_CPPM}" "${UT_CONTENTS}")
+
+  file(READ "${UT_CPPM}" UT_M_CONTENTS)
+  message(STATUS "${UT_M_CONTENTS}")
+  file(READ "${UT_HEADER}" UT_H_CONTENTS)
+  message(STATUS "${UT_H_CONTENTS}")
 
   # ----------------------------------------------------------
   # Create module target
