@@ -48,19 +48,34 @@ function(fetch_ut)
   if(NOT DEFINED ut_SOURCE_DIR)
     message(FATAL_ERROR "FetchContent failed: ut_SOURCE_DIR undefined")
   endif()
+  
+  set(UT_CPPM "${ut_SOURCE_DIR}/ut.cppm")
 
-  if(NOT EXISTS "${ut_SOURCE_DIR}/ut.cppm")
+  if(NOT EXISTS "${UT_CPPM}")
     message(FATAL_ERROR
       "qlibs/ut module file ut.cppm not found at expected location:\n"
-      "  ${ut_SOURCE_DIR}/ut.cppm\n"
+      "  ${UT_CPPM}\n"
       "Repository layout may have changed."
     )
   endif()
+  
+  # ----------------------------------------------------------
+  # Patch module to fix #include <iostream> bug
+  # ----------------------------------------------------------
+  
+  # Read the file
+  file(READ "${UT_CPPM}" UT_CONTENTS)
+
+  # Insert #include <iostream> after 'module;' and before '#include "ut"'
+  string(REPLACE "module;\n#include \"ut\"" "module;\n#include <iostream>\n#include \"ut\"" UT_CONTENTS "${UT_CONTENTS}")
+
+  # Write it back
+  file(WRITE "${UT_CPPM}" "${UT_CONTENTS}")
 
   # ----------------------------------------------------------
   # Create module target
   # ----------------------------------------------------------
-  add_library(qlibs.ut STATIC)
+  add_library(qlibs.ut OBJECT)
 
   target_sources(qlibs.ut
     PUBLIC
