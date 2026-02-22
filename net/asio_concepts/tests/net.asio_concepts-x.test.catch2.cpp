@@ -20,7 +20,6 @@
 #include <catch2/catch_template_test_macros.hpp>  // TEMPLATE_TEST_CASE if needed later
 
 #include <asio.hpp>
-#include <asio/ssl.hpp>     // for ssl::stream layering tests
 
 import net.asio_concepts;   // your module
 import std;
@@ -164,25 +163,31 @@ TEST_CASE("connection", "[concepts][connection]") {
 
 TEST_CASE("layering", "[concepts][layering]") {
     using tcp_socket = asio::ip::tcp::socket;
-    using ssl_stream = asio::ssl::stream<tcp_socket>;
 
     REQUIRE(LayerableObject<tcp_socket>);
+    
+    #if defined(ASIO_HAS_OPENSSL)
+    using ssl_stream = asio::ssl::stream<tcp_socket>;
+    
     REQUIRE(LayerableObject<ssl_stream>);
 
     REQUIRE(LayeredObject<ssl_stream>);
 
     REQUIRE(AsioLayerableSocket<ssl_stream>);
     REQUIRE(AsioLayerableStreamSocket<ssl_stream>);
+    #endif
 }
 
 TEST_CASE("umbrella concepts", "[concepts][umbrella]") {
     using tcp_socket = asio::ip::tcp::socket;
-    using ssl_stream = asio::ssl::stream<tcp_socket>;
 
     REQUIRE(AsioSocket<tcp_socket>);
     REQUIRE(AsioStreamSocket<tcp_socket>);
 
+    #if defined(ASIO_HAS_OPENSSL)
+    using ssl_stream = asio::ssl::stream<tcp_socket>;
     REQUIRE(AsioLayerableStreamSocket<ssl_stream>);
+    #endif
 
     REQUIRE_FALSE(AsioSocket<NotABufferSequence>);
     REQUIRE_FALSE(AsioStreamSocket<BadSocketOption>);
