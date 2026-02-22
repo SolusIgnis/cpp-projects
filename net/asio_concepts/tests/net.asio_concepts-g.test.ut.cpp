@@ -28,7 +28,7 @@ import ut;                // Named module for qlibs/ut
 
 import net.asio_concepts; // Code under test.
 
-using namespace boost::ut;
+using namespace ut;
 using namespace net::asio_concepts;
 
 int main() {
