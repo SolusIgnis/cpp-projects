@@ -69,6 +69,14 @@ function(fetch_ut)
   # Insert #include <iostream> after 'module;' and before '#include "ut"'
   string(REPLACE "module;\n#include \"ut\"" "module;\n#include <iostream>\n#include \"ut\"" UT_CONTENTS "${UT_CONTENTS}")
 
+  # Patch out the ambiguous forward declarations in ut.cppm
+  string(REGEX REPLACE
+    "namespace std \\{[ \t\n]*template<class> struct char_traits;[ \t\n]*template<class, class> class basic_ostream;[ \t\n]*extern basic_ostream<char, char_traits<char>> clog;[ \t\n]*\\}"
+    "#if 0\nnamespace std {\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog;\n}\n#endif"
+    UT_CONTENTS
+    "${UT_CONTENTS}"
+  )
+
   # Write it back
   file(WRITE "${UT_CPPM}" "${UT_CONTENTS}")
 
