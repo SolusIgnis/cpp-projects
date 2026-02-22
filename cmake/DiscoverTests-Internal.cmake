@@ -44,7 +44,7 @@ function(_parse_test_filename filename)
     message(WARNING
       "Skipping invalid test filename (does not match grammar): ${filename}"
     )
-    unset(TEST_BASE_NAME PARENT_SCOPE)
+    unset(TEST_NAME PARENT_SCOPE)
     return()
   endif()
 
@@ -140,7 +140,7 @@ function(_create_test_from_file module_target test_file)
   get_filename_component(filename "${test_file}" NAME)
 
   _parse_test_filename("${filename}")
-  if(NOT TEST_BASE_NAME)
+  if(NOT TEST_NAME)
     return()
   endif()
   
@@ -153,16 +153,15 @@ function(_create_test_from_file module_target test_file)
     set(TEST_KIND unit)
   endif()
 
-  
   set(target "${TEST_NAME}")
 
-message(STATUS "Module Name: ${module_name}")
-message(STATUS "Module Target: ${module_target}")
-message(STATUS "Test File: ${filename}")
-message(STATUS "Test Name: ${TEST_NAME}")
-message(STATUS "Test Base Name: ${TEST_BASE_NAME}")
-message(STATUS "Test Kind: ${TEST_KIND}")
-message(STATUS "Test Dialect: ${TEST_DIALECT}")
+  #message(STATUS "Module Name: ${module_name}")
+  #message(STATUS "Module Target: ${module_target}")
+  #message(STATUS "Test File: ${filename}")
+  #message(STATUS "Test Name: ${TEST_NAME}")
+  #message(STATUS "Test Base Name: ${TEST_BASE_NAME}")
+  #message(STATUS "Test Kind: ${TEST_KIND}")
+  #message(STATUS "Test Dialect: ${TEST_DIALECT}")
 
   # ----------------------------------------------------------
   # Executable
