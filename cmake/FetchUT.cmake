@@ -77,6 +77,9 @@ function(fetch_ut)
     "${UT_CONTENTS}"
   )
 
+message(STATUS "${UT_CONTENTS}")
+
+
   # Write it back
   file(WRITE "${UT_CPPM}" "${UT_CONTENTS}")
 
