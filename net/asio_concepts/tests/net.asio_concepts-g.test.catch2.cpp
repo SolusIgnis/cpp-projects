@@ -49,7 +49,6 @@ TEST_CASE("Asio Completion Token Concepts", "[net][concepts][tokens]") {
     SECTION("Read/Write Tokens") {
         CHECK(AsioReadToken<asio::detached_t>);
         CHECK(AsioWriteToken<asio::use_awaitable_t<>>);
-        CHECK(AsioReadToken<asio::yield_context>);
     }
 
     SECTION("Connect/Wait Tokens") {

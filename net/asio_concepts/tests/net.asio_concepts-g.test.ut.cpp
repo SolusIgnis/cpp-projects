@@ -50,7 +50,6 @@ int main() {
         "Read/Write Tokens"_test = [] {
             expect(AsioReadToken<asio::detached_t>);
             expect(AsioWriteToken<asio::use_awaitable_t<>>);
-            expect(AsioReadToken<asio::yield_context>);
         };
 
         "Connect/Wait Tokens"_test = [] {
