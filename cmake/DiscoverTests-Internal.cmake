@@ -40,7 +40,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/ToolingInfrastructure.cmake)
 function(_parse_test_filename filename module_name)
 
   set(identifier "[a-zA-Z0-9_]+")
-  set(hyphenated_id "[a-zA-Z0-9_-]+")
   
   set(module_part_id "(-${identifier})")
   set(base_name_id "(${module_name}${module_part_id}*)")
@@ -50,8 +49,7 @@ function(_parse_test_filename filename module_name)
 
   set(test_name_id "(${base_name_id}\.test(-${kind_id})?\.${dialect_id})")
   set(regex_id "^${test_name_id}\.cpp$")
-message(STATUS "RegEx: " "${regex_id}")
-message(STATUS "File: " "${filename}")
+
   string(REGEX MATCH
     "${regex_id}"
     match
