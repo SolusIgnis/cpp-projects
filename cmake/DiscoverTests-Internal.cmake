@@ -72,16 +72,15 @@ message(STATUS "File: " "${filename}")
   # 2 = base name
   # 3 = (ignored but required by POSIX-ERE)
   # 4 = (ignored but required by POSIX-ERE)
-  # 5 = (ignored but required by POSIX-ERE)
-  # 6 = kind (optional)
-  # 7 = (ignored but required by POSIX-ERE)
-  # 8 = dialect
-  # 9 = (ignored but required by POSIX-ERE)
+  # 5 = kind (optional)
+  # 6 = (ignored but required by POSIX-ERE)
+  # 7 = dialect
+  # 8 = (ignored but required by POSIX-ERE)
 
   set(TEST_NAME      "${CMAKE_MATCH_1}" PARENT_SCOPE)
   set(TEST_BASE_NAME "${CMAKE_MATCH_2}" PARENT_SCOPE)
-  set(TEST_KIND      "${CMAKE_MATCH_6}" PARENT_SCOPE)
-  set(TEST_DIALECT   "${CMAKE_MATCH_8}" PARENT_SCOPE)
+  set(TEST_KIND      "${CMAKE_MATCH_5}" PARENT_SCOPE)
+  set(TEST_DIALECT   "${CMAKE_MATCH_7}" PARENT_SCOPE)
 
 endfunction()
 
