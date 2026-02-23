@@ -34,24 +34,26 @@ import net.asio_concepts; // Code under test.
 
 using namespace net::asio_concepts; //NOLINT(google-build-using-namespace)
 
+#define CONCEPT_CHECK(ConceptCheckAssertion)  \
+    {                                         \
+        static_assert(ConceptCheckAssertion); \
+        CHECK(ConceptCheckAssertion);         \
+    }
+
 TEST_CASE("Asio Buffer Sequence Concepts", "[net][concepts][buffers]")
 {
     SECTION("Mutable Buffers")
     {
-        auto m_b_s_check = [](AsioMutableBufferSequence auto buffers) -> bool { return buffers.size() == 0; };
-
-        CHECK(m_b_s_check(asio::mutable_buffer{}));
-        CHECK(m_b_s_check < std::array(asio::mutable_buffer, 2 > {}));
+        CONCEPT_CHECK(AsioMutableBufferSequence<asio::mutable_buffer>);
+        CONCEPT_CHECK(AsioMutableBufferSequence<std::array<asio::mutable_buffer, 2>>);
         CHECK_FALSE(AsioMutableBufferSequence<asio::const_buffer>);
     }
 
     SECTION("Const Buffers")
     {
-        auto c_b_s_check = [](AsioConstBufferSequence auto buffers) -> bool { return buffers.size() == 0; };
-
-        CHECK(c_b_s_check<asio::const_buffer>({}));
-        CHECK(c_b_s_check<asio::mutable_buffer>({})); // Mutable satisfies Const
-        CHECK(c_b_s_check<std::vector<asio::const_buffer>>({}));
+        CONCEPT_CHECK(AsioConstBufferSequence<asio::const_buffer>);
+        CONCEPT_CHECK(AsioConstBufferSequence<asio::mutable_buffer>); // Mutable satisfies Const
+        CONCEPT_CHECK(AsioConstBufferSequence<std::vector<asio::const_buffer>>);
     }
 }
 
@@ -59,14 +61,14 @@ TEST_CASE("Asio Completion Token Concepts", "[net][concepts][tokens]")
 {
     SECTION("Read/Write Tokens")
     {
-        CHECK(AsioReadToken<asio::detached_t>);
-        CHECK(AsioWriteToken<asio::use_awaitable_t<>>);
+        CONCEPT_CHECK(AsioReadToken<asio::detached_t>);
+        CONCEPT_CHECK(AsioWriteToken<asio::use_awaitable_t<>>);
     }
 
     SECTION("Connect/Wait Tokens")
     {
-        CHECK(AsioConnectToken<asio::use_future_t<>>);
-        CHECK(AsioWaitToken<asio::detached_t>);
+        CONCEPT_CHECK(AsioConnectToken<asio::use_future_t<>>);
+        CONCEPT_CHECK(AsioWaitToken<asio::detached_t>);
     }
 }
 
@@ -74,28 +76,26 @@ TEST_CASE("Socket Option Concepts", "[net][concepts][options]")
 {
     SECTION("Boolean Options")
     {
-        auto b_s_o_check = [](BooleanSocketOption auto opt) { return opt.value(); };
-        CHECK(b_s_o_check<asio::socket_base::keep_alive>({true}));
-        CHECK(b_s_o_check<asio::socket_base::reuse_address>({true}));
+        CONCEPT_CHECK(BooleanSocketOption<asio::socket_base::keep_alive>);
+        CONCEPT_CHECK(BooleanSocketOption<asio::socket_base::reuse_address>);
     }
 
     SECTION("Integral Options")
     {
-        auto i_s_o_check = [](BooleanSocketOption auto opt) { return opt.value(); };
-        CHECK(i_s_o_check<asio::socket_base::receive_buffer_size>({1}) == 1);
-        CHECK(i_s_o_check<asio::socket_base::send_low_watermark>({1}) == 1);
+        CONCEPT_CHECK(IntegralSocketOption<asio::socket_base::receive_buffer_size>);
+        CONCEPT_CHECK(IntegralSocketOption<asio::socket_base::send_low_watermark>);
     }
 
     SECTION("Composite Options")
     {
-        CHECK(CompositeSocketOption<asio::socket_base::linger>);
+        CONCEPT_CHECK(CompositeSocketOption<asio::socket_base::linger>);
     }
 
     SECTION("Provider and Interfaces")
     {
-        CHECK(SocketOptionProvider<asio::socket_base>);
-        CHECK(SocketOptionGetter<asio::ip::tcp::socket>);
-        CHECK(SocketOptionSetter<asio::ip::tcp::socket>);
+        CONCEPT_CHECK(SocketOptionProvider<asio::socket_base>);
+        CONCEPT_CHECK(SocketOptionGetter<asio::ip::tcp::socket>);
+        CONCEPT_CHECK(SocketOptionSetter<asio::ip::tcp::socket>);
     }
 }
 
@@ -103,16 +103,16 @@ TEST_CASE("I/O Object Capabilities", "[net][concepts][io]")
 {
     SECTION("Executor Providers")
     {
-        CHECK(AsioExecutorProvider<asio::ip::tcp::socket>);
-        CHECK(AsioExecutorProvider<asio::steady_timer>);
+        CONCEPT_CHECK(AsioExecutorProvider<asio::ip::tcp::socket>);
+        CONCEPT_CHECK(AsioExecutorProvider<asio::steady_timer>);
     }
 
     SECTION("Stream Identification")
     {
         using tcp_sock = asio::ip::tcp::socket;
-        CHECK(AsioAsyncReadStream<tcp_sock>);
-        CHECK(AsioAsyncWriteStream<tcp_sock>);
-        CHECK(AsioStream<tcp_sock>);
+        CONCEPT_CHECK(AsioAsyncReadStream<tcp_sock>);
+        CONCEPT_CHECK(AsioAsyncWriteStream<tcp_sock>);
+        CONCEPT_CHECK(AsioStream<tcp_sock>);
 
         // UDP does not satisfy Stream requirements
         CHECK_FALSE(AsioStream<asio::ip::udp::socket>);
@@ -120,8 +120,8 @@ TEST_CASE("I/O Object Capabilities", "[net][concepts][io]")
 
     SECTION("Waitable Identification")
     {
-        CHECK(AsioAsyncTimedWaitable<asio::steady_timer>);
-        CHECK(AsioAsyncActivityWaitable<asio::ip::tcp::socket>);
+        CONCEPT_CHECK(AsioAsyncTimedWaitable<asio::steady_timer>);
+        CONCEPT_CHECK(AsioAsyncActivityWaitable<asio::ip::tcp::socket>);
     }
 }
 
@@ -129,7 +129,7 @@ TEST_CASE("Layering and Protocol Concepts", "[net][concepts][layering]")
 {
     SECTION("Basic Layering")
     {
-        CHECK(LayerableObject<asio::ip::tcp::socket>);
+        CONCEPT_CHECK(LayerableObject<asio::ip::tcp::socket>);
         CHECK_FALSE(LayeredObject<asio::ip::tcp::socket>); // Base socket isn't layered
     }
 
@@ -137,9 +137,9 @@ TEST_CASE("Layering and Protocol Concepts", "[net][concepts][layering]")
     SECTION("SSL Layering")
     {
         using ssl_stream = asio::ssl::stream<asio::ip::tcp::socket>;
-        CHECK(LayerableObject<ssl_stream>);
-        CHECK(LayeredObject<ssl_stream>);
-        CHECK(AsioLayerableStreamSocket<ssl_stream>);
+        CONCEPT_CHECK(LayerableObject<ssl_stream>);
+        CONCEPT_CHECK(LayeredObject<ssl_stream>);
+        CONCEPT_CHECK(AsioLayerableStreamSocket<ssl_stream>);
     }
 #endif
 }
@@ -148,18 +148,18 @@ TEST_CASE("Composite Socket Requirements", "[net][concepts][composition]")
 {
     SECTION("Full Socket Definitions")
     {
-        CHECK(AsioSocket<asio::ip::tcp::socket>);
-        CHECK(AsioSocket<asio::ip::udp::socket>);
+        CONCEPT_CHECK(AsioSocket<asio::ip::tcp::socket>);
+        CONCEPT_CHECK(AsioSocket<asio::ip::udp::socket>);
 
-        CHECK(AsioStreamSocket<asio::ip::tcp::socket>);
+        CONCEPT_CHECK(AsioStreamSocket<asio::ip::tcp::socket>);
         CHECK_FALSE(AsioStreamSocket<asio::ip::udp::socket>);
     }
 }
 
 TEST_CASE("Lifecycle and Resource Management", "[net][concepts][lifecycle]")
 {
-    CHECK(ClosableResource<asio::ip::tcp::socket>);
-    CHECK(CancellableResource<asio::ip::tcp::socket>);
-    CHECK(EndpointProvider<asio::ip::tcp::socket>);
-    CHECK(NativeSocketWrapper<asio::ip::tcp::socket>);
+    CONCEPT_CHECK(ClosableResource<asio::ip::tcp::socket>);
+    CONCEPT_CHECK(CancellableResource<asio::ip::tcp::socket>);
+    CONCEPT_CHECK(EndpointProvider<asio::ip::tcp::socket>);
+    CONCEPT_CHECK(NativeSocketWrapper<asio::ip::tcp::socket>);
 }
