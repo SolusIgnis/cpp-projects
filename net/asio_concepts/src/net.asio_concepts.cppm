@@ -260,7 +260,7 @@ export namespace net::asio_concepts {
         template<typename T, typename Option, typename Arg>
         concept HasUnarySettableSocketOption = requires(T& temp, std::error_code& ec_out, Arg& arg) {
                                                    { temp.set_option(Option(arg)) } -> std::same_as<void>;
-                                                   { temp.set_option(Option(arg), ec_out) } -> std::same_as<void>;
+                                                   { temp.set_option(Option(arg), ec_out) };
                                                };
 
         /**
@@ -273,7 +273,7 @@ export namespace net::asio_concepts {
         template<typename T, typename Option, typename Arg1, typename Arg2>
         concept HasBinarySettableSocketOption = requires(T& temp, std::error_code& ec_out, Arg1 arg1, Arg2 arg2) {
                                                     { temp.set_option(Option(arg1, arg2)) } -> std::same_as<void>;
-                                                    { temp.set_option(Option(arg1, arg2), ec_out) } -> std::same_as<void>;
+                                                    { temp.set_option(Option(arg1, arg2), ec_out) };
                                                 };
 
         /**
@@ -305,7 +305,7 @@ export namespace net::asio_concepts {
     template<typename T, typename Command>
     concept HasIOControlCommand = requires(T& temp, Command& cmd, std::error_code& ec_out) {
                                       { temp.io_control(cmd) } -> std::same_as<void>;
-                                      { temp.io_control(cmd, ec_out) } -> std::same_as<void>;
+                                      { temp.io_control(cmd, ec_out) };
                                   };
 
     /**
@@ -470,7 +470,7 @@ export namespace net::asio_concepts {
         template<typename T>
         concept AsioSyncTimedWaitable = requires(T& temp, std::error_code& ec_out) {
                                             { temp.wait() } -> std::same_as<void>;
-                                            { temp.wait(ec_out) } -> std::same_as<void>;
+                                            { temp.wait(ec_out) };
                                         };
 
         /**
@@ -510,7 +510,7 @@ export namespace net::asio_concepts {
         template<typename T, typename WaitType>
         concept HasActivitySyncWait = requires(T& temp, WaitType wait, std::error_code& ec_out) {
                                           { temp.wait(wait) } -> std::same_as<void>;
-                                          { temp.wait(wait, ec_out) } -> std::same_as<void>;
+                                          { temp.wait(wait, ec_out) };
                                       };
 
         /**
@@ -686,7 +686,7 @@ export namespace net::asio_concepts {
     template<typename T>
     concept UncountedCancellableResource = requires(T& temp, std::error_code& ec_out) {
                                                { temp.cancel() } -> std::same_as<void>;
-                                               { temp.cancel(ec_out) } -> std::same_as<void>;
+                                               { temp.cancel(ec_out) };
                                            };
 
     /**
@@ -706,7 +706,7 @@ export namespace net::asio_concepts {
     concept ClosableResource = requires(T& temp, std::error_code& ec_out) {
                                    { std::as_const(temp).is_open() } noexcept -> std::convertible_to<bool>;
                                    { temp.close() } -> std::same_as<void>;
-                                   { temp.close(ec_out) } -> std::same_as<void>;
+                                   { temp.close(ec_out) };
                                };
 
     /**
@@ -735,7 +735,7 @@ export namespace net::asio_concepts {
         template<typename T, typename ShutdownType>
         concept HasShutdown = requires(T& temp, ShutdownType what, std::error_code& ec_out) {
                                   { temp.shutdown(what) } -> std::same_as<void>;
-                                  { temp.shutdown(what, ec_out) } -> std::same_as<void>;
+                                  { temp.shutdown(what, ec_out) };
                               };
 
         /**
@@ -747,7 +747,7 @@ export namespace net::asio_concepts {
         template<typename T, typename EndpointType>
         concept HasBind = requires(T& temp, const EndpointType& endpoint, std::error_code& ec_out) {
                               { temp.bind(endpoint) } -> std::same_as<void>;
-                              { temp.bind(endpoint, ec_out) } -> std::same_as<void>;
+                              { temp.bind(endpoint, ec_out) };
                           };
 
         /**
@@ -788,7 +788,7 @@ export namespace net::asio_concepts {
         template<typename T, typename EndpointType>
         concept HasSyncConnect = requires(T& temp, const EndpointType& peer, std::error_code& ec_out) {
                                      { temp.connect(peer) } -> std::same_as<void>;
-                                     { temp.connect(peer, ec_out) } -> std::same_as<void>;
+                                     { temp.connect(peer, ec_out) };
                                  };
 
         /**
@@ -817,7 +817,7 @@ export namespace net::asio_concepts {
     concept HasNativeSocketAssign =
         requires(T& temp, const Protocol& pro, const NativeHandle& nat_hand, std::error_code& ec_out) {
             { temp.assign(pro, nat_hand) } -> std::same_as<void>;
-            { temp.assign(pro, nat_hand, ec_out) } -> std::same_as<void>;
+            { temp.assign(pro, nat_hand, ec_out) };
         };
 
     /**
@@ -834,7 +834,7 @@ export namespace net::asio_concepts {
             { temp.native_handle() } -> std::convertible_to<typename T::native_handle_type>;
             { std::as_const(temp).native_non_blocking() } -> std::convertible_to<bool>;
             { temp.native_non_blocking(b_temp) } -> std::same_as<void>;
-            { temp.native_non_blocking(b_temp, ec_out) } -> std::same_as<void>;
+            { temp.native_non_blocking(b_temp, ec_out) };
             { temp.release() } -> std::convertible_to<typename T::native_handle_type>;
             { temp.release(ec_out) } -> std::convertible_to<typename T::native_handle_type>;
         };
