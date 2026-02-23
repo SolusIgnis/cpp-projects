@@ -704,7 +704,7 @@ export namespace net::asio_concepts {
      */
     template<typename T>
     concept ClosableResource = requires(T& temp, std::error_code& ec_out) {
-                                   { std::as_const(temp).is_open() } noexcept -> std::convertible_to<bool>;
+                                   { std::as_const(temp).is_open() } std::convertible_to<bool>;
                                    { temp.close() } -> std::same_as<void>;
                                    { temp.close(ec_out) };
                                };
@@ -849,10 +849,10 @@ export namespace net::asio_concepts {
     template<typename T>
     concept LayerableObject = requires(T& temp) {
                                   typename T::lowest_layer_type;
-                                  { temp.lowest_layer() } noexcept -> std::convertible_to<typename T::lowest_layer_type&>;
+                                  { temp.lowest_layer() } -> std::convertible_to<typename T::lowest_layer_type&>;
                                   {
                                       std::as_const(temp).lowest_layer()
-                                  } noexcept -> std::convertible_to<const typename T::lowest_layer_type&>;
+                                  } -> std::convertible_to<const typename T::lowest_layer_type&>;
                               };
 
     /**
@@ -867,10 +867,10 @@ export namespace net::asio_concepts {
                                                       typename T::next_layer_type;
                                                       {
                                                           temp.next_layer()
-                                                      } noexcept -> std::convertible_to<typename T::next_layer_type&>;
+                                                      } -> std::convertible_to<typename T::next_layer_type&>;
                                                       {
                                                           std::as_const(temp).next_layer()
-                                                      } noexcept -> std::convertible_to<const typename T::next_layer_type&>;
+                                                      } -> std::convertible_to<const typename T::next_layer_type&>;
                                                   };
 
     /**
