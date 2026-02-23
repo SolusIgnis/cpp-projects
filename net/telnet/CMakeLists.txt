@@ -61,3 +61,5 @@ target_link_libraries(net.telnet
   PUBLIC
     net::asio_concepts
 )
+
+add_tests_for_module(net.telnet)
