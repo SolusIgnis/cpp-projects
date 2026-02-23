@@ -17,7 +17,7 @@
  */
 
 //NOLINTBEGIN: Ignore tidy for dependency includes.
-#include <catch2/catch_test_macros.hpp>          // Core macros: TEST_CASE, REQUIRE, CHECK, ...
+#include <catch2/catch_test_macros.hpp>          // Core macros: TEST_CASE, CHECK, ...
 #include <catch2/catch_template_test_macros.hpp> // TEMPLATE_TEST_CASE if needed later
 
 #include <asio.hpp>
@@ -28,6 +28,12 @@ import net.asio_concepts; // Code under test.
 import std;
 
 using namespace net::asio_concepts; //NOLINT(google-build-using-namespace)
+
+#define CONCEPT_CHECK(ConceptCheckAssertion)  \
+    {                                         \
+        static_assert(ConceptCheckAssertion); \
+        CHECK(ConceptCheckAssertion);         \
+    }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Minimal dummy types for negative testing
@@ -55,27 +61,27 @@ struct FakeWaitableNoWait {
 
 TEST_CASE("buffers", "[concepts][buffers]")
 {
-    REQUIRE(AsioMutableBufferSequence<asio::mutable_buffer>);
-    REQUIRE(AsioMutableBufferSequence<std::array<asio::mutable_buffer, 4>>);
-    REQUIRE(AsioMutableBufferSequence<std::vector<asio::mutable_buffer>>);
+    CONCEPT_CHECK(AsioMutableBufferSequence<asio::mutable_buffer>);
+    CONCEPT_CHECK(AsioMutableBufferSequence<std::array<asio::mutable_buffer, 4>>);
+    CONCEPT_CHECK(AsioMutableBufferSequence<std::vector<asio::mutable_buffer>>);
 
-    REQUIRE(AsioConstBufferSequence<asio::const_buffer>);
-    REQUIRE(AsioConstBufferSequence<std::span<const asio::const_buffer>>);
+    CONCEPT_CHECK(AsioConstBufferSequence<asio::const_buffer>);
+    CONCEPT_CHECK(AsioConstBufferSequence<std::span<const asio::const_buffer>>);
 
-    REQUIRE_FALSE(AsioMutableBufferSequence<NotABufferSequence>);
-    REQUIRE_FALSE(AsioConstBufferSequence<NotABufferSequence>);
+    CHECK_FALSE(AsioMutableBufferSequence<NotABufferSequence>);
+    CHECK_FALSE(AsioConstBufferSequence<NotABufferSequence>);
 }
 
 TEST_CASE("tokens", "[concepts][tokens]")
 {
-    REQUIRE(AsioReadToken<decltype(asio::use_awaitable)>);
-    REQUIRE(AsioReadToken<decltype(asio::detached)>);
-    REQUIRE(AsioReadToken<decltype(asio::use_future)>);
+    CONCEPT_CHECK(AsioReadToken<decltype(asio::use_awaitable)>);
+    CONCEPT_CHECK(AsioReadToken<decltype(asio::detached)>);
+    CONCEPT_CHECK(AsioReadToken<decltype(asio::use_future)>);
 
-    REQUIRE(AsioWriteToken<decltype(asio::use_awaitable)>);
-    REQUIRE(AsioConnectToken<decltype(asio::detached)>);
+    CONCEPT_CHECK(AsioWriteToken<decltype(asio::use_awaitable)>);
+    CONCEPT_CHECK(AsioConnectToken<decltype(asio::detached)>);
 
-    REQUIRE_FALSE(AsioReadToken<NotACompletionToken>);
+    CHECK_FALSE(AsioReadToken<NotACompletionToken>);
 }
 
 TEST_CASE("socket_options", "[concepts][socket_options]")
@@ -85,47 +91,47 @@ TEST_CASE("socket_options", "[concepts][socket_options]")
     using recv_buf   = asio::socket_base::receive_buffer_size;
     using join_group = asio::ip::multicast::join_group;
 
-    REQUIRE(BooleanSocketOption<broadcast>);
-    REQUIRE(CompositeSocketOption<linger>);
-    REQUIRE(IntegralSocketOption<recv_buf>);
-    REQUIRE(AsioAddressibleSocketOption<join_group>);
+    CONCEPT_CHECK(BooleanSocketOption<broadcast>);
+    CONCEPT_CHECK(CompositeSocketOption<linger>);
+    CONCEPT_CHECK(IntegralSocketOption<recv_buf>);
+    CONCEPT_CHECK(AsioAddressibleSocketOption<join_group>);
 
-    REQUIRE(SocketOption<broadcast>);
-    REQUIRE(SocketOption<linger>);
+    CONCEPT_CHECK(SocketOption<broadcast>);
+    CONCEPT_CHECK(SocketOption<linger>);
 
-    REQUIRE(SocketOptionProvider<asio::socket_base>);
+    CONCEPT_CHECK(SocketOptionProvider<asio::socket_base>);
 
     using tcp_socket = asio::ip::tcp::socket;
-    REQUIRE(SocketOptionGetter<tcp_socket>);
-    REQUIRE(SocketOptionSetter<tcp_socket>);
+    CONCEPT_CHECK(SocketOptionGetter<tcp_socket>);
+    CONCEPT_CHECK(SocketOptionSetter<tcp_socket>);
 
-    REQUIRE_FALSE(BooleanSocketOption<BadSocketOption>);
+    CHECK_FALSE(BooleanSocketOption<BadSocketOption>);
 }
 
 TEST_CASE("io_flags_executor", "[concepts][io][flags][executor]")
 {
     using tcp_socket = asio::ip::tcp::socket;
 
-    REQUIRE(IOController<tcp_socket>);
-    REQUIRE(MessageFlagProvider<tcp_socket>);
-    REQUIRE(AsioExecutorProvider<tcp_socket>);
-    REQUIRE(AsioExecutorAssociated<tcp_socket>);
+    CONCEPT_CHECK(IOController<tcp_socket>);
+    CONCEPT_CHECK(MessageFlagProvider<tcp_socket>);
+    CONCEPT_CHECK(AsioExecutorProvider<tcp_socket>);
+    CONCEPT_CHECK(AsioExecutorAssociated<tcp_socket>);
 
-    REQUIRE_FALSE(AsioExecutorAssociated<NoExecutorType>);
+    CHECK_FALSE(AsioExecutorAssociated<NoExecutorType>);
 }
 
 TEST_CASE("streams", "[concepts][streams]")
 {
     using tcp_socket = asio::ip::tcp::socket;
 
-    REQUIRE(AsioAsyncReadStream<tcp_socket>);
-    REQUIRE(AsioSyncReadStream<tcp_socket>);
-    REQUIRE(AsioAsyncWriteStream<tcp_socket>);
-    REQUIRE(AsioSyncWriteStream<tcp_socket>);
+    CONCEPT_CHECK(AsioAsyncReadStream<tcp_socket>);
+    CONCEPT_CHECK(AsioSyncReadStream<tcp_socket>);
+    CONCEPT_CHECK(AsioAsyncWriteStream<tcp_socket>);
+    CONCEPT_CHECK(AsioSyncWriteStream<tcp_socket>);
 
-    REQUIRE(AsioStream<tcp_socket>);
+    CONCEPT_CHECK(AsioStream<tcp_socket>);
 
-    REQUIRE_FALSE(AsioAsyncReadStream<NoExecutorType>);
+    CHECK_FALSE(AsioAsyncReadStream<NoExecutorType>);
 }
 
 TEST_CASE("waitables", "[concepts][waitables]")
@@ -133,61 +139,61 @@ TEST_CASE("waitables", "[concepts][waitables]")
     using timer      = asio::steady_timer;
     using tcp_socket = asio::ip::tcp::socket;
 
-    REQUIRE(AsioAsyncTimedWaitable<timer>);
-    REQUIRE(AsioSyncTimedWaitable<timer>);
+    CONCEPT_CHECK(AsioAsyncTimedWaitable<timer>);
+    CONCEPT_CHECK(AsioSyncTimedWaitable<timer>);
 
-    REQUIRE(AsioAsyncActivityWaitable<tcp_socket>);
-    REQUIRE(AsioSyncActivityWaitable<tcp_socket>);
+    CONCEPT_CHECK(AsioAsyncActivityWaitable<tcp_socket>);
+    CONCEPT_CHECK(AsioSyncActivityWaitable<tcp_socket>);
 
-    REQUIRE_FALSE(AsioAsyncTimedWaitable<FakeWaitableNoWait>);
+    CHECK_FALSE(AsioAsyncTimedWaitable<FakeWaitableNoWait>);
 }
 
 TEST_CASE("transmission", "[concepts][transmission]")
 {
     using tcp_socket = asio::ip::tcp::socket;
 
-    REQUIRE(AsioAsyncSender<tcp_socket>);
-    REQUIRE(AsioSyncSender<tcp_socket>);
-    REQUIRE(AsioAsyncReceiver<tcp_socket>);
-    REQUIRE(AsioSyncReceiver<tcp_socket>);
+    CONCEPT_CHECK(AsioAsyncSender<tcp_socket>);
+    CONCEPT_CHECK(AsioSyncSender<tcp_socket>);
+    CONCEPT_CHECK(AsioAsyncReceiver<tcp_socket>);
+    CONCEPT_CHECK(AsioSyncReceiver<tcp_socket>);
 
-    REQUIRE(HasAtMark<tcp_socket>);
-    REQUIRE(HasAvailable<tcp_socket>);
+    CONCEPT_CHECK(HasAtMark<tcp_socket>);
+    CONCEPT_CHECK(HasAvailable<tcp_socket>);
 }
 
 TEST_CASE("lifecycle", "[concepts][lifecycle]")
 {
     using tcp_socket = asio::ip::tcp::socket;
 
-    REQUIRE(CancellableResource<tcp_socket>);
-    REQUIRE(ClosableResource<tcp_socket>);
-    REQUIRE(EndpointProvider<tcp_socket>);
+    CONCEPT_CHECK(CancellableResource<tcp_socket>);
+    CONCEPT_CHECK(ClosableResource<tcp_socket>);
+    CONCEPT_CHECK(EndpointProvider<tcp_socket>);
 }
 
 TEST_CASE("connection", "[concepts][connection]")
 {
     using tcp_socket = asio::ip::tcp::socket;
 
-    REQUIRE(AsioAsyncConnectable<tcp_socket>);
-    REQUIRE(AsioSyncConnectable<tcp_socket>);
-    REQUIRE(NativeSocketWrapper<tcp_socket>);
+    CONCEPT_CHECK(AsioAsyncConnectable<tcp_socket>);
+    CONCEPT_CHECK(AsioSyncConnectable<tcp_socket>);
+    CONCEPT_CHECK(NativeSocketWrapper<tcp_socket>);
 }
 
 TEST_CASE("layering", "[concepts][layering]")
 {
     using tcp_socket = asio::ip::tcp::socket;
 
-    REQUIRE(LayerableObject<tcp_socket>);
+    CONCEPT_CHECK(LayerableObject<tcp_socket>);
 
 #ifdef ASIO_HAS_OPENSSL
     using ssl_stream = asio::ssl::stream<tcp_socket>;
 
-    REQUIRE(LayerableObject<ssl_stream>);
+    CONCEPT_CHECK(LayerableObject<ssl_stream>);
 
-    REQUIRE(LayeredObject<ssl_stream>);
+    CONCEPT_CHECK(LayeredObject<ssl_stream>);
 
-    REQUIRE(AsioLayerableSocket<ssl_stream>);
-    REQUIRE(AsioLayerableStreamSocket<ssl_stream>);
+    CONCEPT_CHECK(AsioLayerableSocket<ssl_stream>);
+    CONCEPT_CHECK(AsioLayerableStreamSocket<ssl_stream>);
 #endif
 }
 
@@ -195,14 +201,14 @@ TEST_CASE("umbrella concepts", "[concepts][umbrella]")
 {
     using tcp_socket = asio::ip::tcp::socket;
 
-    REQUIRE(AsioSocket<tcp_socket>);
-    REQUIRE(AsioStreamSocket<tcp_socket>);
+    CONCEPT_CHECK(AsioSocket<tcp_socket>);
+    CONCEPT_CHECK(AsioStreamSocket<tcp_socket>);
 
 #ifdef ASIO_HAS_OPENSSL
     using ssl_stream = asio::ssl::stream<tcp_socket>;
-    REQUIRE(AsioLayerableStreamSocket<ssl_stream>);
+    CONCEPT_CHECK(AsioLayerableStreamSocket<ssl_stream>);
 #endif
 
-    REQUIRE_FALSE(AsioSocket<NotABufferSequence>);
-    REQUIRE_FALSE(AsioStreamSocket<BadSocketOption>);
+    CHECK_FALSE(AsioSocket<NotABufferSequence>);
+    CHECK_FALSE(AsioStreamSocket<BadSocketOption>);
 }
