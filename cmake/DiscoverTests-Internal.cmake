@@ -39,7 +39,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/ToolingInfrastructure.cmake)
 
 function(_parse_test_filename filename module_name)
 
-  set(identifier "[[:alnum:]_-]+")
+  set(identifier "[[a-zA-Z0-9_-]+")
   
   set(base_name_id "(${module_name}(-${identifier})?)")
   
