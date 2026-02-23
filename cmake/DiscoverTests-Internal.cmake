@@ -203,7 +203,7 @@ function(_create_test_from_file module_target test_file)
 
   target_compile_features("${target}"
     PRIVATE
-      cxx_std_23
+      $<TARGET_PROPERTY:${module_target},COMPILE_FEATURES>
   )
 
   set_target_properties("${target}"
