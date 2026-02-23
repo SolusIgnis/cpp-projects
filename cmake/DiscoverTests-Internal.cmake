@@ -39,8 +39,20 @@ include(${CMAKE_CURRENT_LIST_DIR}/ToolingInfrastructure.cmake)
 
 function(_parse_test_filename filename)
 
+  set(identifier "[[:alnum:]_]+")
+  
+  set(module_group_id "(${identifier}\\.)")
+  set(module_name_id "${identifier}")
+  set(module_part_id "(-${identifier})")
+  set(base_name_id "(${module_group_id}*${module_name_id}${module_part_id}*)")
+  
+  set(kind_id "(${identifier}(-${identifier})*)")
+  set(dialect_id "(${identifier}(-${identifier})*)")
+  
+  set(test_name_id "(${base_name_id}\\.test(-${kind_id})?\\.${dialect_id})")
+
   string(REGEX MATCH
-    "^((.+)\\.test(-([^.]+))?\\.([^.]+))\\.cpp$"
+    "^${test_name_id}\\.cpp$"
     match
     "${filename}"
   )
@@ -57,14 +69,18 @@ function(_parse_test_filename filename)
   #
   # 1 = test name
   # 2 = base name
-  # 3 = ignored but required by POSIX-ERE
-  # 4 = kind (optional)
-  # 5 = dialect
+  # 3 = (ignored but required by POSIX-ERE)
+  # 4 = (ignored but required by POSIX-ERE)
+  # 5 = (ignored but required by POSIX-ERE)
+  # 6 = kind (optional)
+  # 8 = (ignored but required by POSIX-ERE)
+  # 8 = dialect
+  # 9 = (ignored but required by POSIX-ERE)
 
   set(TEST_NAME      "${CMAKE_MATCH_1}" PARENT_SCOPE)
   set(TEST_BASE_NAME "${CMAKE_MATCH_2}" PARENT_SCOPE)
-  set(TEST_KIND      "${CMAKE_MATCH_4}" PARENT_SCOPE)
-  set(TEST_DIALECT   "${CMAKE_MATCH_5}" PARENT_SCOPE)
+  set(TEST_KIND      "${CMAKE_MATCH_6}" PARENT_SCOPE)
+  set(TEST_DIALECT   "${CMAKE_MATCH_8}" PARENT_SCOPE)
 
 endfunction()
 
@@ -90,8 +106,8 @@ endfunction()
 # ============================================================
 
 function(_ensure_target target)
-  if(NOT TARGET ${target})
-    add_custom_target(${target})
+  if(NOT TARGET "${target}")
+    add_custom_target("${target}")
   endif()
 endfunction()
 
@@ -100,8 +116,8 @@ endfunction()
 # ============================================================
 
 function(_bind_aggregate_dependency aggregate target)
-  _ensure_target(${aggregate})
-  add_dependencies(${aggregate} ${target})
+  _ensure_target("${aggregate}")
+  add_dependencies("${aggregate}" "${target}")
 endfunction()
 
 # ============================================================
@@ -109,7 +125,7 @@ endfunction()
 # ============================================================
 
 function(_create_run_target build_target)
-  set(target ${build_target}.run)
+  set(target "${build_target}.run")
   
   set(multiValueArgs LABELS)
 
@@ -121,17 +137,17 @@ function(_create_run_target build_target)
     ${ARGN}
   )
   
-  if(NOT TARGET ${target})
+  if(NOT TARGET "${target}")
     set(ctest_args "--output-on-failure")
     foreach(label IN LISTS ARG_LABELS)
       list(APPEND ctest_args "-L" "${label}")
     endforeach()
 
-    add_custom_target(${target}
+    add_custom_target("${target}"
       COMMAND ${CMAKE_CTEST_COMMAND} ${ctest_args}
       USES_TERMINAL
     )
-    add_dependencies(${target} ${build_target})
+    add_dependencies("${target}" "${build_target}")
   endif()
 endfunction()
 
@@ -140,7 +156,7 @@ endfunction()
 # ============================================================
 
 function(_create_test_from_file module_target test_file)
-  get_target_property(module_name ${module_target} NAME)
+  get_target_property(module_name "${module_target}" NAME)
 
   get_filename_component(filename "${test_file}" NAME)
 
@@ -172,25 +188,25 @@ function(_create_test_from_file module_target test_file)
   # Executable
   # ----------------------------------------------------------
 
-  add_executable(${target})
+  add_executable("${target}")
 
-  target_sources(${target}
+  target_sources("${target}"
     PRIVATE
       "${test_file}"
   )
 
-  target_link_libraries(${target}
+  target_link_libraries("${target}"
     PRIVATE
-      ${module_target}
-      ${TEST_FRAMEWORK.${TEST_DIALECT}}
+      "${module_target}"
+      "${TEST_FRAMEWORK.${TEST_DIALECT}}"
   )
 
-  target_compile_features(${target}
+  target_compile_features("${target}"
     PRIVATE
       cxx_std_23
   )
 
-  set_target_properties(${target}
+  set_target_properties("${target}"
     PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY
         "${CMAKE_BINARY_DIR}/tests"
@@ -208,35 +224,29 @@ function(_create_test_from_file module_target test_file)
     "test"
     "${TEST_KIND}"
   )
-message(STATUS "Labels: ${labels}")
+
   # ----------------------------------------------------------
   # Register with CTest
   # ----------------------------------------------------------
 
   if(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "GTest")
-
     include(GoogleTest)
 
-    gtest_discover_tests(${target}
+    gtest_discover_tests("${target}"
       PROPERTIES LABELS "${labels}"
     )
-
   elseif(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "Catch2")
-
     include(Catch)
 
-    catch_discover_tests(${target}
+    catch_discover_tests("${target}"
       PROPERTIES LABELS "${labels}"
     )
-
   else()
+    add_test(NAME "${target}" COMMAND ${target})
 
-    add_test(NAME ${target} COMMAND ${target})
-
-    set_tests_properties(${target}
+    set_tests_properties("${target}"
       PROPERTIES LABELS "${labels}"
     )
-
   endif()
 
   # ----------------------------------------------------------
@@ -245,36 +255,36 @@ message(STATUS "Labels: ${labels}")
 
   _bind_aggregate_dependency(
     tests
-    ${target}
+    "${target}"
   )
   _bind_aggregate_dependency(
     tests.${TEST_DIALECT}
-    ${target}
+    "${target}"
   )
   _bind_aggregate_dependency(
     tests-${TEST_KIND}
-    ${target}
+    "${target}"
   )
   _bind_aggregate_dependency(
     tests-${TEST_KIND}.${TEST_DIALECT}
-    ${target}
+    "${target}"
   )
     
   _bind_aggregate_dependency(
     ${module_name}.tests
-    ${target}
+    "${target}"
   )
   _bind_aggregate_dependency(
     ${module_name}.tests.${TEST_DIALECT}
-    ${target}
+    "${target}"
   )
   _bind_aggregate_dependency(
     ${module_name}.tests-${TEST_KIND}
-    ${target}
+    "${target}"
   )
   _bind_aggregate_dependency(
     ${module_name}.tests-${TEST_KIND}.${TEST_DIALECT}
-    ${target}
+    "${target}"
   )
 
   # ----------------------------------------------------------
@@ -284,42 +294,42 @@ message(STATUS "Labels: ${labels}")
   _create_run_target(
     tests-${TEST_KIND}
     LABELS
-      ${TEST_KIND}
+      "${TEST_KIND}"
   )
     
   _create_run_target(
     tests-${TEST_KIND}.${TEST_DIALECT}
     LABELS
-      ${TEST_KIND}
-      ${TEST_DIALECT}
+      "${TEST_KIND}"
+      "${TEST_DIALECT}"
   )
 
   _create_run_target(
     ${module_name}.tests
     LABELS
-      ${module_name}
+      "${module_name}"
   )
 
   _create_run_target(
     ${module_name}.tests.${TEST_DIALECT}
     LABELS
-      ${module_name}
-      ${TEST_DIALECT}
+      "${module_name}"
+      "${TEST_DIALECT}"
   )
 
   _create_run_target(
     ${module_name}.tests-${TEST_KIND}
     LABELS
-      ${module_name}
-      ${TEST_KIND}
+      "${module_name}"
+      "${TEST_KIND}"
   )
     
   _create_run_target(
     ${module_name}.tests-${TEST_KIND}.${TEST_DIALECT}
     LABELS
-      ${module_name}
-      ${TEST_KIND}
-      ${TEST_DIALECT}
+      "${module_name}"
+      "${TEST_KIND}"
+      "${TEST_DIALECT}"
   )
 
 endfunction()

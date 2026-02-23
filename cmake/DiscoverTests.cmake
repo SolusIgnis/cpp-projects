@@ -80,7 +80,7 @@ endforeach()
 # ============================================================
 # Verify framework availability.
 # ============================================================
-message(STATUS "DIALECTS BEFORE: " ${TEST_DIALECTS})
+
 foreach(dialect IN LISTS TEST_DIALECTS)
   set(framework_target ${TEST_FRAMEWORK.${dialect}})
   if(NOT TARGET ${framework_target})
@@ -98,7 +98,7 @@ foreach(dialect IN LISTS TEST_DIALECTS)
     endif()
   endif()
 endforeach()
-message(STATUS "DIALECTS AFTER: " ${TEST_DIALECTS})
+
 # ============================================================
 # Include the internal implementation helpers
 # ============================================================

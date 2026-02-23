@@ -36,8 +36,7 @@ function(fetch_ut)
   FetchContent_Declare(
     ut
     GIT_REPOSITORY https://github.com/qlibs/ut.git
-    GIT_TAG main
-    GIT_SHALLOW TRUE
+    GIT_TAG c6752919724ad5e33199751b0b224efb40647539
   )
 
   FetchContent_MakeAvailable(ut)
