@@ -44,8 +44,9 @@ TEST_CASE("Asio Buffer Sequence Concepts", "[net][concepts][buffers]")
 {
     SECTION("Mutable Buffers")
     {
+        using mbarray = std::array<asio::mutable_buffer, 2>;
         CONCEPT_CHECK(AsioMutableBufferSequence<asio::mutable_buffer>);
-        CONCEPT_CHECK(AsioMutableBufferSequence<std::array<asio::mutable_buffer, 2>>);
+        CONCEPT_CHECK(AsioMutableBufferSequence<mbarray>);
         CHECK_FALSE(AsioMutableBufferSequence<asio::const_buffer>);
     }
 
