@@ -42,7 +42,7 @@ function(_parse_test_filename filename module_name)
   set(identifier "[[a-zA-Z0-9_]+")
   
   set(module_group_id "(${identifier}\.)")
-  set(module_name_id "${identifier}")
+  set(module_name_id "${module_name}")
   set(module_part_id "(-${identifier})")
   set(base_name_id "(${module_group_id}${module_name_id}${module_part_id})")
 
@@ -50,9 +50,11 @@ function(_parse_test_filename filename module_name)
   set(dialect_id "(${identifier}(-${identifier}))")
 
   set(test_name_id "(${base_name_id}\.test(-${kind_id})?\.${dialect_id})")
-
+  set(regex_id "^${test_name_id}\.cpp$")
+message(STATUS "RegEx: " "${regex_id}")
+message(STATUS "File: " "${filename}")
   string(REGEX MATCH
-    "^${test_name_id}\.cpp$"
+    "${regex_id}"
     match
     "${filename}"
   )
