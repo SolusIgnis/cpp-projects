@@ -74,7 +74,7 @@ TEST_CASE("Socket Option Concepts", "[net][concepts][options]")
 {
     SECTION("Boolean Options")
     {
-        auto b_s_o_check[](BooleanSocketOption auto opt)
+        auto b_s_o_check = [](BooleanSocketOption auto opt)
         {
             return opt.value();
         };
@@ -84,7 +84,7 @@ TEST_CASE("Socket Option Concepts", "[net][concepts][options]")
 
     SECTION("Integral Options")
     {
-        auto i_s_o_check[](BooleanSocketOption auto opt)
+        auto i_s_o_check = [](BooleanSocketOption auto opt)
         {
             return opt.value();
         };
