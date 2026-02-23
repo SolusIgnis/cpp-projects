@@ -228,7 +228,7 @@ export namespace net::asio_concepts {
         template<typename T, typename Option>
         concept HasGettableSocketOption = requires(T& temp, Option& opt, std::error_code& ec_out) {
                                               { temp.get_option(opt) } -> std::same_as<void>;
-                                              { temp.get_option(opt, ec_out) } -> std::same_as<void>;
+                                              { temp.get_option(opt, ec_out) };
                                           };
 
         /**
