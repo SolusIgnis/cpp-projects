@@ -704,8 +704,7 @@ export namespace net::asio_concepts {
      */
     template<typename T>
     concept ClosableResource = requires(T& temp, std::error_code& ec_out) {
-                                   { std::as_const(temp).is_open() }
-                                   std::convertible_to<bool>;
+                                   { std::as_const(temp).is_open() } -> std::convertible_to<bool>;
                                    { temp.close() } -> std::same_as<void>;
                                    { temp.close(ec_out) };
                                };
