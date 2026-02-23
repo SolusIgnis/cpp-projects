@@ -41,7 +41,7 @@ function(_parse_test_filename filename module_name)
 
   set(identifier "[[:alnum:]_-]+")
   
-  set(base_name_id "(${module_name}(-${identifier})?")
+  set(base_name_id "(${module_name}(-${identifier})?)")
   
   set(kind_id "(${identifier})")
   set(dialect_id "(${identifier})")
