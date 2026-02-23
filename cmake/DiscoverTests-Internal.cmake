@@ -39,13 +39,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/ToolingInfrastructure.cmake)
 
 function(_parse_test_filename filename module_name)
 
-  set(identifier "[[:alnum:]_]+")
+  set(identifier "[[:alnum:]_-]+")
   
-  set(hyphen_suffix "(-${identifier})*")
-  set(base_name_id "(${module_name}${hyphen_suffix})")
+  set(base_name_id "(${module_name}(-${identifier})?")
   
-  set(kind_id "(${identifier}(-${identifier})*)")
-  set(dialect_id "(${identifier}(-${identifier})*)")
+  set(kind_id "(${identifier})")
+  set(dialect_id "(${identifier})")
   
   set(test_name_id "(${base_name_id}\\.test(-${kind_id})?\\.${dialect_id})")
   set(test_id_regex "^${test_name_id}\\.cpp$")
