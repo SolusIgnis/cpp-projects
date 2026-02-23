@@ -74,20 +74,14 @@ TEST_CASE("Socket Option Concepts", "[net][concepts][options]")
 {
     SECTION("Boolean Options")
     {
-        auto b_s_o_check = [](BooleanSocketOption auto opt)
-        {
-            return opt.value();
-        };
+        auto b_s_o_check = [](BooleanSocketOption auto opt) { return opt.value(); };
         CHECK(b_s_o_check<asio::socket_base::keep_alive>({true}));
         CHECK(b_s_o_check<asio::socket_base::reuse_address>({true}));
     }
 
     SECTION("Integral Options")
     {
-        auto i_s_o_check = [](BooleanSocketOption auto opt)
-        {
-            return opt.value();
-        };
+        auto i_s_o_check = [](BooleanSocketOption auto opt) { return opt.value(); };
         CHECK(i_s_o_check<asio::socket_base::receive_buffer_size>({1}) == 1);
         CHECK(i_s_o_check<asio::socket_base::send_low_watermark>({1}) == 1);
     }
