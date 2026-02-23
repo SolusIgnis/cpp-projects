@@ -381,7 +381,10 @@ export namespace net::asio_concepts {
         template<typename T>
         concept AsioAsyncReadStream = AsioExecutorAssociated<T>
                                    && requires(T& temp, asio_sample_completion_token&& token) {
-                                          temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), std::forward<asio_sample_completion_token>(token));
+                                          temp.async_read_some(
+                                              CONCEPT_ARG(AsioMutableBufferSequence),
+                                              std::forward<asio_sample_completion_token>(token)
+                                          );
                                           temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), asio::deferred);
                                           temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), asio::detached);
                                           temp.async_read_some(CONCEPT_ARG(AsioMutableBufferSequence), asio::use_awaitable);
@@ -397,8 +400,12 @@ export namespace net::asio_concepts {
          */
         template<typename T>
         concept AsioSyncReadStream = requires(T& temp, std::error_code& ec_out) {
-                                         { temp.read_some(CONCEPT_ARG(AsioMutableBufferSequence)) } -> std::convertible_to<std::size_t>;
-                                         { temp.read_some(CONCEPT_ARG(AsioMutableBufferSequence), ec_out) } -> std::convertible_to<std::size_t>;
+                                         {
+                                             temp.read_some(CONCEPT_ARG(AsioMutableBufferSequence))
+                                         } -> std::convertible_to<std::size_t>;
+                                         {
+                                             temp.read_some(CONCEPT_ARG(AsioMutableBufferSequence), ec_out)
+                                         } -> std::convertible_to<std::size_t>;
                                      };
 
         /**
@@ -411,7 +418,10 @@ export namespace net::asio_concepts {
         template<typename T>
         concept AsioAsyncWriteStream = AsioExecutorAssociated<T>
                                     && requires(T& temp, asio_sample_completion_token&& token) {
-                                           temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), std::forward<asio_sample_completion_token>(token));
+                                           temp.async_write_some(
+                                               CONCEPT_ARG(AsioConstBufferSequence),
+                                               std::forward<asio_sample_completion_token>(token)
+                                           );
                                            temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), asio::deferred);
                                            temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), asio::detached);
                                            temp.async_write_some(CONCEPT_ARG(AsioConstBufferSequence), asio::use_awaitable);
@@ -427,8 +437,12 @@ export namespace net::asio_concepts {
          */
         template<typename T>
         concept AsioSyncWriteStream = requires(T& temp, std::error_code& ec_out) {
-                                          { temp.write_some(CONCEPT_ARG(AsioConstBufferSequence)) } -> std::convertible_to<std::size_t>;
-                                          { temp.write_some(CONCEPT_ARG(AsioConstBufferSequence), ec_out) } -> std::convertible_to<std::size_t>;
+                                          {
+                                              temp.write_some(CONCEPT_ARG(AsioConstBufferSequence))
+                                          } -> std::convertible_to<std::size_t>;
+                                          {
+                                              temp.write_some(CONCEPT_ARG(AsioConstBufferSequence), ec_out)
+                                          } -> std::convertible_to<std::size_t>;
                                       };
     } //namespace streams
 
@@ -608,7 +622,9 @@ export namespace net::asio_concepts {
                 temp.async_receive(CONCEPT_ARG(AsioMutableBufferSequence), asio::use_awaitable);
                 temp.async_receive(CONCEPT_ARG(AsioMutableBufferSequence), asio::use_future);
 
-                temp.async_receive(CONCEPT_ARG(AsioMutableBufferSequence), flags, std::forward<asio_sample_completion_token>(token));
+                temp.async_receive(
+                    CONCEPT_ARG(AsioMutableBufferSequence), flags, std::forward<asio_sample_completion_token>(token)
+                );
                 temp.async_receive(CONCEPT_ARG(AsioMutableBufferSequence), flags, asio::deferred);
                 temp.async_receive(CONCEPT_ARG(AsioMutableBufferSequence), flags, asio::detached);
                 temp.async_receive(CONCEPT_ARG(AsioMutableBufferSequence), flags, asio::use_awaitable);
