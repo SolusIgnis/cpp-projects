@@ -277,5 +277,8 @@ jobs:
       - name: Build
         run: cmake --build --preset=clang-debug
 
+      - name: Run tests
+        run: cmake --build --preset=clang-debug --target=tests.run
+        
       - name: clang-tidy checks
         run: cmake --build --preset=clang-debug --target=tidy-check-fast
