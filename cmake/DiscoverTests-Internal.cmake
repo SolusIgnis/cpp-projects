@@ -50,7 +50,7 @@ function(_parse_test_filename filename)
   set(dialect_id "(${identifier}(-${identifier})*)")
   
   set(test_name_id "(${base_name_id}\\.test(-${kind_id})?\\.${dialect_id})")
-
+message(STATUS "Test Name ID:" "${test_name_id}")
   string(REGEX MATCH
     "^${test_name_id}\\.cpp$"
     match
@@ -176,13 +176,13 @@ function(_create_test_from_file module_target test_file)
 
   set(target "${TEST_NAME}")
 
-  #message(STATUS "Module Name: ${module_name}")
-  #message(STATUS "Module Target: ${module_target}")
-  #message(STATUS "Test File: ${filename}")
-  #message(STATUS "Test Name: ${TEST_NAME}")
-  #message(STATUS "Test Base Name: ${TEST_BASE_NAME}")
-  #message(STATUS "Test Kind: ${TEST_KIND}")
-  #message(STATUS "Test Dialect: ${TEST_DIALECT}")
+  message(STATUS "Module Name: ${module_name}")
+  message(STATUS "Module Target: ${module_target}")
+  message(STATUS "Test File: ${filename}")
+  message(STATUS "Test Name: ${TEST_NAME}")
+  message(STATUS "Test Base Name: ${TEST_BASE_NAME}")
+  message(STATUS "Test Kind: ${TEST_KIND}")
+  message(STATUS "Test Dialect: ${TEST_DIALECT}")
 
   # ----------------------------------------------------------
   # Executable
