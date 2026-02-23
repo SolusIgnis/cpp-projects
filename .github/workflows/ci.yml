@@ -7,9 +7,9 @@ concurrency:
   cancel-in-progress: true
   
 on:
-  # Triggers on pushes to main or any release branch
+  # Triggers on pushes to main (to run post-PR)
   push:
-    branches: [ main, '**/release/*' ]
+    branches: [ main ]
   # Triggers on ALL PRs regardless of location
   pull_request:
   # Allows manual workflow runs via the GitHub UI
