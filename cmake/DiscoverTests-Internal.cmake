@@ -73,7 +73,7 @@ function(_parse_test_filename filename)
   # 4 = (ignored but required by POSIX-ERE)
   # 5 = (ignored but required by POSIX-ERE)
   # 6 = kind (optional)
-  # 8 = (ignored but required by POSIX-ERE)
+  # 7 = (ignored but required by POSIX-ERE)
   # 8 = dialect
   # 9 = (ignored but required by POSIX-ERE)
 
