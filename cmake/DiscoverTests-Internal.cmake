@@ -37,13 +37,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/ToolingInfrastructure.cmake)
 #
 # ============================================================
 
-function(_parse_test_filename filename)
+function(_parse_test_filename filename module_name)
 
   set(identifier "[[:alnum:]_]+")
   
-  set(dotted_identifier "${identifier}(\\.${identifier})*")
   set(hyphen_suffix "(-${identifier})*")
-  set(base_name_id "(${dotted_identifier}${hyphen_suffix})")
+  set(base_name_id "(${module_name}${hyphen_suffix})")
   
   set(kind_id "(${identifier}(-${identifier})*)")
   set(dialect_id "(${identifier}(-${identifier})*)")
@@ -161,7 +160,7 @@ function(_create_test_from_file module_target test_file)
 
   get_filename_component(filename "${test_file}" NAME)
 
-  _parse_test_filename("${filename}")
+  _parse_test_filename("${filename}" "${module_name}")
   if(NOT TEST_NAME)
     return()
   endif()
