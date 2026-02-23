@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 /**
  * @file net.asio_concepts.cppm
- * @version 0.1.1
+ * @version 0.1.2
  * @date February 14, 2026
  *
  * @copyright © 2025-2026 Jeremy Murphy and any Contributors
