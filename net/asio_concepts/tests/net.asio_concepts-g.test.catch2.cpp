@@ -38,16 +38,16 @@ TEST_CASE("Asio Buffer Sequence Concepts", "[net][concepts][buffers]")
 {
     SECTION("Mutable Buffers")
     {
-        auto m_b_s_check = [](AsioMutableBufferSequence auto buffers)->bool{ return buffers.size() == 0; };
-        
+        auto m_b_s_check = [](AsioMutableBufferSequence auto buffers) -> bool { return buffers.size() == 0; };
+
         CHECK(m_b_s_check(asio::mutable_buffer{}));
-        CHECK(m_b_s_check<std::array(asio::mutable_buffer, 2>{}));
+        CHECK(m_b_s_check < std::array(asio::mutable_buffer, 2 > {}));
         CHECK_FALSE(AsioMutableBufferSequence<asio::const_buffer>);
     }
 
     SECTION("Const Buffers")
     {
-        auto c_b_s_check = [](AsioConstBufferSequence auto buffers)->bool{ return buffers.size() == 0; };
+        auto c_b_s_check = [](AsioConstBufferSequence auto buffers) -> bool { return buffers.size() == 0; };
 
         CHECK(c_b_s_check<asio::const_buffer>({}));
         CHECK(c_b_s_check<asio::mutable_buffer>({})); // Mutable satisfies Const
@@ -74,14 +74,20 @@ TEST_CASE("Socket Option Concepts", "[net][concepts][options]")
 {
     SECTION("Boolean Options")
     {
-        auto b_s_o_check [](BooleanSocketOption auto opt){ return opt.value(); };
+        auto b_s_o_check[](BooleanSocketOption auto opt)
+        {
+            return opt.value();
+        };
         CHECK(b_s_o_check<asio::socket_base::keep_alive>({true}));
         CHECK(b_s_o_check<asio::socket_base::reuse_address>({true}));
     }
 
     SECTION("Integral Options")
     {
-        auto i_s_o_check [](BooleanSocketOption auto opt){ return opt.value(); };
+        auto i_s_o_check[](BooleanSocketOption auto opt)
+        {
+            return opt.value();
+        };
         CHECK(i_s_o_check<asio::socket_base::receive_buffer_size>({1}) == 1);
         CHECK(i_s_o_check<asio::socket_base::send_low_watermark>({1}) == 1);
     }
