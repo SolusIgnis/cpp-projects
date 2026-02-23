@@ -41,18 +41,19 @@ function(_parse_test_filename filename)
 
   set(identifier "[[:alnum:]_]+")
   
-  set(module_group_id "(${identifier}\\.)")
-  set(module_name_id "${identifier}")
-  set(module_part_id "(-${identifier})")
-  set(base_name_id "(${module_group_id}*${module_name_id}${module_part_id}*)")
+  #set(module_group_id "(${identifier}\\.)")
+  #set(module_name_id "${identifier}")
+  #set(module_part_id "(-${identifier})")
+  set(base_name_id "(${identifier}(\\.${identifier})*(-${identifier})*)")
   
   set(kind_id "(${identifier}(-${identifier})*)")
   set(dialect_id "(${identifier}(-${identifier})*)")
   
   set(test_name_id "(${base_name_id}\\.test(-${kind_id})?\\.${dialect_id})")
-message(STATUS "Test Name ID:" "${test_name_id}")
+  set(test_id_regex "^${test_name_id}\\.cpp$")
+message(STATUS "Test ID RegEx:" "${test_id_regex}")
   string(REGEX MATCH
-    "^${test_name_id}\\.cpp$"
+    "${test_id_regex}"
     match
     "${filename}"
   )
