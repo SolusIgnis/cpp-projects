@@ -228,7 +228,11 @@ function(_create_test_from_file module_target test_file)
   # ----------------------------------------------------------
   # Register with CTest
   # ----------------------------------------------------------
-
+message(STATUS
+  "Target: ${target}"
+  "Dialect: ${TEST_DIALECT}"
+  "Discovery: ${TEST_DISCOVERY.${TEST_DIALECT}}"
+)
   if(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "GTest")
     include(GoogleTest)
 
