@@ -279,8 +279,8 @@ jobs:
 
       - name: Verify Catch2 tests
         run: |
-          ./tests/net.asio_concepts-g.test.catch2 --list-test-names-only
-          ./tests/net.asio_concepts-x.test.catch2 --list-test-names-only
+          /build/clang-debug/tests/net.asio_concepts-g.test.catch2 --list-test-names-only
+          /build/clang-debug/tests/net.asio_concepts-x.test.catch2 --list-test-names-only
           ctest -V
 
       - name: Run tests
