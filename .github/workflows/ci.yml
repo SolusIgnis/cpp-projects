@@ -279,8 +279,8 @@ jobs:
 
       - name: Verify Catch2 tests
         run: |
-          $GITHUB_WORKSPACE/build/clang/clang-debug/tests/net.asio_concepts-g.test.catch2 --list-test-names-only
-          $GITHUB_WORKSPACE/build/clang/clang-debug/tests/net.asio_concepts-x.test.catch2 --list-test-names-only
+          $GITHUB_WORKSPACE/build/clang/clang-debug/tests/net.asio_concepts-g.test.catch2 --list-tests
+          $GITHUB_WORKSPACE/build/clang/clang-debug/tests/net.asio_concepts-x.test.catch2 --list-tests
           ctest -V
 
       - name: Run tests
