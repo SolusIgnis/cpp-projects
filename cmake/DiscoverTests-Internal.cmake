@@ -233,6 +233,7 @@ message(STATUS
   "Target: ${target} "
   "Dialect: ${TEST_DIALECT} "
   "Discovery: ${TEST_DISCOVERY.${TEST_DIALECT}} "
+  "Labels: ${labels} "
 )
   if(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "GTest")
     include(GoogleTest)
@@ -243,13 +244,11 @@ message(STATUS
   elseif(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "Catch2")
     include(Catch)
 
-    catch_discover_tests("${target}"
-      TEST_LIST discovered_tests
-    )
+    string(REPLACE ";" " " labels_str "${labels}")
 
-    set_tests_properties(${discovered_tests}
+    catch_discover_tests("${target}"
       PROPERTIES
-        LABELS "${labels}"
+        LABELS "${labels_str}"
     )
   else()
     add_test(NAME "${target}" COMMAND ${target})
