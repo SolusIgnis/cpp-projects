@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 
+include_guard(GLOBAL)
+
 # ===========================================================================
 # Tooling Infrastructure (Options, Cache Variables, Registries, and Helper Functions)
 # ===========================================================================
