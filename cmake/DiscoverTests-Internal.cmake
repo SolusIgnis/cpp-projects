@@ -137,6 +137,7 @@ function(_create_run_target build_target)
   
   if(NOT TARGET "${target}")
     set(ctest_args "--output-on-failure")
+    list(APPEND ctest_args "--test-dir" "${CMAKE_BINARY_DIR}/tests" "-V")
     foreach(label IN LISTS ARG_LABELS)
       list(APPEND ctest_args "-L" "${label}")
     endforeach()
