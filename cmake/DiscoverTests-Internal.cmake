@@ -244,14 +244,13 @@ message(STATUS
     include(Catch)
 
     catch_discover_tests("${target}"
-      PROPERTIES LABELS "${labels}"
-      DEBUG
+      TEST_LIST discovered_tests
     )
-    #add_test(NAME "${target}" COMMAND ${target})
 
-    #set_tests_properties("${target}"
-    #  PROPERTIES LABELS "${labels}"
-    #)
+    set_tests_properties(${discovered_tests}
+      PROPERTIES
+        LABELS "${labels}"
+    )
   else()
     add_test(NAME "${target}" COMMAND ${target})
 
