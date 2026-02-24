@@ -229,21 +229,24 @@ function(_create_test_from_file module_target test_file)
   # Register with CTest
   # ----------------------------------------------------------
 message(STATUS
-  "Target: ${target}"
-  "Dialect: ${TEST_DIALECT}"
-  "Discovery: ${TEST_DISCOVERY.${TEST_DIALECT}}"
+  "Target: ${target} "
+  "Dialect: ${TEST_DIALECT} "
+  "Discovery: ${TEST_DISCOVERY.${TEST_DIALECT}} "
 )
   if(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "GTest")
     include(GoogleTest)
 
     gtest_discover_tests(${target}
-      PROPERTIES LABELS "${labels}"
+      PROPERTIES LABELS ${labels}
     )
   elseif(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "Catch2")
     include(Catch)
-
+message(STATUS
+"catch_discover_tests(${target}
+      PROPERTIES LABELS ${labels}
+    )")
     catch_discover_tests(${target}
-      PROPERTIES LABELS "${labels}"
+      PROPERTIES LABELS ${labels}
     )
   else()
     add_test(NAME "${target}" COMMAND ${target})
