@@ -244,11 +244,17 @@ message(STATUS
 message(STATUS
 "catch_discover_tests(${target}
       PROPERTIES LABELS ${labels}
+      DEBUG
     )")
     catch_discover_tests("${target}"
       PROPERTIES LABELS "${labels}"
+      DEBUG
     )
-    
+    #add_test(NAME "${target}" COMMAND ${target})
+
+    #set_tests_properties("${target}"
+    #  PROPERTIES LABELS "${labels}"
+    #)
   else()
     add_test(NAME "${target}" COMMAND ${target})
 
