@@ -61,14 +61,9 @@ struct FakeWaitableNoWait {
 
 TEST_CASE("buffers", "[concepts][buffers]")
 {
-<<<<<<< refs/remotes/origin/net/asio_concepts/release/0.1.2
-    CONCEPT_CHECK(AsioMutableBufferSequence<asio::mutable_buffer>);
-    CONCEPT_CHECK(AsioMutableBufferSequence<std::array<asio::mutable_buffer, 4>>);
-=======
     using mb_array = std::array<asio::mutable_buffer, 4>;
     CONCEPT_CHECK(AsioMutableBufferSequence<asio::mutable_buffer>);
     CONCEPT_CHECK(AsioMutableBufferSequence<mb_array>);
->>>>>>> Last Sync: 2026-02-23 18:29 (Mobile)
     CONCEPT_CHECK(AsioMutableBufferSequence<std::vector<asio::mutable_buffer>>);
 
     CONCEPT_CHECK(AsioConstBufferSequence<asio::const_buffer>);
