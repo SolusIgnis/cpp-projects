@@ -238,7 +238,7 @@ message(STATUS
     include(GoogleTest)
 
     gtest_discover_tests("${target}"
-      PROPERTIES LABELS "${labels}"
+      PROPERTIES LABELS ${labels}
     )
   elseif(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "Catch2")
     include(Catch)
@@ -247,10 +247,7 @@ message(STATUS
       PROPERTIES LABELS ${labels}
       DEBUG
     )")
-    catch_discover_tests("${target}"
-      PROPERTIES LABELS "${labels}"
-      DEBUG
-    )
+    
     #add_test(NAME "${target}" COMMAND ${target})
 
     #set_tests_properties("${target}"
