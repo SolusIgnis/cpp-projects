@@ -244,11 +244,15 @@ message(STATUS
   elseif(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "Catch2")
     include(Catch)
 
-    string(REPLACE ";" " " labels_str "${labels}")
-
+    set(labels_block)
+    foreach(label IN LISTS labels)
+      list(APPEND labels_block LABELS ${label})
+    endforeach()
+message(STATUS "Labels Block (Quoted): " "${labels_block}")
+message(STATUS "Labels Block: " ${labels_block}) 
     catch_discover_tests("${target}"
       PROPERTIES
-        LABELS "${labels_str}"
+        ${labels_block}
     )
   else()
     add_test(NAME "${target}" COMMAND ${target})
