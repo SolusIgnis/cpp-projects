@@ -242,12 +242,11 @@ message(STATUS
     )
   elseif(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "Catch2")
     include(Catch)
-message(STATUS
-"catch_discover_tests(${target}
-      PROPERTIES LABELS ${labels}
+
+    catch_discover_tests("${target}"
+      PROPERTIES LABELS "${labels}"
       DEBUG
-    )")
-    
+    )
     #add_test(NAME "${target}" COMMAND ${target})
 
     #set_tests_properties("${target}"
