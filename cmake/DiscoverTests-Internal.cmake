@@ -174,14 +174,16 @@ function(_create_test_from_file module_target test_file)
 
   set(target "${TEST_NAME}")
 
-  message(STATUS "Module Name: ${module_name}")
-  message(STATUS "Module Target: ${module_target}")
-  message(STATUS "Test File: ${filename}")
-  message(STATUS "Test Name: ${TEST_NAME}")
-  message(STATUS "Test Base Name: ${TEST_BASE_NAME}")
-  message(STATUS "Test Kind: ${TEST_KIND}")
-  message(STATUS "Test Dialect: ${TEST_DIALECT}")
-
+  if(DEFINED DEBUG_TEST_REGEX)
+    message(STATUS "Module Name: ${module_name}")
+    message(STATUS "Module Target: ${module_target}")
+    message(STATUS "Test File: ${filename}")
+    message(STATUS "Test Name: ${TEST_NAME}")
+    message(STATUS "Test Base Name: ${TEST_BASE_NAME}")
+    message(STATUS "Test Kind: ${TEST_KIND}")
+    message(STATUS "Test Dialect: ${TEST_DIALECT}")
+  endif()
+  
   # ----------------------------------------------------------
   # Executable
   # ----------------------------------------------------------
@@ -211,7 +213,7 @@ function(_create_test_from_file module_target test_file)
   )
   
   register_tooling_test(${target})
-  
+
   # ----------------------------------------------------------
   # Labels
   # ----------------------------------------------------------
@@ -230,13 +232,13 @@ function(_create_test_from_file module_target test_file)
   if(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "GTest")
     include(GoogleTest)
 
-    gtest_discover_tests("${target}"
+    gtest_discover_tests(${target}
       PROPERTIES LABELS "${labels}"
     )
   elseif(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "Catch2")
     include(Catch)
 
-    catch_discover_tests("${target}"
+    catch_discover_tests(${target}
       PROPERTIES LABELS "${labels}"
     )
   else()
