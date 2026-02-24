@@ -201,7 +201,7 @@ function(_create_test_from_file module_target test_file)
       "${module_target}"
       "${TEST_FRAMEWORK.${TEST_DIALECT}}"
   )
-message(STATUS "Link Libraries (${target}): \"${module_target}\" \"${TEST_FRAMEWORK.${TEST_DIALECT}}\"")
+
   target_compile_features("${target}"
     PRIVATE
       $<TARGET_PROPERTY:${module_target},COMPILE_FEATURES>
@@ -229,12 +229,7 @@ message(STATUS "Link Libraries (${target}): \"${module_target}\" \"${TEST_FRAMEW
   # ----------------------------------------------------------
   # Register with CTest
   # ----------------------------------------------------------
-message(STATUS
-  "Target: ${target} "
-  "Dialect: ${TEST_DIALECT} "
-  "Discovery: ${TEST_DISCOVERY.${TEST_DIALECT}} "
-  "Labels: ${labels} "
-)
+
   if(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "GTest")
     include(GoogleTest)
 
@@ -248,8 +243,7 @@ message(STATUS
     foreach(label IN LISTS labels)
       list(APPEND labels_block LABELS ${label})
     endforeach()
-message(STATUS "Labels Block (Quoted): " "${labels_block}")
-message(STATUS "Labels Block: " ${labels_block}) 
+
     catch_discover_tests("${target}"
       PROPERTIES
         ${labels_block}

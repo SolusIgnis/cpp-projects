@@ -49,6 +49,7 @@ set(_DISCOVER_TESTS_INCLUDED TRUE)
 # ============================================================
 
 include(CTest)
+
 get_property(testing_enabled GLOBAL PROPERTY CMAKE_TESTING_ENABLED)
 if(NOT testing_enabled)
   enable_testing()
@@ -132,23 +133,6 @@ endforeach()
 # Public API
 # ============================================================
 
-function(debug_target target)
-  message(STATUS "=== TARGET DEBUG: ${target} ===")
-
-  foreach(prop
-    LINK_LIBRARIES
-    INTERFACE_LINK_LIBRARIES
-    MANUALLY_ADDED_DEPENDENCIES
-    INTERFACE_INCLUDE_DIRECTORIES
-    INCLUDE_DIRECTORIES
-  )
-    get_target_property(val ${target} ${prop})
-    if(val)
-      message(STATUS "${prop}: ${val}")
-    endif()
-  endforeach()
-endfunction()
-
 function(add_tests_for_module module_target)
 
   if(NOT TARGET ${module_target})
@@ -170,12 +154,4 @@ function(add_tests_for_module module_target)
   foreach(test_file IN LISTS test_files)
     _create_test_from_file(${module_target} "${test_file}")
   endforeach()
-
-  debug_target("tests.run")
-  debug_target("tests")
-  debug_target("net.asio_concepts-g.test.catch2")
-  debug_target("net.asio_concepts-x.test.catch2")
-  get_property(all_tests DIRECTORY PROPERTY TESTS)
-  message(STATUS "Registered tests: ${all_tests}")
-  message(STATUS "Location: " "${CMAKE_BINARY_DIR}/tests")
 endfunction()
