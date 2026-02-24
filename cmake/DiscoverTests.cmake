@@ -49,7 +49,10 @@ set(_DISCOVER_TESTS_INCLUDED TRUE)
 # ============================================================
 
 include(CTest)
-enable_testing()
+get_property(testing_enabled GLOBAL PROPERTY CMAKE_TESTING_ENABLED)
+if(NOT testing_enabled)
+  enable_testing()
+endif()
 
 # ============================================================
 # Dialect registry (override in root if desired)
