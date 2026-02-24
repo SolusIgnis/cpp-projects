@@ -49,6 +49,7 @@ set(_DISCOVER_TESTS_INCLUDED TRUE)
 # ============================================================
 
 include(CTest)
+enable_testing()
 
 # ============================================================
 # Dialect registry (override in root if desired)
