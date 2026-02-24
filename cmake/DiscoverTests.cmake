@@ -169,6 +169,8 @@ function(add_tests_for_module module_target)
 
   debug_target("tests.run")
   debug_target("tests")
+  debug_target("net.asio_concepts-g.test.catch2")
+  debug_target("net.asio_concepts-x.test.catch2")
   get_property(all_tests DIRECTORY PROPERTY TESTS)
   message(STATUS "Registered tests: ${all_tests}")
 endfunction()

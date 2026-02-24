@@ -200,7 +200,7 @@ function(_create_test_from_file module_target test_file)
       "${module_target}"
       "${TEST_FRAMEWORK.${TEST_DIALECT}}"
   )
-
+message(STATUS "Link Libraries (${target}): \"${module_target}\" \"${TEST_FRAMEWORK.${TEST_DIALECT}}\"")
   target_compile_features("${target}"
     PRIVATE
       $<TARGET_PROPERTY:${module_target},COMPILE_FEATURES>
@@ -212,7 +212,7 @@ function(_create_test_from_file module_target test_file)
         "${CMAKE_BINARY_DIR}/tests"
   )
   
-  register_tooling_test(${target})
+  register_tooling_test("${target}")
 
   # ----------------------------------------------------------
   # Labels
@@ -236,8 +236,8 @@ message(STATUS
   if(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "GTest")
     include(GoogleTest)
 
-    gtest_discover_tests(${target}
-      PROPERTIES LABELS ${labels}
+    gtest_discover_tests("${target}"
+      PROPERTIES LABELS "${labels}"
     )
   elseif(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "Catch2")
     include(Catch)
@@ -245,9 +245,10 @@ message(STATUS
 "catch_discover_tests(${target}
       PROPERTIES LABELS ${labels}
     )")
-    catch_discover_tests(${target}
-      PROPERTIES LABELS ${labels}
+    catch_discover_tests("${target}"
+      PROPERTIES LABELS "${labels}"
     )
+    
   else()
     add_test(NAME "${target}" COMMAND ${target})
 
