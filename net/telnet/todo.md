@@ -197,6 +197,17 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: Low (depends on C++23 adoption).
   - **Estimated Effort**: 2–3 days (1 for refactoring, 1–1.5 for testing, 0.5 for documentation).
 
+- [ ] **qlibs/reflect Reflection for Option Names**:
+  - **Task**: Yse `qlibs/reflect` library reflection to auto-populate `option` names.
+  - **Steps**:
+    - Prototype reflection to generate `std::string` names for `option::id_num`.
+    - Add customization point for user-set names.
+    - Update `option` constructor and `make_option` in `telnet-options.cppm`.
+    - Test with `:protocol_fsm`, `:stream`, `:internal`.
+  - **Dependencies**: Affects `:options`, depends on C++26 support.
+  - **Priority**: High/Deferred (improves logging, depends on C++26).
+  - **Estimated Effort**: 2–3 days (1 for prototyping, 1–1.5 for implementation, 0.5 for testing).
+
 - [ ] **C++26 Reflection for Option Names**:
   - **Task**: Use C++26 reflection to auto-populate `option` names.
   - **Steps**:
