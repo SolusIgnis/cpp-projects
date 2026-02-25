@@ -195,8 +195,8 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
     - Add customization point for user-set names.
     - Update `option` constructor and `make_option` in `telnet-options.cppm`.
     - Test with `:protocol_fsm`, `:stream`, `:internal`.
-  - **Dependencies**: Affects `:options`, depends on C++26 support.
-  - **Priority**: High/Deferred (improves logging, depends on C++26).
+  - **Dependencies**: Affects `:options`, depends on `qlibs/reflect` integration.
+  - **Priority**: Medium (useful but temporary solution).
   - **Estimated Effort**: 2–3 days (1 for prototyping, 1–1.5 for implementation, 0.5 for testing).
 
 - [ ] **C++26 Reflection for Option Names**:
