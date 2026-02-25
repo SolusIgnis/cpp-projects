@@ -111,15 +111,6 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: Low (curiosity and minor redundancy reduction)
   - **Estimated Effort**: 1 hour
 
-10. [✔️] **Refine Socket Concepts for MutableBufferSequence, ConstBufferSequence, and CompletionToken Method Parameters** (Completed February 14, 2026):
-  - **Task**: Use the unevaluated immediately-invoked lambda trick from the Orcs/Heroes CPPCon24 talk to refine the socket concepts from the `net.asio_concepts` module.
-  - **Steps**:
-    - Identify concepts with templated member functions.
-    - Use the IIFE lambda trick to model the template parameters in the concept definitions.
-  - **Dependencies**: `net.asio_concepts` and `:concepts`
-  - **Priority**: Medium (concept refinement is useful ahead of TLS implementation)
-  - **Estimated Effort**: Completed in 1 day
-  
 ### Phase 7 Milestones
 01. [ ] **Implement a strand in `telnet::stream`**:
   - **Task**: Implement a strand as the executor type for `telnet::stream`.
@@ -198,7 +189,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Estimated Effort**: 2–3 days (1 for refactoring, 1–1.5 for testing, 0.5 for documentation).
 
 - [ ] **qlibs/reflect Reflection for Option Names**:
-  - **Task**: Yse `qlibs/reflect` library reflection to auto-populate `option` names.
+  - **Task**: Use `qlibs/reflect` library reflection to auto-populate `option` names.
   - **Steps**:
     - Prototype reflection to generate `std::string` names for `option::id_num`.
     - Add customization point for user-set names.
