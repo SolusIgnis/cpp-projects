@@ -15,11 +15,9 @@ using namespace net::telnet;
 // All RFC command range formatting must not throw
 // ============================================================
 
-TEST_CASE("all RFC command-range values format without throwing",
-          "[net.telnet][types][integration][command]")
+TEST_CASE("all RFC command-range values format without throwing", "[net.telnet][types][integration][command]")
 {
-    for (int value = 0xEF; value <= 0xFF; ++value)
-    {
+    for (int value = 0xEF; value <= 0xFF; ++value) {
         auto cmd = static_cast<command>(static_cast<byte_t>(value));
 
         REQUIRE_NOTHROW(std::format("{}", cmd));
@@ -32,11 +30,9 @@ TEST_CASE("all RFC command-range values format without throwing",
 // Full 0-255 robustness check (no UB, no crashes)
 // ============================================================
 
-TEST_CASE("all 256 possible command byte values are safely formattable",
-          "[net.telnet][types][integration][robustness]")
+TEST_CASE("all 256 possible command byte values are safely formattable", "[net.telnet][types][integration][robustness]")
 {
-    for (int value = 0; value <= 0xFF; ++value)
-    {
+    for (int value = 0; value <= 0xFF; ++value) {
         auto cmd = static_cast<command>(static_cast<byte_t>(value));
         REQUIRE_NOTHROW(std::format("{}", cmd));
     }
@@ -46,12 +42,11 @@ TEST_CASE("all 256 possible command byte values are safely formattable",
 // Hex formatting preserves underlying value width and lowercase
 // ============================================================
 
-TEST_CASE("hex formatting is zero-padded lowercase",
-          "[net.telnet][types][integration][format]")
+TEST_CASE("hex formatting is zero-padded lowercase", "[net.telnet][types][integration][format]")
 {
     auto formatted = std::format("{:x}", command::eor);
 
-    REQUIRE(formatted.size() == 4);       // "0x??"
+    REQUIRE(formatted.size() == 4); // "0x??"
     REQUIRE(formatted.starts_with("0x"));
 }
 
@@ -59,14 +54,9 @@ TEST_CASE("hex formatting is zero-padded lowercase",
 // Composability inside larger formatted expressions
 // ============================================================
 
-TEST_CASE("formatter composes inside nested format expressions",
-          "[net.telnet][types][integration][composition]")
+TEST_CASE("formatter composes inside nested format expressions", "[net.telnet][types][integration][composition]")
 {
-    auto msg = std::format(
-        "[{}:{}]",
-        command::iac,
-        negotiation_direction::remote
-    );
+    auto msg = std::format("[{}:{}]", command::iac, negotiation_direction::remote);
 
     REQUIRE(msg == "[IAC (0xff):remote]");
 }
@@ -75,8 +65,7 @@ TEST_CASE("formatter composes inside nested format expressions",
 // Round-trip consistency check
 // ============================================================
 
-TEST_CASE("hex format matches underlying numeric value",
-          "[net.telnet][types][integration][consistency]")
+TEST_CASE("hex format matches underlying numeric value", "[net.telnet][types][integration][consistency]")
 {
     auto cmd = command::sb;
     auto hex = std::format("{:x}", cmd);
