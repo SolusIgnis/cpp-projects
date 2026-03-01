@@ -3,9 +3,15 @@
 // Strict black-box tests of error enums and categories.
 
 import net.telnet;
-import std;
+//import std;
 
 #include <catch2/catch_test_macros.hpp>
+
+#include <string_view>
+#include <system_error>
+#include <type_traits>
+
+#include <cstdint>
 
 using namespace net::telnet;
 

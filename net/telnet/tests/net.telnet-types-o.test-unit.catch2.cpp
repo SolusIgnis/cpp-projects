@@ -4,9 +4,12 @@
 
 import net.telnet;
 
-import std;
+//import std;
 
 #include <catch2/catch_test_macros.hpp>
+
+#include <format>
+#include <type_traits>
 
 using namespace net::telnet;
 

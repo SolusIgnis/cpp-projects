@@ -3,9 +3,11 @@
 // Validates std::error_code interoperability and condition mapping.
 
 import net.telnet;
-import std;
+//import std;
 
 #include <catch2/catch_test_macros.hpp>
+
+#include <system_error>
 
 using namespace net::telnet;
 
