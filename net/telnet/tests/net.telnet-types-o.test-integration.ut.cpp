@@ -3,26 +3,27 @@
 // Verifies interoperability with std library and full value ranges.
 
 import net.telnet;
-
-#include <catch2/catch_test_macros.hpp>
-#include <format>
-#include <string>
-#include <array>
+import ut;
 
 using namespace net::telnet;
+using namespace ut;
 
 // ============================================================
 // All RFC command range formatting must not throw
 // ============================================================
 
-TEST_CASE("all RFC command-range values format without throwing", "[net.telnet][types][integration][command]")
+"all RFC command-range values format without throwing"_test = [] mutable
 {
     for (int value = 0xEF; value <= 0xFF; ++value) {
         auto cmd = static_cast<command>(static_cast<byte_t>(value));
 
-        REQUIRE_NOTHROW(std::format("{}", cmd));
-        REQUIRE_NOTHROW(std::format("{:n}", cmd));
-        REQUIRE_NOTHROW(std::format("{:x}", cmd));
+        try {
+            std::format("{}", cmd);
+            std::format("{:n}", cmd);
+            std::format("{:x}", cmd);
+        } catch(...) {
+            expect(false) << "std::format throws for command: " << cmd;
+        }
     }
 }
 
@@ -30,11 +31,16 @@ TEST_CASE("all RFC command-range values format without throwing", "[net.telnet][
 // Full 0-255 robustness check (no UB, no crashes)
 // ============================================================
 
-TEST_CASE("all 256 possible command byte values are safely formattable", "[net.telnet][types][integration][robustness]")
+"all 256 possible command byte values are safely formattable"_test = [] mutable
 {
     for (int value = 0; value <= 0xFF; ++value) {
         auto cmd = static_cast<command>(static_cast<byte_t>(value));
-        REQUIRE_NOTHROW(std::format("{}", cmd));
+
+        try {
+            std::format("{}", cmd);
+        } catch(...) {
+            expect(false) << "std::format throws for command: " << cmd;
+        }
     }
 }
 
@@ -42,33 +48,33 @@ TEST_CASE("all 256 possible command byte values are safely formattable", "[net.t
 // Hex formatting preserves underlying value width and lowercase
 // ============================================================
 
-TEST_CASE("hex formatting is zero-padded lowercase", "[net.telnet][types][integration][format]")
+"hex formatting is zero-padded lowercase"_test = [] mutable
 {
     auto formatted = std::format("{:x}", command::eor);
 
-    REQUIRE(formatted.size() == 4); // "0x??"
-    REQUIRE(formatted.starts_with("0x"));
+    expect(formatted.size() == 4); // "0x??"
+    expect(formatted.starts_with("0x"));
 }
 
 // ============================================================
 // Composability inside larger formatted expressions
 // ============================================================
 
-TEST_CASE("formatter composes inside nested format expressions", "[net.telnet][types][integration][composition]")
+"formatter composes inside nested format expressions"_test = [] mutable
 {
     auto msg = std::format("[{}:{}]", command::iac, negotiation_direction::remote);
 
-    REQUIRE(msg == "[IAC (0xff):remote]");
+    expect(msg == "[IAC (0xff):remote]");
 }
 
 // ============================================================
 // Round-trip consistency check
 // ============================================================
 
-TEST_CASE("hex format matches underlying numeric value", "[net.telnet][types][integration][consistency]")
+"hex format matches underlying numeric value"_test = [] mutable
 {
     auto cmd = command::sb;
     auto hex = std::format("{:x}", cmd);
 
-    REQUIRE(hex == "0xfa");
+    expect(hex == "0xfa");
 }
