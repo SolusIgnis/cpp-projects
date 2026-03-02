@@ -52,7 +52,4 @@ suite net_telnet_types_format_stability_tests = [] mutable {
     };
 };
 
-int main()
-{
-    return ut::cfg<>.run();
-}
+int main() {}
