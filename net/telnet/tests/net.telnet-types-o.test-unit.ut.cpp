@@ -7,20 +7,20 @@ import std;
 
 using namespace ut;
 
-suite net_telnet_unit = [] {
-    "byte_t is exactly 1 byte"_test = [] {
+suite net_telnet_unit = [] mutable {
+    "byte_t is exactly 1 byte"_test = [] mutable {
         using net::telnet::byte_t;
         expect(eq(sizeof(byte_t), std::size_t{1}));
     };
 
-    "command formatting is stable"_test = [] {
+    "command formatting is stable"_test = [] mutable {
         using net::telnet::command;
 
         auto s = std::format("{}", command::will_opt);
         expect(eq(s, std::string{"WILL (0xfb)"}));
     };
 
-    "invalid format specifier throws format_error"_test = [] {
+    "invalid format specifier throws format_error"_test = [] mutable {
         using net::telnet::command;
 
         bool threw = false;
