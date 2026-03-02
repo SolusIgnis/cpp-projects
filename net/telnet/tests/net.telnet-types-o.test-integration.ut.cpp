@@ -12,8 +12,7 @@ using namespace ut;
 // All RFC command range formatting must not throw
 // ============================================================
 
-"all RFC command-range values format without throwing"_test = [] mutable
-{
+"all RFC command-range values format without throwing"_test = [] mutable {
     for (int value = 0xEF; value <= 0xFF; ++value) {
         auto cmd = static_cast<command>(static_cast<byte_t>(value));
 
@@ -21,7 +20,7 @@ using namespace ut;
             std::format("{}", cmd);
             std::format("{:n}", cmd);
             std::format("{:x}", cmd);
-        } catch(...) {
+        } catch (...) {
             expect(false) << "std::format throws for command: " << cmd;
         }
     }
@@ -31,14 +30,13 @@ using namespace ut;
 // Full 0-255 robustness check (no UB, no crashes)
 // ============================================================
 
-"all 256 possible command byte values are safely formattable"_test = [] mutable
-{
+"all 256 possible command byte values are safely formattable"_test = [] mutable {
     for (int value = 0; value <= 0xFF; ++value) {
         auto cmd = static_cast<command>(static_cast<byte_t>(value));
 
         try {
             std::format("{}", cmd);
-        } catch(...) {
+        } catch (...) {
             expect(false) << "std::format throws for command: " << cmd;
         }
     }
@@ -48,8 +46,7 @@ using namespace ut;
 // Hex formatting preserves underlying value width and lowercase
 // ============================================================
 
-"hex formatting is zero-padded lowercase"_test = [] mutable
-{
+"hex formatting is zero-padded lowercase"_test = [] mutable {
     auto formatted = std::format("{:x}", command::eor);
 
     expect(formatted.size() == 4); // "0x??"
@@ -60,8 +57,7 @@ using namespace ut;
 // Composability inside larger formatted expressions
 // ============================================================
 
-"formatter composes inside nested format expressions"_test = [] mutable
-{
+"formatter composes inside nested format expressions"_test = [] mutable {
     auto msg = std::format("[{}:{}]", command::iac, negotiation_direction::remote);
 
     expect(msg == "[IAC (0xff):remote]");
@@ -71,8 +67,7 @@ using namespace ut;
 // Round-trip consistency check
 // ============================================================
 
-"hex format matches underlying numeric value"_test = [] mutable
-{
+"hex format matches underlying numeric value"_test = [] mutable {
     auto cmd = command::sb;
     auto hex = std::format("{:x}", cmd);
 

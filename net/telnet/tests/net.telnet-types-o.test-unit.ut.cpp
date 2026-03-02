@@ -14,8 +14,7 @@ using namespace ut;
 // byte_t
 // ============================================================
 
-"byte_t contract"_test = [] mutable
-{
+"byte_t contract"_test = [] mutable {
     expect(sizeof(byte_t) == 1);
     expect(std::is_unsigned_v<byte_t>);
     expect(std::numeric_limits<byte_t>::digits == 8);
@@ -25,14 +24,12 @@ using namespace ut;
 // command enum structural properties
 // ============================================================
 
-"command enum structural guarantees"_test = [] mutable
-{
+"command enum structural guarantees"_test = [] mutable {
     expect(std::is_enum_v<command>);
     expect(std::is_same_v<std::underlying_type_t<command>, byte_t>);
 };
 
-"command numeric values match RFC definitions"_test = [] mutable
-{
+"command numeric values match RFC definitions"_test = [] mutable {
     expect(std::to_underlying(command::eor) == 0xEF);
     expect(std::to_underlying(command::se) == 0xF0);
     expect(std::to_underlying(command::nop) == 0xF1);
@@ -56,26 +53,22 @@ using namespace ut;
 // command formatter — default behavior
 // ============================================================
 
-"command default formatting (d)"_test = [] mutable
-{
+"command default formatting (d)"_test = [] mutable {
     expect(std::format("{}", command::will_opt) == "WILL (0xfb)");
     expect(std::format("{}", command::ip) == "IP (0xf4)");
 };
 
-"command name-only formatting (n)"_test = [] mutable
-{
+"command name-only formatting (n)"_test = [] mutable {
     expect(std::format("{:n}", command::do_opt) == "DO");
     expect(std::format("{:n}", command::dont_opt) == "DONT");
 };
 
-"command hex-only formatting (x)"_test = [] mutable
-{
+"command hex-only formatting (x)"_test = [] mutable {
     expect(std::format("{:x}", command::sb) == "0xfa");
     expect(std::format("{:x}", command::iac) == "0xff");
 };
 
-"command formatting inside composite string"_test = [] mutable
-{
+"command formatting inside composite string"_test = [] mutable {
     auto s = std::format("Received {}", command::ao);
     expect(s == "Received AO (0xf5)");
 };
@@ -84,8 +77,7 @@ using namespace ut;
 // command unknown-value behavior
 // ============================================================
 
-"unknown command formatting behavior"_test = [] mutable
-{
+"unknown command formatting behavior"_test = [] mutable {
     command unknown = static_cast<command>(0x01);
 
     expect(std::format("{:n}", unknown) == "UNKNOWN");
@@ -97,12 +89,11 @@ using namespace ut;
 // command formatter error handling
 // ============================================================
 
-"invalid command format specifier throws"_test = [] mutable
-{
+"invalid command format specifier throws"_test = [] mutable {
     bool threw = false;
     try {
         std::format("{:q}", command::nop);
-    } catch(std::format_error& e) {
+    } catch (std::format_error& e) {
         threw = true;
     }
     expect(threw);
@@ -112,8 +103,7 @@ using namespace ut;
 // negotiation_direction structural properties
 // ============================================================
 
-"negotiation_direction structural guarantees"_test = [] mutable
-{
+"negotiation_direction structural guarantees"_test = [] mutable {
     expect(std::is_enum_v<negotiation_direction>);
     expect(std::is_same_v<std::underlying_type_t<negotiation_direction>, std::uint8_t>);
 };
@@ -122,18 +112,16 @@ using namespace ut;
 // negotiation_direction formatting
 // ============================================================
 
-"negotiation_direction formatting"_test = [] mutable
-{
+"negotiation_direction formatting"_test = [] mutable {
     expect(std::format("{}", negotiation_direction::local) == "local");
     expect(std::format("{}", negotiation_direction::remote) == "remote");
 };
 
-"negotiation_direction invalid specifier throws"_test = [] mutable
-{
+"negotiation_direction invalid specifier throws"_test = [] mutable {
     bool threw = false;
     try {
         std::format("{:x}", negotiation_direction::local);
-    } catch(std::format_error& e) {
+    } catch (std::format_error& e) {
         threw = true;
     }
     expect(threw);

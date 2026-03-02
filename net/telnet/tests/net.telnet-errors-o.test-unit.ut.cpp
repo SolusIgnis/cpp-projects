@@ -13,15 +13,13 @@ using namespace ut;
 // Enum structural guarantees
 // ============================================================
 
-"error enum structural guarantees"_test = [] mutable
-{
+"error enum structural guarantees"_test = [] mutable {
     expect(std::is_enum_v<error>);
     expect(std::is_same_v<std::underlying_type_t<error>, std::uint8_t>);
     expect(std::is_error_code_enum_v<error>);
 };
 
-"processing_signal enum structural guarantees"_test = [] mutable
-{
+"processing_signal enum structural guarantees"_test = [] mutable {
     expect(std::is_enum_v<processing_signal>);
     expect(std::is_same_v<std::underlying_type_t<processing_signal>, std::uint8_t>);
     expect(std::is_error_code_enum_v<processing_signal>);
@@ -31,8 +29,7 @@ using namespace ut;
 // Category identity and singleton behavior
 // ============================================================
 
-"telnet_error_category is singleton"_test = [] mutable
-{
+"telnet_error_category is singleton"_test = [] mutable {
     auto& c1 = telnet_error_category::instance();
     auto& c2 = telnet_error_category::instance();
 
@@ -40,8 +37,7 @@ using namespace ut;
     expect(std::string_view(c1.name()) == "telnet");
 };
 
-"telnet_processing_signal_category is singleton"_test = [] mutable
-{
+"telnet_processing_signal_category is singleton"_test = [] mutable {
     auto& c1 = telnet_processing_signal_category::instance();
     auto& c2 = telnet_processing_signal_category::instance();
 
@@ -53,16 +49,14 @@ using namespace ut;
 // make_error_code correctness
 // ============================================================
 
-"make_error_code(error) produces correct category"_test = [] mutable
-{
+"make_error_code(error) produces correct category"_test = [] mutable {
     std::error_code ec = error::protocol_violation;
 
     expect(ec.category() == telnet_error_category::instance());
     expect(ec.value() == static_cast<int>(error::protocol_violation));
 };
 
-"make_error_code(processing_signal) produces correct category"_test = [] mutable
-{
+"make_error_code(processing_signal) produces correct category"_test = [] mutable {
     std::error_code ec = processing_signal::end_of_line;
 
     expect(ec.category() == telnet_processing_signal_category::instance());
@@ -73,8 +67,7 @@ using namespace ut;
 // Message correctness
 // ============================================================
 
-"error category returns correct messages"_test = [] mutable
-{
+"error category returns correct messages"_test = [] mutable {
     auto& cat = telnet_error_category::instance();
 
     expect(cat.message(static_cast<int>(error::protocol_violation)) == "Telnet protocol violation");
@@ -82,8 +75,7 @@ using namespace ut;
     expect(cat.message(static_cast<int>(error::invalid_command)) == "Unrecognized Telnet command after IAC");
 };
 
-"processing_signal category returns correct messages"_test = [] mutable
-{
+"processing_signal category returns correct messages"_test = [] mutable {
     auto& cat = telnet_processing_signal_category::instance();
 
     expect(
@@ -96,15 +88,13 @@ using namespace ut;
 // Unknown value safety
 // ============================================================
 
-"unknown error value returns fallback message"_test = [] mutable
-{
+"unknown error value returns fallback message"_test = [] mutable {
     auto& cat = telnet_error_category::instance();
 
     expect(cat.message(255) == "Unknown Telnet error");
 };
 
-"unknown processing_signal value returns fallback message"_test = [] mutable
-{
+"unknown processing_signal value returns fallback message"_test = [] mutable {
     auto& cat = telnet_processing_signal_category::instance();
 
     expect(cat.message(255) == "Unknown Telnet processing signal");
