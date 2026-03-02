@@ -51,8 +51,8 @@ int main()
     "hex formatting is zero-padded lowercase"_test = [] mutable {
         auto formatted = std::format("{:x}", command::eor);
 
-        expect(formatted.size() == 4); // "0x??"
-        expect(formatted.starts_with("0x"));
+        expect(formatted.size() == 4_i); // "0x??"
+        expect(_b{true} == formatted.starts_with("0x"));
     };
 
     // ============================================================

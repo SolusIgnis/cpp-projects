@@ -16,15 +16,15 @@ int main()
     // ============================================================
 
     "error enum structural guarantees"_test = [] mutable {
-        expect(std::is_enum_v<error>);
-        expect(std::is_same_v<std::underlying_type_t<error>, std::uint8_t>);
-        expect(std::is_error_code_enum_v<error>);
+        expect(_b{true} == std::is_enum_v<error>);
+        expect(_b{true} == std::is_same_v<std::underlying_type_t<error>, std::uint8_t>);
+        expect(_b{true} == std::is_error_code_enum_v<error>);
     };
 
     "processing_signal enum structural guarantees"_test = [] mutable {
-        expect(std::is_enum_v<processing_signal>);
-        expect(std::is_same_v<std::underlying_type_t<processing_signal>, std::uint8_t>);
-        expect(std::is_error_code_enum_v<processing_signal>);
+        expect(_b{true} == std::is_enum_v<processing_signal>);
+        expect(_b{true} == std::is_same_v<std::underlying_type_t<processing_signal>, std::uint8_t>);
+        expect(_b{true} == std::is_error_code_enum_v<processing_signal>);
     };
 
     // ============================================================

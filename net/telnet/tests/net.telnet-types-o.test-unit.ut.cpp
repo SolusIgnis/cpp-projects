@@ -17,9 +17,9 @@ int main()
     // ============================================================
 
     "byte_t contract"_test = [] mutable {
-        expect(sizeof(byte_t) == 1);
-        expect(std::is_unsigned_v<byte_t>);
-        expect(std::numeric_limits<byte_t>::digits == 8);
+        expect(sizeof(byte_t) == 1_i);
+        expect(_b{true} == std::is_unsigned_v<byte_t>);
+        expect(std::numeric_limits<byte_t>::digits == 8_i);
     };
 
     // ============================================================
@@ -27,28 +27,28 @@ int main()
     // ============================================================
 
     "command enum structural guarantees"_test = [] mutable {
-        expect(std::is_enum_v<command>);
-        expect(std::is_same_v<std::underlying_type_t<command>, byte_t>);
+        expect(_b{true} == std::is_enum_v<command>);
+        expect(_b{true} == std::is_same_v<std::underlying_type_t<command>, byte_t>);
     };
 
     "command numeric values match RFC definitions"_test = [] mutable {
-        expect(std::to_underlying(command::eor) == 0xEF);
-        expect(std::to_underlying(command::se) == 0xF0);
-        expect(std::to_underlying(command::nop) == 0xF1);
-        expect(std::to_underlying(command::dm) == 0xF2);
-        expect(std::to_underlying(command::brk) == 0xF3);
-        expect(std::to_underlying(command::ip) == 0xF4);
-        expect(std::to_underlying(command::ao) == 0xF5);
-        expect(std::to_underlying(command::ayt) == 0xF6);
-        expect(std::to_underlying(command::ec) == 0xF7);
-        expect(std::to_underlying(command::el) == 0xF8);
-        expect(std::to_underlying(command::ga) == 0xF9);
-        expect(std::to_underlying(command::sb) == 0xFA);
-        expect(std::to_underlying(command::will_opt) == 0xFB);
-        expect(std::to_underlying(command::wont_opt) == 0xFC);
-        expect(std::to_underlying(command::do_opt) == 0xFD);
-        expect(std::to_underlying(command::dont_opt) == 0xFE);
-        expect(std::to_underlying(command::iac) == 0xFF);
+        expect(std::to_underlying(command::eor) == 0xEF_i);
+        expect(std::to_underlying(command::se) == 0xF0_i);
+        expect(std::to_underlying(command::nop) == 0xF1_i);
+        expect(std::to_underlying(command::dm) == 0xF2_i);
+        expect(std::to_underlying(command::brk) == 0xF3_i);
+        expect(std::to_underlying(command::ip) == 0xF4_i);
+        expect(std::to_underlying(command::ao) == 0xF5_i);
+        expect(std::to_underlying(command::ayt) == 0xF6_i);
+        expect(std::to_underlying(command::ec) == 0xF7_i);
+        expect(std::to_underlying(command::el) == 0xF8_i);
+        expect(std::to_underlying(command::ga) == 0xF9_i);
+        expect(std::to_underlying(command::sb) == 0xFA_i);
+        expect(std::to_underlying(command::will_opt) == 0xFB_i);
+        expect(std::to_underlying(command::wont_opt) == 0xFC_i);
+        expect(std::to_underlying(command::do_opt) == 0xFD_i);
+        expect(std::to_underlying(command::dont_opt) == 0xFE_i);
+        expect(std::to_underlying(command::iac) == 0xFF_i);
     };
 
     // ============================================================
@@ -98,7 +98,7 @@ int main()
         } catch (std::format_error& e) {
             threw = true;
         }
-        expect(threw);
+        expect(_b{true} == threw);
     };
 
     // ============================================================
@@ -106,8 +106,8 @@ int main()
     // ============================================================
 
     "negotiation_direction structural guarantees"_test = [] mutable {
-        expect(std::is_enum_v<negotiation_direction>);
-        expect(std::is_same_v<std::underlying_type_t<negotiation_direction>, std::uint8_t>);
+        expect(_b{true} == std::is_enum_v<negotiation_direction>);
+        expect(_b{true} == std::is_same_v<std::underlying_type_t<negotiation_direction>, std::uint8_t>);
     };
 
     // ============================================================
@@ -126,7 +126,7 @@ int main()
         } catch (std::format_error& e) {
             threw = true;
         }
-        expect(threw);
+        expect(_b{true} == threw);
     };
 
     return 0;
