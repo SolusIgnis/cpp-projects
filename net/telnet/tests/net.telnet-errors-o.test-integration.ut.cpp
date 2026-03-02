@@ -95,6 +95,8 @@ int main()
             } catch (...) {
                 expect(false) << "ec.message() threw";
             }
-        };
-    } return 0;
+        }
+    };
+
+    return 0;
 }
