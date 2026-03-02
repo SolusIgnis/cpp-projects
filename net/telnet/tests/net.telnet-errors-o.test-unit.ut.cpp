@@ -18,14 +18,14 @@ using namespace ut;
     expect(std::is_enum_v<error>);
     expect(std::is_same_v<std::underlying_type_t<error>, std::uint8_t>);
     expect(std::is_error_code_enum_v<error>);
-}
+};
 
 "processing_signal enum structural guarantees"_test = [] mutable
 {
     expect(std::is_enum_v<processing_signal>);
     expect(std::is_same_v<std::underlying_type_t<processing_signal>, std::uint8_t>);
     expect(std::is_error_code_enum_v<processing_signal>);
-}
+};
 
 // ============================================================
 // Category identity and singleton behavior
@@ -38,7 +38,7 @@ using namespace ut;
 
     expect(&c1 == &c2);
     expect(std::string_view(c1.name()) == "telnet");
-}
+};
 
 "telnet_processing_signal_category is singleton"_test = [] mutable
 {
@@ -47,7 +47,7 @@ using namespace ut;
 
     expect(&c1 == &c2);
     expect(std::string_view(c1.name()) == "telnet_processing_signal");
-}
+};
 
 // ============================================================
 // make_error_code correctness
@@ -59,7 +59,7 @@ using namespace ut;
 
     expect(ec.category() == telnet_error_category::instance());
     expect(ec.value() == static_cast<int>(error::protocol_violation));
-}
+};
 
 "make_error_code(processing_signal) produces correct category"_test = [] mutable
 {
@@ -67,7 +67,7 @@ using namespace ut;
 
     expect(ec.category() == telnet_processing_signal_category::instance());
     expect(ec.value() == static_cast<int>(processing_signal::end_of_line));
-}
+};
 
 // ============================================================
 // Message correctness
@@ -80,7 +80,7 @@ using namespace ut;
     expect(cat.message(static_cast<int>(error::protocol_violation)) == "Telnet protocol violation");
 
     expect(cat.message(static_cast<int>(error::invalid_command)) == "Unrecognized Telnet command after IAC");
-}
+};
 
 "processing_signal category returns correct messages"_test = [] mutable
 {
@@ -90,7 +90,7 @@ using namespace ut;
         cat.message(static_cast<int>(processing_signal::go_ahead))
         == "Telnet encountered \"Go-Ahead\" command in the byte stream"
     );
-}
+};
 
 // ============================================================
 // Unknown value safety
@@ -101,11 +101,11 @@ using namespace ut;
     auto& cat = telnet_error_category::instance();
 
     expect(cat.message(255) == "Unknown Telnet error");
-}
+};
 
 "unknown processing_signal value returns fallback message"_test = [] mutable
 {
     auto& cat = telnet_processing_signal_category::instance();
 
     expect(cat.message(255) == "Unknown Telnet processing signal");
-}
+};

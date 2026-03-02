@@ -25,7 +25,7 @@ using namespace ut;
             expect(false) << "std::format throws for command: " << cmd;
         }
     }
-}
+};
 
 // ============================================================
 // Full 0-255 robustness check (no UB, no crashes)
@@ -42,7 +42,7 @@ using namespace ut;
             expect(false) << "std::format throws for command: " << cmd;
         }
     }
-}
+};
 
 // ============================================================
 // Hex formatting preserves underlying value width and lowercase
@@ -54,7 +54,7 @@ using namespace ut;
 
     expect(formatted.size() == 4); // "0x??"
     expect(formatted.starts_with("0x"));
-}
+};
 
 // ============================================================
 // Composability inside larger formatted expressions
@@ -65,7 +65,7 @@ using namespace ut;
     auto msg = std::format("[{}:{}]", command::iac, negotiation_direction::remote);
 
     expect(msg == "[IAC (0xff):remote]");
-}
+};
 
 // ============================================================
 // Round-trip consistency check
@@ -77,4 +77,4 @@ using namespace ut;
     auto hex = std::format("{:x}", cmd);
 
     expect(hex == "0xfa");
-}
+};

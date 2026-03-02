@@ -19,7 +19,7 @@ using namespace ut;
     expect(sizeof(byte_t) == 1);
     expect(std::is_unsigned_v<byte_t>);
     expect(std::numeric_limits<byte_t>::digits == 8);
-}
+};
 
 // ============================================================
 // command enum structural properties
@@ -29,7 +29,7 @@ using namespace ut;
 {
     expect(std::is_enum_v<command>);
     expect(std::is_same_v<std::underlying_type_t<command>, byte_t>);
-}
+};
 
 "command numeric values match RFC definitions"_test = [] mutable
 {
@@ -50,7 +50,7 @@ using namespace ut;
     expect(std::to_underlying(command::do_opt) == 0xFD);
     expect(std::to_underlying(command::dont_opt) == 0xFE);
     expect(std::to_underlying(command::iac) == 0xFF);
-}
+};
 
 // ============================================================
 // command formatter — default behavior
@@ -60,25 +60,25 @@ using namespace ut;
 {
     expect(std::format("{}", command::will_opt) == "WILL (0xfb)");
     expect(std::format("{}", command::ip) == "IP (0xf4)");
-}
+};
 
 "command name-only formatting (n)"_test = [] mutable
 {
     expect(std::format("{:n}", command::do_opt) == "DO");
     expect(std::format("{:n}", command::dont_opt) == "DONT");
-}
+};
 
 "command hex-only formatting (x)"_test = [] mutable
 {
     expect(std::format("{:x}", command::sb) == "0xfa");
     expect(std::format("{:x}", command::iac) == "0xff");
-}
+};
 
 "command formatting inside composite string"_test = [] mutable
 {
     auto s = std::format("Received {}", command::ao);
     expect(s == "Received AO (0xf5)");
-}
+};
 
 // ============================================================
 // command unknown-value behavior
@@ -91,7 +91,7 @@ using namespace ut;
     expect(std::format("{:n}", unknown) == "UNKNOWN");
     expect(std::format("{:x}", unknown) == "0x01");
     expect(std::format("{}", unknown) == "UNKNOWN (0x01)");
-}
+};
 
 // ============================================================
 // command formatter error handling
@@ -106,7 +106,7 @@ using namespace ut;
         threw = true;
     }
     expect(threw);
-}
+};
 
 // ============================================================
 // negotiation_direction structural properties
@@ -116,7 +116,7 @@ using namespace ut;
 {
     expect(std::is_enum_v<negotiation_direction>);
     expect(std::is_same_v<std::underlying_type_t<negotiation_direction>, std::uint8_t>);
-}
+};
 
 // ============================================================
 // negotiation_direction formatting
@@ -126,7 +126,7 @@ using namespace ut;
 {
     expect(std::format("{}", negotiation_direction::local) == "local");
     expect(std::format("{}", negotiation_direction::remote) == "remote");
-}
+};
 
 "negotiation_direction invalid specifier throws"_test = [] mutable
 {
@@ -137,4 +137,4 @@ using namespace ut;
         threw = true;
     }
     expect(threw);
-}
+};
