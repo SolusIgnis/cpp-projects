@@ -9,6 +9,7 @@ import ut;
 using namespace net::telnet;
 using namespace ut;
 
+int main() {
 // ============================================================
 // Enum structural guarantees
 // ============================================================
@@ -99,3 +100,6 @@ using namespace ut;
 
     expect(cat.message(255) == "Unknown Telnet processing signal");
 };
+
+return 0;
+}

@@ -9,6 +9,7 @@ import ut;
 using namespace ut;
 using namespace net::telnet;
 
+int main() {
 // ============================================================
 // default_error_condition mapping correctness
 // ============================================================
@@ -94,4 +95,7 @@ using namespace net::telnet;
             expect(false) << "ec.message() threw";
         }
     };
+}
+
+return 0;
 }

@@ -10,6 +10,7 @@ import ut;
 using namespace net::telnet;
 using namespace ut;
 
+int main() {
 // ============================================================
 // byte_t
 // ============================================================
@@ -126,3 +127,6 @@ using namespace ut;
     }
     expect(threw);
 };
+
+return 0;
+}

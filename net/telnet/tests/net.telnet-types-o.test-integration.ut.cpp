@@ -8,6 +8,7 @@ import ut;
 using namespace net::telnet;
 using namespace ut;
 
+int main() {
 // ============================================================
 // All RFC command range formatting must not throw
 // ============================================================
@@ -73,3 +74,6 @@ using namespace ut;
 
     expect(hex == "0xfa");
 };
+
+return 0;
+}
