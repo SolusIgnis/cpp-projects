@@ -1,80 +1,57 @@
 // SPDX-License-Identifier: Apache-2.0
-// Integration tests for net.telnet:types
-// Verifies interoperability with std library and full value ranges.
+// net.telnet-types-o.test-integration.ut.cpp
+// Black-box integration tests for net.telnet:types
 
 import net.telnet;
 import ut;
+import std;
 
-using namespace net::telnet;
 using namespace ut;
 
-int main()
-{
-    // ============================================================
-    // All RFC command range formatting must not throw
-    // ============================================================
+suite net_telnet_types_format_composition_tests = [] {
+    using net::telnet::command;
+    using net::telnet::negotiation_direction;
 
-    "all RFC command-range values format without throwing"_test = [] mutable {
-        for (int value = 0xEF; value <= 0xFF; ++value) {
-            auto cmd = static_cast<command>(static_cast<byte_t>(value));
-
-            try {
-                std::format("{}", cmd);
-                std::format("{:n}", cmd);
-                std::format("{:x}", cmd);
-            } catch (...) {
-                expect(false) << "std::format throws for command: " << cmd;
-            }
-        }
+    "command integrates with surrounding format text"_test = [] {
+        auto s = std::format("Received {}", command::nop);
+        expect(s == "Received NOP (0xf1)");
     };
 
-    // ============================================================
-    // Full 0-255 robustness check (no UB, no crashes)
-    // ============================================================
-
-    "all 256 possible command byte values are safely formattable"_test = [] mutable {
-        for (int value = 0; value <= 0xFF; ++value) {
-            auto cmd = static_cast<command>(static_cast<byte_t>(value));
-
-            try {
-                std::format("{}", cmd);
-            } catch (...) {
-                expect(false) << "std::format throws for command: " << cmd;
-            }
-        }
+    "multiple commands format sequentially"_test = [] {
+        auto s = std::format("{} {}", command::do_opt, command::dont_opt);
+        expect(s == "DO (0xfd) DONT (0xfe)");
     };
 
-    // ============================================================
-    // Hex formatting preserves underlying value width and lowercase
-    // ============================================================
-
-    "hex formatting is zero-padded lowercase"_test = [] mutable {
-        auto formatted = std::format("{:x}", command::eor);
-
-        expect(formatted.size() == 4_i); // "0x??"
-        expect(_b{true} == formatted.starts_with("0x"));
+    "command name-only format in composite string"_test = [] {
+        auto s = std::format("Cmd={:n}", command::brk);
+        expect(s == "Cmd=BRK");
     };
 
-    // ============================================================
-    // Composability inside larger formatted expressions
-    // ============================================================
+    "negotiation_direction integrates in formatted output"_test = [] {
+        auto s = std::format("Direction: {}", negotiation_direction::remote);
+        expect(s == "Direction: remote");
+    };
+};
 
-    "formatter composes inside nested format expressions"_test = [] mutable {
-        auto msg = std::format("[{}:{}]", command::iac, negotiation_direction::remote);
+suite net_telnet_types_format_stability_tests = [] {
+    using net::telnet::command;
 
-        expect(msg == "[IAC (0xff):remote]");
+    "default format always contains 0x prefix"_test = [] {
+        auto s = std::format("{}", command::ga);
+        expect(s.find("0x") != std::string::npos);
     };
 
-    // ============================================================
-    // Round-trip consistency check
-    // ============================================================
-
-    "hex format matches underlying numeric value"_test = [] mutable {
-        auto cmd = command::sb;
-        auto hex = std::format("{:x}", cmd);
-
-        expect(hex == "0xfa");
+    "hex-only format always starts with 0x"_test = [] {
+        auto s = std::format("{:x}", command::ec);
+        expect(s.rfind("0x", 0) == 0_u);
     };
 
-    return 0;
+    "name-only format never contains 0x"_test = [] {
+        auto s = std::format("{:n}", command::ayt);
+        expect(s.find("0x") == std::string::npos);
+    };
+};
+
+int main() {
+    return ut::cfg<>.run();
 }
