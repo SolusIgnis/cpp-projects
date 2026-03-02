@@ -37,7 +37,7 @@ suite net_telnet_types_format_stability_tests = [] mutable {
 
     "default format always contains 0x prefix"_test = [] mutable {
         auto s = std::format("{}", command::ga);
-        expect(ne(s.find("0x"), std::string::npos));
+        expect(neq(s.find("0x"), std::string::npos));
     };
 
     "hex-only format always starts with 0x"_test = [] mutable {
