@@ -8,7 +8,6 @@ import std;
 using namespace ut;
 
 suite net_telnet_types_format_composition_tests = [] {
-
     using net::telnet::command;
     using net::telnet::negotiation_direction;
 
@@ -34,7 +33,6 @@ suite net_telnet_types_format_composition_tests = [] {
 };
 
 suite net_telnet_types_format_stability_tests = [] {
-
     using net::telnet::command;
 
     "default format always contains 0x prefix"_test = [] {
