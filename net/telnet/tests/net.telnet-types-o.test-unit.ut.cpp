@@ -9,44 +9,30 @@ using namespace ut;
 
 suite net_telnet_unit = [] {
 
-  // ------------------------------------------------------------
-  // Basic type invariants
-  // ------------------------------------------------------------
-
   "byte_t is exactly 1 byte"_test = [] {
     using net::telnet::byte_t;
-    expect(sizeof(byte_t) == std::size_t{1});
+    expect(eq(sizeof(byte_t), std::size_t{1}));
   };
 
-  // ------------------------------------------------------------
-  // Formatting behavior (runtime only)
-  // ------------------------------------------------------------
-
-  "command formats to non-empty string"_test = [] mutable {
+  "command formatting is stable"_test = [] {
     using net::telnet::command;
 
     auto s = std::format("{}", command::will_opt);
-    expect(!s.empty());
+    expect(eq(s, std::string{"WILL (0xfb)"}));
   };
 
-  "command formatting is stable"_test = [] mutable {
-    using net::telnet::command;
-
-    auto s = std::format("{}", command::will_opt);
-    expect(s == std::string{"WILL (0xfb)"});
-  };
-
-  "invalid format specifier throws format_error"_test = [] mutable {
+  "invalid format specifier throws format_error"_test = [] {
     using net::telnet::command;
 
     bool threw = false;
     try {
-      std::format("{:z}", command::iac);
+      [[maybe_unused]] auto x =
+        std::format("{:z}", command::iac);
     } catch (const std::format_error&) {
       threw = true;
     }
 
-    expect(threw);
+    expect(eq(threw, true));
   };
 
 };
