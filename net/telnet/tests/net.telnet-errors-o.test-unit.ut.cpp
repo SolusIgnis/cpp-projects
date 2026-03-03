@@ -2,11 +2,11 @@
 // Unit tests for net.telnet:errors
 // Strict black-box tests of error enums and categories.
 
-import boost.ut;
 import net.telnet:errors;
 import std;
+import ut;
 
-using namespace boost::ut;
+using namespace ut;
 using net::telnet::error;
 using net::telnet::processing_signal;
 using net::telnet::telnet_error_category;

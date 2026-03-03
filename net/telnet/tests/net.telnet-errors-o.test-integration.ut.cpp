@@ -2,11 +2,11 @@
 // Integration tests for net.telnet:errors
 // Validates std::error_code interoperability and condition mapping.
 
-import boost.ut;
 import net.telnet:errors;
 import std;
+import ut;
 
-using namespace boost::ut;
+using namespace ut;
 using net::telnet::error;
 using net::telnet::processing_signal;
 using net::telnet::make_error_code;
