@@ -70,7 +70,7 @@ suite net_telnet_types_format_tests = [] mutable {
         } catch (const std::format_error&) {
             threw = true;
         }
-        expect(threw);
+        expect(eq(threw, true));
     };
 
     // ------------------------------------------------------------
@@ -92,7 +92,7 @@ suite net_telnet_types_format_tests = [] mutable {
         } catch (const std::format_error&) {
             threw = true;
         }
-        expect(threw);
+        expect(eq(threw, true));
     };
 
     // ============================================================
