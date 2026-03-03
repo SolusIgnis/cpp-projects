@@ -75,7 +75,7 @@ suite net_telnet_option_unit_tests = [] mutable {
         option opt{option::id_num::echo};
         option::id_num id = opt;
 
-        expect(eq((id == option::id_num::echo), true);
+        expect(eq((id == option::id_num::echo), true));
     };
 };
 

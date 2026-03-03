@@ -30,7 +30,7 @@ suite net_telnet_option_registry_tests = [] mutable {
 
         auto& inserted = registry.upsert(option{option::id_num::binary, "Binary"});
 
-        expect(eq(inserted.get_id(), option::id_num::binary));
+        expect(eq((inserted.get_id() == option::id_num::binary), true));
         expect(eq(registry.has(option::id_num::binary), true));
     };
 
