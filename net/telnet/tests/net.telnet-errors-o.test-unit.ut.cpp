@@ -2,7 +2,7 @@
 // Unit tests for net.telnet:errors
 // Strict black-box tests of error enums and categories.
 
-import net.telnet:errors;
+import net.telnet;
 import std;
 import ut;
 

@@ -2,7 +2,7 @@
 // Integration tests for net.telnet:errors
 // Validates std::error_code interoperability and condition mapping.
 
-import net.telnet:errors;
+import net.telnet;
 import std;
 import ut;
 
