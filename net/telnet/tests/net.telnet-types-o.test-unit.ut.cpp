@@ -35,23 +35,23 @@ suite net_telnet_types_unit = [] mutable {
     // ------------------------------------------------------------
 
     "command numeric values match RFC definitions"_test = [] mutable {
-        expect(eq(std::to_underlying(command::eor), static_cast<std::underlying_type_t<command>>(0xEF)));
-        expect(eq(std::to_underlying(command::se), static_cast<std::underlying_type_t<command>>(0xF0)));
-        expect(eq(std::to_underlying(command::nop), static_cast<std::underlying_type_t<command>>(0xF1)));
-        expect(eq(std::to_underlying(command::dm), static_cast<std::underlying_type_t<command>>(0xF2)));
-        expect(eq(std::to_underlying(command::brk), static_cast<std::underlying_type_t<command>>(0xF3)));
-        expect(eq(std::to_underlying(command::ip), static_cast<std::underlying_type_t<command>>(0xF4)));
-        expect(eq(std::to_underlying(command::ao), static_cast<std::underlying_type_t<command>>(0xF5)));
-        expect(eq(std::to_underlying(command::ayt), static_cast<std::underlying_type_t<command>>(0xF6)));
-        expect(eq(std::to_underlying(command::ec), static_cast<std::underlying_type_t<command>>(0xF7)));
-        expect(eq(std::to_underlying(command::el), static_cast<std::underlying_type_t<command>>(0xF8)));
-        expect(eq(std::to_underlying(command::ga), static_cast<std::underlying_type_t<command>>(0xF9)));
-        expect(eq(std::to_underlying(command::sb), static_cast<std::underlying_type_t<command>>(0xFA)));
-        expect(eq(std::to_underlying(command::will_opt), static_cast<std::underlying_type_t<command>>(0xFB)));
-        expect(eq(std::to_underlying(command::wont_opt), static_cast<std::underlying_type_t<command>>(0xFC)));
-        expect(eq(std::to_underlying(command::do_opt), static_cast<std::underlying_type_t<command>>(0xFD)));
-        expect(eq(std::to_underlying(command::dont_opt), static_cast<std::underlying_type_t<command>>(0xFE)));
-        expect(eq(std::to_underlying(command::iac), static_cast<std::underlying_type_t<command>>(0xFF)));
+        expect(eq(std::to_underlying(command::eor), byte_t{0xEF}));
+        expect(eq(std::to_underlying(command::se), byte_t{0xF0}));
+        expect(eq(std::to_underlying(command::nop), byte_t{0xF1}));
+        expect(eq(std::to_underlying(command::dm), byte_t{0xF2}));
+        expect(eq(std::to_underlying(command::brk), byte_t{0xF3}));
+        expect(eq(std::to_underlying(command::ip), byte_t{0xF4}));
+        expect(eq(std::to_underlying(command::ao), byte_t{0xF5}));
+        expect(eq(std::to_underlying(command::ayt), byte_t{0xF6}));
+        expect(eq(std::to_underlying(command::ec), byte_t{0xF7}));
+        expect(eq(std::to_underlying(command::el), byte_t{0xF8}));
+        expect(eq(std::to_underlying(command::ga), byte_t{0xF9}));
+        expect(eq(std::to_underlying(command::sb), byte_t{0xFA}));
+        expect(eq(std::to_underlying(command::will_opt), byte_t{0xFB}));
+        expect(eq(std::to_underlying(command::wont_opt), byte_t{0xFC}));
+        expect(eq(std::to_underlying(command::do_opt), byte_t{0xFD}));
+        expect(eq(std::to_underlying(command::dont_opt), byte_t{0xFE}));
+        expect(eq(std::to_underlying(command::iac), byte_t{0xFF}));
     };
 
     // ============================================================
