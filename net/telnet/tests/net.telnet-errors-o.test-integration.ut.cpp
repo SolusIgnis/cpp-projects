@@ -28,7 +28,7 @@ suite net_telnet_errors_integration = [] mutable {
         expect(eq(std::string{ec.category().name()}, std::string{"telnet_processing_signal"}));
     };
 
-    "default_error_condition mapping"_test = [] {
+    "default_error_condition mapping"_test = [] mutable {
         {
             auto ec       = make_error_code(error::protocol_violation);
             auto cond     = ec.default_error_condition();
