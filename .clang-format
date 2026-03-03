@@ -250,7 +250,6 @@ Cpp11BracedListStyle: true
 DerivePointerAlignment: false
 LineEnding: DeriveLF
 
-Hex
 IntegerLiteralSeparator:
   Binary:                 0
   Decimal:                0
