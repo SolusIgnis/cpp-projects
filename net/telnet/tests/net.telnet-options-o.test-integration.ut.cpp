@@ -14,7 +14,7 @@ suite net_telnet_option_registry_tests = [] {
     "registry get and has work"_test = [] {
         option_registry registry{
             option{option::id_num::binary, "Binary"},
-            option{option::id_num::echo, "Echo"}
+            option{  option::id_num::echo,   "Echo"}
         };
 
         expect(eq(registry.has(option::id_num::binary), true));
@@ -28,8 +28,7 @@ suite net_telnet_option_registry_tests = [] {
     "upsert inserts new option"_test = [] {
         option_registry registry{};
 
-        auto& inserted =
-            registry.upsert(option{option::id_num::binary, "Binary"});
+        auto& inserted = registry.upsert(option{option::id_num::binary, "Binary"});
 
         expect(eq(inserted.get_id(), option::id_num::binary));
         expect(eq(registry.has(option::id_num::binary), true));

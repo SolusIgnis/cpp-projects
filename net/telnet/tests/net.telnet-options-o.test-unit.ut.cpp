@@ -26,36 +26,21 @@ suite net_telnet_option_unit_tests = [] {
     };
 
     "always_accept predicate works"_test = [] {
-        option opt{
-            option::id_num::echo,
-            "Echo",
-            option::always_accept,
-            option::always_accept
-        };
+        option opt{option::id_num::echo, "Echo", option::always_accept, option::always_accept};
 
         expect(eq(opt.supports_local(), true));
         expect(eq(opt.supports_remote(), true));
     };
 
     "supports(direction) dispatches correctly"_test = [] {
-        option opt{
-            option::id_num::echo,
-            "Echo",
-            option::always_accept,
-            option::always_reject
-        };
+        option opt{option::id_num::echo, "Echo", option::always_accept, option::always_reject};
 
         expect(eq(opt.supports(negotiation_direction::local), true));
         expect(eq(opt.supports(negotiation_direction::remote), false));
     };
 
     "make_option sets predicates from booleans"_test = [] {
-        auto opt = option::make_option(
-            option::id_num::binary,
-            "Binary",
-            true,
-            false
-        );
+        auto opt = option::make_option(option::id_num::binary, "Binary", true, false);
 
         expect(eq(opt.supports_local(), true));
         expect(eq(opt.supports_remote(), false));
@@ -65,23 +50,16 @@ suite net_telnet_option_unit_tests = [] {
         option opt{option::id_num::binary};
 
         expect(eq(opt.supports_subnegotiation(), false));
-        expect(eq(opt.max_subnegotiation_size(),
-                  static_cast<std::size_t>(1024)));
+        expect(eq(opt.max_subnegotiation_size(), static_cast<std::size_t>(1024)));
     };
 
     "subnegotiation configuration honored"_test = [] {
         option opt{
-            option::id_num::binary,
-            "Binary",
-            option::always_accept,
-            option::always_accept,
-            true,
-            static_cast<std::size_t>(4096)
+            option::id_num::binary, "Binary", option::always_accept, option::always_accept, true, static_cast<std::size_t>(4096)
         };
 
         expect(eq(opt.supports_subnegotiation(), true));
-        expect(eq(opt.max_subnegotiation_size(),
-                  static_cast<std::size_t>(4096)));
+        expect(eq(opt.max_subnegotiation_size(), static_cast<std::size_t>(4096)));
     };
 
     "three-way comparison based on id"_test = [] {
