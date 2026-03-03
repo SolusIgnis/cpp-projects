@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Black-box integration tests for net.telnet:types
+// Integration tests for net.telnet:types formatting
 
 import net.telnet;
 import ut;
@@ -7,47 +7,103 @@ import std;
 
 using namespace ut;
 
-suite net_telnet_types_format_composition_tests = [] mutable {
-    using net::telnet::command;
-    using net::telnet::negotiation_direction;
+suite net_telnet_types_format_tests = [] {
+  using net::telnet::command;
+  using net::telnet::negotiation_direction;
 
-    "command integrates with surrounding format text"_test = [] mutable {
-        auto s = std::format("Received {}", command::nop);
-        expect(eq(s, std::string{"Received NOP (0xf1)"}));
-    };
+  // ------------------------------------------------------------
+  // command default formatting
+  // ------------------------------------------------------------
 
-    "multiple commands format sequentially"_test = [] mutable {
-        auto s = std::format("{} {}", command::do_opt, command::dont_opt);
-        expect(eq(s, std::string{"DO (0xfd) DONT (0xfe)"}));
-    };
+  "default format produces name and hex"_test = [] {
+    auto s = std::format("{}", command::will_opt);
+    expect(eq(s, std::string{"WILL (0xFB)"}));
+  };
 
-    "command name-only format in composite string"_test = [] mutable {
-        auto s = std::format("Cmd={:n}", command::brk);
-        expect(eq(s, std::string{"Cmd=BRK"}));
-    };
+  // ------------------------------------------------------------
+  // name-only formatting
+  // ------------------------------------------------------------
 
-    "negotiation_direction integrates in formatted output"_test = [] mutable {
-        auto s = std::format("Direction: {}", negotiation_direction::remote);
-        expect(eq(s, std::string{"Direction: remote"}));
-    };
-};
+  "name-only formatting works"_test = [] {
+    auto s = std::format("{:n}", command::brk);
+    expect(eq(s, std::string{"BRK"}));
+  };
 
-suite net_telnet_types_format_stability_tests = [] mutable {
-    using net::telnet::command;
+  // ------------------------------------------------------------
+  // hex-only formatting
+  // ------------------------------------------------------------
 
-    "default format always contains 0x prefix"_test = [] mutable {
-        auto s = std::format("{}", command::ga);
-        expect(neq(s.find("0x"), std::string::npos));
-    };
+  "hex-only formatting works"_test = [] {
+    auto s1 = std::format("{:x}", command::ec);
+    expect(eq(s1, std::string{"0xf7"}));
+    
+    auto s2 = std::format("{:X}", command::ec);
+    expect(eq(s2, std::string{"0xF7"}));
+  };
 
-    "hex-only format always starts with 0x"_test = [] mutable {
-        auto s = std::format("{:x}", command::ec);
-        expect(eq(s.rfind("0x", 0), std::string::size_type{0}));
-    };
+  // ------------------------------------------------------------
+  // unknown command formatting
+  // ------------------------------------------------------------
 
-    "name-only format never contains 0x"_test = [] mutable {
-        auto s = std::format("{:n}", command::ayt);
-        expect(eq(s.find("0x"), std::string::npos));
+  "unknown command formats as UNKNOWN in name mode"_test = [] {
+    auto unknown = static_cast<command>(0x0A);
+    auto s = std::format("{:n}", unknown);
+    expect(eq(s, std::string{"UNKNOWN"}));
+  };
+
+  "unknown command formats as hex in hex mode"_test = [] {
+    auto unknown = static_cast<command>(0x0A);
+    auto s1 = std::format("{:x}", unknown);
+    expect(eq(s1, std::string{"0x0a"}));
+    auto s2 = std::format("{:X}", unknown);
+    expect(eq(s2, std::string{"0x0A"}));
+  };
+
+  // ------------------------------------------------------------
+  // invalid format specifier throws
+  // ------------------------------------------------------------
+
+  "invalid command format specifier throws"_test = [] {
+    bool threw = false;
+    try {
+      [[maybe_unused]] auto x =
+        std::format("{:z}", command::iac);
+    } catch (const std::format_error&) {
+      threw = true;
+    }
+    expect(threw);
+  };
+
+  // ------------------------------------------------------------
+  // negotiation_direction formatting
+  // ------------------------------------------------------------
+
+  "negotiation_direction formats correctly"_test = [] {
+    auto s1 = std::format("{}", negotiation_direction::local);
+    auto s2 = std::format("{}", negotiation_direction::remote);
+
+    expect(eq(s1, std::string{"local"}));
+    expect(eq(s2, std::string{"remote"}));
+  };
+
+  "invalid negotiation_direction format throws"_test = [] {
+    bool threw = false;
+    try {
+      [[maybe_unused]] auto x =
+        std::format("{:x}", negotiation_direction::local);
+    } catch (const std::format_error&) {
+      threw = true;
+    }
+    expect(threw);
+  };
+
+    // ============================================================
+    // Composability inside larger formatted expressions
+    // ============================================================
+
+    "formatter composes inside nested format expressions"_test = [] mutable {
+        auto msg = std::format("[{}:{}]", command::iac, negotiation_direction::remote);
+        expect(eq(msg, std::string{"[IAC (0xFF):remote]"}));
     };
 };
 

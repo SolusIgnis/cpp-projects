@@ -250,6 +250,7 @@ Cpp11BracedListStyle: true
 DerivePointerAlignment: false
 LineEnding: DeriveLF
 
+Hex
 IntegerLiteralSeparator:
   Binary:                 0
   Decimal:                0
@@ -319,3 +320,9 @@ IntegerLiteralSeparator:
 #  Hex:                    0
 #  HexMinDigitsInsert:     0
 #  HexMaxDigitsRemove:     0
+
+#NumericLiteralCase:
+#  ExponentLetter: Leave
+#  HexDigit:       Upper
+#  Prefix:         Lower
+#  Suffix:         Upper
