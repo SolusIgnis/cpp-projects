@@ -7,11 +7,11 @@ import std;
 
 using namespace ut;
 
-suite net_telnet_option_registry_tests = [] {
+suite net_telnet_option_registry_tests = [] mutable {
     using net::telnet::option;
     using net::telnet::option_registry;
 
-    "registry get and has work"_test = [] {
+    "registry get and has work"_test = [] mutable {
         option_registry registry{
             option{option::id_num::binary, "Binary"},
             option{  option::id_num::echo,   "Echo"}
@@ -25,7 +25,7 @@ suite net_telnet_option_registry_tests = [] {
         expect(eq(opt->get_name(), std::string{"Echo"}));
     };
 
-    "upsert inserts new option"_test = [] {
+    "upsert inserts new option"_test = [] mutable {
         option_registry registry{};
 
         auto& inserted = registry.upsert(option{option::id_num::binary, "Binary"});
@@ -34,7 +34,7 @@ suite net_telnet_option_registry_tests = [] {
         expect(eq(registry.has(option::id_num::binary), true));
     };
 
-    "upsert replaces existing option"_test = [] {
+    "upsert replaces existing option"_test = [] mutable {
         option_registry registry{
             option{option::id_num::binary, "OldName"}
         };
@@ -46,7 +46,7 @@ suite net_telnet_option_registry_tests = [] {
         expect(eq(opt->get_name(), std::string{"NewName"}));
     };
 
-    "upsert with error_code does not set error on success"_test = [] {
+    "upsert with error_code does not set error on success"_test = [] mutable {
         option_registry registry{};
 
         std::error_code ec;
@@ -56,10 +56,10 @@ suite net_telnet_option_registry_tests = [] {
     };
 };
 
-suite net_telnet_option_formatter_tests = [] {
+suite net_telnet_option_formatter_tests = [] mutable {
     using net::telnet::option;
 
-    "default format prints hex and name"_test = [] {
+    "default format prints hex and name"_test = [] mutable {
         option opt{option::id_num::binary, "Binary"};
 
         auto s = std::format("{}", opt);
@@ -67,7 +67,7 @@ suite net_telnet_option_formatter_tests = [] {
         expect(eq(s, std::string{"0x00 (Binary)"}));
     };
 
-    "name-only format"_test = [] {
+    "name-only format"_test = [] mutable {
         option opt{option::id_num::binary, "Binary"};
 
         auto s = std::format("{:n}", opt);
@@ -75,7 +75,7 @@ suite net_telnet_option_formatter_tests = [] {
         expect(eq(s, std::string{"Binary"}));
     };
 
-    "hex-only format"_test = [] {
+    "hex-only format"_test = [] mutable {
         option opt{option::id_num::binary, "Binary"};
 
         auto s = std::format("{:x}", opt);
@@ -83,7 +83,7 @@ suite net_telnet_option_formatter_tests = [] {
         expect(eq(s, std::string{"0x00"}));
     };
 
-    "empty name formats as unknown"_test = [] {
+    "empty name formats as unknown"_test = [] mutable {
         option opt{option::id_num::binary};
 
         auto s = std::format("{:n}", opt);
