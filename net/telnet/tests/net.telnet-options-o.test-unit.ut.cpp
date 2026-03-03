@@ -14,7 +14,7 @@ suite net_telnet_option_unit_tests = [] mutable {
     "option stores id and name"_test = [] mutable {
         option opt{option::id_num::echo, "Echo"};
 
-        expect(eq(opt.get_id(), option::id_num::echo));
+        expect(eq((opt.get_id() == option::id_num::echo), true));
         expect(eq(opt.get_name(), std::string{"Echo"}));
     };
 
@@ -75,7 +75,7 @@ suite net_telnet_option_unit_tests = [] mutable {
         option opt{option::id_num::echo};
         option::id_num id = opt;
 
-        expect(eq(id, option::id_num::echo));
+        expect(eq((id == option::id_num::echo), true);
     };
 };
 
