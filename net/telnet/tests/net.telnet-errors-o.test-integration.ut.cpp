@@ -12,6 +12,10 @@ using net::telnet::processing_signal;
 using net::telnet::make_error_code;
 
 suite net_telnet_errors_integration = [] mutable {
+    // ============================================================
+    // make_error_code correctness
+    // ============================================================
+
     "make_error_code(error) integration"_test = [] mutable {
         auto ec = make_error_code(error::invalid_command);
 
@@ -28,51 +32,46 @@ suite net_telnet_errors_integration = [] mutable {
         expect(eq(std::string{ec.category().name()}, std::string{"telnet_processing_signal"}));
     };
 
+    // ============================================================
+    // default_error_condition mapping correctness
+    // ============================================================
+
     "default_error_condition mapping"_test = [] mutable {
-        {
-            auto ec       = make_error_code(error::protocol_violation);
-            auto cond     = ec.default_error_condition();
-            auto expected = std::make_error_condition(std::errc::protocol_error);
+        auto expect_ec_mapping = [] (std::error_code code, std::error_condition expected_condition) {
+            auto cond     = code.default_error_condition();
 
-            expect(eq(cond.value(), expected.value()));
-            expect(eq(&cond.category(), &expected.category()));
-        }
+            expect(eq(cond.value(), expected_condition.value()));
+            expect(eq(&cond.category(), &expected_condition.category()));
+        };
 
-        {
-            auto ec       = make_error_code(error::option_not_available);
-            auto cond     = ec.default_error_condition();
-            auto expected = std::make_error_condition(std::errc::not_supported);
+        expect_ec_mapping(make_error_code(error::protocol_violation), make_error_condition(std::errc::protocol_error));
+        expect_ec_mapping(make_error_code(error::option_not_available), make_error_condition(std::errc::not_supported));
+        expect_ec_mapping(make_error_code(error::subnegotiation_overflow), make_error_condition(std::errc::message_size));
+        expect_ec_mapping(make_error_code(error::internal_error), make_error_condition(std::errc::state_not_recoverable));
+        expect_ec_mapping(make_error_code(error::user_handler_forbidden), make_error_condition(std::errc::operation_not_permitted));
+    };
+    
+    // ============================================================
+    // error_code equivalence semantics
+    // ============================================================
 
-            expect(eq(cond.value(), expected.value()));
-            expect(eq(&cond.category(), &expected.category()));
-        }
+    "error_code equivalence with std::errc"_test = [] mutable {
+        std::error_code ec = error::invalid_negotiation;
 
-        {
-            auto ec       = make_error_code(error::subnegotiation_overflow);
-            auto cond     = ec.default_error_condition();
-            auto expected = std::make_error_condition(std::errc::message_size);
+        expect(eq((ec == std::errc::protocol_error), true));
+        expect(eq((ec != std::errc::not_supported), true));
+    };
+    
+    // ============================================================
+    // Category isolation
+    // ============================================================
 
-            expect(eq(cond.value(), expected.value()));
-            expect(eq(&cond.category(), &expected.category()));
-        }
+    "error and processing_signal categories are distinct"_test = [] mutable {
+        std::error_code e1 = error::protocol_violation;
+        std::error_code e2 = processing_signal::end_of_line;
 
-        {
-            auto ec       = make_error_code(error::internal_error);
-            auto cond     = ec.default_error_condition();
-            auto expected = std::make_error_condition(std::errc::state_not_recoverable);
-
-            expect(eq(cond.value(), expected.value()));
-            expect(eq(&cond.category(), &expected.category()));
-        }
-
-        {
-            auto ec       = make_error_code(error::user_handler_forbidden);
-            auto cond     = ec.default_error_condition();
-            auto expected = std::make_error_condition(std::errc::operation_not_permitted);
-
-            expect(eq(cond.value(), expected.value()));
-            expect(eq(&cond.category(), &expected.category()));
-        }
+        expect(neq(e1.category(), e2.category()));
+        expect(neq(e1, e2));
     };
 };
 

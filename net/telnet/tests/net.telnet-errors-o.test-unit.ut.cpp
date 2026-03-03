@@ -13,17 +13,25 @@ using net::telnet::telnet_error_category;
 using net::telnet::telnet_processing_signal_category;
 
 suite net_telnet_errors_unit = [] mutable {
-    //
-    // Compile-time enum invariants
-    //
+    // ============================================================
+    // Enum structural guarantees
+    // ============================================================
 
-    static_assert(std::is_error_code_enum_v<error>, "error must be is_error_code_enum");
+    "error enum structural guarantees"_test = [] mutable {
+        expect(eq(std::is_enum_v<error>, true));
+        expect(eq(std::sizeof(error), std::size_t{1}));
+        expect(eq(std::is_error_code_enum_v<error>, true));
+    };
 
-    static_assert(std::is_error_code_enum_v<processing_signal>, "processing_signal must be is_error_code_enum");
+    "processing_signal enum structural guarantees"_test = [] mutable {
+        expect(eq(std::is_enum_v<processing_signal>));
+        expect(eq(std::sizeof(processing_signal), std::size_t{1}));
+        expect(eq(std::is_error_code_enum_v<processing_signal>));
+    };
 
-    //
-    // Runtime tests
-    //
+    // ============================================================
+    // Category identity and singleton behavior
+    // ============================================================
 
     "telnet_error_category singleton identity"_test = [] mutable {
         auto& a = telnet_error_category::instance();
@@ -49,9 +57,9 @@ suite net_telnet_errors_unit = [] mutable {
         expect(eq(std::string{cat.name()}, std::string{"telnet_processing_signal"}));
     };
 
-    //
-    // Error message coverage (EVERY enumerator)
-    //
+    // ============================================================
+    // Message correctness
+    // ============================================================
 
     "error message coverage"_test = [] mutable {
         auto& cat = telnet_error_category::instance();
@@ -98,17 +106,6 @@ suite net_telnet_errors_unit = [] mutable {
                std::string{"Telnet negotiation queue bit can only be set when the " "NegotiationState is WANTYES or WANTNO."})
         );
     };
-
-    "unknown error message fallback"_test = [] mutable {
-        auto& cat = telnet_error_category::instance();
-
-        constexpr int invalid_value = 255;
-        expect(eq(cat.message(invalid_value), std::string{"Unknown Telnet error"}));
-    };
-
-    //
-    // Processing signal message coverage
-    //
 
     "processing_signal message coverage"_test = [] mutable {
         auto& cat = telnet_processing_signal_category::instance();
@@ -162,6 +159,17 @@ suite net_telnet_errors_unit = [] mutable {
             eq(cat.message(static_cast<int>(processing_signal::data_mark)),
                std::string{"Telnet encountered \"Data Mark\" command in the byte stream"})
         );
+    };
+
+    // ============================================================
+    // Unknown value safety
+    // ============================================================
+
+    "unknown error message fallback"_test = [] mutable {
+        auto& cat = telnet_error_category::instance();
+
+        constexpr int invalid_value = 255;
+        expect(eq(cat.message(invalid_value), std::string{"Unknown Telnet error"}));
     };
 
     "unknown processing_signal message fallback"_test = [] mutable {
