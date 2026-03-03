@@ -35,23 +35,23 @@ suite net_telnet_types_unit = [] mutable {
     // ------------------------------------------------------------
 
     "command numeric values match RFC definitions"_test = [] mutable {
-        expect(eq(std::to_underlying(command::eor), 0xEF_i));
-        expect(eq(std::to_underlying(command::se), 0xF0_i));
-        expect(eq(std::to_underlying(command::nop), 0xF1_i));
-        expect(eq(std::to_underlying(command::dm), 0xF2_i));
-        expect(eq(std::to_underlying(command::brk), 0xF3_i));
-        expect(eq(std::to_underlying(command::ip), 0xF4_i));
-        expect(eq(std::to_underlying(command::ao), 0xF5_i));
-        expect(eq(std::to_underlying(command::ayt), 0xF6_i));
-        expect(eq(std::to_underlying(command::ec), 0xF7_i));
-        expect(eq(std::to_underlying(command::el), 0xF8_i));
-        expect(eq(std::to_underlying(command::ga), 0xF9_i));
-        expect(eq(std::to_underlying(command::sb), 0xFA_i));
-        expect(eq(std::to_underlying(command::will_opt), 0xFB_i));
-        expect(eq(std::to_underlying(command::wont_opt), 0xFC_i));
-        expect(eq(std::to_underlying(command::do_opt), 0xFD_i));
-        expect(eq(std::to_underlying(command::dont_opt), 0xFE_i));
-        expect(eq(std::to_underlying(command::iac), 0xFF_i));
+        expect(eq(std::to_underlying(command::eor), static_cast<std::underlying_type_t<command>>(0xEF)));
+        expect(eq(std::to_underlying(command::se), static_cast<std::underlying_type_t<command>>(0xF0)));
+        expect(eq(std::to_underlying(command::nop), static_cast<std::underlying_type_t<command>>(0xF1)));
+        expect(eq(std::to_underlying(command::dm), static_cast<std::underlying_type_t<command>>(0xF2)));
+        expect(eq(std::to_underlying(command::brk), static_cast<std::underlying_type_t<command>>(0xF3)));
+        expect(eq(std::to_underlying(command::ip), static_cast<std::underlying_type_t<command>>(0xF4)));
+        expect(eq(std::to_underlying(command::ao), static_cast<std::underlying_type_t<command>>(0xF5)));
+        expect(eq(std::to_underlying(command::ayt), static_cast<std::underlying_type_t<command>>(0xF6)));
+        expect(eq(std::to_underlying(command::ec), static_cast<std::underlying_type_t<command>>(0xF7)));
+        expect(eq(std::to_underlying(command::el), static_cast<std::underlying_type_t<command>>(0xF8)));
+        expect(eq(std::to_underlying(command::ga), static_cast<std::underlying_type_t<command>>(0xF9)));
+        expect(eq(std::to_underlying(command::sb), static_cast<std::underlying_type_t<command>>(0xFA)));
+        expect(eq(std::to_underlying(command::will_opt), static_cast<std::underlying_type_t<command>>(0xFB)));
+        expect(eq(std::to_underlying(command::wont_opt), static_cast<std::underlying_type_t<command>>(0xFC)));
+        expect(eq(std::to_underlying(command::do_opt), static_cast<std::underlying_type_t<command>>(0xFD)));
+        expect(eq(std::to_underlying(command::dont_opt), static_cast<std::underlying_type_t<command>>(0xFE)));
+        expect(eq(std::to_underlying(command::iac), static_cast<std::underlying_type_t<command>>(0xFF)));
     };
 
     // ============================================================
@@ -59,7 +59,7 @@ suite net_telnet_types_unit = [] mutable {
     // ============================================================
 
     "negotiation_direction structural guarantees"_test = [] mutable {
-        expect(eq(std::is_enum_v<negotiation_direction>));
+        expect(eq(std::is_enum_v<negotiation_direction>, true));
         expect(eq(sizeof(negotiation_direction), std::size_t{1}));
     };
 };
