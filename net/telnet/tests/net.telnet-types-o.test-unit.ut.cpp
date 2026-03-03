@@ -8,13 +8,13 @@ import std;
 using namespace ut;
 
 suite net_telnet_types_unit = [] mutable {
-  using net::telnet::byte_t;
-  using net::telnet::command;
-  using net::telnet::negotiation_direction;
+    using net::telnet::byte_t;
+    using net::telnet::command;
+    using net::telnet::negotiation_direction;
 
-  // ------------------------------------------------------------
-  // byte_t invariants
-  // ------------------------------------------------------------
+    // ------------------------------------------------------------
+    // byte_t invariants
+    // ------------------------------------------------------------
 
     "byte_t contract"_test = [] mutable {
         expect(eq(sizeof(byte_t), std::size_t{1}));
@@ -30,10 +30,9 @@ suite net_telnet_types_unit = [] mutable {
         expect(eq(std::is_same_v<std::underlying_type_t<command>, byte_t>, true));
     };
 
-
-  // ------------------------------------------------------------
-  // command underlying values (RFC invariants)
-  // ------------------------------------------------------------
+    // ------------------------------------------------------------
+    // command underlying values (RFC invariants)
+    // ------------------------------------------------------------
 
     "command numeric values match RFC definitions"_test = [] mutable {
         expect(eq(std::to_underlying(command::eor), 0xEF_i));
