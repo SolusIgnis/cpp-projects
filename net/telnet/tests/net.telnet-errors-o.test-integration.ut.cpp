@@ -28,52 +28,52 @@ suite net_telnet_errors_integration = [] mutable {
         expect(eq(std::string{ec.category().name()}, std::string{"telnet_processing_signal"}));
     };
 
-"default_error_condition mapping"_test = [] {
-    {
-        auto ec = make_error_code(error::protocol_violation);
-        auto cond = ec.default_error_condition();
-        auto expected = std::make_error_condition(std::errc::protocol_error);
+    "default_error_condition mapping"_test = [] {
+        {
+            auto ec       = make_error_code(error::protocol_violation);
+            auto cond     = ec.default_error_condition();
+            auto expected = std::make_error_condition(std::errc::protocol_error);
 
-        expect(eq(cond.value(), expected.value()));
-        expect(eq(&cond.category(), &expected.category()));
-    }
+            expect(eq(cond.value(), expected.value()));
+            expect(eq(&cond.category(), &expected.category()));
+        }
 
-    {
-        auto ec = make_error_code(error::option_not_available);
-        auto cond = ec.default_error_condition();
-        auto expected = std::make_error_condition(std::errc::not_supported);
+        {
+            auto ec       = make_error_code(error::option_not_available);
+            auto cond     = ec.default_error_condition();
+            auto expected = std::make_error_condition(std::errc::not_supported);
 
-        expect(eq(cond.value(), expected.value()));
-        expect(eq(&cond.category(), &expected.category()));
-    }
+            expect(eq(cond.value(), expected.value()));
+            expect(eq(&cond.category(), &expected.category()));
+        }
 
-    {
-        auto ec = make_error_code(error::subnegotiation_overflow);
-        auto cond = ec.default_error_condition();
-        auto expected = std::make_error_condition(std::errc::message_size);
+        {
+            auto ec       = make_error_code(error::subnegotiation_overflow);
+            auto cond     = ec.default_error_condition();
+            auto expected = std::make_error_condition(std::errc::message_size);
 
-        expect(eq(cond.value(), expected.value()));
-        expect(eq(&cond.category(), &expected.category()));
-    }
+            expect(eq(cond.value(), expected.value()));
+            expect(eq(&cond.category(), &expected.category()));
+        }
 
-    {
-        auto ec = make_error_code(error::internal_error);
-        auto cond = ec.default_error_condition();
-        auto expected = std::make_error_condition(std::errc::state_not_recoverable);
+        {
+            auto ec       = make_error_code(error::internal_error);
+            auto cond     = ec.default_error_condition();
+            auto expected = std::make_error_condition(std::errc::state_not_recoverable);
 
-        expect(eq(cond.value(), expected.value()));
-        expect(eq(&cond.category(), &expected.category()));
-    }
+            expect(eq(cond.value(), expected.value()));
+            expect(eq(&cond.category(), &expected.category()));
+        }
 
-    {
-        auto ec = make_error_code(error::user_handler_forbidden);
-        auto cond = ec.default_error_condition();
-        auto expected = std::make_error_condition(std::errc::operation_not_permitted);
+        {
+            auto ec       = make_error_code(error::user_handler_forbidden);
+            auto cond     = ec.default_error_condition();
+            auto expected = std::make_error_condition(std::errc::operation_not_permitted);
 
-        expect(eq(cond.value(), expected.value()));
-        expect(eq(&cond.category(), &expected.category()));
-    }
-};
+            expect(eq(cond.value(), expected.value()));
+            expect(eq(&cond.category(), &expected.category()));
+        }
+    };
 };
 
 int main() {}
