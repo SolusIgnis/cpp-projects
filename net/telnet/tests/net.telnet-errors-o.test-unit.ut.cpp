@@ -19,13 +19,13 @@ suite net_telnet_errors_unit = [] mutable {
 
     "error enum structural guarantees"_test = [] mutable {
         expect(eq(std::is_enum_v<error>, true));
-        expect(eq(std::sizeof(error), std::size_t{1}));
+        expect(eq(sizeof(error), std::size_t{1}));
         expect(eq(std::is_error_code_enum_v<error>, true));
     };
 
     "processing_signal enum structural guarantees"_test = [] mutable {
         expect(eq(std::is_enum_v<processing_signal>, true));
-        expect(eq(std::sizeof(processing_signal), std::size_t{1}));
+        expect(eq(sizeof(processing_signal), std::size_t{1}));
         expect(eq(std::is_error_code_enum_v<processing_signal>, true));
     };
 
