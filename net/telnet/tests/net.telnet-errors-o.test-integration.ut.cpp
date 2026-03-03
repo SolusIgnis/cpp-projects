@@ -72,7 +72,7 @@ suite net_telnet_errors_integration = [] mutable {
         std::error_code e1 = error::protocol_violation;
         std::error_code e2 = processing_signal::end_of_line;
 
-        expect(neq(e1.category(), e2.category()));
+        expect(neq(&e1.category(), &e2.category()));
         expect(neq(e1, e2));
     };
 };
