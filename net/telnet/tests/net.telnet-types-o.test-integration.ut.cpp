@@ -7,7 +7,7 @@ import std;
 
 using namespace ut;
 
-suite net_telnet_types_format_tests = [] {
+suite net_telnet_types_format_tests = [] mutable {
   using net::telnet::command;
   using net::telnet::negotiation_direction;
 
@@ -15,7 +15,7 @@ suite net_telnet_types_format_tests = [] {
   // command default formatting
   // ------------------------------------------------------------
 
-  "default format produces name and hex"_test = [] {
+  "default format produces name and hex"_test = [] mutable {
     auto s = std::format("{}", command::will_opt);
     expect(eq(s, std::string{"WILL (0xFB)"}));
   };
@@ -24,7 +24,7 @@ suite net_telnet_types_format_tests = [] {
   // name-only formatting
   // ------------------------------------------------------------
 
-  "name-only formatting works"_test = [] {
+  "name-only formatting works"_test = [] mutable {
     auto s = std::format("{:n}", command::brk);
     expect(eq(s, std::string{"BRK"}));
   };
@@ -33,7 +33,7 @@ suite net_telnet_types_format_tests = [] {
   // hex-only formatting
   // ------------------------------------------------------------
 
-  "hex-only formatting works"_test = [] {
+  "hex-only formatting works"_test = [] mutable {
     auto s1 = std::format("{:x}", command::ec);
     expect(eq(s1, std::string{"0xf7"}));
     
@@ -45,13 +45,13 @@ suite net_telnet_types_format_tests = [] {
   // unknown command formatting
   // ------------------------------------------------------------
 
-  "unknown command formats as UNKNOWN in name mode"_test = [] {
+  "unknown command formats as UNKNOWN in name mode"_test = [] mutable {
     auto unknown = static_cast<command>(0x0A);
     auto s = std::format("{:n}", unknown);
     expect(eq(s, std::string{"UNKNOWN"}));
   };
 
-  "unknown command formats as hex in hex mode"_test = [] {
+  "unknown command formats as hex in hex mode"_test = [] mutable {
     auto unknown = static_cast<command>(0x0A);
     auto s1 = std::format("{:x}", unknown);
     expect(eq(s1, std::string{"0x0a"}));
@@ -63,7 +63,7 @@ suite net_telnet_types_format_tests = [] {
   // invalid format specifier throws
   // ------------------------------------------------------------
 
-  "invalid command format specifier throws"_test = [] {
+  "invalid command format specifier throws"_test = [] mutable {
     bool threw = false;
     try {
       [[maybe_unused]] auto x =
@@ -78,7 +78,7 @@ suite net_telnet_types_format_tests = [] {
   // negotiation_direction formatting
   // ------------------------------------------------------------
 
-  "negotiation_direction formats correctly"_test = [] {
+  "negotiation_direction formats correctly"_test = [] mutable {
     auto s1 = std::format("{}", negotiation_direction::local);
     auto s2 = std::format("{}", negotiation_direction::remote);
 
@@ -86,7 +86,7 @@ suite net_telnet_types_format_tests = [] {
     expect(eq(s2, std::string{"remote"}));
   };
 
-  "invalid negotiation_direction format throws"_test = [] {
+  "invalid negotiation_direction format throws"_test = [] mutable {
     bool threw = false;
     try {
       [[maybe_unused]] auto x =
