@@ -20,7 +20,7 @@ suite net_telnet_option_unit_tests = [] mutable {
         expect(eq(std::is_enum_v<option::id_num>, true));
         expect(eq(std::is_same_v<std::underlying_type_t<option::id_num>, byte_t>, true));
     };
-    
+
     // ============================================================
     // option tests
     // ============================================================
