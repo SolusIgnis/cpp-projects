@@ -41,8 +41,6 @@ import std; //NOLINT For std::error_code, std::size_t, std::same_as, std::conver
 import :types;   ///< @see "net.telnet-types.cppm" for telnet::command
 import :options; ///< @see "net.telnet-options.cppm" for telnet::option
 
-//namespace asio = boost::asio;
-
 export namespace net::telnet::concepts {
     //Forward declaration referenced in a following concept definition.
     template<typename ConfigT>
@@ -138,4 +136,36 @@ export namespace net::telnet::concepts {
             { T::get_ayt_response() } -> std::same_as<std::string_view>;
             { T::set_ayt_response(msg) } -> std::same_as<void>;
         }; //concept ProtocolFSMConfig
+} //namespace net::telnet::concepts
+
+namespace net::telnet::concepts {
+    template<typename T>
+    export concept Awaiter =
+        requires(T& awaiter, std::coroutine_handle<> handle) {
+            { awaiter.await_ready() } -> std::convertible_to<bool>;
+            awaiter.await_suspend(handle);
+            awaiter.await_resume();
+
+            { std::move(awaiter).await_ready() } -> std::convertible_to<bool>;
+            std::move(awaiter).await_suspend(handle);
+            std::move(awaiter).await_resume();
+        };
+        
+    template<typename T>
+    concept AwaitableByMember =
+        requires(T&& awaitable) {
+            { std::forward<T>(awaitable).operator co_await() } -> Awaiter;
+        };
+        
+    template<typename T>
+    concept AwaitableByADL =
+        requires(T&& awaitable) {
+            { operator co_await(std::forward<T>(awaitable)) } -> Awaiter;
+        };
+
+    template<typename T>
+    concept Awaitable =
+        AwaitableByMember<T>
+     || AwaitableByADL<T>
+     || Awaiter<T>;
 } //namespace net::telnet::concepts
