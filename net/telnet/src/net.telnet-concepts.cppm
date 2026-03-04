@@ -139,7 +139,7 @@ export namespace net::telnet::concepts {
 } //namespace net::telnet::concepts
 
 namespace net::telnet::concepts {
-    template<typename T>
+    export template<typename T>
     concept Awaiter = requires(T& awaiter, std::coroutine_handle<> handle) {
                           { awaiter.await_ready() } -> std::convertible_to<bool>;
                           awaiter.await_suspend(handle);
@@ -160,6 +160,6 @@ namespace net::telnet::concepts {
                                  { operator co_await(std::forward<T>(awaitable)) } -> Awaiter;
                              };
 
-    template<typename T>
+    export template<typename T>
     concept Awaitable = AwaitableByMember<T> || AwaitableByADL<T> || Awaiter<T>;
 } //namespace net::telnet::concepts
