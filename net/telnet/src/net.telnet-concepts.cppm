@@ -140,32 +140,26 @@ export namespace net::telnet::concepts {
 
 namespace net::telnet::concepts {
     template<typename T>
-    export concept Awaiter =
-        requires(T& awaiter, std::coroutine_handle<> handle) {
-            { awaiter.await_ready() } -> std::convertible_to<bool>;
-            awaiter.await_suspend(handle);
-            awaiter.await_resume();
+    export concept Awaiter = requires(T& awaiter, std::coroutine_handle<> handle) {
+                                 { awaiter.await_ready() } -> std::convertible_to<bool>;
+                                 awaiter.await_suspend(handle);
+                                 awaiter.await_resume();
 
-            { std::move(awaiter).await_ready() } -> std::convertible_to<bool>;
-            std::move(awaiter).await_suspend(handle);
-            std::move(awaiter).await_resume();
-        };
-        
-    template<typename T>
-    concept AwaitableByMember =
-        requires(T&& awaitable) {
-            { std::forward<T>(awaitable).operator co_await() } -> Awaiter;
-        };
-        
-    template<typename T>
-    concept AwaitableByADL =
-        requires(T&& awaitable) {
-            { operator co_await(std::forward<T>(awaitable)) } -> Awaiter;
-        };
+                                 { std::move(awaiter).await_ready() } -> std::convertible_to<bool>;
+                                 std::move(awaiter).await_suspend(handle);
+                                 std::move(awaiter).await_resume();
+                             };
 
     template<typename T>
-    concept Awaitable =
-        AwaitableByMember<T>
-     || AwaitableByADL<T>
-     || Awaiter<T>;
+    concept AwaitableByMember = requires(T&& awaitable) {
+                                    { std::forward<T>(awaitable).operator co_await() } -> Awaiter;
+                                };
+
+    template<typename T>
+    concept AwaitableByADL = requires(T&& awaitable) {
+                                 { operator co_await(std::forward<T>(awaitable)) } -> Awaiter;
+                             };
+
+    template<typename T>
+    concept Awaitable = AwaitableByMember<T> || AwaitableByADL<T> || Awaiter<T>;
 } //namespace net::telnet::concepts
