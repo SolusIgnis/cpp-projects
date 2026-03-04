@@ -140,7 +140,7 @@ export namespace net::telnet::concepts {
 
 namespace net::telnet::concepts {
     template<typename T>
-    export concept Awaiter = requires(T& awaiter, std::coroutine_handle<> handle) {
+    concept Awaiter = requires(T& awaiter, std::coroutine_handle<> handle) {
                                  { awaiter.await_ready() } -> std::convertible_to<bool>;
                                  awaiter.await_suspend(handle);
                                  awaiter.await_resume();
