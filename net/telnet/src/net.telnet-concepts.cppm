@@ -141,14 +141,14 @@ export namespace net::telnet::concepts {
 namespace net::telnet::concepts {
     template<typename T>
     concept Awaiter = requires(T& awaiter, std::coroutine_handle<> handle) {
-                                 { awaiter.await_ready() } -> std::convertible_to<bool>;
-                                 awaiter.await_suspend(handle);
-                                 awaiter.await_resume();
+                          { awaiter.await_ready() } -> std::convertible_to<bool>;
+                          awaiter.await_suspend(handle);
+                          awaiter.await_resume();
 
-                                 { std::move(awaiter).await_ready() } -> std::convertible_to<bool>;
-                                 std::move(awaiter).await_suspend(handle);
-                                 std::move(awaiter).await_resume();
-                             };
+                          { std::move(awaiter).await_ready() } -> std::convertible_to<bool>;
+                          std::move(awaiter).await_suspend(handle);
+                          std::move(awaiter).await_resume();
+                      };
 
     template<typename T>
     concept AwaitableByMember = requires(T&& awaitable) {
