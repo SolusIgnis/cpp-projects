@@ -226,7 +226,7 @@ namespace net::telnet::concepts {
      */
     template<typename T>
     concept ContextuallySelfAwaitableTask = requires(typename T::promise_type& promise, T& target) {
-                                                { promise await_transform(target) } -> IntrinsicallyAwaitable;
+                                                { promise.await_transform(target) } -> IntrinsicallyAwaitable;
                                             };
 
     /**
