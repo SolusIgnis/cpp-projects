@@ -213,7 +213,7 @@ namespace net::telnet::concepts {
      */
     template<typename T>
     concept IntrinsicallyAwaitable = AwaitableByMember<T> || AwaitableByADL<T> || Awaiter<T>;
-    
+
     /**
      * @internal
      * @concept ContextuallySelfAwaitableTask
