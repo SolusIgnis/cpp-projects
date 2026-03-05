@@ -155,14 +155,14 @@ namespace net::telnet::concepts {
      */
     export template<typename T>
     concept Awaiter = requires(T& awaiter, std::coroutine_handle<> handle) {
-        { awaiter.await_ready() } -> std::convertible_to<bool>;
-        awaiter.await_suspend(handle);
-        awaiter.await_resume();
+                          { awaiter.await_ready() } -> std::convertible_to<bool>;
+                          awaiter.await_suspend(handle);
+                          awaiter.await_resume();
 
-        { std::move(awaiter).await_ready() } -> std::convertible_to<bool>;
-        std::move(awaiter).await_suspend(handle);
-        std::move(awaiter).await_resume();
-    };
+                          { std::move(awaiter).await_ready() } -> std::convertible_to<bool>;
+                          std::move(awaiter).await_suspend(handle);
+                          std::move(awaiter).await_resume();
+                      };
 
     /**
      * @internal
@@ -176,8 +176,8 @@ namespace net::telnet::concepts {
      */
     template<typename T>
     concept AwaitableByMember = requires(T&& awaitable) {
-        { std::forward<T>(awaitable).operator co_await() } -> Awaiter;
-    };
+                                    { std::forward<T>(awaitable).operator co_await() } -> Awaiter;
+                                };
 
     /**
      * @internal
@@ -191,8 +191,8 @@ namespace net::telnet::concepts {
      */
     template<typename T>
     concept AwaitableByADL = requires(T&& awaitable) {
-        { operator co_await(std::forward<T>(awaitable)) } -> Awaiter;
-    };
+                                 { operator co_await(std::forward<T>(awaitable)) } -> Awaiter;
+                             };
 
     /**
      * @concept Awaitable
