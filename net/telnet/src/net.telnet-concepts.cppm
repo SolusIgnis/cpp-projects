@@ -139,27 +139,77 @@ export namespace net::telnet::concepts {
 } //namespace net::telnet::concepts
 
 namespace net::telnet::concepts {
+    /**
+     * @concept Awaiter
+     * @brief Concept that checks whether a type satisfies the core requirements of a coroutine awaiter.
+     *
+     * A type models `Awaiter` if it provides the three mandatory member functions of an awaiter:
+     *   - `await_ready()` returning a contextually convertible-to-bool value,
+     *   - `await_suspend(coroutine_handle<>)` (may return `void`, `bool`, or `coroutine_handle<>`),
+     *   - `await_resume()` returning the result of the co_await expression.
+     *
+     * Both const/lvalue and rvalue overloads are required.
+     *
+     * @see [expr.await] in the C++ standard
+     * @see Awaitable
+     */
     export template<typename T>
     concept Awaiter = requires(T& awaiter, std::coroutine_handle<> handle) {
-                          { awaiter.await_ready() } -> std::convertible_to<bool>;
-                          awaiter.await_suspend(handle);
-                          awaiter.await_resume();
+        { awaiter.await_ready() } -> std::convertible_to<bool>;
+        awaiter.await_suspend(handle);
+        awaiter.await_resume();
 
-                          { std::move(awaiter).await_ready() } -> std::convertible_to<bool>;
-                          std::move(awaiter).await_suspend(handle);
-                          std::move(awaiter).await_resume();
-                      };
+        { std::move(awaiter).await_ready() } -> std::convertible_to<bool>;
+        std::move(awaiter).await_suspend(handle);
+        std::move(awaiter).await_resume();
+    };
 
+    /**
+     * @internal
+     * @concept AwaitableByMember
+     * @brief Concept that checks whether a type provides a member `operator co_await()`.
+     *
+     * If this concept is satisfied, then `co_await expr` will call `expr.operator co_await()` and use the returned awaiter object.
+     *
+     * @see Awaiter
+     * @see Awaitable
+     */
     template<typename T>
     concept AwaitableByMember = requires(T&& awaitable) {
-                                    { std::forward<T>(awaitable).operator co_await() } -> Awaiter;
-                                };
+        { std::forward<T>(awaitable).operator co_await() } -> Awaiter;
+    };
 
+    /**
+     * @internal
+     * @concept AwaitableByADL
+     * @brief Concept that checks whether a free function `operator co_await` can be found via ADL.
+     *
+     * If this concept is satisfied, then `co_await expr` can perform ADL lookup for `operator co_await(expr)` and use the returned awaiter object.
+     *
+     * @see Awaiter
+     * @see Awaitable
+     */
     template<typename T>
     concept AwaitableByADL = requires(T&& awaitable) {
-                                 { operator co_await(std::forward<T>(awaitable)) } -> Awaiter;
-                             };
+        { operator co_await(std::forward<T>(awaitable)) } -> Awaiter;
+    };
 
+    /**
+     * @concept Awaitable
+     * @brief Composite concept that checks whether a type can be used in a co_await expression.
+     *
+     * A type `T` satisfies `Awaitable` if **any** of the following is true:
+     *   - it has a member `operator co_await()` that returns an awaiter (`AwaitableByMember`),
+     *   - it has an ADL-found `operator co_await(T)` that returns an awaiter (`AwaitableByADL`).
+     *   - it models `Awaiter` directly (many awaitables are awaiters themselves),
+     *
+     * This is the concept to use when constraining a template parameter that is expected to appear after `co_await`.
+     *
+     * @see Awaiter
+     * @see AwaitableByMember
+     * @see AwaitableByADL
+     * @see [expr.await] in the C++ standard
+     */
     export template<typename T>
     concept Awaitable = AwaitableByMember<T> || AwaitableByADL<T> || Awaiter<T>;
 } //namespace net::telnet::concepts
