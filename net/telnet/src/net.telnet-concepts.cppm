@@ -151,7 +151,7 @@ namespace net::telnet::concepts {
      * Both const/lvalue and rvalue overloads are required.
      *
      * @see [expr.await] in the C++ standard
-     * @see Awaitable
+     * @see IntrinsicallyAwaitable
      */
     export template<typename T>
     concept Awaiter = requires(T& awaiter, std::coroutine_handle<> handle) {
@@ -172,7 +172,7 @@ namespace net::telnet::concepts {
      * If this concept is satisfied, then `co_await expr` will call `expr.operator co_await()` and use the returned awaiter object.
      *
      * @see Awaiter
-     * @see Awaitable
+     * @see IntrinsicallyAwaitable
      */
     template<typename T>
     concept AwaitableByMember = requires(T&& awaitable) {
@@ -187,7 +187,7 @@ namespace net::telnet::concepts {
      * If this concept is satisfied, then `co_await expr` can perform ADL lookup for `operator co_await(expr)` and use the returned awaiter object.
      *
      * @see Awaiter
-     * @see Awaitable
+     * @see IntrinsicallyAwaitable
      */
     template<typename T>
     concept AwaitableByADL = requires(T&& awaitable) {
@@ -195,10 +195,11 @@ namespace net::telnet::concepts {
                              };
 
     /**
-     * @concept Awaitable
-     * @brief Composite concept that checks whether a type can be used in a co_await expression.
+     * @internal
+     * @concept IntrinsicallyAwaitable
+     * @brief Composite concept that checks whether a type can intrinsically be used in a co_await expression.
      *
-     * A type `T` satisfies `Awaitable` if **any** of the following is true:
+     * A type `T` satisfies `IntrinsicallyAwaitable` if **any** of the following is true:
      *   - it has a member `operator co_await()` that returns an awaiter (`AwaitableByMember`),
      *   - it has an ADL-found `operator co_await(T)` that returns an awaiter (`AwaitableByADL`).
      *   - it models `Awaiter` directly (many awaitables are awaiters themselves),
@@ -210,6 +211,31 @@ namespace net::telnet::concepts {
      * @see AwaitableByADL
      * @see [expr.await] in the C++ standard
      */
+    template<typename T>
+    concept IntrinsicallyAwaitable = AwaitableByMember<T> || AwaitableByADL<T> || Awaiter<T>;
+    
+    /**
+     * @internal
+     * @concept ContextuallySelfAwaitableTask
+     * @brief Concept that checks if a coroutine task type's promise type implements await_transform with the task type as the parameter.
+     *
+     * If this concept is satisfied then for a type `T`, `T::promise_type` has member `await_transform(T)` and a coroutine returning type `T` can `co_await` an object of type `T`.
+     *
+     * @see Awaitable
+     * @see IntrinsicallyAwaitable
+     */
+    template<typename T>
+    concept ContextuallySelfAwaitableTask = requires(typename T::promise_type& promise, T& target) {
+                                                { promise await_transform(target) } -> IntrinsicallyAwaitable;
+                                            };
+
+    /**
+     * @concept Awaitable
+     * @brief Composite concept that checks whether a type can be used in a co_await expression.
+     *
+     * @see IntrinsicallyAwaitable
+     * @see ContextuallySelfAwaitableTask
+     */
     export template<typename T>
-    concept Awaitable = AwaitableByMember<T> || AwaitableByADL<T> || Awaiter<T>;
+    concept Awaitable = IntrinsicallyAwaitable<T> || ContextuallySelfAwaitableTask<T>;
 } //namespace net::telnet::concepts
