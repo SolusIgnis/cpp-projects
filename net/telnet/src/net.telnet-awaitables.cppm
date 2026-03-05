@@ -34,9 +34,6 @@ export module net.telnet:awaitables;
 import std; //NOLINT for std::move
 
 export import :options;  ///< @see "net.telnet-options.cppm" for `option`
-export import :concepts; ///< @see "net.telnet-concepts.cppm" for `Awaitable`
-
-//namespace asio = boost::asio;
 
 export namespace net::telnet::awaitables {
     /**
@@ -47,7 +44,7 @@ export namespace net::telnet::awaitables {
      * @remark Provides implicit conversion to/from the underlying awaitable and supports direct `co_await`.
      * @see `tags` namespace for semantic tag types, `:protocol_fsm`, `:internal`
      */
-    template<typename Tag, typename T, concepts::Awaitable AwaitableT = asio::awaitable<T>>
+    template<typename Tag, typename T, typename AwaitableT = asio::awaitable<T>>
     class tagged_awaitable {
     private:
         using awaitable_type = AwaitableT; ///< Underlying awaitable type
