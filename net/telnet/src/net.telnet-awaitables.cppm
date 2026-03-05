@@ -33,7 +33,8 @@ export module net.telnet:awaitables;
 
 import std; //NOLINT for std::move
 
-export import :options; ///< @see "net.telnet-options.cppm" for `option`
+export import :options;  ///< @see "net.telnet-options.cppm" for `option`
+export import :concepts; ///< @see "net.telnet-concepts.cppm" for `Awaitable`
 
 //namespace asio = boost::asio;
 
