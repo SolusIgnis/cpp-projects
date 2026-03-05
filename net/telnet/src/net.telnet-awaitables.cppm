@@ -41,15 +41,15 @@ export namespace net::telnet::awaitables {
     /**
      * @brief Wrapper for an awaitable with a semantic tag for type safety.
      * @tparam Tag The semantic tag type.
-     * @tparam T The awaitable's value type (i.e. the "return type" of `co_await`ing it) (e.g., `void`).
-     * @tparam Awaitable The underlying awaitable type (default: `boost::asio::awaitable<T>`).
+     * @tparam T The awaitable's value type (i.e. the "return type" of `co_await`ing it) (e.g., `void`, `std::size_t`).
+     * @tparam AwaitableT The underlying `Awaitable` type (default: `boost::asio::awaitable<T>`).
      * @remark Provides implicit conversion to/from the underlying awaitable and supports direct `co_await`.
      * @see `tags` namespace for semantic tag types, `:protocol_fsm`, `:internal`
      */
-    template<typename Tag, typename T, typename Awaitable = asio::awaitable<T>>
+    template<typename Tag, typename T, concepts::Awaitable AwaitableT = asio::awaitable<T>>
     class tagged_awaitable {
     private:
-        using awaitable_type = Awaitable; ///< Underlying awaitable type
+        using awaitable_type = AwaitableT; ///< Underlying awaitable type
 
         awaitable_type awaitable_; ///< The wrapped awaitable
 
