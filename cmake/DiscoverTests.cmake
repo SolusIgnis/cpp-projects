@@ -141,7 +141,7 @@ function(add_tests_for_module module_target)
     )
   endif()
   
-  _validate_test_dependencies("${module_target}" ${ARGN}} 
+  _validate_test_dependencies("${module_target}" ${ARGN})
 
   set(test_dir "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
