@@ -327,7 +327,8 @@ export namespace net::telnet::test_support::coroutine_harness {
             return awaiter.await_resume();
         } else {
             throw std::system_error(
-                std::errc::resource_unavailable_try_again, "Coroutine failed to complete (stalled at suspension point)"
+                std::make_error_code(std::errc::resource_unavailable_try_again),
+                "Coroutine failed to complete (stalled at suspension point)"
             );
         }
     }
