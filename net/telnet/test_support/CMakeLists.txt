@@ -37,7 +37,7 @@ target_sources(net.telnet.test_support
       # Primary Module Interface Unit
       src/net.telnet.test_support.cppm
       # Partition Interface Units
-      src/net.telnet.test_suport-coroutine_harness.cppm
+      src/net.telnet.test_support-coroutine_harness.cppm
 )
 
 # Implementation Units
