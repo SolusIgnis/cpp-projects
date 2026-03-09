@@ -23,7 +23,7 @@
  */
 
 //Primary module interface unit
-export module net.telnet;
+export module net.telnet.test_support;
 
 //Export all partition interfaces
 export import :coroutine_harness; ///< @see "net.telnet.test_support-coroutine_harness.cppm"
