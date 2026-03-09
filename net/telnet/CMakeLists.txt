@@ -63,3 +63,6 @@ target_link_libraries(net.telnet
 )
 
 add_tests_for_module(net.telnet)
+
+# Add the net.telnet.test_support library
+add_subdirectory(test_support)
