@@ -21,7 +21,7 @@
  *
  * @brief Test Support Module for `net.telnet` module tests.
  */
- 
+
 //Primary module interface unit
 export module net.telnet;
 
