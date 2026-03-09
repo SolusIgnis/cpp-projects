@@ -119,6 +119,33 @@ function(_bind_aggregate_dependency aggregate target)
 endfunction()
 
 # ============================================================
+# Internal: Validate test dependencies as linkable targets
+# ============================================================
+
+function(_validate_test_dependencies module_target)
+  set(multiValueArgs DEPENDENCIES)
+
+  cmake_parse_arguments(
+    ARG
+    ""
+    ""
+    "${multiValueArgs}"
+    ${ARGN}
+  )
+  
+  set(dependencies_block "")
+  foreach(dependency IN LISTS ARG_DEPENDENCIES)
+    if(NOT TARGET "${dependency}")
+      message(WARNING "Test dependency '${dependency}' of module '${module_target}' does not exist as a target. Unable to link test targets against it.")
+    else()
+      list(APPEND dependencies_block "${dependency}")
+    endif()
+  endforeach()
+
+  set(VALIDATED_DEPENDENCIES ${dependencies_block} PARENT_SCOPE)
+endfunction()
+
+# ============================================================
 # Internal: Create run target with labels if it doesn't exist
 # ============================================================
 
@@ -154,7 +181,7 @@ endfunction()
 # Internal: Create executable from test file
 # ============================================================
 
-function(_create_test_from_file module_target test_file)
+function(_create_test_from_file module_target test_file dependencies)
   get_target_property(module_name "${module_target}" NAME)
 
   get_filename_component(filename "${test_file}" NAME)
@@ -200,6 +227,7 @@ function(_create_test_from_file module_target test_file)
     PRIVATE
       "${module_target}"
       "${TEST_FRAMEWORK.${TEST_DIALECT}}"
+      ${dependencies}
   )
 
   target_compile_features("${target}"

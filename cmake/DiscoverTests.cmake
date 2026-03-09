@@ -140,6 +140,8 @@ function(add_tests_for_module module_target)
       "Target does not exist: ${module_target}"
     )
   endif()
+  
+  _validate_test_dependencies("${module_target}" ${ARGN}} 
 
   set(test_dir "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
@@ -152,6 +154,6 @@ function(add_tests_for_module module_target)
   )
 
   foreach(test_file IN LISTS test_files)
-    _create_test_from_file(${module_target} "${test_file}")
+    _create_test_from_file("${module_target}" "${test_file}" "${VALIDATED_DEPENDENCIES}")
   endforeach()
 endfunction()
