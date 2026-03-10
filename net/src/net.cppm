@@ -23,7 +23,7 @@
  *   - `net.asio_concepts` = Asio `concept`s module.
  *   - `net.telnet`        = Telnet module.
  */
- 
+
 //Primary module interface unit
 export module net;
 
