@@ -27,5 +27,5 @@ export module base.vocab.ptr:required_ptr;
 
 export namespace base::vocab::ptr {
     template<typename T>
-    using required_ptr<T> = T*;
+    using required_ptr = T*;
 }

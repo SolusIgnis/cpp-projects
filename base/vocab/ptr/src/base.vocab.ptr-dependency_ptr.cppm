@@ -27,5 +27,5 @@ export module base.vocab.ptr:dependency_ptr;
 
 export namespace base::vocab::ptr {
     template<typename T>
-    using dependency_ptr<T> = T*;
+    using dependency_ptr = T*;
 }
