@@ -46,9 +46,9 @@ target_sources(net.telnet.test_support
 #    src/impl/nothing.cpp
 #)
 
-#target_link_libraries(net.telnet.test_support
-#  PUBLIC
-#    net::asio_concepts
-#)
+target_link_libraries(net.telnet.test_support
+  PUBLIC
+    base::vocab::ptr
+)
 
 add_tests_for_module(net.telnet.test_support)
