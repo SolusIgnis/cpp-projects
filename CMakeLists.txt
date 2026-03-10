@@ -79,6 +79,9 @@ include(cmake/ToolingInfrastructure.cmake)
 # Add module group subdirectories.
 # ===========================================================================
 
+# Add the "base" module group.
+add_subdirectory(base)
+
 # Add the "net" module group.
 add_subdirectory(net)
 
