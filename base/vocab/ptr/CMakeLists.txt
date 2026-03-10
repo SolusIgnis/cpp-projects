@@ -19,7 +19,7 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 endif()
 
 add_library(base.vocab.ptr STATIC)
-add_library(net::telnet::test_support ALIAS base.vocab.ptr)
+add_library(base::vocab::ptr ALIAS base.vocab.ptr)
 
 register_tooling_target(base.vocab.ptr)
 
