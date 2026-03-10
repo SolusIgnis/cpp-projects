@@ -98,8 +98,8 @@ export namespace net::telnet::test_support::coroutine_harness {
     template<typename T, typename PromiseT>
     struct test_awaiter {
         using promise_type = PromiseT;
-        using probe_ptr = promise_type::probe_ptr;
-        
+        using probe_ptr    = promise_type::probe_ptr;
+
         std::coroutine_handle<promise_type> my_handle;
         bool ownership;
 
@@ -161,7 +161,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         void destroy() noexcept(false)
         {
             if (ownership && my_handle) {
-                bool done   = my_handle.done();
+                bool done       = my_handle.done();
                 probe_ptr probe = my_handle.promise().probe;
 
                 my_handle.destroy();
@@ -179,7 +179,8 @@ export namespace net::telnet::test_support::coroutine_harness {
     class test_task {
     public:
         using promise_type = PromiseT;
-        using probe_ptr = promise_type::probe_ptr; 
+        using probe_ptr    = promise_type::probe_ptr;
+
     private:
         std::coroutine_handle<promise_type> handle_;
         bool awaited_{false};
@@ -251,7 +252,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         void destroy() noexcept(false)
         {
             if (handle_) {
-                bool done   = handle_.done();
+                bool done       = handle_.done();
                 probe_ptr probe = handle_.promise().probe;
 
                 handle_.destroy();
