@@ -27,5 +27,8 @@ export module base.vocab.ptr:alias_ptr;
 
 export namespace base::vocab::ptr {
     template<typename T>
-    using alias_ptr<T> = T*;
+    struct alias_ptr {
+        T* ptr_;
+        T* operator->() { return ptr; }
+    };
 }
