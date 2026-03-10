@@ -72,6 +72,8 @@ export module net.telnet.test_support:coroutine_harness;
 
 import std;
 
+import base.vocab.ptr;
+
 export namespace net::telnet::test_support::coroutine_harness {
     //Forward declaration of promise type used by task type but defined later
     template<typename T>
@@ -96,6 +98,8 @@ export namespace net::telnet::test_support::coroutine_harness {
     template<typename T, typename PromiseT>
     struct test_awaiter {
         using promise_type = PromiseT;
+        using probe_ptr = promise_type::probe_ptr;
+        
         std::coroutine_handle<promise_type> my_handle;
         bool ownership;
 
@@ -124,7 +128,7 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         [[nodiscard]] auto await_suspend(std::coroutine_handle<promise_type> awaiting_handle) noexcept
         {
-            if (auto* probe = awaiting_handle.promise().probe; probe)
+            if (probe_ptr probe = awaiting_handle.promise().probe; probe)
                 probe->suspended = true;
             my_handle.promise().continuation = awaiting_handle;
             return my_handle;
@@ -158,7 +162,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         {
             if (ownership && my_handle) {
                 bool done   = my_handle.done();
-                auto* probe = my_handle.promise().probe;
+                probe_ptr probe = my_handle.promise().probe;
 
                 my_handle.destroy();
 
@@ -175,7 +179,7 @@ export namespace net::telnet::test_support::coroutine_harness {
     class test_task {
     public:
         using promise_type = PromiseT;
-
+        using probe_ptr = promise_type::probe_ptr; 
     private:
         std::coroutine_handle<promise_type> handle_;
         bool awaited_{false};
@@ -210,7 +214,7 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         explicit operator bool() const noexcept { return handle_ != nullptr; }
 
-        void set_probe(coroutine_probe* new_probe)
+        void set_probe(probe_ptr new_probe)
         {
             if (handle_)
                 handle_.promise().probe = new_probe;
@@ -238,7 +242,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             }
             awaited_ = true;
 
-            if (auto* probe = handle_.promise().probe; probe) {
+            if (probe_ptr probe = handle_.promise().probe; probe) {
                 probe->awaited    = true;
                 probe->await_path = await_path;
             }
@@ -248,7 +252,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         {
             if (handle_) {
                 bool done   = handle_.done();
-                auto* probe = handle_.promise().probe;
+                probe_ptr probe = handle_.promise().probe;
 
                 handle_.destroy();
 
@@ -264,9 +268,11 @@ export namespace net::telnet::test_support::coroutine_harness {
     template<typename T>
     struct test_promise {
         using storage_t = std::conditional_t<std::same_as<T, void>, std::monostate, T>;
+        using probe_ptr = base::vocab::ptr::alias_ptr<coroutine_probe>;
+
         std::optional<storage_t> value{};
         std::exception_ptr exception{};
-        coroutine_probe* probe{nullptr};
+        probe_ptr probe{nullptr};
 
         std::coroutine_handle<> continuation = std::noop_coroutine();
 
@@ -278,7 +284,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise> finalizing_handle) noexcept
             {
                 auto& finalizing_promise = finalizing_handle.promise();
-                if (auto* probe = finalizing_promise.probe; probe) {
+                if (probe_ptr probe = finalizing_promise.probe; probe) {
                     probe->done = true;
                 }
                 return finalizing_promise.continuation;
