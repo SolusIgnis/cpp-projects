@@ -28,7 +28,7 @@
  *   - `:protocol_fsm` = Telnet protocol state machine.
  *   - `:stream`       = Asynchronous and synchronous stream operations filtering Telnet data from the raw socket byte stream.
  * @remark Provides a modular, thread-safe, and performance-optimized interface for Telnet protocol operations, supporting compile-time configuration and runtime extensibility.
- * @note Designed for integration with asynchronous I/O via Boost.Asio.
+ * @note Designed for integration with asynchronous I/O via Asio.
  * @remark Compile-time configuration is provided through a template parameter to `stream` (in `:stream`) that is used to instantiate its `ProtocolFSM` (in `:protocol_fsm`).
  *
  * @see RFC 854 for Telnet protocol specification, RFC 1123 for evolution thereof, and RFC 1143 for option negotiation states.
