@@ -35,7 +35,7 @@ target_sources(base.vocab
     BASE_DIRS src
     FILES
       # Primary Module Interface Unit
-      src/base.cppm
+      src/base.vocab.cppm
 )
 
 # Implementation Units
