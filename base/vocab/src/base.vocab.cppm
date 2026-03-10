@@ -22,7 +22,7 @@
  * @details Exports partitions for:
  *   - `base.vocab.ptr` = Non-owning semantic pointer types.
  */
- 
+
 //Primary module interface unit
 export module base.vocab;
 

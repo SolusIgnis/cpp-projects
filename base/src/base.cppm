@@ -22,7 +22,7 @@
  * @details Exports partitions for:
  *   - `base.vocab` = Vocabulary types metamodule.
  */
- 
+
 //Primary module interface unit
 export module base;
 

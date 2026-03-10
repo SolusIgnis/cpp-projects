@@ -21,10 +21,11 @@
  *
  * @brief required_ptr
  */
- 
+
 //Module partition interface unit
 export module base.vocab.ptr:required_ptr;
 
 export namespace base::vocab::ptr {
-    template<typename T> using required_ptr<T> = T*;
+    template<typename T>
+    using required_ptr<T> = T*;
 }

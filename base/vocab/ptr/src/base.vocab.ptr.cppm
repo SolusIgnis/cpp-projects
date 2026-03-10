@@ -25,7 +25,7 @@
  *   - `:dependency_ptr` = Non-owning never-null pointer for dependency injection.
  *   - `:required_ptr`   = Non-owning never-null alias pointer.
  */
- 
+
 //Primary module interface unit
 export module base.vocab.ptr;
 

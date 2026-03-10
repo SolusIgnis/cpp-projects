@@ -21,10 +21,11 @@
  *
  * @brief dependency_ptr
  */
- 
+
 //Module partition interface unit
 export module base.vocab.ptr:dependency_ptr;
 
 export namespace base::vocab::ptr {
-    template<typename T> using dependency_ptr<T> = T*;
+    template<typename T>
+    using dependency_ptr<T> = T*;
 }
