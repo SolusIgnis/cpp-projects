@@ -220,7 +220,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             do_set_probe(new_probe);
             return *this;
         }
-        
+
         test_task&& set_probe(probe_ptr new_probe) &&
         {
             do_set_probe(new_probe);

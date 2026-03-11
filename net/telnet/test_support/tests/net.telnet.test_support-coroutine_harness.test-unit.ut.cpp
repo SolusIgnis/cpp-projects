@@ -14,7 +14,6 @@ test_task<int> echo(int value)
 }
 
 suite coroutine_harness_tests = [] mutable {
-
     "run returns value"_test = [] mutable {
         auto task = echo(42);
 
@@ -40,7 +39,7 @@ suite coroutine_harness_tests = [] mutable {
 
         {
             auto task = echo(42);
-        
+
             task.set_probe(&probe);
 
             [[maybe_unused]] auto result = run(task);
@@ -104,9 +103,7 @@ suite coroutine_harness_tests = [] mutable {
     "stalled coroutine detected"_test = [] mutable {
         coroutine_probe probe;
 
-        auto task = [&]() -> test_task<void> {
-            co_await std::suspend_always{};
-        }();
+        auto task = [&]() -> test_task<void> { co_await std::suspend_always{}; }();
 
         task.set_probe(&probe);
 
@@ -122,62 +119,61 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probe.awaited, true));
     };
 
-"nested coroutine await"_test = [] mutable {
-    coroutine_probe probeA;
-    coroutine_probe probeB;
-    coroutine_probe probeC;
-    coroutine_probe probeD;
+    "nested coroutine await"_test = [] mutable {
+        coroutine_probe probeA;
+        coroutine_probe probeB;
+        coroutine_probe probeC;
+        coroutine_probe probeD;
 
-    // Lvalue tasks
-    auto taskA = echo(42).set_probe(&probeA);
-    auto taskB = echo(7).set_probe(&probeB);
+        // Lvalue tasks
+        auto taskA = echo(42).set_probe(&probeA);
+        auto taskB = echo(7).set_probe(&probeB);
 
-    // Factory for rvalue task
-    auto make_taskC = []() -> test_task<int> {
-        co_return co_await echo(1);
+        // Factory for rvalue task
+        auto make_taskC = []() -> test_task<int> { co_return co_await echo(1); };
+
+        auto taskD = [&]() -> test_task<int> {
+            auto foo        = co_await taskA;                                      //42
+            auto bar        = co_await taskB;                                      //7
+            auto quotient   = foo / bar;                                           //6
+            auto difference = quotient - co_await make_taskC().set_probe(&probeC); //5
+            co_return difference;                                                  //5
+        }()
+                                  .set_probe(&probeD);
+
+        int result = run(taskD);
+        expect(eq(result, 5));
+
+        // Assertions for taskA (lvalue)
+        expect(eq(probeA.awaited, true));
+        expect(eq(probeA.resumed, true));
+        expect(eq(probeA.moved, false));
+        expect(eq(probeA.done, true));
+        expect(eq(probeA.destroyed, true));
+        expect(eq(probeA.await_path, coroutine_probe::path::lvalue));
+
+        // Assertions for taskB (lvalue)
+        expect(eq(probeB.awaited, true));
+        expect(eq(probeB.resumed, true));
+        expect(eq(probeB.moved, false));
+        expect(eq(probeB.done, true));
+        expect(eq(probeB.destroyed, true));
+        expect(eq(probeB.await_path, coroutine_probe::path::lvalue));
+
+        // Assertions for taskC (rvalue)
+        expect(eq(probeC.awaited, true));
+        expect(eq(probeC.resumed, true));
+        expect(eq(probeC.moved, true)); // rvalue was moved
+        expect(eq(probeC.done, true));
+        expect(eq(probeC.destroyed, true));
+        expect(eq(probeC.await_path, coroutine_probe::path::rvalue));
+
+        // Assertions for taskD (rvalue)
+        expect(eq(probeD.awaited, true));
+        expect(eq(probeD.resumed, true));
+        expect(eq(probeD.moved, true)); // rvalue returned by lambda
+        expect(eq(probeD.done, true));
+        expect(eq(probeD.destroyed, true));
+        expect(eq(probeD.await_path, coroutine_probe::path::rvalue));
     };
-
-    auto taskD = [&]() -> test_task<int> {
-        auto foo = co_await taskA; //42
-        auto bar = co_await taskB; //7
-        auto quotient = foo / bar; //6
-        auto difference = quotient - co_await make_taskC().set_probe(&probeC); //5
-        co_return difference; //5
-    }().set_probe(&probeD);
-
-    int result = run(taskD);
-    expect(eq(result, 5));
-
-    // Assertions for taskA (lvalue)
-    expect(eq(probeA.awaited, true));
-    expect(eq(probeA.resumed, true));
-    expect(eq(probeA.moved, false));
-    expect(eq(probeA.done, true));
-    expect(eq(probeA.destroyed, true));
-    expect(eq(probeA.await_path, coroutine_probe::path::lvalue));
-
-    // Assertions for taskB (lvalue)
-    expect(eq(probeB.awaited, true));
-    expect(eq(probeB.resumed, true));
-    expect(eq(probeB.moved, false));
-    expect(eq(probeB.done, true));
-    expect(eq(probeB.destroyed, true));
-    expect(eq(probeB.await_path, coroutine_probe::path::lvalue));
-
-    // Assertions for taskC (rvalue)
-    expect(eq(probeC.awaited, true));
-    expect(eq(probeC.resumed, true));
-    expect(eq(probeC.moved, true)); // rvalue was moved
-    expect(eq(probeC.done, true));
-    expect(eq(probeC.destroyed, true));
-    expect(eq(probeC.await_path, coroutine_probe::path::rvalue));
-
-    // Assertions for taskD (rvalue)
-    expect(eq(probeD.awaited, true));
-    expect(eq(probeD.resumed, true));
-    expect(eq(probeD.moved, true)); // rvalue returned by lambda
-    expect(eq(probeD.done, true));
-    expect(eq(probeD.destroyed, true));
-    expect(eq(probeD.await_path, coroutine_probe::path::rvalue));
-};
 };
