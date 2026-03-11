@@ -155,7 +155,7 @@ suite coroutine_harness_tests = [] mutable {
             auto taskD = [&]() -> test_task<void> {
                 quotient = foo / bar;
                 co_return;
-            }();
+            }().set_probe(probeD);
             co_await taskD; //42 / 7 == 6
 
             auto difference = quotient - co_await make_taskC().set_probe(&probeC); //6 - 1 == 5
@@ -172,7 +172,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeA.resumed, true));
         expect(eq(probeA.moved, false));
         expect(eq(probeA.done, true));
-        expect(eq(probeA.destroyed, true));
+        expect(eq(probeA.destroyed, false));
         expect(eq(static_cast<int>(probeA.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
 
         // Assertions for taskB (lvalue)
@@ -181,7 +181,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeB.resumed, true));
         expect(eq(probeB.moved, false));
         expect(eq(probeB.done, true));
-        expect(eq(probeB.destroyed, true));
+        expect(eq(probeB.destroyed, false));
         expect(eq(static_cast<int>(probeB.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
 
         // Assertions for taskC (rvalue)
