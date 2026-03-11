@@ -48,7 +48,7 @@ target_sources(net.telnet.test_support
 
 target_link_libraries(net.telnet.test_support
   PUBLIC
-    base::vocab::ptr
+    base::base
 )
 
 add_tests_for_module(net.telnet.test_support)
