@@ -103,6 +103,8 @@ export namespace net::telnet::test_support::coroutine_harness {
         std::coroutine_handle<promise_type> my_handle;
         bool ownership;
 
+        test_awaiter(std::coroutine_handle<promise_type> handle, bool own_handle) : my_handle(handle), ownership(own_handle) {}
+
         ~test_awaiter() noexcept(false) { destroy(); }
 
         test_awaiter(const test_awaiter&)            = delete;
@@ -327,7 +329,7 @@ export namespace net::telnet::test_support::coroutine_harness {
     };
 
     template<typename Task>
-    Task test_runner_entry(Task&& task)
+    auto test_runner_entry(Task&& task) -> std::remove_reference_t<Task>
     {
         co_return co_await task;
     }
