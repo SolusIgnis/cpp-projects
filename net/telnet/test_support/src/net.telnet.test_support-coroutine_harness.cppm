@@ -318,12 +318,12 @@ export namespace net::telnet::test_support::coroutine_harness {
 
     template<typename T>
     struct test_promise : test_promise_base<T, test_promise<T>> {
-        void return_value(T v) noexcept { value.emplace(std::move(v)); }
+        void return_value(T v) noexcept { this->value.emplace(std::move(v)); }
     };
 
     template<>
     struct test_promise<void> : test_promise_base<void, test_promise<void>> {
-        void return_void() noexcept { value.emplace(); }
+        void return_void() noexcept { this->value.emplace(); }
     };
 
     template<typename Task>
