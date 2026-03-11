@@ -154,10 +154,13 @@ suite coroutine_harness_tests = [] mutable {
             auto bar = co_await taskB; //7
 
             int quotient; //42 / 7 == 6
-            co_await ([&]() -> test_task<void> {
-                quotient = foo / bar;
-                co_return;
-            }().set_probe(&probeD));
+            co_await (
+                [&]() -> test_task<void> {
+                    quotient = foo / bar;
+                    co_return;
+                }()
+                             .set_probe(&probeD)
+            );
 
             auto difference = quotient - co_await make_taskC().set_probe(&probeC); //6 - 1 == 5
             co_return difference;                                                  //5
