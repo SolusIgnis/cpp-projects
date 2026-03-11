@@ -135,7 +135,7 @@ suite coroutine_harness_tests = [] mutable {
         coroutine_probe probe;
         auto task = echo(42);
         task.set_probe(&probe);
-        task = std::move(task);
+        task = std::move(task); // NOLINT(clang-diagnostic-self-move): testing safety of self-assignment 
         expect(eq(probe.moved, false)); //self-assignment doesn't actually move
         expect(eq(run(task), 42));
     };
