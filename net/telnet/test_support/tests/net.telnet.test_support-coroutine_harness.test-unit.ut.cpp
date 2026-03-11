@@ -83,7 +83,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probe.moved, false)); //rvalue used in-place
         expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
     };
-    
+
     "premature destruction"_test = [] mutable {
         coroutine_probe probe;
 
@@ -98,7 +98,7 @@ suite coroutine_harness_tests = [] mutable {
         bool threw = false;
         try {
             auto unawaited_task = echo(0);
-        } catch(const std::logic_error&) {
+        } catch (const std::logic_error&) {
             threw = true;
         }
         expect(eq(threw, true));
@@ -113,7 +113,7 @@ suite coroutine_harness_tests = [] mutable {
         auto task2 = echo(10);
         task2.set_probe(&probe2);
 
-        task2 = std::move(task1); // move assignment
+        task2       = std::move(task1); // move assignment
         auto result = run(task2);
 
         expect(eq(result, 5));
