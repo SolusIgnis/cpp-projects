@@ -311,7 +311,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         suspend_finalize final_suspend() noexcept { return {}; }
 
         void return_value(T v) noexcept
-            requires (!std::same_as<T, void>)
+            requires !(std::same_as<T, void>)
         {
             value.emplace(std::move(v));
         }
