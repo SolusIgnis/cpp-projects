@@ -83,6 +83,47 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probe.moved, false)); //rvalue used in-place
         expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
     };
+    
+    "premature destruction"_test = [] mutable {
+        coroutine_probe probe;
+
+        echo(0).set_probe(&probe);
+
+        expect(eq(probe.awaited, false));
+        expect(eq(probe.done, false));
+        expect(eq(probe.destroyed, true));
+    };
+
+    "premature destruction throws without probe"_test = [] mutable {
+        bool threw = false;
+        try {
+            auto unawaited_task = echo(0);
+        } catch(const std::logic_error&) {
+            threw = true;
+        }
+        expect(eq(threw, true));
+    };
+
+    "move assignment sets moved"_test = [] mutable {
+        coroutine_probe probe1;
+        auto task1 = echo(5);
+        task1.set_probe(&probe1);
+
+        coroutine_probe probe2;
+        auto task2 = echo(10);
+        task2.set_probe(&probe2);
+
+        task2 = std::move(task1); // move assignment
+        auto result = run(task2);
+
+        expect(eq(result, 5));
+        expect(eq(probe1.moved, true));
+        expect(eq(probe1.awaited, true));
+        expect(eq(probe1.destroyed, false));
+        expect(eq(probe2.moved, false));
+        expect(eq(probe2.awaited, false));
+        expect(eq(probe2.destroyed, true));
+    };
 
     "double await throws"_test = [] mutable {
         auto task = echo(42);
