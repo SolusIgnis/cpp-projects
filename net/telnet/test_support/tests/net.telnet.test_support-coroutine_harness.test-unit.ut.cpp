@@ -73,7 +73,6 @@ suite coroutine_harness_tests = [] mutable {
         coroutine_probe probe;
 
         auto task = echo(42);
-
         task.set_probe(&probe);
 
         [[maybe_unused]] auto result = run(std::move(task));
@@ -140,12 +139,12 @@ suite coroutine_harness_tests = [] mutable {
         coroutine_probe probeD;
         coroutine_probe probeE;
 
-        // Lvalue tasks
+        // Lvalue task
         auto taskA = echo(42);
         taskA.set_probe(&probeA);
 
-        auto taskB = echo(7);
-        taskB.set_probe(&probeB);
+        // Temporary moved into taskB after probe is set
+        auto taskB = echo(7).set_probe(&probeB);
 
         // Factory for rvalue task
         auto make_taskC = []() -> test_task<int> { co_return co_await echo(1); };
@@ -154,13 +153,11 @@ suite coroutine_harness_tests = [] mutable {
             auto foo = co_await taskA; //42
             auto bar = co_await taskB; //7
 
-            int quotient;
-            auto taskD = [&]() -> test_task<void> {
+            int quotient; //42 / 7 == 6
+            co_await ([&]() -> test_task<void> {
                 quotient = foo / bar;
                 co_return;
-            }();
-            taskD.set_probe(&probeD);
-            co_await taskD; //42 / 7 == 6
+            }().set_probe(&probeD));
 
             auto difference = quotient - co_await make_taskC().set_probe(&probeC); //6 - 1 == 5
             co_return difference;                                                  //5
@@ -170,7 +167,7 @@ suite coroutine_harness_tests = [] mutable {
         int result = run(taskE);
         expect(eq(result, 5));
 
-        // Assertions for taskA (lvalue)
+        // Assertions for taskA (unmoved lvalue)
         expect(eq(probeA.awaited, true));
         expect(eq(probeA.suspended, false));
         expect(eq(probeA.resumed, true));
@@ -179,11 +176,11 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeA.destroyed, false));
         expect(eq(static_cast<int>(probeA.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
 
-        // Assertions for taskB (lvalue)
+        // Assertions for taskB (moved lvalue)
         expect(eq(probeB.awaited, true));
         expect(eq(probeB.suspended, false));
         expect(eq(probeB.resumed, true));
-        expect(eq(probeB.moved, false));
+        expect(eq(probeB.moved, true));
         expect(eq(probeB.done, true));
         expect(eq(probeB.destroyed, false));
         expect(eq(static_cast<int>(probeB.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
@@ -192,28 +189,28 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeC.awaited, true));
         expect(eq(probeC.suspended, true));
         expect(eq(probeC.resumed, true));
-        expect(eq(probeC.moved, false)); // rvalue temporary is never moved
+        expect(eq(probeC.moved, false)); // rvalue temporary is never moved after probe is attached
         expect(eq(probeC.done, true));
         expect(eq(probeC.destroyed, true));
         expect(eq(static_cast<int>(probeC.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
 
-        // Assertions for taskD (lvalue)
+        // Assertions for taskD (unmaterialized rvalue)
         expect(eq(probeD.awaited, true));
         expect(eq(probeD.suspended, false));
         expect(eq(probeD.resumed, true));
         expect(eq(probeD.moved, false));
         expect(eq(probeD.done, true));
         expect(eq(probeD.destroyed, true));
-        expect(eq(static_cast<int>(probeD.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
+        expect(eq(static_cast<int>(probeD.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
 
-        // Assertions for taskE (rvalue)
+        // Assertions for taskE (lvalue)
         expect(eq(probeE.awaited, true));
         expect(eq(probeE.suspended, true));
         expect(eq(probeE.resumed, true));
         expect(eq(probeE.moved, false)); // rvalue returned by lambda used in-place
         expect(eq(probeE.done, true));
         expect(eq(probeE.destroyed, false));
-        expect(eq(static_cast<int>(probeE.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
+        expect(eq(static_cast<int>(probeE.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
     };
 };
 
