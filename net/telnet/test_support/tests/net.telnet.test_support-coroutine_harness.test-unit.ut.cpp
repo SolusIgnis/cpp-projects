@@ -192,7 +192,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeC.awaited, true));
         expect(eq(probeC.suspended, true));
         expect(eq(probeC.resumed, true));
-        expect(eq(probeC.false, true)); // rvalue temporary is never moved
+        expect(eq(probeC.moved, false)); // rvalue temporary is never moved
         expect(eq(probeC.done, true));
         expect(eq(probeC.destroyed, true));
         expect(eq(static_cast<int>(probeC.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
