@@ -2,6 +2,7 @@
 // Unit tests for net.telnet.test_support:coroutine_harness
 
 import net.telnet.test_support;
+import base.vocab;
 import ut;
 import std;
 
@@ -11,6 +12,11 @@ using namespace net::telnet::test_support::coroutine_harness;
 test_task<int> echo(int value)
 {
     co_return value;
+}
+
+test_task<test_task<int>> make_echo(int value, base::vocab::ptr::alias_ptr<coroutine_probe> probe = nullptr)
+{
+    co_return echo(value).set_probe(probe);
 }
 
 suite coroutine_harness_tests = [] mutable {
@@ -123,6 +129,41 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probe2.moved, false));
         expect(eq(probe2.awaited, false));
         expect(eq(probe2.destroyed, true));
+    };
+
+    "self assignment is safe"_test = [] mutable {
+        coroutine_probe probe;
+        auto task = echo(42);
+        task.set_probe(&probe);
+        task = std::move(task);
+        expect(eq(probe.moved, false)); //self-assignment doesn't actually move
+        expect(eq(run(task), 42));
+    };
+
+    "task factory"_test = [] mutable {
+        coroutine_probe factory_probe;
+        coroutine_probe task_probe;
+
+        test_task<int> task;
+
+        { //make sure factory is destroyed before we run the result task
+            auto factory = make_echo(42, &task_probe);
+            factory.set_probe(&factory_probe);
+            task = run(factory);
+
+            expect(eq(factory_probe.done, true));
+        }
+        expect(eq(factory_probe.destroyed, true));
+
+        expect(eq(task_probe.moved, true));
+        expect(eq(task_probe.awaited, false));
+        expect(eq(task_probe.destroyed, false));
+
+        auto result = run(task);
+
+        expect(eq(result, 42));
+        expect(eq(task_probe.awaited, true));
+        expect(eq(task_probe.done, true));
     };
 
     "double await throws"_test = [] mutable {
