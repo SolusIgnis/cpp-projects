@@ -215,10 +215,16 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         explicit operator bool() const noexcept { return handle_ != nullptr; }
 
-        void set_probe(probe_ptr new_probe)
+        test_task& set_probe(probe_ptr new_probe) &
         {
-            if (handle_)
-                handle_.promise().probe = new_probe;
+            do_set_probe(new_probe);
+            return *this;
+        }
+        
+        test_task&& set_probe(probe_ptr new_probe) &&
+        {
+            do_set_probe(new_probe);
+            return std::move(*this);
         }
 
         [[nodiscard]] auto operator co_await() &
@@ -235,6 +241,12 @@ export namespace net::telnet::test_support::coroutine_harness {
 
     private:
         using awaiter = AwaiterT;
+
+        void do_set_probe(probe_ptr new_probe)
+        {
+            if (handle_)
+                handle_.promise().probe = new_probe;
+        }
 
         void prepare_co_await(coroutine_probe::path await_path)
         {
