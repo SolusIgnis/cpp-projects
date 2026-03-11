@@ -81,7 +81,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probe.awaited, true));
         expect(eq(probe.resumed, true));
         expect(eq(probe.done, true));
-        expect(eq(probe.moved, true));
+        expect(eq(probe.moved, false)); //rvalue used in-place
         expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
     };
 
@@ -210,9 +210,9 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeE.awaited, true));
         expect(eq(probeE.suspended, true));
         expect(eq(probeE.resumed, true));
-        expect(eq(probeE.moved, true)); // rvalue returned by lambda
+        expect(eq(probeE.moved, false)); // rvalue returned by lambda used in-place
         expect(eq(probeE.done, true));
-        expect(eq(probeE.destroyed, true));
+        expect(eq(probeE.destroyed, false));
         expect(eq(static_cast<int>(probeE.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
     };
 };
