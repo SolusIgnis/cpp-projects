@@ -188,7 +188,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         bool awaited_{false};
 
     public:
-        test_task() {}
+        test_task() = default;
 
         test_task(std::coroutine_handle<promise_type> h) : handle_(h) {}
 
