@@ -38,14 +38,14 @@ suite coroutine_harness_tests = [] mutable {
         coroutine_probe probe;
 
         auto task = []() -> test_task<void> { co_return; }();
-        
+
         task.set_probe(&probe);
 
         run(task);
 
         expect(eq(probe.awaited, true));
         expect(eq(probe.done, true));
-    }; 
+    };
 
     "probe lifecycle"_test = [] mutable {
         coroutine_probe probe;
@@ -148,16 +148,20 @@ suite coroutine_harness_tests = [] mutable {
         auto make_taskC = []() -> test_task<int> { co_return co_await echo(1); };
 
         auto taskE = [&]() -> test_task<int> {
-            auto foo        = co_await taskA;  //42
-            auto bar        = co_await taskB;  //7
+            auto foo = co_await taskA; //42
+            auto bar = co_await taskB; //7
 
             int quotient;
-            auto taskD = [&]() -> test_task<void> { quotient = foo / bar; co_return; }();
+            auto taskD = [&]() -> test_task<void> {
+                quotient = foo / bar;
+                co_return;
+            }();
             co_await taskD; //42 / 7 == 6
-            
+
             auto difference = quotient - co_await make_taskC().set_probe(&probeC); //6 - 1 == 5
-            co_return difference; //5
-        }().set_probe(&probeE);
+            co_return difference;                                                  //5
+        }()
+                                  .set_probe(&probeE);
 
         int result = run(taskE);
         expect(eq(result, 5));
