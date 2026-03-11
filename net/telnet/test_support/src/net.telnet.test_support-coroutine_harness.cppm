@@ -114,7 +114,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             : my_handle(std::exchange(other.my_handle, {})), ownership(std::exchange(other.ownership, false))
         {}
 
-        test_awaiter& operator=(test_awaiter&& other) noexcept(false)
+        test_awaiter&& operator=(test_awaiter&& other) noexcept(false)
         {
             if (this != &other) {
                 if (ownership && my_handle)
@@ -123,7 +123,7 @@ export namespace net::telnet::test_support::coroutine_harness {
                 my_handle = std::exchange(other.my_handle, {});
                 ownership = std::exchange(other.ownership, false);
             }
-            return *this;
+            return std::move(*this);
         }
 
         [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
@@ -201,7 +201,7 @@ export namespace net::telnet::test_support::coroutine_harness {
                 handle_.promise().probe->moved = true;
         }
 
-        test_task& operator=(test_task&& other) noexcept(false)
+        test_task&& operator=(test_task&& other) noexcept(false)
         {
             if (this != &other) {
                 if (handle_)
@@ -212,7 +212,7 @@ export namespace net::telnet::test_support::coroutine_harness {
                 if (handle_ && handle_.promise().probe)
                     handle_.promise().probe->moved = true;
             }
-            return *this;
+            return std::move(*this);
         }
 
         explicit operator bool() const noexcept { return handle_ != nullptr; }
