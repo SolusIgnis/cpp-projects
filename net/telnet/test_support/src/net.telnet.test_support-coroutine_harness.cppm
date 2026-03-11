@@ -289,7 +289,10 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         std::coroutine_handle<> continuation = std::noop_coroutine();
 
-        test_task<T> get_return_object() { return test_task<T>{std::coroutine_handle<Derived>::from_promise(static_cast<Derived&>(*this))}; }
+        test_task<T> get_return_object()
+        {
+            return test_task<T>{std::coroutine_handle<Derived>::from_promise(static_cast<Derived&>(*this))};
+        }
 
         struct suspend_finalize {
             [[nodiscard]] bool await_ready() noexcept { return false; }
@@ -312,21 +315,15 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         void unhandled_exception() noexcept { exception = std::current_exception(); }
     };
-    
+
     template<typename T>
     struct test_promise : test_promise_base<T, test_promise<T>> {
-        void return_value(T v) noexcept
-        {
-            value.emplace(std::move(v));
-        }
+        void return_value(T v) noexcept { value.emplace(std::move(v)); }
     };
-    
+
     template<>
     struct test_promise<void> : test_promise_base<void, test_promise<void>> {
-        void return_void() noexcept
-        {
-            value.emplace();
-        }
+        void return_void() noexcept { value.emplace(); }
     };
 
     template<typename Task>
