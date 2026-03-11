@@ -278,8 +278,8 @@ export namespace net::telnet::test_support::coroutine_harness {
         }
     };
 
-    template<typename T>
-    struct test_promise {
+    template<typename T, typename Derived>
+    struct test_promise_base {
         using storage_t = std::conditional_t<std::is_void_v<T>, std::monostate, T>;
         using probe_ptr = base::vocab::ptr::alias_ptr<coroutine_probe>;
 
@@ -289,12 +289,12 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         std::coroutine_handle<> continuation = std::noop_coroutine();
 
-        test_task<T> get_return_object() { return test_task<T>{std::coroutine_handle<test_promise>::from_promise(*this)}; }
+        test_task<T> get_return_object() { return test_task<T>{std::coroutine_handle<Derived>::from_promise(static_cast<Derived&>(*this))}; }
 
         struct suspend_finalize {
             [[nodiscard]] bool await_ready() noexcept { return false; }
 
-            [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise> finalizing_handle) noexcept
+            [[nodiscard]] auto await_suspend(std::coroutine_handle<Derived> finalizing_handle) noexcept
             {
                 auto& finalizing_promise = finalizing_handle.promise();
                 if (probe_ptr probe = finalizing_promise.probe; probe) {
@@ -310,19 +310,23 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         suspend_finalize final_suspend() noexcept { return {}; }
 
+        void unhandled_exception() noexcept { exception = std::current_exception(); }
+    };
+    
+    template<typename T>
+    struct test_promise : test_promise_base<T, test_promise<T>> {
         void return_value(T v) noexcept
-            requires (!std::is_void_v<T>)
         {
             value.emplace(std::move(v));
         }
-
+    };
+    
+    template<>
+    struct test_promise<void> : test_promise_base<void, test_promise<void>> {
         void return_void() noexcept
-            requires std::is_void_v<T>
         {
             value.emplace();
         }
-
-        void unhandled_exception() noexcept { exception = std::current_exception(); }
     };
 
     template<typename Task>
