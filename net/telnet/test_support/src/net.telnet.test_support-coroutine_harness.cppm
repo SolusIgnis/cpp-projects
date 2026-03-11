@@ -331,7 +331,7 @@ export namespace net::telnet::test_support::coroutine_harness {
     template<typename Task>
     auto test_runner_entry(Task&& task) -> std::remove_reference_t<Task>
     {
-        co_return co_await task;
+        co_return co_await std::forward<Task>(task);
     }
 
     template<typename Task>
