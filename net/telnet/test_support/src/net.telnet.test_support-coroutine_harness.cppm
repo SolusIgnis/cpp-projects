@@ -189,6 +189,7 @@ export namespace net::telnet::test_support::coroutine_harness {
 
     public:
         test_task() {}
+
         test_task(std::coroutine_handle<promise_type> h) : handle_(h) {}
 
         ~test_task() noexcept(false) { destroy(); }
