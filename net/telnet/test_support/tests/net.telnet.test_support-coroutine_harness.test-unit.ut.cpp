@@ -141,8 +141,11 @@ suite coroutine_harness_tests = [] mutable {
         coroutine_probe probeE;
 
         // Lvalue tasks
-        auto taskA = echo(42).set_probe(&probeA);
-        auto taskB = echo(7).set_probe(&probeB);
+        auto taskA = echo(42);
+        taskA.set_probe(&probeA);
+
+        auto taskB = echo(7);
+        taskB.set_probe(&probeB);
 
         // Factory for rvalue task
         auto make_taskC = []() -> test_task<int> { co_return co_await echo(1); };
@@ -189,7 +192,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeC.awaited, true));
         expect(eq(probeC.suspended, true));
         expect(eq(probeC.resumed, true));
-        expect(eq(probeC.moved, true)); // rvalue was moved
+        expect(eq(probeC.false, true)); // rvalue temporary is never moved
         expect(eq(probeC.done, true));
         expect(eq(probeC.destroyed, true));
         expect(eq(static_cast<int>(probeC.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
