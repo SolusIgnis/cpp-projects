@@ -128,7 +128,7 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         [[nodiscard]] auto await_suspend(std::coroutine_handle<promise_type> awaiting_handle) noexcept
         {
-            if (probe_ptr probe = awaiting_handle.promise().probe; probe)
+            if (probe_ptr probe{awaiting_handle.promise().probe}; probe)
                 probe->suspended = true;
             my_handle.promise().continuation = awaiting_handle;
             return my_handle;
@@ -161,8 +161,8 @@ export namespace net::telnet::test_support::coroutine_harness {
         void destroy() noexcept(false)
         {
             if (ownership && my_handle) {
-                bool done       = my_handle.done();
-                probe_ptr probe = my_handle.promise().probe;
+                bool done{my_handle.done()};
+                probe_ptr probe{my_handle.promise().probe};
 
                 my_handle.destroy();
 
@@ -255,7 +255,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             }
             awaited_ = true;
 
-            if (probe_ptr probe = handle_.promise().probe; probe) {
+            if (probe_ptr probe{handle_.promise().probe}; probe) {
                 probe->awaited    = true;
                 probe->await_path = await_path;
             }
@@ -264,8 +264,8 @@ export namespace net::telnet::test_support::coroutine_harness {
         void destroy() noexcept(false)
         {
             if (handle_) {
-                bool done       = handle_.done();
-                probe_ptr probe = handle_.promise().probe;
+                bool done{handle_.done()};
+                probe_ptr probe{handle_.promise().probe};
 
                 handle_.destroy();
 
@@ -287,7 +287,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         std::exception_ptr exception{};
         probe_ptr probe{nullptr};
 
-        std::coroutine_handle<> continuation = std::noop_coroutine();
+        std::coroutine_handle<> continuation{std::noop_coroutine()};
 
         test_task<T> get_return_object()
         {
@@ -300,7 +300,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             [[nodiscard]] auto await_suspend(std::coroutine_handle<Derived> finalizing_handle) noexcept
             {
                 auto& finalizing_promise = finalizing_handle.promise();
-                if (probe_ptr probe = finalizing_promise.probe; probe) {
+                if (probe_ptr probe{finalizing_promise.probe}; probe) {
                     probe->done = true;
                 }
                 return finalizing_promise.continuation;
@@ -335,9 +335,9 @@ export namespace net::telnet::test_support::coroutine_harness {
     template<typename Task>
     [[nodiscard]] decltype(auto) run(Task&& task)
     {
-        auto entry_point = test_runner_entry(std::forward<Task>(task));
+        auto entry_point{test_runner_entry(std::forward<Task>(task))};
 
-        auto awaiter = entry_point.operator co_await();
+        auto awaiter{entry_point.operator co_await()};
 
         if (!awaiter.await_ready()) {
             (awaiter.await_suspend(std::noop_coroutine())).resume();
