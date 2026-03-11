@@ -280,7 +280,7 @@ export namespace net::telnet::test_support::coroutine_harness {
 
     template<typename T>
     struct test_promise {
-        using storage_t = std::conditional_t<std::same_as<T, void>, std::monostate, T>;
+        using storage_t = std::conditional_t<std::is_void_v<T>, std::monostate, T>;
         using probe_ptr = base::vocab::ptr::alias_ptr<coroutine_probe>;
 
         std::optional<storage_t> value{};
@@ -311,13 +311,13 @@ export namespace net::telnet::test_support::coroutine_harness {
         suspend_finalize final_suspend() noexcept { return {}; }
 
         void return_value(T v) noexcept
-            requires !(std::same_as<T, void>)
+            requires (!std::is_void_v<T>)
         {
             value.emplace(std::move(v));
         }
 
         void return_void() noexcept
-            requires std::same_as<T, void>
+            requires std::is_void_v<T>
         {
             value.emplace();
         }
