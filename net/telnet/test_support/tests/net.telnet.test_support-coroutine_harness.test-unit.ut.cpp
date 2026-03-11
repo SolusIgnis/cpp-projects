@@ -31,7 +31,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probe.suspended, false));
         expect(eq(probe.resumed, false));
         expect(eq(probe.moved, false));
-        expect(eq(probe.await_path, coroutine_probe::path::none));
+        expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::none)));
     };
 
     "probe lifecycle"_test = [] mutable {
@@ -49,7 +49,7 @@ suite coroutine_harness_tests = [] mutable {
             expect(eq(probe.done, true));
             expect(eq(probe.destroyed, false));
             expect(eq(probe.moved, false));
-            expect(eq(probe.await_path, coroutine_probe::path::lvalue));
+            expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
         }
 
         expect(eq(probe.destroyed, true));
@@ -68,7 +68,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probe.resumed, true));
         expect(eq(probe.done, true));
         expect(eq(probe.moved, true));
-        expect(eq(probe.await_path, coroutine_probe::path::rvalue));
+        expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
     };
 
     "double await throws"_test = [] mutable {
@@ -150,7 +150,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeA.moved, false));
         expect(eq(probeA.done, true));
         expect(eq(probeA.destroyed, true));
-        expect(eq(probeA.await_path, coroutine_probe::path::lvalue));
+        expect(eq(static_cast<int>(probeA.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
 
         // Assertions for taskB (lvalue)
         expect(eq(probeB.awaited, true));
@@ -158,7 +158,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeB.moved, false));
         expect(eq(probeB.done, true));
         expect(eq(probeB.destroyed, true));
-        expect(eq(probeB.await_path, coroutine_probe::path::lvalue));
+        expect(eq(static_cast<int>(probeB.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
 
         // Assertions for taskC (rvalue)
         expect(eq(probeC.awaited, true));
@@ -166,7 +166,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeC.moved, true)); // rvalue was moved
         expect(eq(probeC.done, true));
         expect(eq(probeC.destroyed, true));
-        expect(eq(probeC.await_path, coroutine_probe::path::rvalue));
+        expect(eq(static_cast<int>(probeC.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
 
         // Assertions for taskD (rvalue)
         expect(eq(probeD.awaited, true));
@@ -174,6 +174,6 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeD.moved, true)); // rvalue returned by lambda
         expect(eq(probeD.done, true));
         expect(eq(probeD.destroyed, true));
-        expect(eq(probeD.await_path, coroutine_probe::path::rvalue));
+        expect(eq(static_cast<int>(probeD.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
     };
 };
