@@ -212,3 +212,5 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(static_cast<int>(probeE.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
     };
 };
+
+int main() {}
