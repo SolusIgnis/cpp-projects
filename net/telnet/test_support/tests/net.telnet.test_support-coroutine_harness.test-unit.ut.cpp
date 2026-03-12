@@ -278,7 +278,7 @@ suite coroutine_harness_tests = [] mutable {
 
         // Assertions for taskD (unmaterialized rvalue)
         expect(eq(probeD.awaited, true));
-        expect(eq(probeD.suspended, false));
+        expect(eq(probeD.suspended, true));
         expect(eq(probeD.resumed, true));
         expect(eq(probeD.moved, false));
         expect(eq(probeD.done, true));
