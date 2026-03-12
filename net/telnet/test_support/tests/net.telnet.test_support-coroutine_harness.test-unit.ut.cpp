@@ -232,13 +232,10 @@ suite coroutine_harness_tests = [] mutable {
         auto make_taskC = []() -> test_task<int> { co_return co_await echo(1); };
 
         auto taskE = [&]() -> test_task<int> {
-            auto foo = co_await taskA; //42
-            auto bar = co_await taskB; //7
-
             int quotient; //42 / 7 == 6
             co_await (
                 [&]() -> test_task<void> {
-                    quotient = foo / bar;
+                    quotient = (co_await taskA) / (co_await taskB);
                     co_return;
                 }()
                              .set_probe(&probeD)
