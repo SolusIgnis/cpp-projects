@@ -95,9 +95,9 @@ export namespace net::telnet::test_support::coroutine_harness {
         path await_path{path::none};
     };
 
-    template<typename T, typename PromiseT>
+    template<typename T>
     struct test_awaiter {
-        using promise_type = PromiseT;
+        using promise_type = test_promise<T>;
         using probe_ptr    = promise_type::probe_ptr;
 
         std::coroutine_handle<promise_type> my_handle;
@@ -128,7 +128,8 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
 
-        [[nodiscard]] auto await_suspend(std::coroutine_handle<promise_type> awaiting_handle) noexcept
+        template<typename U>
+        [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
         {
             if (probe_ptr probe{awaiting_handle.promise().probe}; probe)
                 probe->suspended = true;
@@ -177,7 +178,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         }
     };
 
-    template<typename T, typename PromiseT = test_promise<T>, typename AwaiterT = test_awaiter<T, PromiseT>>
+    template<typename T, typename PromiseT = test_promise<T>, typename AwaiterT = test_awaiter<T>>
     class test_task {
     public:
         using promise_type = PromiseT;
