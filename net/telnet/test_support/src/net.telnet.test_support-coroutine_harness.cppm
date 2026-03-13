@@ -129,6 +129,8 @@ export namespace net::telnet::test_support::coroutine_harness {
         raw_handle_type& get() { return handle_; }
 
         const raw_handle_type& get() const { return handle_; }
+        
+        explicit(false) operator raw_handle_type() { return handle_; }
 
         explicit operator bool() const noexcept { return handle_ != nullptr; }
 
@@ -205,26 +207,26 @@ export namespace net::telnet::test_support::coroutine_harness {
         struct owning_awaiter {
             coroutine_handle_manager<T> my_handle;
 
-            [[nodiscard]] bool await_ready() noexcept { return my_handle.get().done(); }
+            [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
 
             template<typename U>
             [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
             {
                 if (probe_ptr probe{awaiting_handle.promise().probe}; probe)
                     probe->suspended = true;
-                my_handle.get().promise().continuation = awaiting_handle;
+                my_handle.promise().continuation = awaiting_handle;
                 return my_handle.get();
             }
 
             [[nodiscard]] auto await_suspend(std::coroutine_handle<> awaiting_handle) noexcept
             {
-                my_handle.get().promise().continuation = awaiting_handle;
+                my_handle.promise().continuation = awaiting_handle;
                 return my_handle.get();
             }
 
             [[nodiscard]] T await_resume()
             {
-                auto& my_promise = my_handle.get().promise();
+                auto& my_promise = my_handle.promise();
                 if (my_promise.probe) {
                     my_promise.probe->resumed = true;
                 }
@@ -256,8 +258,8 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         test_task(test_task&& other) noexcept : handle_(std::exchange(other.handle_, {}))
         {
-            if (handle_ && handle_.get().promise().probe)
-                handle_.get().promise().probe->moved = true;
+            if (handle_ && handle_.promise().probe)
+                handle_.promise().probe->moved = true;
         }
 
         test_task& operator=(test_task&& other)
@@ -265,8 +267,8 @@ export namespace net::telnet::test_support::coroutine_harness {
             if (this != &other) {
                 handle_ = std::exchange(other.handle_, {});
 
-                if (handle_ && handle_.get().promise().probe)
-                    handle_.get().promise().probe->moved = true;
+                if (handle_ && handle_.promise().probe)
+                    handle_.promise().probe->moved = true;
             }
             return *this;
         }
@@ -301,7 +303,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         void do_set_probe(probe_ptr new_probe)
         {
             if (handle_)
-                handle_.get().promise().probe = new_probe;
+                handle_.promise().probe = new_probe;
         }
 
         void prepare_co_await(coroutine_probe::path await_path)
@@ -311,7 +313,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             }
             awaited_ = true;
 
-            if (probe_ptr probe{handle_.get().promise().probe}; probe) {
+            if (probe_ptr probe{handle_.promise().probe}; probe) {
                 probe->awaited    = true;
                 probe->await_path = await_path;
             }
