@@ -160,10 +160,10 @@ export namespace net::telnet::test_support::coroutine_harness {
         }
     };
 
-    template<typename T, typename PromiseT = test_promise<T>>
+    template<typename T>
     class test_task {
     public:
-        using promise_type = PromiseT;
+        using promise_type = test_promise<T>;
         using probe_ptr    = promise_type::probe_ptr;
 
     private:
@@ -261,7 +261,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         [[nodiscard]] auto operator co_await() &
         {
             prepare_co_await(coroutine_probe::path::lvalue);
-            return aliasing_awaiter{handle_};
+            return aliasing_awaiter{handle_.get()};
         }
 
         [[nodiscard]] auto operator co_await() &&
