@@ -136,7 +136,7 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         bool done() const { return handle_.done(); }
 
-        auto promise() { return handle_.promise(); }
+        decltype(auto) promise() { return handle_.promise(); }
 
     private:
         void destroy() noexcept(false)
