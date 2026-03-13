@@ -129,7 +129,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         raw_handle_type& get() { return handle_; }
 
         const raw_handle_type& get() const { return handle_; }
-        
+
         explicit(false) operator raw_handle_type() { return handle_; }
 
         explicit operator bool() const noexcept { return handle_ != nullptr; }
