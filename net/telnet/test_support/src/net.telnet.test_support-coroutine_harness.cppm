@@ -207,9 +207,11 @@ export namespace net::telnet::test_support::coroutine_harness {
                 }
             }
         };
+
     public:
         using aliasing_awaiter = awaiter<std::coroutine_handle<promise_type>>;
         using owning_awaiter   = awaiter<coroutine_handle_manager<T>>;
+
     private:
         coroutine_handle_manager<T> handle_;
         bool awaited_{false};
