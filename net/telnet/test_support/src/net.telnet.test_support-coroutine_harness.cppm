@@ -132,6 +132,10 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         explicit operator bool() const noexcept { return handle_ != nullptr; }
 
+        bool done() const { return handle_.done(); }
+
+        auto promise() { return handle_.promise(); }
+
     private:
         void destroy() noexcept(false)
         {
@@ -379,7 +383,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             (awaiter.await_suspend(std::noop_coroutine())).resume();
         }
 
-        if (awaiter.my_handle.get().done()) {
+        if (awaiter.my_handle.done()) {
             return awaiter.await_resume();
         } else {
             throw std::system_error(
