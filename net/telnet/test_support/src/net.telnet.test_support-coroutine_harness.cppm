@@ -172,7 +172,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
 
             template<typename U>
-            [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
+            [[nodiscard]] std::coroutine_handle<promise_type>& await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
             {
                 if (probe_ptr probe{awaiting_handle.promise().probe}; probe)
                     probe->suspended = true;
@@ -180,7 +180,7 @@ export namespace net::telnet::test_support::coroutine_harness {
                 return my_handle;
             }
 
-            [[nodiscard]] auto await_suspend(std::coroutine_handle<> awaiting_handle) noexcept
+            [[nodiscard]] std::coroutine_handle<promise_type>& await_suspend(std::coroutine_handle<> awaiting_handle) noexcept
             {
                 my_handle.promise().continuation = awaiting_handle;
                 return my_handle;
@@ -210,7 +210,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
 
             template<typename U>
-            [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
+            [[nodiscard]] std::coroutine_handle<promise_type>& await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
             {
                 if (probe_ptr probe{awaiting_handle.promise().probe}; probe)
                     probe->suspended = true;
@@ -218,7 +218,7 @@ export namespace net::telnet::test_support::coroutine_harness {
                 return my_handle;
             }
 
-            [[nodiscard]] auto await_suspend(std::coroutine_handle<> awaiting_handle) noexcept
+            [[nodiscard]] std::coroutine_handle<promise_type>& await_suspend(std::coroutine_handle<> awaiting_handle) noexcept
             {
                 my_handle.promise().continuation = awaiting_handle;
                 return my_handle;
