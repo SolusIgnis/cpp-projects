@@ -104,6 +104,8 @@ export namespace net::telnet::test_support::coroutine_harness {
         raw_handle_type handle_;
 
     public:
+        coroutine_handle_manager() = default;
+
         explicit coroutine_handle_manager(raw_handle_type handle) : handle_(handle) {}
 
         ~coroutine_handle_manager() noexcept(false) { destroy(); }
