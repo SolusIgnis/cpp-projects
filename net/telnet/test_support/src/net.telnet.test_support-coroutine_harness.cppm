@@ -171,7 +171,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         struct awaiter {
             HandleT my_handle;
 
-            [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
+            [[nodiscard]] bool await_ready() const noexcept { return my_handle.done(); }
 
             template<typename U>
             [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
@@ -307,7 +307,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         }
 
         struct suspend_finalize {
-            [[nodiscard]] bool await_ready() noexcept { return false; }
+            [[nodiscard]] bool await_ready() const noexcept { return false; }
 
             [[nodiscard]] auto await_suspend(std::coroutine_handle<Derived> finalizing_handle) noexcept
             {
