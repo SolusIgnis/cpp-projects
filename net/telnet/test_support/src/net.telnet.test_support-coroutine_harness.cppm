@@ -290,7 +290,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         [[nodiscard]] auto operator co_await() &
         {
             prepare_co_await(coroutine_probe::path::lvalue);
-            return aliasing_awaiter{handle_.get()};
+            return aliasing_awaiter{handle_};
         }
 
         [[nodiscard]] auto operator co_await() &&
