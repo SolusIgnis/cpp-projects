@@ -101,15 +101,16 @@ export namespace net::telnet::test_support::coroutine_harness {
         using probe_ptr    = promise_type::probe_ptr;
 
         std::coroutine_handle<promise_type> handle_;
+
     public:
         explicit coroutine_handle_manager(std::coroutine_handle<promise_type> handle) : handle_(handle) {}
+
         ~coroutine_handle_manager() noexcept(false) { destroy(); }
 
-        coroutine_handle_manager(const coroutine_handle_manager&) = delete;
+        coroutine_handle_manager(const coroutine_handle_manager&)            = delete;
         coroutine_handle_manager& operator=(const coroutine_handle_manager&) = delete;
 
-        coroutine_handle_manager(coroutine_handle_manager&& other) noexcept
-            : handle_(std::exchange(other.handle_, {})) {}
+        coroutine_handle_manager(coroutine_handle_manager&& other) noexcept : handle_(std::exchange(other.handle_, {})) {}
 
         coroutine_handle_manager& operator=(coroutine_handle_manager&& other) noexcept(false)
         {
@@ -123,6 +124,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         }
 
         coroutine_handle<promise_type>& get() { return handle_; }
+
         const coroutine_handle<promise_type>& get() const { return handle_; }
 
         explicit operator bool() const noexcept { return handle_ != nullptr; }
@@ -132,7 +134,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         {
             if (handle_) {
                 auto destroying_handle = std::exchange(handle_, {});
-                
+
                 bool done{destroying_handle.done()};
                 probe_ptr probe{destroying_handle.promise().probe};
 
@@ -141,7 +143,9 @@ export namespace net::telnet::test_support::coroutine_harness {
                 if (probe) {
                     probe->destroyed = true;
                 } else if (!done && (std::uncaught_exceptions() == 0)) {
-                    throw std::logic_error("test_task coroutine frame destroyed before coroutine completion without probe attached");
+                    throw std::logic_error(
+                        "test_task coroutine frame destroyed before coroutine completion without probe attached"
+                    );
                 }
             }
         }
@@ -153,81 +157,81 @@ export namespace net::telnet::test_support::coroutine_harness {
         using promise_type = PromiseT;
         using probe_ptr    = promise_type::probe_ptr;
 
-    struct aliasing_awaiter {
-        std::coroutine_handle<promise_type> my_handle;
+        struct aliasing_awaiter {
+            std::coroutine_handle<promise_type> my_handle;
 
-        [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
+            [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
 
-        template<typename U>
-        [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
-        {
-            if (probe_ptr probe{awaiting_handle.promise().probe}; probe)
-                probe->suspended = true;
-            my_handle.promise().continuation = awaiting_handle;
-            return my_handle;
-        }
-
-        [[nodiscard]] auto await_suspend(std::coroutine_handle<> awaiting_handle) noexcept
-        {
-            my_handle.promise().continuation = awaiting_handle;
-            return my_handle;
-        }
-
-        [[nodiscard]] T await_resume()
-        {
-            auto& my_promise = my_handle.promise();
-            if (my_promise.probe) {
-                my_promise.probe->resumed = true;
-            }
-            if (my_promise.exception) {
-                std::rethrow_exception(my_promise.exception);
+            template<typename U>
+            [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
+            {
+                if (probe_ptr probe{awaiting_handle.promise().probe}; probe)
+                    probe->suspended = true;
+                my_handle.promise().continuation = awaiting_handle;
+                return my_handle;
             }
 
-            if constexpr (std::same_as<T, void>) {
-                return;
-            } else {
-                return std::move(*my_promise.value);
-            }
-        }
-    };
-
-    struct owning_awaiter {
-        coroutine_handle_manager<T> my_handle;
-
-        [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
-
-        template<typename U>
-        [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
-        {
-            if (probe_ptr probe{awaiting_handle.promise().probe}; probe)
-                probe->suspended = true;
-            my_handle.get().promise().continuation = awaiting_handle;
-            return my_handle.get();
-        }
-
-        [[nodiscard]] auto await_suspend(std::coroutine_handle<> awaiting_handle) noexcept
-        {
-            my_handle.get().promise().continuation = awaiting_handle;
-            return my_handle.get();
-        }
-
-        [[nodiscard]] T await_resume()
-        {
-            auto& my_promise = my_handle.get().promise();
-            if (my_promise.probe) {
-                my_promise.probe->resumed = true;
-            }
-            if (my_promise.exception) {
-                std::rethrow_exception(my_promise.exception);
+            [[nodiscard]] auto await_suspend(std::coroutine_handle<> awaiting_handle) noexcept
+            {
+                my_handle.promise().continuation = awaiting_handle;
+                return my_handle;
             }
 
-            if constexpr (std::same_as<T, void>) {
-                return;
-            } else {
-                return std::move(*my_promise.value);
+            [[nodiscard]] T await_resume()
+            {
+                auto& my_promise = my_handle.promise();
+                if (my_promise.probe) {
+                    my_promise.probe->resumed = true;
+                }
+                if (my_promise.exception) {
+                    std::rethrow_exception(my_promise.exception);
+                }
+
+                if constexpr (std::same_as<T, void>) {
+                    return;
+                } else {
+                    return std::move(*my_promise.value);
+                }
             }
-        }
-    };
+        };
+
+        struct owning_awaiter {
+            coroutine_handle_manager<T> my_handle;
+
+            [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
+
+            template<typename U>
+            [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
+            {
+                if (probe_ptr probe{awaiting_handle.promise().probe}; probe)
+                    probe->suspended = true;
+                my_handle.get().promise().continuation = awaiting_handle;
+                return my_handle.get();
+            }
+
+            [[nodiscard]] auto await_suspend(std::coroutine_handle<> awaiting_handle) noexcept
+            {
+                my_handle.get().promise().continuation = awaiting_handle;
+                return my_handle.get();
+            }
+
+            [[nodiscard]] T await_resume()
+            {
+                auto& my_promise = my_handle.get().promise();
+                if (my_promise.probe) {
+                    my_promise.probe->resumed = true;
+                }
+                if (my_promise.exception) {
+                    std::rethrow_exception(my_promise.exception);
+                }
+
+                if constexpr (std::same_as<T, void>) {
+                    return;
+                } else {
+                    return std::move(*my_promise.value);
+                }
+            }
+        };
 
     private:
         coroutine_handle_manager<T> handle_;
