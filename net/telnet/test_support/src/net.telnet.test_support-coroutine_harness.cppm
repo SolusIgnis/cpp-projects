@@ -166,8 +166,10 @@ export namespace net::telnet::test_support::coroutine_harness {
         using promise_type = PromiseT;
         using probe_ptr    = promise_type::probe_ptr;
 
-        struct aliasing_awaiter {
-            std::coroutine_handle<promise_type> my_handle;
+    private:
+        template<typename HandleT>
+        struct awaiter {
+            HandleT my_handle;
 
             [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
 
@@ -205,47 +207,9 @@ export namespace net::telnet::test_support::coroutine_harness {
                 }
             }
         };
-
-        struct owning_awaiter {
-            coroutine_handle_manager<T> my_handle;
-
-            [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
-
-            template<typename U>
-            [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
-                -> std::coroutine_handle<promise_type>
-            {
-                if (probe_ptr probe{awaiting_handle.promise().probe}; probe)
-                    probe->suspended = true;
-                my_handle.promise().continuation = awaiting_handle;
-                return my_handle;
-            }
-
-            [[nodiscard]] auto await_suspend(std::coroutine_handle<> awaiting_handle) noexcept
-                -> std::coroutine_handle<promise_type>
-            {
-                my_handle.promise().continuation = awaiting_handle;
-                return my_handle;
-            }
-
-            [[nodiscard]] T await_resume()
-            {
-                auto& my_promise = my_handle.promise();
-                if (my_promise.probe) {
-                    my_promise.probe->resumed = true;
-                }
-                if (my_promise.exception) {
-                    std::rethrow_exception(my_promise.exception);
-                }
-
-                if constexpr (std::same_as<T, void>) {
-                    return;
-                } else {
-                    return std::move(*my_promise.value);
-                }
-            }
-        };
-
+    public:
+        using aliasing_awaiter = awaiter<std::coroutine_handle<promise_type>>;
+        using owning_awaiter   = awaiter<coroutine_handle_manager<T>>;
     private:
         coroutine_handle_manager<T> handle_;
         bool awaited_{false};
