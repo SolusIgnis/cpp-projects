@@ -167,7 +167,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         using probe_ptr    = promise_type::probe_ptr;
 
     private:
-        template<typename HandleT>
+        template<typename HandleT> requires std::convertible_to<HandleT, std::coroutine_handle<promise_type>>
         struct awaiter {
             HandleT my_handle;
 
