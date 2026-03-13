@@ -215,13 +215,13 @@ export namespace net::telnet::test_support::coroutine_harness {
                 if (probe_ptr probe{awaiting_handle.promise().probe}; probe)
                     probe->suspended = true;
                 my_handle.promise().continuation = awaiting_handle;
-                return my_handle.get();
+                return my_handle;
             }
 
             [[nodiscard]] auto await_suspend(std::coroutine_handle<> awaiting_handle) noexcept
             {
                 my_handle.promise().continuation = awaiting_handle;
-                return my_handle.get();
+                return my_handle;
             }
 
             [[nodiscard]] T await_resume()
