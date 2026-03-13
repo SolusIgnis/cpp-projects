@@ -97,13 +97,14 @@ export namespace net::telnet::test_support::coroutine_harness {
 
     template<typename T>
     class coroutine_handle_manager {
-        using promise_type = test_promise<T>;
-        using probe_ptr    = promise_type::probe_ptr;
+        using promise_type    = test_promise<T>;
+        using probe_ptr       = promise_type::probe_ptr;
+        using raw_handle_type = std::coroutine_handle<promise_type>;
 
-        std::coroutine_handle<promise_type> handle_;
+        raw_handle_type handle_;
 
     public:
-        explicit coroutine_handle_manager(std::coroutine_handle<promise_type> handle) : handle_(handle) {}
+        explicit coroutine_handle_manager(raw_handle_type handle) : handle_(handle) {}
 
         ~coroutine_handle_manager() noexcept(false) { destroy(); }
 
@@ -123,9 +124,9 @@ export namespace net::telnet::test_support::coroutine_harness {
             return *this;
         }
 
-        coroutine_handle<promise_type>& get() { return handle_; }
+        raw_handle_type& get() { return handle_; }
 
-        const coroutine_handle<promise_type>& get() const { return handle_; }
+        const raw_handle_type& get() const { return handle_; }
 
         explicit operator bool() const noexcept { return handle_ != nullptr; }
 
@@ -198,7 +199,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         struct owning_awaiter {
             coroutine_handle_manager<T> my_handle;
 
-            [[nodiscard]] bool await_ready() noexcept { return my_handle.done(); }
+            [[nodiscard]] bool await_ready() noexcept { return my_handle.get().done(); }
 
             template<typename U>
             [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
