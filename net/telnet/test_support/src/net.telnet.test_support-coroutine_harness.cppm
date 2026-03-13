@@ -379,7 +379,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             (awaiter.await_suspend(std::noop_coroutine())).resume();
         }
 
-        if (awaiter.my_handle.done()) {
+        if (awaiter.my_handle.get().done()) {
             return awaiter.await_resume();
         } else {
             throw std::system_error(
