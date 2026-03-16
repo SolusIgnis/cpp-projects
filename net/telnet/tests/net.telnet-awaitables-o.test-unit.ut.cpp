@@ -67,8 +67,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
 
         auto coro = [&]() -> test_task<int> { co_return 10; };
 
-        auto wrapped = tagged_awaitable<tags::option_enablement_tag, int, test_task<int>>{coro()};
-        wrapped.set_probe(&probe);
+        auto wrapped = tagged_awaitable<tags::option_enablement_tag, int, test_task<int>>{coro().set_probe(&probe)};
 
         auto test = [&]() -> test_task<int> {
             int value = co_await wrapped;
@@ -116,7 +115,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     };
 
     "subnegotiation_awaitable return type matches specification"_test = [] mutable {
-        using expected = tagged_awaitable<tags::subnegotiation_tag, std::tuple<option, std::vector<byte_t>>>;
+        using expected = tagged_awaitable<tags::subnegotiation_tag, std::tuple<net::telnet::option, std::vector<byte_t>>>;
 
         bool same = std::is_same_v<subnegotiation_awaitable, expected>;
         expect(eq(same, true));
