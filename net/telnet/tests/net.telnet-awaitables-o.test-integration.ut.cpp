@@ -134,11 +134,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         subnegotiation_awaitable wrapped{producer()};
 
-        auto fut = asio::co_spawn(
-            ctx,
-            wrapped,
-            asio::use_future
-        );
+        auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
 
         ctx.run();
 
