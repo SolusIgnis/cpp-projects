@@ -72,13 +72,13 @@ export namespace net::telnet::awaitables {
         //NOLINTEND(google-explicit-constructor)
 
         ///@brief Supports co_await for lvalue.
-        decltype(auto) operator co_await() & noexcept { return awaitable_; }
+        auto& operator co_await() & noexcept { return awaitable_; }
 
         ///@brief Supports co_await for const lvalue.
-        decltype(auto) operator co_await() const& noexcept { return awaitable_; }
+        const auto& operator co_await() const& noexcept { return awaitable_; }
 
         ///@brief Supports co_await for rvalue.
-        decltype(auto) operator co_await() && noexcept { return std::move(awaitable_); }
+        auto&& operator co_await() && noexcept { return std::move(awaitable_); }
     }; //class tagged_awaitable
 
     /**
