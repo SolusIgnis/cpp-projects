@@ -12,7 +12,6 @@ using namespace ut;
 using namespace net::telnet::awaitables;
 
 suite net_telnet_awaitables_asio_integration_tests = [] mutable {
-
     // ============================================================
     // Basic wrapping of asio::awaitable
     // ============================================================
@@ -20,9 +19,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     "tagged_awaitable wraps asio::awaitable and forwards result"_test = [] mutable {
         asio::io_context ctx;
 
-        auto make = []() -> asio::awaitable<int> {
-            co_return 42;
-        };
+        auto make = []() -> asio::awaitable<int> { co_return 42; };
 
         tagged_awaitable<tags::option_enablement_tag, int> wrapped{make()};
 
@@ -49,9 +46,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     "asio awaitable implicitly converts to tagged_awaitable"_test = [] mutable {
         asio::io_context ctx;
 
-        auto producer = []() -> asio::awaitable<int> {
-            co_return 77;
-        };
+        auto producer = []() -> asio::awaitable<int> { co_return 77; };
 
         tagged_awaitable<tags::option_enablement_tag, int> wrapped = producer();
 
@@ -78,9 +73,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     "rvalue tagged_awaitable co_await works with asio"_test = [] mutable {
         asio::io_context ctx;
 
-        auto producer = []() -> asio::awaitable<int> {
-            co_return 5;
-        };
+        auto producer = []() -> asio::awaitable<int> { co_return 5; };
 
         int result = 0;
 
@@ -106,13 +99,9 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     "tagged_awaitable composes in nested asio coroutines"_test = [] mutable {
         asio::io_context ctx;
 
-        auto leaf = []() -> asio::awaitable<int> {
-            co_return 9;
-        };
+        auto leaf = []() -> asio::awaitable<int> { co_return 9; };
 
-        auto wrapped_leaf = [&]() -> tagged_awaitable<tags::option_enablement_tag, int> {
-            co_return co_await leaf();
-        };
+        auto wrapped_leaf = [&]() -> tagged_awaitable<tags::option_enablement_tag, int> { co_return co_await leaf(); };
 
         int result = 0;
 
@@ -172,8 +161,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto producer = []() -> asio::awaitable<std::tuple<option, std::vector<byte_t>>> {
             co_return std::tuple<option, std::vector<byte_t>>{
-                static_cast<option>(1),
-                std::vector<byte_t>{1,2,3}
+                static_cast<option>(1), std::vector<byte_t>{1, 2, 3}
             };
         };
 
@@ -195,42 +183,40 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         expect(eq(std::get<1>(result).size(), std::size_t{3}));
     };
 
-// ============================================================
-// Symmetric coroutine transfer / deep chaining
-// ============================================================
+    // ============================================================
+    // Symmetric coroutine transfer / deep chaining
+    // ============================================================
 
-"tagged_awaitable composes across multiple coroutine layers"_test = [] mutable {
-    asio::io_context ctx;
+    "tagged_awaitable composes across multiple coroutine layers"_test = [] mutable {
+        asio::io_context ctx;
 
-    auto leaf = []() -> asio::awaitable<int> {
-        co_return 10;
+        auto leaf = []() -> asio::awaitable<int> { co_return 10; };
+
+        auto middle = [&]() -> tagged_awaitable<tags::option_enablement_tag, int> {
+            int v = co_await leaf();
+            co_return v + 5;
+        };
+
+        auto top = [&]() -> asio::awaitable<int> {
+            int v = co_await middle();
+            co_return v * 2;
+        };
+
+        int result = 0;
+
+        asio::co_spawn(
+            ctx,
+            [&]() -> asio::awaitable<void> {
+                result = co_await top();
+                co_return;
+            },
+            asio::detached
+        );
+
+        ctx.run();
+
+        expect(eq(result, 30));
     };
-
-    auto middle = [&]() -> tagged_awaitable<tags::option_enablement_tag, int> {
-        int v = co_await leaf();
-        co_return v + 5;
-    };
-
-    auto top = [&]() -> asio::awaitable<int> {
-        int v = co_await middle();
-        co_return v * 2;
-    };
-
-    int result = 0;
-
-    asio::co_spawn(
-        ctx,
-        [&]() -> asio::awaitable<void> {
-            result = co_await top();
-            co_return;
-        },
-        asio::detached
-    );
-
-    ctx.run();
-
-    expect(eq(result, 30));
-};
 };
 
 int main() {}

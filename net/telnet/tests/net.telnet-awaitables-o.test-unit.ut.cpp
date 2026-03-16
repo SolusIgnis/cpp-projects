@@ -11,7 +11,6 @@ using namespace net::telnet::awaitables;
 using namespace net::telnet::test_support::coroutine_harness;
 
 suite net_telnet_awaitables_unit_tests = [] mutable {
-
     // ============================================================
     // Basic construction
     // ============================================================
@@ -33,9 +32,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable forwards co_await result"_test = [] mutable {
-        auto coro = []() -> test_task<int> {
-            co_return 42;
-        };
+        auto coro = []() -> test_task<int> { co_return 42; };
 
         tagged_awaitable<tags::option_enablement_tag, int, test_task<int>> a{coro()};
 
@@ -49,9 +46,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     };
 
     "tagged_awaitable supports rvalue co_await"_test = [] mutable {
-        auto coro = []() -> test_task<int> {
-            co_return 55;
-        };
+        auto coro = []() -> test_task<int> { co_return 55; };
 
         auto test = [&]() -> test_task<int> {
             tagged_awaitable<tags::option_enablement_tag, int, test_task<int>> a{coro()};
@@ -70,9 +65,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable propagates coroutine lifecycle"_test = [] mutable {
         coroutine_probe probe;
 
-        auto coro = [&]() -> test_task<int> {
-            co_return 10;
-        };
+        auto coro = [&]() -> test_task<int> { co_return 10; };
 
         auto wrapped = tagged_awaitable<tags::option_enablement_tag, int, test_task<int>>{coro()};
         wrapped.set_probe(&probe);
@@ -94,9 +87,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable composes inside other coroutines"_test = [] mutable {
-        auto sub = []() -> test_task<int> {
-            co_return 7;
-        };
+        auto sub = []() -> test_task<int> { co_return 7; };
 
         auto main = [&]() -> test_task<int> {
             tagged_awaitable<tags::option_enablement_tag, int, test_task<int>> a{sub()};
@@ -113,31 +104,19 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "option_enablement_awaitable is correctly typed"_test = [] mutable {
-        bool same =
-            std::is_same_v<
-                option_enablement_awaitable,
-                tagged_awaitable<tags::option_enablement_tag, void>
-            >;
+        bool same = std::is_same_v<option_enablement_awaitable, tagged_awaitable<tags::option_enablement_tag, void>>;
 
         expect(eq(same, true));
     };
 
     "option_disablement_awaitable is correctly typed"_test = [] mutable {
-        bool same =
-            std::is_same_v<
-                option_disablement_awaitable,
-                tagged_awaitable<tags::option_disablement_tag, void>
-            >;
+        bool same = std::is_same_v<option_disablement_awaitable, tagged_awaitable<tags::option_disablement_tag, void>>;
 
         expect(eq(same, true));
     };
 
     "subnegotiation_awaitable return type matches specification"_test = [] mutable {
-        using expected =
-            tagged_awaitable<
-                tags::subnegotiation_tag,
-                std::tuple<option, std::vector<byte_t>>
-            >;
+        using expected = tagged_awaitable<tags::subnegotiation_tag, std::tuple<option, std::vector<byte_t>>>;
 
         bool same = std::is_same_v<subnegotiation_awaitable, expected>;
         expect(eq(same, true));
@@ -148,9 +127,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable converts to underlying awaitable"_test = [] mutable {
-        auto coro = []() -> test_task<int> {
-            co_return 99;
-        };
+        auto coro = []() -> test_task<int> { co_return 99; };
 
         tagged_awaitable<tags::option_enablement_tag, int, test_task<int>> a{coro()};
 
@@ -159,7 +136,6 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         auto result = run(underlying);
         expect(eq(result, 99));
     };
-
 };
 
 int main() {}

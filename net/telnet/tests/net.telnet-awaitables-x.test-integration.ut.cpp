@@ -18,17 +18,15 @@ using namespace net::telnet::test_support::coroutine_harness;
 struct immediate_suspend_resume {
     constexpr bool await_ready() const noexcept { return false; }
 
-    std::coroutine_handle<> await_suspend(
-        std::coroutine_handle<> caller) noexcept
+    std::coroutine_handle<> await_suspend(std::coroutine_handle<> caller) noexcept
     {
-        return caller;  // symmetric transfer → resume caller right away
+        return caller; // symmetric transfer → resume caller right away
     }
 
     constexpr void await_resume() const noexcept {}
 };
 
 suite telnet_awaitables_integration_tests = [] mutable {
-
     // ────────────────────────────────────────────────────────────────
     // Tests wrapping asio::awaitable<T>
     // ────────────────────────────────────────────────────────────────
@@ -37,9 +35,7 @@ suite telnet_awaitables_integration_tests = [] mutable {
         coroutine_probe probe;
 
         auto task = []() -> test_task<void> {
-            option_enablement_awaitable aw = []() -> asio::awaitable<void> {
-                co_return;
-            }();
+            option_enablement_awaitable aw = []() -> asio::awaitable<void> { co_return; }();
 
             co_await aw;
         }();
@@ -82,11 +78,10 @@ suite telnet_awaitables_integration_tests = [] mutable {
         coroutine_probe probe;
 
         auto task = []() -> test_task<int> {
-            tagged_awaitable<tags::option_disablement_tag, int> tagged_aw =
-                []() -> asio::awaitable<int> {
-                    co_await immediate_suspend_resume{};
-                    co_return 777;
-                }();
+            tagged_awaitable<tags::option_disablement_tag, int> tagged_aw = []() -> asio::awaitable<int> {
+                co_await immediate_suspend_resume{};
+                co_return 777;
+            }();
 
             int value = co_await std::move(tagged_aw);
             co_return value;
@@ -113,7 +108,7 @@ suite telnet_awaitables_integration_tests = [] mutable {
 
             // lvalue co_await
             tagged_awaitable<tags::subnegotiation_tag, int> ta_l = make();
-            int lv = co_await ta_l;
+            int lv                                               = co_await ta_l;
 
             // rvalue co_await
             int rv = co_await make();
@@ -140,9 +135,7 @@ suite telnet_awaitables_integration_tests = [] mutable {
     "tagged_awaitable wrapping trivial test_task"_test = [] mutable {
         coroutine_probe inner_probe;
 
-        auto inner_task = []() -> test_task<int> {
-            co_return 42;
-        }();
+        auto inner_task = []() -> test_task<int> { co_return 42; }();
         inner_task.set_probe(&inner_probe);
 
         tagged_awaitable<tags::option_enablement_tag, int> wrapped{std::move(inner_task)};
@@ -245,20 +238,18 @@ suite telnet_awaitables_integration_tests = [] mutable {
 
         // These should not compile (verified via static_assert)
         static_assert(!std::is_convertible_v<
-            tagged_awaitable<tags::option_enablement_tag, void>,
-            tagged_awaitable<tags::option_disablement_tag, void>
+                      tagged_awaitable<tags::option_enablement_tag, void>,
+                      tagged_awaitable<tags::option_disablement_tag, void>
         >);
 
         static_assert(!std::is_convertible_v<
-            tagged_awaitable<tags::subnegotiation_tag, void>,
-            tagged_awaitable<tags::option_enablement_tag, void>
+                      tagged_awaitable<tags::subnegotiation_tag, void>,
+                      tagged_awaitable<tags::option_enablement_tag, void>
         >);
 
         // Minimal runtime execution to keep test valid
         coroutine_probe probe;
-        auto outer = [&]() -> test_task<void> {
-            co_await good;
-        }();
+        auto outer = [&]() -> test_task<void> { co_await good; }();
         outer.set_probe(&probe);
         run(outer);
     };

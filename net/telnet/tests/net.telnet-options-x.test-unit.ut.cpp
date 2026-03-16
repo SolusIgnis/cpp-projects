@@ -10,16 +10,15 @@ using namespace ut;
 using namespace net::telnet;
 
 suite telnet_options_tests = [] mutable {
-
     "option::id_num enum values (selected)"_test = [] mutable {
-        expect(eq(std::to_underlying(option::id_num::binary),                 0x00));
-        expect(eq(std::to_underlying(option::id_num::echo),                   0x01));
-        expect(eq(std::to_underlying(option::id_num::suppress_go_ahead),      0x03));
-        expect(eq(std::to_underlying(option::id_num::terminal_type),          0x18));
-        expect(eq(std::to_underlying(option::id_num::linemode),               0x22));
-        expect(eq(std::to_underlying(option::id_num::mccp2),                  0x56));
-        expect(eq(std::to_underlying(option::id_num::gmcp),                   0xC9));
-        expect(eq(std::to_underlying(option::id_num::extended_options_list),  0xFF));
+        expect(eq(std::to_underlying(option::id_num::binary), 0x00));
+        expect(eq(std::to_underlying(option::id_num::echo), 0x01));
+        expect(eq(std::to_underlying(option::id_num::suppress_go_ahead), 0x03));
+        expect(eq(std::to_underlying(option::id_num::terminal_type), 0x18));
+        expect(eq(std::to_underlying(option::id_num::linemode), 0x22));
+        expect(eq(std::to_underlying(option::id_num::mccp2), 0x56));
+        expect(eq(std::to_underlying(option::id_num::gmcp), 0xC9));
+        expect(eq(std::to_underlying(option::id_num::extended_options_list), 0xFF));
     };
 
     "option default construction and accessors"_test = [] mutable {
@@ -36,14 +35,7 @@ suite telnet_options_tests = [] mutable {
 
     "option with custom predicates and subnegotiation"_test = [] mutable {
         auto always_on = [](option::id_num) { return true; };
-        option opt{
-            option::id_num::terminal_type,
-            "Terminal Type",
-            always_on,
-            always_on,
-            true,
-            512
-        };
+        option opt{option::id_num::terminal_type, "Terminal Type", always_on, always_on, true, 512};
 
         expect(eq(opt.supports_local(), true));
         expect(eq(opt.supports_remote(), true));
@@ -92,7 +84,7 @@ suite telnet_options_tests = [] mutable {
 
     "option implicit conversion to id_num"_test = [] mutable {
         option opt{option::id_num::gmcp};
-        option::id_num id = opt;  // implicit
+        option::id_num id = opt; // implicit
         expect(eq(id, option::id_num::gmcp));
         expect(eq(opt == option::id_num::gmcp, true));
         expect(eq(opt != option::id_num::mccp2, true));
@@ -105,11 +97,10 @@ suite telnet_options_tests = [] mutable {
     };
 
     "option_registry initializer_list construction"_test = [] mutable {
-        option_registry reg{
-            option::make_option(option::id_num::echo, "Echo", true, true),
-            option::make_option(option::id_num::suppress_go_ahead, "SGA", true, false),
-            option::make_option(option::id_num::linemode, "Linemode", false, true, true)
-        };
+        option_registry
+            reg{option::make_option(option::id_num::echo, "Echo", true, true),
+                option::make_option(option::id_num::suppress_go_ahead, "SGA", true, false),
+                option::make_option(option::id_num::linemode, "Linemode", false, true, true)};
 
         expect(eq(reg.has(option::id_num::echo), true));
         expect(eq(reg.has(option::id_num::terminal_type), false));
