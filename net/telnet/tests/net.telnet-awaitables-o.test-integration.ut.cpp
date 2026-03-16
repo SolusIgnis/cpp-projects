@@ -26,7 +26,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         tagged_awaitable<tags::option_enablement_tag, int> wrapped{make()};
 
-        auto fut = asio::co_spawn(ctx, [&]() -> asio::awaitable<int> { co_return co_await wrapped; }, asio::use_future);
+        auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
 
         ctx.run();
 
@@ -44,7 +44,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         tagged_awaitable<tags::option_enablement_tag, int> wrapped = producer();
 
-        auto fut = asio::co_spawn(ctx, [&]() -> asio::awaitable<int> { co_return co_await wrapped; }, asio::use_future);
+        auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
 
         ctx.run();
 
@@ -85,7 +85,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto wrapped_leaf = [&]() -> tagged_awaitable<tags::option_enablement_tag, int> { co_return co_await leaf(); };
 
-        auto fut = asio::co_spawn(ctx, [&]() -> asio::awaitable<int> { co_return co_await wrapped_leaf(); }, asio::use_future);
+        auto fut = asio::co_spawn(ctx, wrapped_leaf(), asio::use_future);
 
         ctx.run();
 
@@ -108,7 +108,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         option_enablement_awaitable wrapped{producer()};
 
-        auto fut = asio::co_spawn(ctx, [&]() -> asio::awaitable<void> { co_await wrapped; }, asio::use_future);
+        auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
 
         ctx.run();
         fut.get();
@@ -136,7 +136,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto fut = asio::co_spawn(
             ctx,
-            [&]() -> asio::awaitable<std::tuple<option, std::vector<byte_t>>> { co_return co_await wrapped; },
+            wrapped,
             asio::use_future
         );
 
@@ -166,7 +166,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         tagged_awaitable<tags::option_enablement_tag, int> wrapped{producer()};
 
-        auto fut = asio::co_spawn(ctx, [&]() -> asio::awaitable<int> { co_return co_await wrapped; }, asio::use_future);
+        auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
 
         ctx.run();
 
