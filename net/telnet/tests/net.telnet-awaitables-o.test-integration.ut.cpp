@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 // Integration tests for net.telnet:awaitables with asio::awaitable
 
-import net.telnet;
-import ut;
-import std;
-
 module;
 #include <asio/awaitable.hpp>
 #include <asio/co_spawn.hpp>
 #include <asio/io_context.hpp>
 #include <asio/use_future.hpp>
+
+import net.telnet;
+import ut;
+import std;
 
 using namespace ut;
 using namespace net::telnet::awaitables;
