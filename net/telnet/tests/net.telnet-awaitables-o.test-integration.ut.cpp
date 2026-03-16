@@ -22,9 +22,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     "tagged_awaitable forwards result correctly"_test = [] mutable {
         asio::io_context ctx;
 
-        auto make = []() -> asio::awaitable<int> { co_return 42; };
-
-        tagged_awaitable<tags::option_enablement_tag, int> wrapped{make()};
+        tagged_awaitable<tags::option_enablement_tag, int> wrapped = []() -> asio::awaitable<int> { co_return 42; }();
 
         auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
 
@@ -40,9 +38,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     "asio awaitable implicitly converts to tagged_awaitable"_test = [] mutable {
         asio::io_context ctx;
 
-        auto producer = []() -> asio::awaitable<int> { co_return 77; };
-
-        tagged_awaitable<tags::option_enablement_tag, int> wrapped = producer();
+        tagged_awaitable<tags::option_enablement_tag, int> wrapped = []() -> asio::awaitable<int> { co_return 77; }();
 
         auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
 
@@ -58,12 +54,10 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     "rvalue tagged_awaitable co_await works"_test = [] mutable {
         asio::io_context ctx;
 
-        auto producer = []() -> asio::awaitable<int> { co_return 5; };
-
         auto fut = asio::co_spawn(
             ctx,
             [&]() -> asio::awaitable<int> {
-                tagged_awaitable<tags::option_enablement_tag, int> a{producer()};
+                tagged_awaitable<tags::option_enablement_tag, int> a{[]() -> asio::awaitable<int> { co_return 5; }()};
                 co_return co_await std::move(a);
             },
             asio::use_future
@@ -101,12 +95,10 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         bool executed = false;
 
-        auto producer = [&]() -> asio::awaitable<void> {
+        option_enablement_awaitable wrapped = [&]() -> asio::awaitable<void> {
             executed = true;
             co_return;
-        };
-
-        option_enablement_awaitable wrapped{producer()};
+        }();
 
         auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
 
@@ -126,13 +118,11 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         using net::telnet::option;
         using net::telnet::byte_t;
 
-        auto producer = []() -> asio::awaitable<std::tuple<option, std::vector<byte_t>>> {
+        subnegotiation_awaitable wrapped = []() -> asio::awaitable<std::tuple<option, std::vector<byte_t>>> {
             co_return std::tuple<option, std::vector<byte_t>>{
                 static_cast<option>(1), std::vector<byte_t>{1, 2, 3}
             };
-        };
-
-        subnegotiation_awaitable wrapped{producer()};
+        }();
 
         auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
 
@@ -152,15 +142,13 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         bool ran_on_executor = false;
 
-        auto producer = [&]() -> asio::awaitable<int> {
+        tagged_awaitable<tags::option_enablement_tag, int> wrapped = [&]() -> asio::awaitable<int> {
             auto ex = co_await asio::this_coro::executor;
             (void)ex;
 
             ran_on_executor = true;
             co_return 123;
-        };
-
-        tagged_awaitable<tags::option_enablement_tag, int> wrapped{producer()};
+        }();
 
         auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
 
