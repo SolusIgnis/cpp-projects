@@ -167,13 +167,13 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto leaf = []() -> asio::awaitable<int> { co_return 10; };
 
-        auto middle = [&]() -> tagged_awaitable<tags::option_enablement_tag, int> {
+        tagged_awaitable<tags::option_enablement_tag, int> middle = [&]() -> asio::awaitable<int> {
             int v = co_await leaf();
             co_return v + 5;
-        };
+        }();
 
         auto top = [&]() -> asio::awaitable<int> {
-            int v = co_await middle();
+            int v = co_await middle;
             co_return v * 2;
         };
 
