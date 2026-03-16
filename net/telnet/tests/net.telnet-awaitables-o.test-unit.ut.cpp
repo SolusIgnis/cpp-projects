@@ -115,7 +115,8 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     };
 
     "subnegotiation_awaitable return type matches specification"_test = [] mutable {
-        using expected = tagged_awaitable<tags::subnegotiation_tag, std::tuple<net::telnet::option, std::vector<net::telnet::byte_t>>>;
+        using expected =
+            tagged_awaitable<tags::subnegotiation_tag, std::tuple<net::telnet::option, std::vector<net::telnet::byte_t>>>;
 
         bool same = std::is_same_v<subnegotiation_awaitable, expected>;
         expect(eq(same, true));

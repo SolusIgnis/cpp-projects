@@ -15,7 +15,6 @@ using namespace ut;
 using namespace net::telnet::awaitables;
 
 suite net_telnet_awaitables_asio_integration_tests = [] mutable {
-
     // ============================================================
     // Basic wrapping of asio::awaitable
     // ============================================================
@@ -23,19 +22,11 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     "tagged_awaitable forwards result correctly"_test = [] mutable {
         asio::io_context ctx;
 
-        auto make = []() -> asio::awaitable<int> {
-            co_return 42;
-        };
+        auto make = []() -> asio::awaitable<int> { co_return 42; };
 
         tagged_awaitable<tags::option_enablement_tag, int> wrapped{make()};
 
-        auto fut = asio::co_spawn(
-            ctx,
-            [&]() -> asio::awaitable<int> {
-                co_return co_await wrapped;
-            },
-            asio::use_future
-        );
+        auto fut = asio::co_spawn(ctx, [&]() -> asio::awaitable<int> { co_return co_await wrapped; }, asio::use_future);
 
         ctx.run();
 
@@ -49,19 +40,11 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     "asio awaitable implicitly converts to tagged_awaitable"_test = [] mutable {
         asio::io_context ctx;
 
-        auto producer = []() -> asio::awaitable<int> {
-            co_return 77;
-        };
+        auto producer = []() -> asio::awaitable<int> { co_return 77; };
 
         tagged_awaitable<tags::option_enablement_tag, int> wrapped = producer();
 
-        auto fut = asio::co_spawn(
-            ctx,
-            [&]() -> asio::awaitable<int> {
-                co_return co_await wrapped;
-            },
-            asio::use_future
-        );
+        auto fut = asio::co_spawn(ctx, [&]() -> asio::awaitable<int> { co_return co_await wrapped; }, asio::use_future);
 
         ctx.run();
 
@@ -75,9 +58,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     "rvalue tagged_awaitable co_await works"_test = [] mutable {
         asio::io_context ctx;
 
-        auto producer = []() -> asio::awaitable<int> {
-            co_return 5;
-        };
+        auto producer = []() -> asio::awaitable<int> { co_return 5; };
 
         auto fut = asio::co_spawn(
             ctx,
@@ -100,21 +81,11 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     "tagged_awaitable composes inside nested coroutines"_test = [] mutable {
         asio::io_context ctx;
 
-        auto leaf = []() -> asio::awaitable<int> {
-            co_return 9;
-        };
+        auto leaf = []() -> asio::awaitable<int> { co_return 9; };
 
-        auto wrapped_leaf = [&]() -> tagged_awaitable<tags::option_enablement_tag, int> {
-            co_return co_await leaf();
-        };
+        auto wrapped_leaf = [&]() -> tagged_awaitable<tags::option_enablement_tag, int> { co_return co_await leaf(); };
 
-        auto fut = asio::co_spawn(
-            ctx,
-            [&]() -> asio::awaitable<int> {
-                co_return co_await wrapped_leaf();
-            },
-            asio::use_future
-        );
+        auto fut = asio::co_spawn(ctx, [&]() -> asio::awaitable<int> { co_return co_await wrapped_leaf(); }, asio::use_future);
 
         ctx.run();
 
@@ -137,13 +108,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         option_enablement_awaitable wrapped{producer()};
 
-        auto fut = asio::co_spawn(
-            ctx,
-            [&]() -> asio::awaitable<void> {
-                co_await wrapped;
-            },
-            asio::use_future
-        );
+        auto fut = asio::co_spawn(ctx, [&]() -> asio::awaitable<void> { co_await wrapped; }, asio::use_future);
 
         ctx.run();
         fut.get();
@@ -163,8 +128,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto producer = []() -> asio::awaitable<std::tuple<option, std::vector<byte_t>>> {
             co_return std::tuple<option, std::vector<byte_t>>{
-                static_cast<option>(1),
-                std::vector<byte_t>{1,2,3}
+                static_cast<option>(1), std::vector<byte_t>{1, 2, 3}
             };
         };
 
@@ -172,9 +136,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto fut = asio::co_spawn(
             ctx,
-            [&]() -> asio::awaitable<std::tuple<option, std::vector<byte_t>>> {
-                co_return co_await wrapped;
-            },
+            [&]() -> asio::awaitable<std::tuple<option, std::vector<byte_t>>> { co_return co_await wrapped; },
             asio::use_future
         );
 
@@ -204,13 +166,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         tagged_awaitable<tags::option_enablement_tag, int> wrapped{producer()};
 
-        auto fut = asio::co_spawn(
-            ctx,
-            [&]() -> asio::awaitable<int> {
-                co_return co_await wrapped;
-            },
-            asio::use_future
-        );
+        auto fut = asio::co_spawn(ctx, [&]() -> asio::awaitable<int> { co_return co_await wrapped; }, asio::use_future);
 
         ctx.run();
 
@@ -225,9 +181,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     "tagged_awaitable composes across coroutine layers"_test = [] mutable {
         asio::io_context ctx;
 
-        auto leaf = []() -> asio::awaitable<int> {
-            co_return 10;
-        };
+        auto leaf = []() -> asio::awaitable<int> { co_return 10; };
 
         auto middle = [&]() -> tagged_awaitable<tags::option_enablement_tag, int> {
             int v = co_await leaf();
@@ -245,7 +199,6 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         expect(eq(fut.get(), 30));
     };
-
 };
 
 int main() {}
