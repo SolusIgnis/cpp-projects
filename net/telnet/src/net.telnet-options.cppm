@@ -338,7 +338,10 @@ export namespace net::telnet {
      * @return A reference to the stream for inserter chaining.
      * @remark Inserts the `option::id_num` as its representation in the underlying type of the enum.
      */
-    std::ostream& operator<<(std::ostream& o_str, option::id_num opt_id) { return o_str << std::to_underlying(opt_id); }
+    std::ostream& operator<<(std::ostream& o_str, option::id_num opt_id)
+    {
+        return o_str << std::to_underlying(opt_id);
+    }
 
     /**
      * @brief Thread-safe registry for managing `option` instances in the protocol state machine.

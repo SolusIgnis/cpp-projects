@@ -246,7 +246,10 @@ export namespace net::telnet {
      * @return A reference to the stream for inserter chaining.
      * @remark Inserts the `command` as its representation in the underlying type of the enum.
      */
-    std::ostream& operator<<(std::ostream& o_str, command cmd) { return o_str << std::to_underlying(cmd); }
+    std::ostream& operator<<(std::ostream& o_str, command cmd)
+    {
+        return o_str << std::to_underlying(cmd);
+    }
 
     /**
      * @brief Inserts a `negotiation_direction` into a `std::ostream`.
@@ -255,5 +258,8 @@ export namespace net::telnet {
      * @return A reference to the stream for inserter chaining.
      * @remark Inserts the `negotiation_direction` as the result of `std::format`.
      */
-    std::ostream& operator<<(std::ostream& o_str, negotiation_direction dir) { return o_str << std::format("{}", dir); }
+    std::ostream& operator<<(std::ostream& o_str, negotiation_direction dir)
+    {
+        return o_str << std::format("{}", dir);
+    }
 } //namespace net::telnet
