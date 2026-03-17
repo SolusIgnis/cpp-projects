@@ -25,7 +25,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto fut = asio::co_spawn(
             ctx,
-            [wrapped = std::move(wrapped)]() mutable -> asio::awaitable<int> { co_return co_await wrapped; },
+            [wrapped = std::move(wrapped)]() mutable -> asio::awaitable<int> { co_return co_await wrapped.get(); },
             asio::use_future
         );
 
@@ -82,7 +82,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto wrapped_leaf = [&]() mutable -> tagged_awaitable<tags::option_enablement_tag, int> { co_return co_await leaf(); };
 
-        auto fut = asio::co_spawn(ctx, wrapped_leaf(), asio::use_future);
+        auto fut = asio::co_spawn(ctx, wrapped_leaf().get(), asio::use_future);
 
         ctx.run();
 
@@ -176,7 +176,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         }();
 
         auto top = [&]() mutable -> asio::awaitable<int> {
-            int v = co_await middle;
+            int v = co_await middle.get();
             co_return v * 2;
         };
 

@@ -131,7 +131,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
 
         tagged_awaitable<tags::option_enablement_tag, int, test_task<int>> a{coro()};
 
-        test_task<int>& underlying = a;
+        test_task<int> underlying = a;
 
         auto result = run(underlying);
         expect(eq(result, 99));
