@@ -7,6 +7,8 @@ module;
 #include <asio/io_context.hpp>
 #include <asio/use_future.hpp>
 
+module net.telnet.awaitables.o.test.integration.ut;
+
 import net.telnet;
 import ut;
 import std;

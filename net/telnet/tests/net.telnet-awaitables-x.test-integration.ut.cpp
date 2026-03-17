@@ -5,6 +5,8 @@
 module; //Including Asio via preprocessor until importable header units are reliable.
 #include <asio.hpp>
 
+module net.telnet.awaitables.x.test.integration.ut;
+
 import net.telnet;
 import net.telnet.test_support;
 import ut;
