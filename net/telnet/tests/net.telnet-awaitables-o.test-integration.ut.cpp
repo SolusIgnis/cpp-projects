@@ -31,7 +31,8 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         ctx.run();
 
-        expect(eq(fut.get(), 42));
+        auto [_, res] = fut.get();
+        expect(eq(res, 42));
     };
 
     // ============================================================
@@ -43,11 +44,12 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         tagged_awaitable<tags::option_enablement_tag, int> wrapped = []() mutable -> asio::awaitable<int> { co_return 77; }();
 
-        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::use_future);
+        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::as_tuple(asio::use_future));
 
         ctx.run();
 
-        expect(eq(fut.get(), 77));
+        auto [_, res] = fut.get();
+        expect(eq(res, 77));
     };
 
     // ============================================================
@@ -68,7 +70,8 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         ctx.run();
 
-        expect(eq(fut.get(), 5));
+        auto [_, res] = fut.get();
+        expect(eq(res, 5));
     };
 
     // ============================================================
@@ -84,11 +87,12 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             co_return co_await leaf();
         }();
 
-        auto fut = asio::co_spawn(ctx, std::move(wrapped_leaf).get(), asio::use_future);
+        auto fut = asio::co_spawn(ctx, std::move(wrapped_leaf).get(), asio::as_tuple(asio::use_future));
 
         ctx.run();
 
-        expect(eq(fut.get(), 9));
+        auto [_, res] = fut.get();
+        expect(eq(res, 9));
     };
 
     // ============================================================
@@ -105,10 +109,10 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             co_return;
         }();
 
-        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::use_future);
+        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::as_tuple(asio::use_future));
 
         ctx.run();
-        fut.get();
+        (void)fut.get();
 
         expect(eq(executed, true));
     };
@@ -129,11 +133,11 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             };
         }();
 
-        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::use_future);
+        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::as_tuple(asio::use_future));
 
         ctx.run();
 
-        auto result = fut.get();
+        auto [_, result] = fut.get();
 
         expect(eq(std::get<1>(result).size(), std::size_t{3}));
     };
@@ -155,12 +159,13 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             co_return 123;
         }();
 
-        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::use_future);
+        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::as_tuple(asio::use_future));
 
         ctx.run();
 
+        auto [_, res] = fut.get();
         expect(eq(ran_on_executor, true));
-        expect(eq(fut.get(), 123));
+        expect(eq(res, 123));
     };
 
     // ============================================================
@@ -182,11 +187,12 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             co_return v * 2;
         };
 
-        auto fut = asio::co_spawn(ctx, top(), asio::use_future);
+        auto fut = asio::co_spawn(ctx, top(), asio::as_tuple(asio::use_future));
 
         ctx.run();
 
-        expect(eq(fut.get(), 30));
+        auto [_, res] = fut.get();
+        expect(eq(res, 30));
     };
 };
 
