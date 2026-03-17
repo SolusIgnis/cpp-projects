@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Integration tests for net.telnet:awaitables with asio::awaitable
 
-#include <asio/awaitable.hpp>
-#include <asio/co_spawn.hpp>
-#include <asio/io_context.hpp>
-#include <asio/use_future.hpp>
+#include <asio.hpp>
 
 import net.telnet;
 import ut;
@@ -26,7 +23,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         auto fut = asio::co_spawn(
             ctx,
             [wrapped = std::move(wrapped)]() mutable -> asio::awaitable<int> { co_return co_await std::move(wrapped).get(); },
-            asio::use_future
+            asio::as_tuple(asio::use_future)
         );
 
         ctx.run();
@@ -65,7 +62,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
                 tagged_awaitable<tags::option_enablement_tag, int> a{[]() mutable -> asio::awaitable<int> { co_return 5; }()};
                 co_return co_await std::move(a).get();
             },
-            asio::use_future
+            asio::as_tuple(asio::use_future)
         );
 
         ctx.run();
