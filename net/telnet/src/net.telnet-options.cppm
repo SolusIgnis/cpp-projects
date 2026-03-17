@@ -332,6 +332,15 @@ export namespace net::telnet {
     }; //enum class option::id_num
 
     /**
+     * @brief Inserts an `option::id_num` into a `std::ostream`.
+     * @param o_str The `std::ostream` into which to insert the `command`.
+     * @param opt_id The `option::id_num` to insert.
+     * @return A reference to the stream for inserter chaining.
+     * @remark Inserts the `option::id_num` as its representation in the underlying type of the enum.
+     */
+    std::ostream& operator<<(std::ostream& o_str, option::id_num opt_id) { return o_str << std::to_underlying(opt_id); }
+
+    /**
      * @brief Thread-safe registry for managing `option` instances in the protocol state machine.
      * @remark Used by `ProtocolFSM` to store and query supported Telnet options.
      * @remark The `std::initializer_list` constructor enforces sorted input by `option::id_num` at compile time using `static_assert`, ensuring O(n) `std::set` construction. Unsorted inputs cause compilation failure. All accessor methods are atomic via `std::shared_mutex`, supporting concurrent reads and exclusive writes.

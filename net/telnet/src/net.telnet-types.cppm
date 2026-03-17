@@ -237,3 +237,23 @@ export namespace std {
         } //format(::net::telnet::negotiation_direction, FormatContext&)
     }; //struct formatter<::net::telnet::negotiation_direction>
 } //namespace std
+
+export namespace net::telnet {
+    /**
+     * @brief Inserts a `command` into a `std::ostream`.
+     * @param o_str The `std::ostream` into which to insert the `command`.
+     * @param cmd The `command` to insert.
+     * @return A reference to the stream for inserter chaining.
+     * @remark Inserts the `command` as its representation in the underlying type of the enum.
+     */
+    std::ostream& operator<<(std::ostream& o_str, command cmd) { return o_str << std::to_underlying(cmd); }
+
+    /**
+     * @brief Inserts a `negotiation_direction` into a `std::ostream`.
+     * @param o_str The `std::ostream` into which to insert the `command`.
+     * @param dir The `negotiation_direction` to insert.
+     * @return A reference to the stream for inserter chaining.
+     * @remark Inserts the `negotiation_direction` as the result of `std::format`.
+     */
+    std::ostream& operator<<(std::ostream& o_str, negotiation_direction dir) { return o_str << std::format("{}", dir); }
+} //namespace net::telnet
