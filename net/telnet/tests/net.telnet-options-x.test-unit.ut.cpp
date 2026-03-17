@@ -10,15 +10,17 @@ using namespace ut;
 using namespace net::telnet;
 
 suite telnet_options_tests = [] mutable {
+    using net::telnet::byte_t;
+
     "option::id_num enum values (selected)"_test = [] mutable {
-        expect(eq(std::to_underlying(option::id_num::binary), 0x00));
-        expect(eq(std::to_underlying(option::id_num::echo), 0x01));
-        expect(eq(std::to_underlying(option::id_num::suppress_go_ahead), 0x03));
-        expect(eq(std::to_underlying(option::id_num::terminal_type), 0x18));
-        expect(eq(std::to_underlying(option::id_num::linemode), 0x22));
-        expect(eq(std::to_underlying(option::id_num::mccp2), 0x56));
-        expect(eq(std::to_underlying(option::id_num::gmcp), 0xC9));
-        expect(eq(std::to_underlying(option::id_num::extended_options_list), 0xFF));
+        expect(eq(std::to_underlying(option::id_num::binary), static_cast<byte_t>(0x00)));
+        expect(eq(std::to_underlying(option::id_num::echo), static_cast<byte_t>(0x01)));
+        expect(eq(std::to_underlying(option::id_num::suppress_go_ahead), static_cast<byte_t>(0x03)));
+        expect(eq(std::to_underlying(option::id_num::terminal_type), static_cast<byte_t>(0x18)));
+        expect(eq(std::to_underlying(option::id_num::linemode), static_cast<byte_t>(0x22)));
+        expect(eq(std::to_underlying(option::id_num::mccp2), static_cast<byte_t>(0x56)));
+        expect(eq(std::to_underlying(option::id_num::gmcp), static_cast<byte_t>(0xC9)));
+        expect(eq(std::to_underlying(option::id_num::extended_options_list), static_cast<byte_t>(0xFF)));
     };
 
     "option default construction and accessors"_test = [] mutable {
