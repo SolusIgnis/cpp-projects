@@ -43,7 +43,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         tagged_awaitable<tags::option_enablement_tag, int> wrapped = []() mutable -> asio::awaitable<int> { co_return 77; }();
 
-        auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
+        auto fut = asio::co_spawn(ctx, wrapped.get(), asio::use_future);
 
         ctx.run();
 
@@ -61,7 +61,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             ctx,
             [&]() mutable -> asio::awaitable<int> {
                 tagged_awaitable<tags::option_enablement_tag, int> a{[]() mutable -> asio::awaitable<int> { co_return 5; }()};
-                co_return co_await std::move(a);
+                co_return co_await std::move(a).get();
             },
             asio::use_future
         );
@@ -103,7 +103,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             co_return;
         }();
 
-        auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
+        auto fut = asio::co_spawn(ctx, wrapped.get(), asio::use_future);
 
         ctx.run();
         fut.get();
@@ -127,7 +127,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             };
         }();
 
-        auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
+        auto fut = asio::co_spawn(ctx, wrapped.get(), asio::use_future);
 
         ctx.run();
 
@@ -153,7 +153,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             co_return 123;
         }();
 
-        auto fut = asio::co_spawn(ctx, wrapped, asio::use_future);
+        auto fut = asio::co_spawn(ctx, wrapped.get(), asio::use_future);
 
         ctx.run();
 

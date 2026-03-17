@@ -2,10 +2,8 @@
 // SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 // Integration tests for net.telnet:awaitables (coroutine execution with harness)
 
-module; //Including Asio via preprocessor until importable header units are reliable.
+//Including Asio via preprocessor until importable header units are reliable.
 #include <asio.hpp>
-
-module net.telnet.awaitables.x.test.integration.ut;
 
 import net.telnet;
 import net.telnet.test_support;
