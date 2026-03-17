@@ -27,6 +27,9 @@ struct immediate_suspend_resume {
 };
 
 suite telnet_awaitables_integration_tests = [] mutable {
+    using net::telnet::byte_t;
+    using net::telnet::option;
+
     // ────────────────────────────────────────────────────────────────
     // Tests wrapping asio::awaitable<T>
     // ────────────────────────────────────────────────────────────────
@@ -37,7 +40,7 @@ suite telnet_awaitables_integration_tests = [] mutable {
         auto task = []() -> test_task<void> {
             option_enablement_awaitable aw = []() -> asio::awaitable<void> { co_return; }();
 
-            co_await aw;
+            co_await std::move(aw);
         }();
 
         task.set_probe(&probe);
@@ -60,7 +63,8 @@ suite telnet_awaitables_integration_tests = [] mutable {
                 co_return {opt, std::move(payload)};
             }();
 
-            auto [opt, data] = co_await aw;
+            auto [opt, data] = co_await std::move(aw)
+;
             co_return data.size();
         }();
 
