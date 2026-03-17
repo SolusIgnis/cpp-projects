@@ -8,6 +8,7 @@ import std;
 
 using namespace ut;
 using namespace net::telnet;
+using namespace std::literals;
 
 suite telnet_options_tests = [] mutable {
     using net::telnet::byte_t;
@@ -26,7 +27,7 @@ suite telnet_options_tests = [] mutable {
     "option default construction and accessors"_test = [] mutable {
         option opt{option::id_num::echo, "Echo"};
         expect(eq(opt.get_id(), option::id_num::echo));
-        expect(eq(opt.get_name(), "Echo"));
+        expect(eq(opt.get_name(), "Echo"s));
         expect(eq(opt.supports_local(), false));
         expect(eq(opt.supports_remote(), false));
         expect(eq(opt.supports(negotiation_direction::local), false));
@@ -50,7 +51,7 @@ suite telnet_options_tests = [] mutable {
     "make_option factory"_test = [] mutable {
         auto opt1 = option::make_option(option::id_num::echo, "Echo", true, false);
         expect(eq(opt1.get_id(), option::id_num::echo));
-        expect(eq(opt1.get_name(), "Echo"));
+        expect(eq(opt1.get_name(), "Echo"s));
         expect(eq(opt1.supports_local(), true));
         expect(eq(opt1.supports_remote(), false));
         expect(eq(opt1.supports_subnegotiation(), false));
@@ -72,16 +73,16 @@ suite telnet_options_tests = [] mutable {
         option b{option::id_num::suppress_go_ahead, "SGA"};
         option c{option::id_num::echo, "Echo again"};
 
-        expect(eq(a <=> b, std::strong_ordering::less));
-        expect(eq(b <=> a, std::strong_ordering::greater));
-        expect(eq(a <=> c, std::strong_ordering::equal));
+        expect(eq((a <=> b) == std::strong_ordering::less, true));
+        expect(eq((b <=> a) == std::strong_ordering::greater, true));
+        expect(eq((a <=> c) == std::strong_ordering::equal, true));
     };
 
     "option comparison with id_num"_test = [] mutable {
         option opt{option::id_num::terminal_type};
-        expect(eq(opt <=> option::id_num::echo, std::strong_ordering::greater));
-        expect(eq(opt <=> option::id_num::terminal_type, std::strong_ordering::equal));
-        expect(eq(opt <=> option::id_num::linemode, std::strong_ordering::less));
+        expect(eq((opt <=> option::id_num::echo) == std::strong_ordering::greater, true));
+        expect(eq((opt <=> option::id_num::terminal_type) == std::strong_ordering::equal, true));
+        expect(eq((opt <=> option::id_num::linemode) == std::strong_ordering::less, true));
     };
 
     "option implicit conversion to id_num"_test = [] mutable {
@@ -109,7 +110,7 @@ suite telnet_options_tests = [] mutable {
 
         auto maybe_echo = reg.get(option::id_num::echo);
         expect(eq(maybe_echo.has_value(), true));
-        expect(eq(maybe_echo->get_name(), "Echo"));
+        expect(eq(maybe_echo->get_name(), "Echo"s));
         expect(eq(maybe_echo->supports_local(), true));
         expect(eq(maybe_echo->supports_remote(), true));
     };
@@ -119,14 +120,14 @@ suite telnet_options_tests = [] mutable {
 
         // Insert new
         const auto& inserted = reg.upsert(option::make_option(option::id_num::binary, "Binary", true, true));
-        expect(eq(inserted.get_name(), "Binary"));
+        expect(eq(inserted.get_name(), "Binary"s));
         expect(eq(reg.has(option::id_num::binary), true));
 
         // Update existing
         reg.upsert(option::make_option(option::id_num::binary, "Binary Transmission", false, true));
         auto updated = reg.get(option::id_num::binary);
         expect(eq(updated.has_value(), true));
-        expect(eq(updated->get_name(), "Binary Transmission"));
+        expect(eq(updated->get_name(), "Binary Transmission"s));
         expect(eq(updated->supports_local(), false));
     };
 
@@ -145,7 +146,7 @@ suite telnet_options_tests = [] mutable {
     "option_registry upsert variadic"_test = [] mutable {
         option_registry reg{};
         const auto& opt = reg.upsert(option::id_num::charset, "Charset", true, false, true, 128);
-        expect(eq(opt.get_name(), "Charset"));
+        expect(eq(opt.get_name(), "Charset"s));
         expect(eq(opt.supports_local(), true));
         expect(eq(opt.supports_remote(), false));
         expect(eq(opt.supports_subnegotiation(), true));
@@ -154,23 +155,23 @@ suite telnet_options_tests = [] mutable {
 
     "option formatter default 'd'"_test = [] mutable {
         option opt{option::id_num::echo, "Echo"};
-        expect(eq(std::format("{}", opt), "0x01 (Echo)"));
+        expect(eq(std::format("{}", opt), "0x01 (Echo)"s));
 
         option unnamed{option::id_num::xauth};
-        expect(eq(std::format("{}", unnamed), "0x29 (unknown)"));
+        expect(eq(std::format("{}", unnamed), "0x29 (unknown)"s));
     };
 
     "option formatter 'n'"_test = [] mutable {
         option opt{option::id_num::linemode, "Linemode"};
-        expect(eq(std::format("{:n}", opt), "Linemode"));
+        expect(eq(std::format("{:n}", opt), "Linemode"s));
 
         option unnamed{option::id_num::mcp};
-        expect(eq(std::format("{:n}", unnamed), "unknown"));
+        expect(eq(std::format("{:n}", unnamed), "unknown"s));
     };
 
     "option formatter 'x'"_test = [] mutable {
         option opt{option::id_num::gmcp};
-        expect(eq(std::format("{:x}", opt), "0xc9"));
+        expect(eq(std::format("{:x}", opt), "0xc9"s));
     };
 };
 
