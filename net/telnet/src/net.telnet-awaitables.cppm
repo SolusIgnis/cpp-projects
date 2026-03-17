@@ -74,9 +74,9 @@ export namespace net::telnet::awaitables {
         ///@brief Supports co_await for lvalue.
         auto& operator co_await() & noexcept
         {
-            if constexpr (requires(awaitable_type& awaitable) { awaitable.operator co_await() }) {
+            if constexpr (requires(awaitable_type& awaitable) { awaitable.operator co_await(); }) {
                 return awaitable_.operator co_await();
-            } else if constexpr (requires(awaitable_type& awaitable) { operator co_await(awaitable) }) {
+            } else if constexpr (requires(awaitable_type& awaitable) { operator co_await(awaitable); }) {
                 return operator co_await(awaitable_);
             } else {
                 return awaitable_;
@@ -86,9 +86,9 @@ export namespace net::telnet::awaitables {
         ///@brief Supports co_await for const lvalue.
         const auto& operator co_await() const& noexcept
         {
-            if constexpr (requires(const awaitable_type& awaitable) { awaitable.operator co_await() }) {
+            if constexpr (requires(const awaitable_type& awaitable) { awaitable.operator co_await(); }) {
                 return awaitable_.operator co_await();
-            } else if constexpr (requires(const awaitable_type& awaitable) { operator co_await(awaitable) }) {
+            } else if constexpr (requires(const awaitable_type& awaitable) { operator co_await(awaitable); }) {
                 return operator co_await(awaitable_);
             } else {
                 return awaitable_;
@@ -98,9 +98,9 @@ export namespace net::telnet::awaitables {
         ///@brief Supports co_await for rvalue.
         auto&& operator co_await() && noexcept
         {
-            if constexpr (requires(awaitable_type&& awaitable) { std::move(awaitable).operator co_await() }) {
+            if constexpr (requires(awaitable_type&& awaitable) { std::move(awaitable).operator co_await(); }) {
                 return std::move(awaitable_).operator co_await();
-            } else if constexpr (requires(awaitable_type&& awaitable) { operator co_await(std::move(awaitable)) }) {
+            } else if constexpr (requires(awaitable_type&& awaitable) { operator co_await(std::move(awaitable)); }) {
                 return operator co_await(std::move(awaitable_));
             } else {
                 return std::move(awaitable_);
