@@ -63,8 +63,7 @@ suite telnet_awaitables_integration_tests = [] mutable {
                 co_return {opt, std::move(payload)};
             }();
 
-            auto [opt, data] = co_await std::move(aw)
-;
+            auto [opt, data] = co_await std::move(aw);
             co_return data.size();
         }();
 
