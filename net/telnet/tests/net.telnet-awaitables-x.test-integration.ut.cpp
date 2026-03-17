@@ -142,7 +142,7 @@ suite telnet_awaitables_integration_tests = [] mutable {
 
         coroutine_probe outer_probe;
         auto outer_task = [&]() -> test_task<int> {
-            int value = co_await wrapped;
+            int value = co_await std::move(wrapped).get();
             co_return value;
         }();
         outer_task.set_probe(&outer_probe);
@@ -176,7 +176,7 @@ suite telnet_awaitables_integration_tests = [] mutable {
 
         coroutine_probe outer_probe;
         auto outer_task = [&]() -> test_task<int> {
-            int value = co_await wrapped;
+            int value = co_await std::move(wrapped).get();
             co_return value;
         }();
         outer_task.set_probe(&outer_probe);
