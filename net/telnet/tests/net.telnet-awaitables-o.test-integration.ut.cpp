@@ -80,7 +80,9 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto leaf = []() mutable -> asio::awaitable<int> { co_return 9; };
 
-        tagged_awaitable<tags::option_enablement_tag, int> wrapped_leaf = [&]() mutable -> asio::awaitable<int> { co_return co_await leaf(); };
+        tagged_awaitable<tags::option_enablement_tag, int> wrapped_leaf = [&]() mutable -> asio::awaitable<int> {
+            co_return co_await leaf();
+        };
 
         auto fut = asio::co_spawn(ctx, std::move(wrapped_leaf()).get(), asio::use_future);
 
