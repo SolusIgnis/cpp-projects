@@ -61,15 +61,24 @@ export namespace net::telnet::awaitables {
         tagged_awaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
 
         ///@brief Implicit conversion to underlying awaitable (lvalue).
-        operator awaitable_type&() noexcept { return awaitable_; }
+        operator awaitable_type() & noexcept { return awaitable_; }
 
         ///@brief Implicit conversion to underlying awaitable (const lvalue).
-        operator const awaitable_type&() const noexcept { return awaitable_; }
+        operator awaitable_type() const& noexcept { return awaitable_; }
 
         ///@brief Implicit conversion to underlying awaitable (rvalue).
-        operator awaitable_type&&() noexcept { return std::move(awaitable_); }
+        operator awaitable_type() && noexcept { return std::move(awaitable_); }
 
         //NOLINTEND(google-explicit-constructor)
+
+        ///@brief Explicit conversion to underlying awaitable (lvalue).
+        awaitable_type& get() & noexcept { return awaitable_; }
+
+        ///@brief Explicit conversion to underlying awaitable (const lvalue).
+        const awaitable_type& get() const& noexcept { return awaitable_; }
+
+        ///@brief Explicit conversion to underlying awaitable (rvalue).
+        awaitable_type&& get() && noexcept { return std::move(awaitable_); }
 
         ///@brief Supports co_await for lvalue.
         decltype(auto) operator co_await() & noexcept
