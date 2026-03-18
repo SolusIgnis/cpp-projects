@@ -11,6 +11,8 @@ using namespace net::telnet::awaitables;
 using namespace net::telnet::test_support::coroutine_harness;
 using namespace std::literals;
 
+struct foo_tag {};
+
 suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
     // Basic construction
@@ -18,7 +20,9 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
 
     "tagged_awaitable default construction compiles"_test = [] mutable {
         tagged_awaitable<tags::option_enablement_tag, void> a{};
-        expect(eq(true, true)); // existence test
+        expect(eq(std::default_initializable<option_enablement_awaitable>, true));
+        expect(eq(std::default_initializable<option_disablement_awaitable>, true));
+        expect(eq(std::default_initializable<tagged_awaitable<foo_tag, int, test_task<int>>>, true));
     };
 
     "tagged_awaitable constructs from awaitable"_test = [] mutable {
