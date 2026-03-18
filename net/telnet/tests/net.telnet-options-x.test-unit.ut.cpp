@@ -145,7 +145,7 @@ suite telnet_options_tests = [] mutable {
 
     "option_registry upsert variadic"_test = [] mutable {
         option_registry reg{};
-        const auto& opt = reg.upsert(option::id_num::charset, "Charset", option::always_accept, option::always_reject, true, 128);
+        const auto& opt = reg.upsert(option::id_num::charset, "Charset", option::always_accept, option::always_reject, true, 128uz);
         expect(eq(opt.get_name(), "Charset"s));
         expect(eq(opt.supports_local(), true));
         expect(eq(opt.supports_remote(), false));
