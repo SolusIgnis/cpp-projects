@@ -14,7 +14,7 @@ using namespace ut;
 using namespace net::telnet::awaitables;
 using namespace net::telnet::test_support::coroutine_harness;
 
-// Trivial awaitable that suspends once and immediately resumes via symmetric transfer
+// Trivial awaiter that suspends once and immediately resumes via symmetric transfer
 struct immediate_suspend_resume {
     constexpr bool await_ready() const noexcept { return false; }
 

@@ -130,13 +130,21 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             };
         }();
 
-        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::as_tuple(asio::use_future));
+        auto fut = asio::co_spawn(
+            ctx,
+            [wrapped = std::move(wrapped)]() mutable
+                -> asio::awaitable<std::optional<std::tuple<option, std::vector<byte_t>>>> {
+                co_return co_await std::move(wrapped).get();
+            },
+           asio::as_tuple(asio::use_future)
+        );
 
         ctx.run();
 
         auto [_, result] = fut.get();
-
-        expect(eq(std::get<1>(result).size(), std::size_t{3}));
+        
+        expect(eq(result.has_value(), true));
+        expect(eq(std::get<1>(*result).size(), std::size_t{3}));
     };
 
     // ============================================================
