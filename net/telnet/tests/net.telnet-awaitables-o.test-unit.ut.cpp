@@ -9,6 +9,7 @@ import std;
 using namespace ut;
 using namespace net::telnet::awaitables;
 using namespace net::telnet::test_support::coroutine_harness;
+using namespace std::literals;
 
 suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
