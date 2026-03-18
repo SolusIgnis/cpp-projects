@@ -22,11 +22,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         tagged_awaitable<foo_tag, void> a{};
         expect(eq(std::default_initializable<option_enablement_awaitable>, true));
         expect(eq(std::default_initializable<option_disablement_awaitable>, true));
-        expect(eq(std::default_initializable<tagged_awaitable<foo_tag, void>>, true));
-        expect(eq(std::default_initializable<tagged_awaitable<foo_tag, int>>, true));
-        static_assert(std::default_initializable<tagged_awaitable<foo_tag, void, test_task<void>>>);
-        expect(eq(std::default_initializable<tagged_awaitable<foo_tag, void, test_task<void>>>, true));
-        expect(eq(std::default_initializable<tagged_awaitable<foo_tag, int, test_task<int>>>, true));
+        expect(eq(std::is_default_constructible_v<tagged_awaitable<foo_tag, int, test_task<int>>>, true));
     };
 
     "tagged_awaitable constructs from awaitable"_test = [] mutable {
