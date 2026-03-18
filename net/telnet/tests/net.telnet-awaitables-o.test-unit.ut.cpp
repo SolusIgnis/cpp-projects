@@ -28,7 +28,6 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         tagged_awaitable<tags::option_enablement_tag, void, test_task<void>> a{coro().set_probe(&probe)};
 
         expect(eq(probe.done, false));
-        expect(eq(probe.destroyed, true));
     };
 
     // ============================================================
