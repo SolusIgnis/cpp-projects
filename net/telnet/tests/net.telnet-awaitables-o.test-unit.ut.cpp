@@ -19,9 +19,12 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable default construction compiles"_test = [] mutable {
-        tagged_awaitable<tags::option_enablement_tag, void> a{};
+        tagged_awaitable<foo_tag, void> a{};
         expect(eq(std::default_initializable<option_enablement_awaitable>, true));
         expect(eq(std::default_initializable<option_disablement_awaitable>, true));
+        expect(eq(std::default_initializable<tagged_awaitable<foo_tag, void>>, true));
+        expect(eq(std::default_initializable<tagged_awaitable<foo_tag, int>>, true));
+        expect(eq(std::default_initializable<tagged_awaitable<foo_tag, void, test_task<void>>>, true));
         expect(eq(std::default_initializable<tagged_awaitable<foo_tag, int, test_task<int>>>, true));
     };
 
