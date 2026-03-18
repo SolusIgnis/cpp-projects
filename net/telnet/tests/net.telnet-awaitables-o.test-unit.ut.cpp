@@ -127,6 +127,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable converts to underlying awaitable"_test = [] mutable {
+        try {
         auto coro = []() -> test_task<int> { co_return 99; };
 
         tagged_awaitable<tags::option_enablement_tag, int, test_task<int>> a{coro()};
@@ -135,6 +136,9 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
 
         auto result = run(underlying);
         expect(eq(result, 99));
+        } catch (...) {
+            expect(eq("error: exception caught"s, ""s));
+        }
     };
 };
 
