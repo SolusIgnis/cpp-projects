@@ -17,14 +17,19 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable default construction compiles"_test = [] mutable {
+        try {
         tagged_awaitable<tags::option_enablement_tag, void> a{};
         expect(eq(true, true)); // existence test
+        } catch (...) {
+            expect(eq("error: exception caught"s, ""s));
+        }
     };
 
     "tagged_awaitable constructs from awaitable"_test = [] mutable {
         auto coro = []() -> test_task<void> { co_return; };
 
         tagged_awaitable<tags::option_enablement_tag, void, test_task<void>> a{coro()};
+        run(a);
         expect(eq(true, true));
     };
 
