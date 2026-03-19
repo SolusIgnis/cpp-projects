@@ -158,11 +158,12 @@ export namespace net::telnet::awaitables {
 } //namespace net::telnet::awaitables
 
 namespace std {
+    ///@brief Partial specialization of `std::coroutine_traits` forwarding the promise type for a `tagged_awaitable` to the promise type of its underlying awaitable type.
     template<typename Tag, typename T, typename AwaitableT, typename... Args>
     struct coroutine_traits<
-        tagged_awaitable<Tag, T, AwaitableT>,
+        net::telnet::awaitables::tagged_awaitable<Tag, T, AwaitableT>,
         Args...
     > {
-        using promise_type = typename AwaitableT::promise_type;
+        using promise_type = typename std::coroutine_traits<AwaitableT, Args...>::promise_type;
     };
 } //namespace std
