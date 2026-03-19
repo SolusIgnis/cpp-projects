@@ -28,6 +28,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     // ============================================================
     // Basic wrapping of asio::awaitable
     // ============================================================
+
     "tagged_awaitable (un)wraps on assignment to/from asio::awaitable"_test = [] mutable {
         int expected = 42;
         
@@ -223,6 +224,24 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         expect(eq(ran_on_executor, true));
         expect(eq(fut.get(), expected));
+    };
+    
+    // ============================================================
+    // Exception Propagation
+    // ============================================================
+
+    "tagged_awaitable propagates test_task destroy without run exception"_test = [] mutable {
+        int herring = 42;
+
+        bool threw = false;
+
+        try {
+            auto coro = tagged_echo(herring);
+        } catch (std::logic_error&) {
+            threw = true;
+        }
+        
+        expect(eq(threw, true));
     };
 };
 
