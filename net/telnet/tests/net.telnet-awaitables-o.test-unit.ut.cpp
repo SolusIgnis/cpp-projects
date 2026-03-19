@@ -18,6 +18,20 @@ tagged_awaitable<test_tag, int, test_task<int>> echo(int value)
     co_return value;
 }
 
+// Trivial awaiter that suspends once and immediately resumes via symmetric transfer
+struct immediate_suspend_resume {
+    int value;
+    
+    constexpr bool await_ready() const noexcept { return false; }
+
+    std::coroutine_handle<> await_suspend(std::coroutine_handle<> caller) noexcept
+    {
+        return caller; // symmetric transfer → resume caller right away
+    }
+
+    constexpr void await_resume() const noexcept { return value; }
+};
+
 suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
     // Basic construction
@@ -75,6 +89,18 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         auto result = run(test());
         expect(eq(result, expected));
         expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
+    };
+    
+    "tagged_awaitable supports co_await of wrapped awaiter"_test = [] mutable {
+        int expected = 42;
+        
+        tagged_awaitable<test_tag, void, immediate_suspend_resume> awaiter = immediate_suspend_resume{expected};
+        
+        auto coro = [&]() -> tagged_awaitable<test_tag, int, test_task<int>> { co_return co_await awaiter; };
+        
+        auto result = run(coro());
+        
+        expect(eq(result, expected));
     };
 
     // ============================================================
