@@ -28,17 +28,34 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     // ============================================================
     // Basic wrapping of asio::awaitable
     // ============================================================
+    "tagged_awaitable (un)wraps on assignment to/from asio::awaitable"_test = [] mutable {
+        int expected = 42;
+        
+        test_wrapper_int wrapped = echo(expected);
+        asio::awaitable unwrapped = std::move(wrapped);
+        
+        asio::io_context ctx;
+
+        auto fut = asio::co_spawn(
+            ctx,
+            unwrapped,
+            asio::use_future
+        );
+
+        ctx.run();
+
+        expect(eq(fut.get(), expected));
+    };
+
 
     "tagged_awaitable forwards result correctly"_test = [] mutable {
         int expected = 42;
 
         asio::io_context ctx;
 
-        test_wrapper_int wrapped = tagged_echo(expected);
-
         auto fut = asio::co_spawn(
             ctx,
-            std::move(wrapped).get(),
+            tagged_echo(expected).get(),
             asio::use_future
         );
 
@@ -81,7 +98,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto leaf = echo(expected);
 
-        test_wrapper_int wrapped_leaf = [&]() mutable -> asio::awaitable<int> {
+        auto wrapped_leaf = [&]() mutable -> test_wrapper_int {
             co_return co_await std::move(leaf);
         }();
 
