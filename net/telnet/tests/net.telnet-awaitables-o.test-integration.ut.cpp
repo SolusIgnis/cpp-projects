@@ -19,6 +19,11 @@ asio::awaitable<int> echo(int value)
     co_return value;
 }
 
+test_wrapper_int tagged_echo(int value)
+{
+    co_return value;
+}
+
 suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     // ============================================================
     // Basic wrapping of asio::awaitable
@@ -29,11 +34,11 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         asio::io_context ctx;
 
-        test_wrapper_int wrapped = echo(expected);
+        test_wrapper_int wrapped = tagged_echo(expected);
 
         auto fut = asio::co_spawn(
             ctx,
-            std::move(wrapped),
+            std::move(wrapped).get(),
             asio::use_future
         );
 
