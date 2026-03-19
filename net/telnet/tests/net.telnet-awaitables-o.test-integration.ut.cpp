@@ -53,7 +53,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto fut = asio::co_spawn(
             ctx,
-            [=expected]() mutable -> asio::awaitable<int> {
+            [expected]() mutable -> asio::awaitable<int> {
                 test_wrapper_int wrapped{echo(expected)};
                 co_return co_await std::move(wrapped).get();
             },
@@ -91,7 +91,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     // Void awaitables
     // ============================================================
 
-    "option_enablement_awaitable works with void coroutine"_test = [] mutable {
+    "tagged_awaitable works with void coroutine"_test = [] mutable {
         asio::io_context ctx;
 
         bool executed = false;
