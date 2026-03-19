@@ -212,7 +212,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         }();
 
         auto top = [&]() mutable -> asio::awaitable<int> {
-            int res = co_await std::move(middle).get();
+            int res = co_await std::move(middle);
             co_return res * mult;
         };
 
