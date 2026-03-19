@@ -32,7 +32,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         int expected = 42;
         
         test_wrapper_int wrapped = echo(expected);
-        asio::awaitable unwrapped = std::move(wrapped);
+        asio::awaitable<int> unwrapped = std::move(wrapped);
         
         asio::io_context ctx;
 

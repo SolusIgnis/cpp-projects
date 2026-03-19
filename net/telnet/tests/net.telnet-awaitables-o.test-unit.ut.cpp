@@ -124,9 +124,9 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // Coroutine Traits promise type
     // ============================================================
     "tagged_awaitable preserves underlying awaitable's promise type"_test = [] mutable {
-        static_assert(std::same_as<test_task<int>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, int, test_task<int>>>>);
-        expect(eq(std::same_as<test_task<int>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, int, test_task<int>>>>, true));
-        expect(eq(std::same_as<test_task<void>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, void, test_task<void>>>>, true));
+        static_assert(std::same_as<test_task<int>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, int, test_task<int>>>::promise_type>);
+        expect(eq(std::same_as<test_task<int>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, int, test_task<int>>>::promise_type>, true));
+        expect(eq(std::same_as<test_task<void>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, void, test_task<void>>>::promise_type>, true));
     };
     
     "tagged_awaitable usable as coroutine return type"_test = [] mutable {
