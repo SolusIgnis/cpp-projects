@@ -29,7 +29,7 @@ struct immediate_suspend_resume {
         return caller; // symmetric transfer → resume caller right away
     }
 
-    constexpr void await_resume() const noexcept { return value; }
+    constexpr int await_resume() const noexcept { return value; }
 };
 
 suite net_telnet_awaitables_unit_tests = [] mutable {
