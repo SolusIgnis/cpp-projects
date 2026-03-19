@@ -119,6 +119,24 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         auto result = run_underlying(std::move(wrapped));
         expect(eq(result, 99));
     };
+    
+    // ============================================================
+    // Coroutine Traits promise type
+    // ============================================================
+    "tagged_awaitable preserves underlying awaitable's promise type"_test = [] mutable {
+        expect(eq(std::same_as<test_task<int>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, int, test_task<int>>>>, true));
+        expect(eq(std::same_as<test_task<int>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, int, test_task<int>>>>, true));
+    };
+    
+    "tagged_awaitable usable as coroutine return type"_test = [] mutable {
+        auto tagged_echo_coro = [](int value) -> tagged_awaitable<test_tag, int, test_task<int>> { co_return value; };
+        
+        int expected = 42;
+        
+        auto result = run(tagged_echo_coro(expected));
+        
+        expect(eq(result, expected));
+    };
 };
 
 int main() {}
