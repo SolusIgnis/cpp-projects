@@ -231,12 +231,14 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable propagates test_task destroy without run exception"_test = [] mutable {
+        auto wrapped = [](int value) -> tagged_awaitable<test_tag, int, test_task<int>> { co_return value; };
+
         int herring = 42;
 
         bool threw = false;
 
         try {
-            auto coro = tagged_echo(herring);
+            auto coro = wrapped(herring);
         } catch (std::logic_error&) {
             threw = true;
         }
