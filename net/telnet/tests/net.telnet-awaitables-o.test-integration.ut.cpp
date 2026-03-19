@@ -64,7 +64,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         expect(eq(fut.get(), expected));
     };
-#if 0
+
     // ============================================================
     // Nested coroutine composition
     // ============================================================
@@ -108,7 +108,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         expect(eq(executed, true));
     };
-
+#if 0
     // ============================================================
     // Subnegotiation return type propagation
     // ============================================================
