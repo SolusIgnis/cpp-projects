@@ -152,9 +152,9 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         asio::io_context ctx;
 
         test_wrapper_int wrapped = [&]() mutable -> asio::awaitable<int> {
-            auto ex = co_await asio::this_coro::executor;
+            auto exec = co_await asio::this_coro::executor;
 
-            ran_on_executor = (ex == ctx.get_executor());
+            ran_on_executor = (exec == ctx.get_executor());
             co_return expected;
         }();
 
@@ -185,7 +185,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         test_wrapper_int middle = [&]() mutable -> asio::awaitable<int> {
             int res = co_await std::move(leaf);
             auto exec = co_await asio::this_coro::executor;
-            ran_on_executor = (ex == ctx.get_executor());
+            ran_on_executor = (exec == ctx.get_executor());
             co_return res + inc;
         }();
 
