@@ -13,6 +13,11 @@ using namespace std::literals;
 
 struct test_tag {};
 
+tagged_awaitable<test_tag, int, test_task<int>> echo(int value)
+{
+    co_return value;
+}
+
 suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
     // Basic construction
@@ -38,31 +43,33 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // Await semantics
     // ============================================================
 
-    "tagged_awaitable forwards co_await result"_test = [] mutable {
-        auto coro = []() -> test_task<int> { co_return 42; };
+    "tagged_awaitable supports lvalue co_await"_test = [] mutable {
+        coroutine_probe probe; 
+        int expected = 42;
 
-        tagged_awaitable<test_tag, int, test_task<int>> a{coro()};
+        auto coro = echo(expected);
+        coro.get().set_probe(&probe);
 
         auto test = [&]() -> test_task<int> {
-            int v = co_await a;
+            int v = co_await coro;
             co_return v;
         };
 
         auto result = run(test());
-        expect(eq(result, 42));
+        expect(eq(result, expected));
+        expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
     };
 
     "tagged_awaitable supports rvalue co_await"_test = [] mutable {
-        auto coro = []() -> test_task<int> { co_return 55; };
+        int expected = 42;
 
         auto test = [&]() -> test_task<int> {
-            tagged_awaitable<test_tag, int, test_task<int>> a{coro()};
-            int v = co_await std::move(a);
+            int v = co_await echo(expected);
             co_return v;
         };
 
         auto result = run(test());
-        expect(eq(result, 55));
+        expect(eq(result, expected));
     };
 
     // ============================================================
