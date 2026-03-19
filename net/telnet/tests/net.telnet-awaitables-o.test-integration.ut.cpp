@@ -104,7 +104,6 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::use_future);
 
         ctx.run();
-        //(void)fut.get();
 
         expect(eq(executed, true));
     };
@@ -147,24 +146,24 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable preserves executor context"_test = [] mutable {
-        asio::io_context ctx;
-
         bool ran_on_executor = false;
+        int expected = 123;
+
+        asio::io_context ctx;
 
         test_wrapper_int wrapped = [&]() mutable -> asio::awaitable<int> {
             auto ex = co_await asio::this_coro::executor;
 
             ran_on_executor = (ex == ctx.get_executor());
-            co_return 123;
+            co_return expected;
         }();
 
         auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::use_future);
 
         ctx.run();
 
-        auto res = fut.get();
         expect(eq(ran_on_executor, true));
-        expect(eq(res, 123));
+        expect(eq(fut.get(), expected));
     };
 
     // ============================================================
@@ -177,12 +176,16 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         int mult     = 2;
         int expected = (start + inc) * mult;
 
+        bool ran_on_executor = false;
+
         asio::io_context ctx;
 
-        auto leaf = echo(10);
+        auto leaf = echo(start);
 
         test_wrapper_int middle = [&]() mutable -> asio::awaitable<int> {
             int res = co_await std::move(leaf);
+            auto exec = co_await asio::this_coro::executor;
+            ran_on_executor = (ex == ctx.get_executor());
             co_return res + inc;
         }();
 
@@ -195,6 +198,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         ctx.run();
 
+        expect(eq(ran_on_executor, true));
         expect(eq(fut.get(), expected));
     };
 };
