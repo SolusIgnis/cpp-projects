@@ -38,7 +38,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto fut = asio::co_spawn(
             ctx,
-            unwrapped,
+            std::move(unwrapped),
             asio::use_future
         );
 
