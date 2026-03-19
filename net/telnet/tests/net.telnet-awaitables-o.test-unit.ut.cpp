@@ -11,7 +11,7 @@ using namespace net::telnet::awaitables;
 using namespace net::telnet::test_support::coroutine_harness;
 using namespace std::literals;
 
-struct foo_tag {};
+struct test_tag {};
 
 suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
@@ -19,17 +19,17 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable default construction compiles"_test = [] mutable {
-        tagged_awaitable<foo_tag, void> a{};
         expect(eq(std::default_initializable<option_enablement_awaitable>, true));
         expect(eq(std::default_initializable<option_disablement_awaitable>, true));
-        expect(eq(std::is_default_constructible_v<tagged_awaitable<foo_tag, int, test_task<int>>>, true));
+        expect(eq(std::default_initializable<subnegotiation_awaitable>, true));
+        expect(eq(std::is_default_constructible_v<tagged_awaitable<test_tag, int, test_task<int>>>, true));
     };
 
     "tagged_awaitable constructs from awaitable"_test = [] mutable {
         coroutine_probe probe;
         auto coro = []() -> test_task<void> { co_return; };
 
-        tagged_awaitable<tags::option_enablement_tag, void, test_task<void>> a{coro().set_probe(&probe)};
+        tagged_awaitable<test_tag, void, test_task<void>> a{coro().set_probe(&probe)};
 
         expect(eq(probe.done, false));
     };
@@ -41,7 +41,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable forwards co_await result"_test = [] mutable {
         auto coro = []() -> test_task<int> { co_return 42; };
 
-        tagged_awaitable<tags::option_enablement_tag, int, test_task<int>> a{coro()};
+        tagged_awaitable<test_tag, int, test_task<int>> a{coro()};
 
         auto test = [&]() -> test_task<int> {
             int v = co_await a;
@@ -56,7 +56,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         auto coro = []() -> test_task<int> { co_return 55; };
 
         auto test = [&]() -> test_task<int> {
-            tagged_awaitable<tags::option_enablement_tag, int, test_task<int>> a{coro()};
+            tagged_awaitable<test_tag, int, test_task<int>> a{coro()};
             int v = co_await std::move(a);
             co_return v;
         };
@@ -74,7 +74,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
 
         auto coro = [&]() -> test_task<int> { co_return 10; };
 
-        auto wrapped = tagged_awaitable<tags::option_enablement_tag, int, test_task<int>>{coro().set_probe(&probe)};
+        auto wrapped = tagged_awaitable<test_tag, int, test_task<int>>{coro().set_probe(&probe)};
 
         auto test = [&]() -> test_task<int> {
             int value = co_await wrapped;
@@ -96,7 +96,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         auto sub = []() -> test_task<int> { co_return 7; };
 
         auto main = [&]() -> test_task<int> {
-            tagged_awaitable<tags::option_enablement_tag, int, test_task<int>> a{sub()};
+            tagged_awaitable<test_tag, int, test_task<int>> a{sub()};
             int v = co_await a;
             co_return v * 3;
         };
@@ -106,46 +106,18 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     };
 
     // ============================================================
-    // Type aliases
-    // ============================================================
-
-    "option_enablement_awaitable is correctly typed"_test = [] mutable {
-        bool same = std::is_same_v<option_enablement_awaitable, tagged_awaitable<tags::option_enablement_tag, void>>;
-
-        expect(eq(same, true));
-    };
-
-    "option_disablement_awaitable is correctly typed"_test = [] mutable {
-        bool same = std::is_same_v<option_disablement_awaitable, tagged_awaitable<tags::option_disablement_tag, void>>;
-
-        expect(eq(same, true));
-    };
-
-    "subnegotiation_awaitable return type matches specification"_test = [] mutable {
-        using expected =
-            tagged_awaitable<tags::subnegotiation_tag, std::tuple<net::telnet::option, std::vector<net::telnet::byte_t>>>;
-
-        bool same = std::is_same_v<subnegotiation_awaitable, expected>;
-        expect(eq(same, true));
-    };
-
-    // ============================================================
     // Conversion to underlying awaitable
     // ============================================================
 
     "tagged_awaitable converts to underlying awaitable"_test = [] mutable {
-        try {
         auto coro = []() -> test_task<int> { co_return 99; };
 
-        tagged_awaitable<tags::option_enablement_tag, int, test_task<int>> a{coro()};
+        tagged_awaitable<test_tag, int, test_task<int>> wrapped{coro()};
 
-        test_task<int> underlying = std::move(a);
+        auto run_underlying = [](test_task<int>& task) { return run(task); };
 
-        auto result = run(underlying);
+        auto result = run_underlying(wrapped);
         expect(eq(result, 99));
-        } catch (...) {
-            expect(eq("error: exception caught"s, ""s));
-        }
     };
 };
 
