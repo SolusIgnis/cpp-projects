@@ -129,7 +129,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         expect(eq(executed, true));
     };
-#if 0
+
     // ============================================================
     // Subnegotiation return type propagation
     // ============================================================
@@ -140,9 +140,10 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         using net::telnet::option;
         using net::telnet::byte_t;
 
-        subnegotiation_awaitable wrapped = []() mutable -> asio::awaitable<std::tuple<option, std::vector<byte_t>>> {
+        subnegotiation_awaitable wrapped = []() mutable -> subnegotiation_awaitable {
             co_return std::tuple<option, std::vector<byte_t>>{
-                static_cast<option::id_num>(1), std::vector<byte_t>{1, 2, 3}
+                option::id_num::echo,
+                std::vector<byte_t>{1, 2, 3}
             };
         }();
 
@@ -150,9 +151,9 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             ctx,
             [wrapped = std::move(wrapped)]() mutable
                 -> asio::awaitable<std::optional<std::tuple<option, std::vector<byte_t>>>> {
-                co_return co_await std::move(wrapped).get();
+                co_return {co_await std::move(wrapped).get()};
             },
-           asio::as_tuple(asio::use_future)
+            asio::as_tuple(asio::use_future)
         );
 
         ctx.run();
@@ -162,7 +163,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         expect(eq(result.has_value(), true));
         expect(eq(std::get<1>(*result).size(), std::size_t{3}));
     };
-#endif
+
     // ============================================================
     // Executor propagation correctness
     // ============================================================
@@ -212,7 +213,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         }();
 
         auto top = [&]() mutable -> asio::awaitable<int> {
-            int res = co_await std::move(middle);
+            int res = co_await std::move(middle).get();
             co_return res * mult;
         };
 
