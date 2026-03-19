@@ -173,7 +173,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         asio::io_context ctx;
 
-        test_wrapper_int wrapped = [&]() mutable -> asio::awaitable<int> {
+        auto wrapped = [&]() mutable -> test_wrapper_int {
             auto exec = co_await asio::this_coro::executor;
 
             ran_on_executor = (exec == ctx.get_executor());
@@ -204,7 +204,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto leaf = echo(start);
 
-        test_wrapper_int middle = [&]() mutable -> asio::awaitable<int> {
+        auto middle = [&]() mutable -> test_wrapper_int {
             int res = co_await std::move(leaf);
             auto exec = co_await asio::this_coro::executor;
             ran_on_executor = (exec == ctx.get_executor());
