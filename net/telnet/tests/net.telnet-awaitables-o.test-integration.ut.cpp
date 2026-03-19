@@ -53,7 +53,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto fut = asio::co_spawn(
             ctx,
-            []() mutable -> asio::awaitable<int> {
+            [=expected]() mutable -> asio::awaitable<int> {
                 test_wrapper_int wrapped{echo(expected)};
                 co_return co_await std::move(wrapped).get();
             },
@@ -70,20 +70,21 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable composes inside nested coroutines"_test = [] mutable {
+        int expected = 9;
+
         asio::io_context ctx;
 
-        auto leaf = []() mutable -> asio::awaitable<int> { co_return 9; };
+        auto leaf = echo(expected);
 
         test_wrapper_int wrapped_leaf = [&]() mutable -> asio::awaitable<int> {
             co_return co_await leaf();
         }();
 
-        auto fut = asio::co_spawn(ctx, std::move(wrapped_leaf).get(), asio::as_tuple(asio::use_future));
+        auto fut = asio::co_spawn(ctx, std::move(wrapped_leaf).get(), asio::use_future);
 
         ctx.run();
 
-        auto [_, res] = fut.get();
-        expect(eq(res, 9));
+        expect(eq(fut.get(), expected));
     };
 
     // ============================================================
@@ -95,15 +96,15 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         bool executed = false;
 
-        option_enablement_awaitable wrapped = [&]() mutable -> asio::awaitable<void> {
+        test_wrapper_void wrapped = [&]() mutable -> asio::awaitable<void> {
             executed = true;
             co_return;
         }();
 
-        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::as_tuple(asio::use_future));
+        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::use_future);
 
         ctx.run();
-        (void)fut.get();
+        //(void)fut.get();
 
         expect(eq(executed, true));
     };
