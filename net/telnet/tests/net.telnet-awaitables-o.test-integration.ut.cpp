@@ -167,34 +167,37 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         expect(eq(ran_on_executor, true));
         expect(eq(res, 123));
     };
-
+#endif
     // ============================================================
     // Deep coroutine chaining (symmetric transfer behavior)
     // ============================================================
 
     "tagged_awaitable composes across coroutine layers"_test = [] mutable {
+        int start    = 10;
+        int inc      = 5;
+        int mult     = 2;
+        int expected = (start + inc) * mult;
+
         asio::io_context ctx;
 
-        auto leaf = []() mutable -> asio::awaitable<int> { co_return 10; };
+        auto leaf = echo(10);
 
         test_wrapper_int middle = [&]() mutable -> asio::awaitable<int> {
-            int v = co_await leaf();
-            co_return v + 5;
+            int res = co_await leaf();
+            co_return res + inc;
         }();
 
         auto top = [&]() mutable -> asio::awaitable<int> {
-            int v = co_await std::move(middle).get();
-            co_return v * 2;
+            int res = co_await std::move(middle).get();
+            co_return res * mult;
         };
 
         auto fut = asio::co_spawn(ctx, top(), asio::as_tuple(asio::use_future));
 
         ctx.run();
 
-        auto [_, res] = fut.get();
-        expect(eq(res, 30));
+        expect(eq(fut.get(), expected));
     };
-#endif
 };
 
 int main() {}
