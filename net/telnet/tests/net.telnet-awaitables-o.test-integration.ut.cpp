@@ -151,7 +151,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             ctx,
             [wrapped = std::move(wrapped)]() mutable
                 -> asio::awaitable<std::optional<std::tuple<option, std::vector<byte_t>>>> {
-                co_return {co_await std::move(wrapped).get()};
+                co_return std::optional{co_await std::move(wrapped).get()};
             },
             asio::as_tuple(asio::use_future)
         );
