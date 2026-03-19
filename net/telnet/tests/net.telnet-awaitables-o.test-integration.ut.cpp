@@ -141,7 +141,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         expect(eq(result.has_value(), true));
         expect(eq(std::get<1>(*result).size(), std::size_t{3}));
     };
-
+#endif
     // ============================================================
     // Executor propagation correctness
     // ============================================================
@@ -153,21 +153,20 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         test_wrapper_int wrapped = [&]() mutable -> asio::awaitable<int> {
             auto ex = co_await asio::this_coro::executor;
-            (void)ex;
 
-            ran_on_executor = true;
+            ran_on_executor = (ex == ctx.get_executor());
             co_return 123;
         }();
 
-        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::as_tuple(asio::use_future));
+        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::use_future);
 
         ctx.run();
 
-        auto [_, res] = fut.get();
+        auto res = fut.get();
         expect(eq(ran_on_executor, true));
         expect(eq(res, 123));
     };
-#endif
+
     // ============================================================
     // Deep coroutine chaining (symmetric transfer behavior)
     // ============================================================
