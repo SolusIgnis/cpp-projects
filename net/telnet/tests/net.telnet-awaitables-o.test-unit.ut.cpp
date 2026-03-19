@@ -138,6 +138,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
     // Coroutine Traits promise type
     // ============================================================
+
     "tagged_awaitable preserves underlying awaitable's promise type"_test = [] mutable {
         static_assert(std::same_as<test_task<int>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, int, test_task<int>>>::promise_type>);
         expect(eq(std::same_as<test_task<int>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, int, test_task<int>>>::promise_type>, true));
@@ -151,6 +152,29 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         
         auto result = run(tagged_echo_coro(expected));
         
+        expect(eq(result, expected));
+    };
+    
+    // ============================================================
+    // Exception Propagation
+    // ============================================================
+
+    "tagged_awaitable propagates exceptions"_test = [] mutable {
+        auto wrapped = [] (int value) -> tagged_awaitable<test_tag, int, test_task<int>> { throw std::runtime_error("boom"); co_return value; };
+
+        int expected = 0;
+        int result   = expected;
+        int herring  = 42;
+        
+        bool threw = false;
+
+        try {
+            result = run(wrapped(herring));
+        } catch (std::runtime_error&) {
+            threw = true;
+        }
+        
+        expect(eq(threw, true));
         expect(eq(result, expected));
     };
 };
