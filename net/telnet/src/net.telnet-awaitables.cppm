@@ -91,7 +91,7 @@ export namespace net::telnet::awaitables {
                 return awaitable_;
             }
         }
-
+#if 0
         ///@brief Supports co_await for const lvalue.
         decltype(auto) operator co_await() const& noexcept
         {
@@ -103,7 +103,7 @@ export namespace net::telnet::awaitables {
                 return awaitable_;
             }
         }
-
+#endif
         ///@brief Supports co_await for rvalue.
         decltype(auto) operator co_await() && noexcept
         {
