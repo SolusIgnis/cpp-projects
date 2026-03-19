@@ -183,7 +183,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         auto leaf = echo(10);
 
         test_wrapper_int middle = [&]() mutable -> asio::awaitable<int> {
-            int res = co_await leaf();
+            int res = co_await leaf;
             co_return res + inc;
         }();
 
@@ -192,7 +192,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
             co_return res * mult;
         };
 
-        auto fut = asio::co_spawn(ctx, top(), asio::as_tuple(asio::use_future));
+        auto fut = asio::co_spawn(ctx, top(), asio::use_future);
 
         ctx.run();
 
