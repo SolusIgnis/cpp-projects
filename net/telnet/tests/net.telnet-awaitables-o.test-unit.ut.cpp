@@ -61,15 +61,20 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     };
 
     "tagged_awaitable supports rvalue co_await"_test = [] mutable {
+        coroutine_probe probe; 
         int expected = 42;
 
+        auto coro = echo(expected);
+        coro.get().set_probe(&probe);
+
         auto test = [&]() -> test_task<int> {
-            int v = co_await echo(expected);
+            int v = co_await std::move(coro);
             co_return v;
         };
 
         auto result = run(test());
         expect(eq(result, expected));
+        expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
     };
 
     // ============================================================
@@ -77,20 +82,20 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable propagates coroutine lifecycle"_test = [] mutable {
+        int expected = 42;
+
+
         coroutine_probe probe;
 
-        auto coro = [&]() -> test_task<int> { co_return 10; };
-
-        auto wrapped = tagged_awaitable<test_tag, int, test_task<int>>{coro().set_probe(&probe)};
+        auto wrapped = tagged_awaitable<test_tag, int, test_task<int>>{echo(expected).set_probe(&probe)};
 
         auto test = [&]() -> test_task<int> {
-            int value = co_await wrapped;
-            co_return value + 5;
+            co_return co_await wrapped;
         };
 
         auto result = run(test());
 
-        expect(eq(result, 15));
+        expect(eq(result, expected));
         expect(eq(probe.awaited, true));
         expect(eq(probe.done, true));
     };
@@ -100,16 +105,20 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable composes inside other coroutines"_test = [] mutable {
-        auto sub = []() -> test_task<int> { co_return 7; };
+        int base     = 7;
+        int mult     = 3;
+        int expected = base * mult;
 
-        auto main = [&]() -> test_task<int> {
-            tagged_awaitable<test_tag, int, test_task<int>> a{sub()};
-            int v = co_await a;
-            co_return v * 3;
+        auto sub = [&]() -> tagged_awaitable<test_tag, int, test_task<int>> {
+            co_return base;
+        };
+
+        auto main = [&]() -> tagged_awaitable<test_tag, int, test_task<int>> {
+            co_return (co_await sub()) * mult;
         };
 
         auto result = run(main());
-        expect(eq(result, 21));
+        expect(eq(result, expected));
     };
 
     // ============================================================
@@ -117,14 +126,13 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable converts to underlying awaitable"_test = [] mutable {
-        auto coro = []() -> test_task<int> { co_return 99; };
-
-        tagged_awaitable<test_tag, int, test_task<int>> wrapped{coro()};
+        int expected = 42;
+        auto wrapped{echo(expected)};
 
         auto run_underlying = [](test_task<int> task) { return run(task); };
 
         auto result = run_underlying(std::move(wrapped));
-        expect(eq(result, 99));
+        expect(eq(result, expected));
     };
     
     // ============================================================
