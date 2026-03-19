@@ -14,15 +14,22 @@ struct test_tag {};
 using test_wrapper_int = tagged_awaitable<test_tag, int>;
 using test_wrapper_void = tagged_awaitable<test_tag, void>;
 
+asio::awaitable<int> echo(int value)
+{
+    co_return value;
+}
+
 suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     // ============================================================
     // Basic wrapping of asio::awaitable
     // ============================================================
 
     "tagged_awaitable forwards result correctly"_test = [] mutable {
+        int expected = 42;
+
         asio::io_context ctx;
 
-        test_wrapper_int wrapped = []() mutable -> asio::awaitable<int> { co_return 42; }();
+        test_wrapper_int wrapped = echo(expected);
 
         auto fut = asio::co_spawn(
             ctx,
@@ -32,25 +39,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         ctx.run();
 
-        auto res = fut.get();
-        expect(eq(res, 42));
-    };
-
-    // ============================================================
-    // Implicit conversion from asio::awaitable
-    // ============================================================
-#if 0
-    "asio awaitable implicitly converts to tagged_awaitable"_test = [] mutable {
-        asio::io_context ctx;
-
-        test_wrapper_int wrapped = []() mutable -> asio::awaitable<int> { co_return 77; }();
-
-        auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::as_tuple(asio::use_future));
-
-        ctx.run();
-
-        auto [_, res] = fut.get();
-        expect(eq(res, 77));
+        expect(eq(fut.get(), expected));
     };
 
     // ============================================================
@@ -58,23 +47,24 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     // ============================================================
 
     "rvalue tagged_awaitable co_await works"_test = [] mutable {
+        int expected = 5;
+
         asio::io_context ctx;
 
         auto fut = asio::co_spawn(
             ctx,
-            [&]() mutable -> asio::awaitable<int> {
-                test_wrapper_int a{[]() mutable -> asio::awaitable<int> { co_return 5; }()};
-                co_return co_await std::move(a).get();
+            []() mutable -> asio::awaitable<int> {
+                test_wrapper_int wrapped{echo(expected)};
+                co_return co_await std::move(wrapped).get();
             },
-            asio::as_tuple(asio::use_future)
+            asio::use_future
         );
 
         ctx.run();
 
-        auto [_, res] = fut.get();
-        expect(eq(res, 5));
+        expect(eq(fut.get(), expected));
     };
-
+#if 0
     // ============================================================
     // Nested coroutine composition
     // ============================================================
