@@ -183,7 +183,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         auto leaf = echo(10);
 
         test_wrapper_int middle = [&]() mutable -> asio::awaitable<int> {
-            int res = co_await leaf;
+            int res = co_await std::move(leaf);
             co_return res + inc;
         }();
 
