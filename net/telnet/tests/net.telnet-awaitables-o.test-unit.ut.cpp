@@ -84,10 +84,10 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable propagates coroutine lifecycle"_test = [] mutable {
         int expected = 42;
 
-
         coroutine_probe probe;
 
-        auto wrapped = tagged_awaitable<test_tag, int, test_task<int>>{echo(expected).set_probe(&probe)};
+        auto wrapped = echo(expected);
+        wrapped.get().set_probe(&probe);
 
         auto test = [&]() -> test_task<int> {
             co_return co_await wrapped;
