@@ -114,9 +114,9 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
 
         tagged_awaitable<test_tag, int, test_task<int>> wrapped{coro()};
 
-        auto run_underlying = [](test_task<int>& task) { return run(task); };
+        auto run_underlying = [](test_task<int> task) { return run(task); };
 
-        auto result = run_underlying(wrapped);
+        auto result = run_underlying(std::move(wrapped));
         expect(eq(result, 99));
     };
 };
