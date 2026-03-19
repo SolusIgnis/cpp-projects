@@ -156,3 +156,13 @@ export namespace net::telnet::awaitables {
      */
     using subnegotiation_awaitable = tagged_awaitable<tags::subnegotiation_tag, std::tuple<option, std::vector<byte_t>>>;
 } //namespace net::telnet::awaitables
+
+namespace std {
+    template<typename Tag, typename T, typename AwaitableT, typename... Args>
+    struct coroutine_traits<
+        tagged_awaitable<Tag, T, AwaitableT>,
+        Args...
+    > {
+        using promise_type = typename AwaitableT::promise_type;
+    };
+} //namespace std
