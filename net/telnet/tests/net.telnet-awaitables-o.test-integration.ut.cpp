@@ -26,7 +26,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto fut = asio::co_spawn(
             ctx,
-            [wrapped = std::move(wrapped)]() mutable -> asio::awaitable<int> { co_return co_await std::move(wrapped).get(); },
+            std::move(wrapped).get(),
             asio::use_future
         );
 
