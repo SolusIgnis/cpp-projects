@@ -32,7 +32,7 @@ struct immediate_suspend_resume {
     constexpr int await_resume() const noexcept { return value; }
 };
 
-//namespace test_awaiting_adl {
+namespace test_awaiting_adl {
     // Dummy type made awaitable by free operator co_await
     struct awaitable_by_adl {
         int value = 0;
@@ -42,7 +42,7 @@ struct immediate_suspend_resume {
     {
         return immediate_suspend_resume{dummy.value};
     }
-//} //namespace test_awaiting_adl
+} //namespace test_awaiting_adl
 
 suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
@@ -166,7 +166,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable supports co_await by free function"_test = [] mutable {
         int expected = 42;
         
-        tagged_awaitable<test_tag, void, /*test_awaiting_adl::*/awaitable_by_adl> wrapped = /*test_awaiting_adl::*/awaitable_by_adl{expected};
+        tagged_awaitable<test_tag, void, test_awaiting_adl::awaitable_by_adl> wrapped = test_awaiting_adl::awaitable_by_adl{expected};
         
         auto coro = [&]() -> test_task<int> { co_return co_await wrapped; };
         
