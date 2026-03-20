@@ -74,8 +74,8 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
 
     "tagged_awaitables with identical tags and underlying value/awaitable types are the same type"_test = [] mutable {
         // Sanity check correlating with subsequent tests
-        using foo_t = tagged_awaitable<test_tag, void>;
-        using bar_t = tagged_awaitable<test_tag, void>;
+        using foo_t = tagged_awaitable<test_tag, void, test_task<void>>;
+        using bar_t = tagged_awaitable<test_tag, void, test_task<void>>;
         using baz_t = foo_t;
 
         // Verify they are the same type

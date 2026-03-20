@@ -67,6 +67,16 @@ export namespace net::telnet::awaitables {
         ///@brief Constructs from an awaitable.
         tagged_awaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
 
+
+
+        ///@brief Prevent copy construction from a tagged_awaitable with a different tag.
+        template<typename OtherTag, typename OtherT, typename OtherAwaitable>
+        tagged_awaitable(tagged_awaitable<OtherTag, OtherT, OtherAwaitable> const&) = delete;
+
+        ///@brief Prevent move construction from a tagged_awaitable with a different tag.
+        template<typename OtherTag, typename OtherT, typename OtherAwaitable>
+        tagged_awaitable(tagged_awaitable<OtherTag, OtherT, OtherAwaitable>&&) = delete;
+
         ///@brief Implicit conversion to underlying awaitable (lvalue).
         operator awaitable_type() & noexcept { return awaitable_; }
 
