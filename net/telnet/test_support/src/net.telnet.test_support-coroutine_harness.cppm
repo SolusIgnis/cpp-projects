@@ -339,6 +339,12 @@ export namespace net::telnet::test_support::coroutine_harness {
         void return_void() noexcept { this->value.emplace(); }
     };
 
+    template<typename T, typename Awaitable>
+    auto as_task(Awaitable&& awaitable) -> test_task<T>
+    {
+        co_return co_await std::forward<Awaitable>(awaitable);
+    }
+
     template<typename Task>
     auto test_runner_entry(Task&& task) -> std::remove_reference_t<Task>
     {
