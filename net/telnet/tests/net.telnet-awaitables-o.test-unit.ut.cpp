@@ -58,19 +58,20 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitables with different tags are distinct types"_test = [] mutable {
+        struct foo_tag {};
+        struct bar_tag {};
         
-        
-        using enablement_t  = tagged_awaitable<tags::option_enablement_tag, void, test_task<void>>;
-        using disablement_t = tagged_awaitable<tags::option_disablement_tag, void, test_task<void>>;
+        using foo_t = tagged_awaitable<foo_tag, void, test_task<void>>;
+        using bar_t = tagged_awaitable<bar_tag, void, test_task<void>>;
 
         // Verify they are not the same type
-        expect(eq(std::same_as<enablement_t, disablement_t>, false));
+        expect(eq(std::same_as<foo_t, bar_t>, false));
         
         // Verify they are not cross-assignable or cross-constructible
-        expect(eq(std::convertible_to<enablement_t, disablement_t>, false));
-        expect(eq(std::convertible_to<disablement_t, enablement_t>, false));
-        expect(eq(std::is_constructible_v<enablement_t, disablement_t>, false));
-        expect(eq(std::is_constructible_v<disablement_t, enablement_t>, false));
+        expect(eq(std::convertible_to<foo_t, bar_t>, false));
+        expect(eq(std::convertible_to<bar_t, foo_t>, false));
+        expect(eq(std::is_constructible_v<foo_t, bar_t>, false));
+        expect(eq(std::is_constructible_v<bar_t, foo_t>, false));
     };
 
     // ============================================================
