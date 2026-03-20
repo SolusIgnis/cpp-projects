@@ -70,8 +70,8 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         // Verify they are not cross-assignable or cross-constructible
         expect(eq(std::convertible_to<foo_t, bar_t>, false));
         expect(eq(std::convertible_to<bar_t, foo_t>, false));
-        expect(eq(std::is_constructible_v<foo_t, bar_t>, false));
-        expect(eq(std::is_constructible_v<bar_t, foo_t>, false));
+        expect(eq(std::constructible_from<foo_t, bar_t>, false));
+        expect(eq(std::constructible_from<bar_t, foo_t>, false));
     };
 
     // ============================================================
