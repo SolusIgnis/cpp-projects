@@ -163,28 +163,28 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
     };
     
-    "tagged_awaitable supports co_await by free function"_test = [] mutable {
+    "tagged_awaitable supports co_await by free function (ADL)"_test = [] mutable {
         int expected = 42;
         
-        tagged_awaitable<test_tag, void, test_awaiting_adl::awaitable_by_adl> wrapped = test_awaiting_adl::awaitable_by_adl{expected};
+        using wrapper_t = tagged_awaitable<test_tag, int, test_awaiting_adl::awaitable_by_adl>;
+        // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
+        wrapper_t wrapped = test_awaiting_adl::awaitable_by_adl{expected};
         
-        auto coro = [&]() -> test_task<int> { co_return co_await wrapped; };
-        
-        auto result = run(coro());
-        
-        expect(eq(result, expected));
+        expect(eq(run(wrapped), expected));
+        expect(eq(run(std::as_const(wrapped)), expected));
+        expect(eq(run(std::move(wrapped)), expected));
     };
     
     "tagged_awaitable supports co_await of wrapped awaiter"_test = [] mutable {
         int expected = 42;
+
+        using wrapper_t = tagged_awaitable<test_tag, int, immediate_suspend_resume>;
+        // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
+        wrapper_t wrapped = immediate_suspend_resume{expected};
         
-        tagged_awaitable<test_tag, void, immediate_suspend_resume> awaiter = immediate_suspend_resume{expected};
-        
-        auto coro = [&]() -> test_task<int> { co_return co_await awaiter; };
-        
-        auto result = run(coro());
-        
-        expect(eq(result, expected));
+        expect(eq(run(wrapped), expected));
+        expect(eq(run(std::as_const(wrapped)), expected));
+        expect(eq(run(std::move(wrapped)), expected));
     };
 
     // ============================================================
