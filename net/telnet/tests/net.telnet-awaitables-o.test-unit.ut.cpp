@@ -57,10 +57,24 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // Type Safety and Tag Isolation
     // ============================================================
 
+    "tagged_awaitables with identical tags and underlying value/awaitable types are the same type"_test = [] mutable {
+        // Sanity check correlating with subsequent tests
+        using foo_t = tagged_awaitable<test_tag, void, test_task<void>>;
+        using bar_t = tagged_awaitable<test_tag, void, test_task<void>>;
+        using baz_t = foo_t;
+
+        // Verify they are the same type
+        expect(eq(std::same_as<foo_t, bar_t>, true));
+        expect(eq(std::same_as<foo_t, baz_t>, true));
+        expect(eq(std::same_as<bar_t, baz_t>, true));
+    };
+    
     "tagged_awaitables with different tags are distinct types"_test = [] mutable {
+        // Unique tags:
         struct foo_tag {};
         struct bar_tag {};
-        
+
+        // Applied to wrapped awaitables       
         using foo_t = tagged_awaitable<foo_tag, void, test_task<void>>;
         using bar_t = tagged_awaitable<bar_tag, void, test_task<void>>;
 
@@ -72,6 +86,31 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         expect(eq(std::convertible_to<bar_t, foo_t>, false));
         expect(eq(std::constructible_from<foo_t, bar_t>, false));
         expect(eq(std::constructible_from<bar_t, foo_t>, false));
+    };
+    
+    "tagged_awaitables with different underlying awaitable types are distinct types"_test = [] mutable {
+        using foo_t = tagged_awaitable<test_tag, int, immediate_suspend_resume>;
+        using bar_t = tagged_awaitable<test_tag, int, test_task<int>>;
+
+        // Verify they are not the same type
+        expect(eq(std::same_as<foo_t, bar_t>, false));
+        
+        // Verify they are not cross-assignable or cross-constructible
+        expect(eq(std::convertible_to<foo_t, bar_t>, false));
+        expect(eq(std::convertible_to<bar_t, foo_t>, false));
+        expect(eq(std::constructible_from<foo_t, bar_t>, false));
+        expect(eq(std::constructible_from<bar_t, foo_t>, false));
+    };
+    
+    "option_enablement_awaitable and option_disablement_awaitable are exposed as distinct types"_test = [] mutable {
+        // Verify they are not the same type
+        expect(eq(std::same_as<option_enablement_awaitable, option_disablement_awaitable>, false));
+
+        // Verify they are not cross-assignable or cross-constructible
+        expect(eq(std::convertible_to<option_enablement_awaitable, option_disablement_awaitable>, false));
+        expect(eq(std::convertible_to<option_disablement_awaitable, option_enablement_awaitable>, false));
+        expect(eq(std::constructible_from<option_enablement_awaitable, option_disablement_awaitable>, false));
+        expect(eq(std::constructible_from<option_disablement_awaitable, option_enablement_awaitable>, false));
     };
 
     // ============================================================
