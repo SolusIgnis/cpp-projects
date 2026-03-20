@@ -170,9 +170,9 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
         wrapper_t wrapped = test_awaiting_adl::awaitable_by_adl{expected};
         
-        expect(eq(run(wrapped), expected));
-        expect(eq(run(std::as_const(wrapped)), expected));
-        expect(eq(run(std::move(wrapped)), expected));
+        expect(eq(run(as_task<int>(wrapped)), expected));
+        expect(eq(run(as_task<int>(std::as_const(wrapped))), expected));
+        expect(eq(run(as_task<int>(std::move(wrapped))), expected));
     };
     
     "tagged_awaitable supports co_await of wrapped awaiter"_test = [] mutable {
@@ -182,9 +182,9 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
         wrapper_t wrapped = immediate_suspend_resume{expected};
         
-        expect(eq(run(wrapped), expected));
-        expect(eq(run(std::as_const(wrapped)), expected));
-        expect(eq(run(std::move(wrapped)), expected));
+        expect(eq(run(as_task<int>(wrapped)), expected));
+        expect(eq(run(as_task<int>(std::as_const(wrapped))), expected));
+        expect(eq(run(as_task<int>(std::move(wrapped))), expected));
     };
 
     // ============================================================
