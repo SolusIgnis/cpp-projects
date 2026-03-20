@@ -35,15 +35,13 @@ import std; //NOLINT for std::move
 
 export import :options; ///< @see "net.telnet-options.cppm" for `option`
 
-using std::operator co_await;
-#if 0
 namespace net::telnet::awaitables {
     struct adl_lookup_tag {};
 
     //Delete free `operator co_await` for ADL purposes.
     void operator co_await(adl_lookup_tag) = delete;
 } //namespace net::telnet::awaitables
-#endif 
+ 
 export namespace net::telnet::awaitables {
     /**
      * @brief Wrapper for an awaitable with a semantic tag for type safety.
@@ -124,8 +122,9 @@ export namespace net::telnet::awaitables {
         friend decltype(auto) operator co_await(tagged_awaitable& wrapper)
             requires (!requires { wrapper.awaitable_.operator co_await(); })
         {
-           if constexpr (requires { ::operator co_await(wrapper.awaitable_); }) {
-                 return ::operator co_await(wrapper.awaitable_);
+            using net::telnet::awaitables::operator co_await;
+            if constexpr (requires { operator co_await(wrapper.awaitable_); }) {
+                return operator co_await(wrapper.awaitable_);
             } else {
                 return (wrapper.awaitable_);
             }
@@ -135,8 +134,9 @@ export namespace net::telnet::awaitables {
         friend decltype(auto) operator co_await(const tagged_awaitable& wrapper)
             requires (!requires { wrapper.awaitable_.operator co_await(); })
         {
-            if constexpr (requires { ::operator co_await(wrapper.awaitable_); }) {
-                return ::operator co_await(wrapper.awaitable_);
+            using net::telnet::awaitables::operator co_await;
+            if constexpr (requires { operator co_await(wrapper.awaitable_); }) {
+                return operator co_await(wrapper.awaitable_);
             } else {
                 return (wrapper.awaitable_);
             }
@@ -146,8 +146,9 @@ export namespace net::telnet::awaitables {
         friend decltype(auto) operator co_await(tagged_awaitable&& wrapper)
             requires (!requires { std::move(wrapper.awaitable_).operator co_await(); })
         {
-            if constexpr (requires { ::operator co_await(std::move(wrapper.awaitable_)); }) {
-                return ::operator co_await(std::move(wrapper.awaitable_));
+            using net::telnet::awaitables::operator co_await;
+            if constexpr (requires { operator co_await(std::move(wrapper.awaitable_)); }) {
+                return operator co_await(std::move(wrapper.awaitable_));
             } else {
                 return std::move(wrapper.awaitable_);
             }
