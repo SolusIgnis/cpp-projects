@@ -166,7 +166,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable supports co_await by free function"_test = [] mutable {
         int expected = 42;
         
-        tagged_awaitable<test_tag, void, test_awaiting_adl::awaitable_by_adl> wrapped = test_awaiting_adl::awaitable_by_adl{expected};
+        tagged_awaitable<test_tag, void, /*test_awaiting_adl::*/awaitable_by_adl> wrapped = /*test_awaiting_adl::*/awaitable_by_adl{expected};
         
         auto coro = [&]() -> test_task<int> { co_return co_await wrapped; };
         
