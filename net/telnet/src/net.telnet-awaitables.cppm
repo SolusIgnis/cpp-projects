@@ -35,10 +35,14 @@ import std; //NOLINT for std::move
 
 export import :options; ///< @see "net.telnet-options.cppm" for `option`
 
-export namespace net::telnet::awaitables {
-    //Delete free `operator co_await` for ADL purposes.
-    void operator co_await() = delete;
+namespace net::telnet::awaitables {
+    struct adl_lookup_tag {};
 
+    //Delete free `operator co_await` for ADL purposes.
+    void operator co_await(adl_lookup_tag) = delete;
+} //namespace net::telnet::awaitables
+
+export namespace net::telnet::awaitables {
     /**
      * @brief Wrapper for an awaitable with a semantic tag for type safety.
      * @tparam Tag The semantic tag type.
