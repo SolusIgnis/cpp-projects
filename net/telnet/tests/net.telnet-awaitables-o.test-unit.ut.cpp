@@ -36,7 +36,7 @@ namespace test_awaiting_adl {
     // Dummy type made awaitable by free operator co_await
     struct awaitable_by_adl {
         int value = 0;
-    }
+    };
     
     auto operator co_await(const awaitable_by_adl& dummy)
     {
