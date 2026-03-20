@@ -31,7 +31,7 @@ module; //Including Asio in the Global Module Fragment until importable header u
 // Module partition interface unit
 export module net.telnet:awaitables;
 
-import std; //NOLINT for std::move
+import std; //NOLINT
 
 export import :options; ///< @see "net.telnet-options.cppm" for `option`
 
@@ -95,27 +95,43 @@ export namespace net::telnet::awaitables {
         ///@brief Explicit conversion to underlying awaitable (rvalue).
         awaitable_type&& get() && noexcept { return std::move(awaitable_); }
 
-        ///@brief Supports member co_await for lvalue.
+        ///@brief Supports member `co_await` for lvalue.
         decltype(auto) operator co_await() &
             requires requires { awaitable_.operator co_await(); }
         {
             return awaitable_.operator co_await();
         }
 
-        ///@brief Supports member co_await for const lvalue.
+        ///@brief Supports member `co_await` for const lvalue.
         decltype(auto) operator co_await() const&
             requires requires { awaitable_.operator co_await(); }
         {
             return awaitable_.operator co_await();
         }
 
-        ///@brief Supports member co_await for rvalue.
+        ///@brief Supports member `co_await` for rvalue.
         decltype(auto) operator co_await() &&
             requires requires { std::move(awaitable_).operator co_await(); }
         {
             return std::move(awaitable_).operator co_await();
         }
 
+        ///@brief Supports ADL `co_await` universally.
+        template <typename Self>
+            requires std::same_as<std::remove_cvref_t<Self>, tagged_awaitable>
+        friend decltype(auto) operator co_await(Self&& wrapper)
+            requires (!requires { std::forward<Self>(wrapper).awaitable_.operator co_await(); })
+        {
+            using net::telnet::awaitables::operator co_await;
+            auto&& awaitable = std::forward<Self>(wrapper).awaitable_;
+            
+            if constexpr (requires { operator co_await(std::forward<decltype(awaitable)>(awaitable)); }) {
+                return operator co_await(std::forward<decltype(awaitable)>(awaitable));
+            } else {
+                return std::forward<decltype(awaitable)>(awaitable);
+            }
+        }
+#if 0
         ///@brief Supports ADL co_await for lvalue.
         friend decltype(auto) operator co_await(tagged_awaitable& wrapper)
             requires (!requires { wrapper.awaitable_.operator co_await(); })
@@ -151,6 +167,7 @@ export namespace net::telnet::awaitables {
                 return std::move(wrapper.awaitable_);
             }
         }
+#endif
     }; //class tagged_awaitable
 
     /**

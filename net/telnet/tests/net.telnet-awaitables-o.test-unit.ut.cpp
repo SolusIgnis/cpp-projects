@@ -12,9 +12,6 @@ using namespace net::telnet::test_support::coroutine_harness;
 using namespace std::literals;
 
 struct test_tag {};
-        struct foo_tag {};
-        struct bar_tag {};
-
 
 tagged_awaitable<test_tag, int, test_task<int>> echo(int value)
 {
@@ -86,6 +83,8 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     
     "tagged_awaitables with different tags are distinct types"_test = [] mutable {
         // Unique tags:
+        struct foo_tag {};
+        struct bar_tag {};
 
         // Applied to wrapped awaitables       
         using foo_t = tagged_awaitable<foo_tag, void, test_task<void>>;
