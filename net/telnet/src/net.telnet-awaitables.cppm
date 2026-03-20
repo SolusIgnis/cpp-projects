@@ -99,11 +99,6 @@ export namespace net::telnet::awaitables {
             requires requires { awaitable_.operator co_await(); }
         {
             return awaitable_.operator co_await();
-            if constexpr (requires(const awaitable_type& awaitable) { operator co_await(awaitable); }) {
-                return operator co_await(awaitable_);
-            } else {
-                return awaitable_;
-            }
         }
 
         ///@brief Supports member co_await for rvalue.
@@ -111,11 +106,6 @@ export namespace net::telnet::awaitables {
             requires requires { std::move(awaitable_).operator co_await(); }
         {
             return std::move(awaitable_).operator co_await();
-            if constexpr (requires(awaitable_type&& awaitable) { operator co_await(std::move(awaitable)); }) {
-                return operator co_await(std::move(awaitable_));
-            } else {
-                return std::move(awaitable_);
-            }
         }
 
         ///@brief Supports ADL co_await for lvalue.
