@@ -87,39 +87,67 @@ export namespace net::telnet::awaitables {
         ///@brief Explicit conversion to underlying awaitable (rvalue).
         awaitable_type&& get() && noexcept { return std::move(awaitable_); }
 
-        ///@brief Supports co_await for lvalue.
-        decltype(auto) operator co_await() & noexcept
+        ///@brief Supports member co_await for lvalue.
+        decltype(auto) operator co_await() &
+            requires requires { awaitable_.operator co_await(); }
         {
-            if constexpr (requires(awaitable_type& awaitable) { awaitable.operator co_await(); }) {
-                return awaitable_.operator co_await();
-            } else if constexpr (requires(awaitable_type& awaitable) { operator co_await(awaitable); }) {
+            return awaitable_.operator co_await();
+        }
+
+        ///@brief Supports member co_await for const lvalue.
+        decltype(auto) operator co_await() const&
+            requires requires { awaitable_.operator co_await(); }
+        {
+            return awaitable_.operator co_await();
+            if constexpr (requires(const awaitable_type& awaitable) { operator co_await(awaitable); }) {
                 return operator co_await(awaitable_);
             } else {
                 return awaitable_;
             }
         }
 
-        ///@brief Supports co_await for const lvalue.
-        decltype(auto) operator co_await() const& noexcept
+        ///@brief Supports member co_await for rvalue.
+        decltype(auto) operator co_await() &&
+            requires requires { std::move(awaitable_).operator co_await(); }
         {
-            if constexpr (requires(const awaitable_type& awaitable) { awaitable.operator co_await(); }) {
-                return awaitable_.operator co_await();
-            } else if constexpr (requires(const awaitable_type& awaitable) { operator co_await(awaitable); }) {
-                return operator co_await(awaitable_);
-            } else {
-                return awaitable_;
-            }
-        }
-
-        ///@brief Supports co_await for rvalue.
-        decltype(auto) operator co_await() && noexcept
-        {
-            if constexpr (requires(awaitable_type&& awaitable) { std::move(awaitable).operator co_await(); }) {
-                return std::move(awaitable_).operator co_await();
-            } else if constexpr (requires(awaitable_type&& awaitable) { operator co_await(std::move(awaitable)); }) {
+            return std::move(awaitable_).operator co_await();
+            if constexpr (requires(awaitable_type&& awaitable) { operator co_await(std::move(awaitable)); }) {
                 return operator co_await(std::move(awaitable_));
             } else {
                 return std::move(awaitable_);
+            }
+        }
+
+        ///@brief Supports ADL co_await for lvalue.
+        friend decltype(auto) operator co_await(tagged_awaitable& wrapper)
+            requires (!requires { wrapper.awaitable_.operator co_await(); })
+        {
+           if constexpr (requires { operator co_await(wrapper.awaitable_); }) {
+                 return operator co_await(wrapper.awaitable_);
+            } else {
+                return (wrapper.awaitable_);
+            }
+        }
+
+        ///@brief Supports ADL co_await for const lvalue.
+        friend decltype(auto) operator co_await(const tagged_awaitable& wrapper)
+            requires (!requires { wrapper.awaitable_.operator co_await(); })
+        {
+            if constexpr (requires { operator co_await(wrapper.awaitable_); }) {
+                return operator co_await(wrapper.awaitable_);
+            } else {
+                return (wrapper.awaitable_);
+            }
+        }
+
+        ///@brief Supports ADL co_await for rvalue.
+        friend decltype(auto) operator co_await(tagged_awaitable&& wrapper)
+            requires (!requires { std::move(wrapper.awaitable_).operator co_await(); })
+        {
+            if constexpr (requires { operator co_await(std::move(wrapper.awaitable_)); }) {
+                return operator co_await(std::move(wrapper.awaitable_));
+            } else {
+                return std::move(wrapper.awaitable_);
             }
         }
     }; //class tagged_awaitable
