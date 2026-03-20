@@ -20,7 +20,7 @@ tagged_awaitable<test_tag, int, test_task<int>> echo(int value)
 
 // Trivial awaiter that suspends once and immediately resumes via symmetric transfer
 struct immediate_suspend_resume {
-    int value;
+    int value = 0;
     
     constexpr bool await_ready() const noexcept { return false; }
 
@@ -31,6 +31,18 @@ struct immediate_suspend_resume {
 
     constexpr int await_resume() const noexcept { return value; }
 };
+
+namespace test_awaiting_adl {
+    // Dummy type made awaitable by free operator co_await
+    struct awaitable_by_adl {
+        int value = 0;
+    }
+    
+    auto operator co_await(const awaitable_by_adl& dummy)
+    {
+        return immediate_suspend_resume{dummy.value};
+    }
+} //namespace test_awaiting_adl
 
 suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
@@ -149,6 +161,18 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         auto result = run(test());
         expect(eq(result, expected));
         expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
+    };
+    
+    "tagged_awaitable supports co_await by free function"_test = [] mutable {
+        int expected = 42;
+        
+        tagged_awaitable<test_tag, void, test_awaiting_adl::awaitable_by_adl> wrapped = test_awaiting_adl::awaitable_by_adl{expected};
+        
+        auto coro = [&]() -> tagged_awaitable<test_tag, int, test_task<int>> { co_return co_await wrapped; };
+        
+        auto result = run(coro());
+        
+        expect(eq(result, expected));
     };
     
     "tagged_awaitable supports co_await of wrapped awaiter"_test = [] mutable {
