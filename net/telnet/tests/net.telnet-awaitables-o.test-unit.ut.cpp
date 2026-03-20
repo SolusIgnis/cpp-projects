@@ -32,7 +32,7 @@ struct immediate_suspend_resume {
     constexpr int await_resume() const noexcept { return value; }
 };
 
-namespace test_awaiting_adl {
+//namespace test_awaiting_adl {
     // Dummy type made awaitable by free operator co_await
     struct awaitable_by_adl {
         int value = 0;
@@ -42,7 +42,7 @@ namespace test_awaiting_adl {
     {
         return immediate_suspend_resume{dummy.value};
     }
-} //namespace test_awaiting_adl
+//} //namespace test_awaiting_adl
 
 suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
