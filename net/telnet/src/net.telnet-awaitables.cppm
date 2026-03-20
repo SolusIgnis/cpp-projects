@@ -36,6 +36,9 @@ import std; //NOLINT for std::move
 export import :options; ///< @see "net.telnet-options.cppm" for `option`
 
 export namespace net::telnet::awaitables {
+    //Delete free `operator co_await` for ADL purposes.
+    void operator co_await() = delete;
+
     /**
      * @brief Wrapper for an awaitable with a semantic tag for type safety.
      * @tparam Tag The semantic tag type.
@@ -83,7 +86,6 @@ export namespace net::telnet::awaitables {
         ///@brief Supports co_await for lvalue.
         decltype(auto) operator co_await() & noexcept
         {
-            using net::telnet::awaitables::operator co_await; 
             if constexpr (requires(awaitable_type& awaitable) { awaitable.operator co_await(); }) {
                 return awaitable_.operator co_await();
             } else if constexpr (requires(awaitable_type& awaitable) { operator co_await(awaitable); }) {
@@ -96,7 +98,6 @@ export namespace net::telnet::awaitables {
         ///@brief Supports co_await for const lvalue.
         decltype(auto) operator co_await() const& noexcept
         {
-            using net::telnet::awaitables::operator co_await; 
             if constexpr (requires(const awaitable_type& awaitable) { awaitable.operator co_await(); }) {
                 return awaitable_.operator co_await();
             } else if constexpr (requires(const awaitable_type& awaitable) { operator co_await(awaitable); }) {
@@ -109,7 +110,6 @@ export namespace net::telnet::awaitables {
         ///@brief Supports co_await for rvalue.
         decltype(auto) operator co_await() && noexcept
         {
-            using net::telnet::awaitables::operator co_await; 
             if constexpr (requires(awaitable_type&& awaitable) { std::move(awaitable).operator co_await(); }) {
                 return std::move(awaitable_).operator co_await();
             } else if constexpr (requires(awaitable_type&& awaitable) { operator co_await(std::move(awaitable)); }) {
