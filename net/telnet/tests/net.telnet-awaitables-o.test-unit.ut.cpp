@@ -40,7 +40,7 @@ namespace test_awaiting_adl {
     
     auto operator co_await(awaitable_by_adl dummy)
     {
-        return dummy.value;
+        return immediate_suspend_resume{dummy.value};
     }
 } //namespace test_awaiting_adl
 
