@@ -38,9 +38,9 @@ namespace test_awaiting_adl {
         int value = 0;
     };
     
-    auto operator co_await(const awaitable_by_adl& dummy)
+    auto operator co_await(awaitable_by_adl dummy)
     {
-        return immediate_suspend_resume{dummy.value};
+        return dummy.value;
     }
 } //namespace test_awaiting_adl
 
@@ -168,7 +168,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         
         tagged_awaitable<test_tag, void, test_awaiting_adl::awaitable_by_adl> wrapped = test_awaiting_adl::awaitable_by_adl{expected};
         
-        auto coro = [&]() -> tagged_awaitable<test_tag, int, test_task<int>> { co_return co_await wrapped; };
+        auto coro = [&]() -> test_task<int> { co_return co_await wrapped; };
         
         auto result = run(coro());
         
@@ -180,7 +180,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         
         tagged_awaitable<test_tag, void, immediate_suspend_resume> awaiter = immediate_suspend_resume{expected};
         
-        auto coro = [&]() -> tagged_awaitable<test_tag, int, test_task<int>> { co_return co_await awaiter; };
+        auto coro = [&]() -> test_task<int> { co_return co_await awaiter; };
         
         auto result = run(coro());
         
