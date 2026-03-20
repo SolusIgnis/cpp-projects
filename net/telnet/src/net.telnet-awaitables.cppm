@@ -122,8 +122,8 @@ export namespace net::telnet::awaitables {
         friend decltype(auto) operator co_await(tagged_awaitable& wrapper)
             requires (!requires { wrapper.awaitable_.operator co_await(); })
         {
-           if constexpr (requires { operator co_await(wrapper.awaitable_); }) {
-                 return operator co_await(wrapper.awaitable_);
+           if constexpr (requires { ::operator co_await(wrapper.awaitable_); }) {
+                 return ::operator co_await(wrapper.awaitable_);
             } else {
                 return (wrapper.awaitable_);
             }
@@ -133,8 +133,8 @@ export namespace net::telnet::awaitables {
         friend decltype(auto) operator co_await(const tagged_awaitable& wrapper)
             requires (!requires { wrapper.awaitable_.operator co_await(); })
         {
-            if constexpr (requires { operator co_await(wrapper.awaitable_); }) {
-                return operator co_await(wrapper.awaitable_);
+            if constexpr (requires { ::operator co_await(wrapper.awaitable_); }) {
+                return ::operator co_await(wrapper.awaitable_);
             } else {
                 return (wrapper.awaitable_);
             }
@@ -144,8 +144,8 @@ export namespace net::telnet::awaitables {
         friend decltype(auto) operator co_await(tagged_awaitable&& wrapper)
             requires (!requires { std::move(wrapper.awaitable_).operator co_await(); })
         {
-            if constexpr (requires { operator co_await(std::move(wrapper.awaitable_)); }) {
-                return operator co_await(std::move(wrapper.awaitable_));
+            if constexpr (requires { ::operator co_await(std::move(wrapper.awaitable_)); }) {
+                return ::operator co_await(std::move(wrapper.awaitable_));
             } else {
                 return std::move(wrapper.awaitable_);
             }
