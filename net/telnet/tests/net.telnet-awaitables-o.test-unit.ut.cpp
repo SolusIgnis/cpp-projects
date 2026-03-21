@@ -135,7 +135,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable has zero size overhead"_test = [] mutable {
-        auto tester = [] template<typename AwaitableT> () {
+        auto tester = [] <typename AwaitableT> {
             using raw_t = AwaitableT;
             using tagged_t = tagged_awaitable<test_tag, AwaitableT>;
             using pathological_t = tagged_awaitable<std::array<int, 4>, AwaitableT>;
