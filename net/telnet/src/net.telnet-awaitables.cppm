@@ -59,18 +59,18 @@ namespace net::telnet::awaitables {
         //NOLINTBEGIN(google-explicit-constructor): Implicit conversion to/from our `awaitable_type` is the point.
 
         ///@brief Default constructor.
-        tagged_awaitable() = default;
+        tagged_awaitable_impl() = default;
 
         ///@brief Constructs from an awaitable.
-        explicit(false) tagged_awaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
+        explicit(false) tagged_awaitable_impl(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
 
         ///@brief Prevent copy construction from a tagged_awaitable with a different tag.
-        template<typename OtherTag, typename OtherT, typename OtherAwaitable>
-        tagged_awaitable(tagged_awaitable<OtherTag, OtherT, OtherAwaitable> const&) = delete;
+        template<typename OtherTag, typename OtherAwaitable>
+        tagged_awaitable_impl(tagged_awaitable_impl<OtherTag, OtherAwaitable> const&) = delete;
 
         ///@brief Prevent move construction from a tagged_awaitable with a different tag.
-        template<typename OtherTag, typename OtherT, typename OtherAwaitable>
-        tagged_awaitable(tagged_awaitable<OtherTag, OtherT, OtherAwaitable>&&) = delete;
+        template<typename OtherTag, typename OtherAwaitable>
+        tagged_awaitable_impl(tagged_awaitable_impl<OtherTag, OtherAwaitable>&&) = delete;
 
         ///@brief Implicit conversion to underlying awaitable (lvalue).
         explicit(false) operator awaitable_type() & noexcept { return awaitable_; }
@@ -115,7 +115,7 @@ namespace net::telnet::awaitables {
 
         ///@brief Supports ADL `co_await` universally.
         template <typename Self>
-            requires std::same_as<std::remove_cvref_t<Self>, tagged_awaitable>
+            requires std::same_as<std::remove_cvref_t<Self>, tagged_awaitable_impl>
         friend decltype(auto) operator co_await(Self&& wrapper)
             requires (!requires { std::forward<Self>(wrapper).awaitable_.operator co_await(); })
         {
@@ -130,7 +130,7 @@ namespace net::telnet::awaitables {
         }
 #if 0
         ///@brief Supports ADL co_await for lvalue.
-        friend decltype(auto) operator co_await(tagged_awaitable& wrapper)
+        friend decltype(auto) operator co_await(tagged_awaitable_impl& wrapper)
             requires (!requires { wrapper.awaitable_.operator co_await(); })
         {
             using net::telnet::awaitables::operator co_await;
@@ -142,7 +142,7 @@ namespace net::telnet::awaitables {
         }
 
         ///@brief Supports ADL co_await for const lvalue.
-        friend decltype(auto) operator co_await(const tagged_awaitable& wrapper)
+        friend decltype(auto) operator co_await(const tagged_awaitable_impl& wrapper)
             requires (!requires { wrapper.awaitable_.operator co_await(); })
         {
             using net::telnet::awaitables::operator co_await;
@@ -154,7 +154,7 @@ namespace net::telnet::awaitables {
         }
 
         ///@brief Supports ADL co_await for rvalue.
-        friend decltype(auto) operator co_await(tagged_awaitable&& wrapper)
+        friend decltype(auto) operator co_await(tagged_awaitable_impl&& wrapper)
             requires (!requires { std::move(wrapper.awaitable_).operator co_await(); })
         {
             using net::telnet::awaitables::operator co_await;
@@ -168,7 +168,7 @@ namespace net::telnet::awaitables {
     }; //class tagged_awaitable_impl
 
     /**
-     * @fn tagged_awaitable::tagged_awaitable(awaitable_type awaitable) noexcept
+     * @fn tagged_awaitable_impl::tagged_awaitable_impl(awaitable_type awaitable) noexcept
      * @param awaitable The awaitable to wrap.
      * @note Implicit conversion from the underlying type allows direct returns from Boost.Asio asynchronous operations.
      */
