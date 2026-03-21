@@ -19,8 +19,9 @@ tagged_awaitable<test_tag, int, test_task<int>> echo(int value)
 }
 
 // Trivial awaiter that suspends once and immediately resumes via symmetric transfer
+template<typename T>
 struct immediate_suspend_resume {
-    int value = 0;
+    T value{};
     
     constexpr bool await_ready() const noexcept { return false; }
 
@@ -29,13 +30,14 @@ struct immediate_suspend_resume {
         return caller; // symmetric transfer → resume caller right away
     }
 
-    constexpr int await_resume() const noexcept { return value; }
+    constexpr auto await_resume() const noexcept { return value; }
 };
 
 namespace test_awaiting_adl {
     // Dummy type made awaitable by free operator co_await
+    template<typename T>
     struct awaitable_by_adl {
-        int value = 0;
+        T value{};
     };
     
     auto operator co_await(awaitable_by_adl dummy)
