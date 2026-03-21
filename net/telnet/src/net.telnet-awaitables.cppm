@@ -46,12 +46,11 @@ export namespace net::telnet::awaitables {
     /**
      * @brief Wrapper for an awaitable with a semantic tag for type safety.
      * @tparam Tag The semantic tag type.
-     * @tparam T The awaitable's value type (i.e. the "return type" of `co_await`ing it) (e.g., `void`, `std::size_t`).
-     * @tparam AwaitableT The underlying `Awaitable` type (default: `asio::awaitable<T>`).
+     * @tparam AwaitableT The underlying `Awaitable` type (e.g.: `asio::awaitable<void>`).
      * @remark Provides implicit conversion to/from the underlying awaitable and supports direct `co_await`.
      * @see `tags` namespace for semantic tag types, `:protocol_fsm`, `:internal`
      */
-    template<typename Tag, typename T, typename AwaitableT = asio::awaitable<T>>
+    template<typename Tag, typename AwaitableT = asio::awaitable<T>>
     class tagged_awaitable {
     private:
         using awaitable_type = AwaitableT; ///< Underlying awaitable type
@@ -193,28 +192,28 @@ export namespace net::telnet::awaitables {
      * @brief Awaitable type for option enablement handlers.
      * @see `tagged_awaitable`, `tags::option_enablement_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using option_enablement_awaitable = tagged_awaitable<tags::option_enablement_tag, void>;
+    using option_enablement_awaitable = tagged_awaitable<tags::option_enablement_tag, asio::awaitable<void>>;
 
     /**
      * @typedef option_disablement_awaitable
      * @brief Awaitable type for option disablement handlers.
      * @see `tagged_awaitable`, `tags::option_disablement_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using option_disablement_awaitable = tagged_awaitable<tags::option_disablement_tag, void>;
+    using option_disablement_awaitable = tagged_awaitable<tags::option_disablement_tag, asio::awaitable<void>>;
 
     /**
      * @typedef subnegotiation_awaitable
      * @brief Awaitable type for subnegotiation handlers.
      * @see `tagged_awaitable`, `tags::subnegotiation_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using subnegotiation_awaitable = tagged_awaitable<tags::subnegotiation_tag, std::tuple<option, std::vector<byte_t>>>;
+    using subnegotiation_awaitable = tagged_awaitable<tags::subnegotiation_tag, asio::awaitable<std::tuple<option, std::vector<byte_t>>>>;
 } //namespace net::telnet::awaitables
 
 namespace std {
     ///@brief Partial specialization of `std::coroutine_traits` forwarding the promise type for a `tagged_awaitable` to the promise type of its underlying awaitable type.
-    template<typename Tag, typename T, typename AwaitableT, typename... Args>
+    template<typename Tag, typename AwaitableT, typename... Args>
     struct coroutine_traits<
-        net::telnet::awaitables::tagged_awaitable<Tag, T, AwaitableT>,
+        net::telnet::awaitables::tagged_awaitable<Tag, AwaitableT>,
         Args...
     > {
         using promise_type = typename std::coroutine_traits<AwaitableT, Args...>::promise_type;
