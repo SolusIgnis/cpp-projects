@@ -50,7 +50,7 @@ export namespace net::telnet::awaitables {
      * @remark Provides implicit conversion to/from the underlying awaitable and supports direct `co_await`.
      * @see `tags` namespace for semantic tag types, `:protocol_fsm`, `:internal`
      */
-    template<typename Tag, typename AwaitableT = asio::awaitable<T>>
+    template<typename Tag, typename AwaitableT>
     class tagged_awaitable {
     private:
         using awaitable_type = AwaitableT; ///< Underlying awaitable type
@@ -67,12 +67,12 @@ export namespace net::telnet::awaitables {
         explicit(false) tagged_awaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
 
         ///@brief Prevent copy construction from a tagged_awaitable with a different tag.
-        template<typename OtherTag, typename OtherT, typename OtherAwaitable>
-        tagged_awaitable(tagged_awaitable<OtherTag, OtherT, OtherAwaitable> const&) = delete;
+        template<typename OtherTag, typename OtherAwaitable>
+        tagged_awaitable(tagged_awaitable<OtherTag, OtherAwaitable> const&) = delete;
 
         ///@brief Prevent move construction from a tagged_awaitable with a different tag.
-        template<typename OtherTag, typename OtherT, typename OtherAwaitable>
-        tagged_awaitable(tagged_awaitable<OtherTag, OtherT, OtherAwaitable>&&) = delete;
+        template<typename OtherTag, typename OtherAwaitable>
+        tagged_awaitable(tagged_awaitable<OtherTag, OtherAwaitable>&&) = delete;
 
         ///@brief Implicit conversion to underlying awaitable (lvalue).
         explicit(false) operator awaitable_type() & noexcept { return awaitable_; }
