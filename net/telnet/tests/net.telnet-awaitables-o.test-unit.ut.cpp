@@ -127,6 +127,23 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         expect(eq(std::constructible_from<option_enablement_awaitable, option_disablement_awaitable>, false));
         expect(eq(std::constructible_from<option_disablement_awaitable, option_enablement_awaitable>, false));
     };
+    
+    // ============================================================
+    // Zero runtime overhead
+    // ============================================================
+
+    "tagged_awaitable has zero size overhead"_test = [] mutable {
+        using raw_t = test_task<void>;
+        using tagged_t = tagged_awaitable<test_tag, test_task<void>>;
+        using pathological_t = tagged_awaitable<std::array<int, 4>, test_task<void>>;
+        
+        // The wrapper should be exactly the size of the thing it wraps.
+        expect(eq(sizeof(tagged_t), sizeof(raw_t)));
+        expect(eq(sizeof(pathological_t), sizeof(raw_t))); 
+        // It should also share the same alignment requirements.
+        expect(eq(alignof(tagged_t), alignof(raw_t)));
+        expect(eq(alignof(pathological_t), alignof(raw_t))); 
+    };
 
     // ============================================================
     // Await semantics
