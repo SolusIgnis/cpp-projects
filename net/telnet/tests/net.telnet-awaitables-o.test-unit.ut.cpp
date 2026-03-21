@@ -147,7 +147,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         expect(eq(alignof(pathological_t), alignof(raw_t))); 
     };
 
-"check_alignment_glitch"_test = [] {
+"check_alignment_glitch"_test = [] mutable {
     using task_t = test_task<void>;
     task_t tasks[2]; // Create an array
     auto delta = reinterpret_cast<char*>(&tasks[1]) - reinterpret_cast<char*>(&tasks[0]);
