@@ -104,7 +104,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     };
     
     "tagged_awaitables with different underlying awaitable types are distinct types"_test = [] mutable {
-        using foo_t = tagged_awaitable<test_tag, int, immediate_suspend_resume>;
+        using foo_t = tagged_awaitable<test_tag, int, immediate_suspend_resume<int>>;
         using bar_t = tagged_awaitable<test_tag, int, test_task<int>>;
 
         // Verify they are not the same type
@@ -169,7 +169,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable supports co_await by free function (ADL)"_test = [] mutable {
         int expected = 42;
         
-        using wrapper_t = tagged_awaitable<test_tag, int, test_awaiting_adl::awaitable_by_adl>;
+        using wrapper_t = tagged_awaitable<test_tag, int, test_awaiting_adl::awaitable_by_adl<int>>;
         // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
         wrapper_t wrapped = test_awaiting_adl::awaitable_by_adl{expected};
         
@@ -181,7 +181,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable supports co_await of wrapped awaiter"_test = [] mutable {
         int expected = 42;
 
-        using wrapper_t = tagged_awaitable<test_tag, int, immediate_suspend_resume>;
+        using wrapper_t = tagged_awaitable<test_tag, int, immediate_suspend_resume<int>>;
         // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
         wrapper_t wrapped = immediate_suspend_resume{expected};
         
