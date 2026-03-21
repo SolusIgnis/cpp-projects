@@ -24,7 +24,7 @@ struct immediate_suspend_resume {
     
     constexpr bool await_ready() const noexcept { return false; }
 
-    std::coroutine_handle<> await_suspend(std::coroutine_handle<> caller) noexcept
+    std::coroutine_handle<> await_suspend(std::coroutine_handle<> caller) const noexcept
     {
         return caller; // symmetric transfer → resume caller right away
     }
