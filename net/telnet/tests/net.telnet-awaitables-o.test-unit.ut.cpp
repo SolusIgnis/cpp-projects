@@ -40,9 +40,10 @@ namespace test_awaiting_adl {
         T value{};
     };
     
-    auto operator co_await(awaitable_by_adl dummy)
+    template<typename T>
+    auto operator co_await(awaitable_by_adl<T> dummy)
     {
-        return immediate_suspend_resume{dummy.value};
+        return immediate_suspend_resume<T>{dummy.value};
     }
 } //namespace test_awaiting_adl
 
