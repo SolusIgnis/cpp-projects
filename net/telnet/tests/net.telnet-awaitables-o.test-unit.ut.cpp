@@ -135,9 +135,9 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable has zero size overhead"_test = [] mutable {
-        using raw_t = asio::awaitable<void>;
-        using tagged_t = tagged_awaitable<test_tag, asio::awaitable<void>>;
-        using pathological_t = tagged_awaitable<std::array<int, 4>, asio::awaitable<void>>;
+        using raw_t = test_task<void>;
+        using tagged_t = tagged_awaitable<test_tag, test_task<void>>;
+        using pathological_t = tagged_awaitable<std::array<int, 4>, test_task<void>>;
         
         // The wrapper should be exactly the size of the thing it wraps.
         expect(eq(sizeof(tagged_t), sizeof(raw_t)));
@@ -154,6 +154,8 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     
     // If delta is 16 but sizeof is 8, Clang's internal math is broken.
     expect(eq(static_cast<size_t>(delta), sizeof(task_t)));
+    expect(eq(static_cast<size_t>(delta), static_cast<size_t>(16)));
+    expect(eq(sizeof(task_t), static_cast<size_t>(16)));
 };
 
 
