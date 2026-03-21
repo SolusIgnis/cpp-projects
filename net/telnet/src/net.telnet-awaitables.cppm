@@ -47,7 +47,7 @@ export namespace net::telnet::awaitables {
      * @brief Wrapper for an awaitable with a semantic tag for type safety.
      * @tparam Tag The semantic tag type.
      * @tparam T The awaitable's value type (i.e. the "return type" of `co_await`ing it) (e.g., `void`, `std::size_t`).
-     * @tparam AwaitableT The underlying `Awaitable` type (default: `boost::asio::awaitable<T>`).
+     * @tparam AwaitableT The underlying `Awaitable` type (default: `asio::awaitable`).
      * @remark Provides implicit conversion to/from the underlying awaitable and supports direct `co_await`.
      * @see `tags` namespace for semantic tag types, `:protocol_fsm`, `:internal`
      */
@@ -68,12 +68,12 @@ export namespace net::telnet::awaitables {
         explicit(false) tagged_awaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
 
         ///@brief Prevent copy construction from a tagged_awaitable with a different tag.
-        template<typename OtherTag, typename OtherT, typename OtherAwaitable>
-        tagged_awaitable(tagged_awaitable<OtherTag, OtherT, OtherAwaitable> const&) = delete;
+        template<typename OtherTag, template<typename...> typename OtherAwaitable, typename... OtherT>
+        tagged_awaitable(tagged_awaitable<OtherTag, OtherAwaitable, OtherT...> const&) = delete;
 
         ///@brief Prevent move construction from a tagged_awaitable with a different tag.
-        template<typename OtherTag, typename OtherT, typename OtherAwaitable>
-        tagged_awaitable(tagged_awaitable<OtherTag, OtherT, OtherAwaitable>&&) = delete;
+        template<typename OtherTag, template<typename...> typename OtherAwaitable, typename... OtherT>
+        tagged_awaitable(tagged_awaitable<OtherTag, OtherAwaitable, OtherT...>&&) = delete;
 
         ///@brief Implicit conversion to underlying awaitable (lvalue).
         explicit(false) operator awaitable_type() & noexcept { return awaitable_; }
