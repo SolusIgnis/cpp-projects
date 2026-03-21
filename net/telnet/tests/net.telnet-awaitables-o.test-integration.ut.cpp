@@ -13,8 +13,8 @@ using namespace net::telnet::awaitables;
 using namespace net::telnet::test_support::coroutine_harness;
 
 struct test_tag {};
-using test_wrapper_int = tagged_awaitable<test_tag, int>;
-using test_wrapper_void = tagged_awaitable<test_tag, void>;
+using test_wrapper_int = tagged_awaitable<test_tag, asio::awaitable<int>>;
+using test_wrapper_void = tagged_awaitable<test_tag, asio::awaitable<void>>;
 
 asio::awaitable<int> echo(int value)
 {
@@ -233,7 +233,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable propagates test_task destroy without run exception"_test = [] mutable {
-        auto wrapped = [](int value) -> tagged_awaitable<test_tag, int, test_task<int>> { co_return value; };
+        auto wrapped = [](int value) -> tagged_awaitable<test_tag, test_task<int>> { co_return value; };
 
         int herring = 42;
 

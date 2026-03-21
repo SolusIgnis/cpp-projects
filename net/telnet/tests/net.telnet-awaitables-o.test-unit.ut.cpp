@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // Unit tests for net.telnet:awaitables
 
+#include <asio.hpp>
+
 import net.telnet;
 import net.telnet.test_support;
 import ut;
@@ -134,8 +136,8 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
 
     "tagged_awaitable has zero size overhead"_test = [] mutable {
         using raw_t = test_task<void>;
-        using tagged_t = tagged_awaitable<test_tag, test_task<void>>;
-        using pathological_t = tagged_awaitable<std::array<int, 4>, test_task<void>>;
+        using tagged_t = tagged_awaitable<test_tag, asio::awaitable<void>>;
+        using pathological_t = tagged_awaitable<std::array<int, 4>, asio::awaitable<void>>;
         
         // The wrapper should be exactly the size of the thing it wraps.
         expect(eq(sizeof(tagged_t), sizeof(raw_t)));
