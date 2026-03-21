@@ -135,16 +135,26 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable has zero size overhead"_test = [] mutable {
-        using raw_t = test_task<void>;
-        using tagged_t = tagged_awaitable<test_tag, test_task<void>>;
-        using pathological_t = tagged_awaitable<std::array<int, 4>, test_task<void>>;
+        auto tester = []<typename AwaitableT>() {
+            using raw_t = AwaitableT;
+            using tagged_t = tagged_awaitable<test_tag, AwaitableT>;
+            using pathological_t = tagged_awaitable<std::array<int, 4>, AwaitableT>;
+            
+            // The wrapper should be exactly the size of the thing it wraps.
+            expect(eq(sizeof(raw_t), sizeof(tagged_t)));
+            expect(eq(sizeof(raw_t), sizeof(pathological_t))); 
+            // It should also share the same alignment requirements.
+            expect(eq(alignof(raw_t), alignof(tagged_t)));
+            expect(eq(alignof(raw_t), alignof(pathological_t))); 
+        };
+
+        tester<test_task<void>>();
+        tester<test_task<int>>();
+        tester<test_task<std::array<int, 4>>>();
         
-        // The wrapper should be exactly the size of the thing it wraps.
-        expect(eq(sizeof(tagged_t), sizeof(raw_t)));
-        expect(eq(sizeof(pathological_t), sizeof(raw_t))); 
-        // It should also share the same alignment requirements.
-        expect(eq(alignof(tagged_t), alignof(raw_t)));
-        expect(eq(alignof(pathological_t), alignof(raw_t))); 
+        tester<asio::awaitable<void>>();
+        tester<asio::awaitable<int>>();
+        tester<asio::awaitable<std::array<int, 4>>>();
     };
 
 "check_alignment_glitch"_test = [] mutable {
