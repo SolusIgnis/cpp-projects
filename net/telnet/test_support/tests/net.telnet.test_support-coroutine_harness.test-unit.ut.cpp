@@ -214,6 +214,10 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probe.awaited, true));
     };
 
+    "test_task has sane layout"_test = [] mutable {
+        expect(gt(sizeof(test_task<void>), sizeof(std::coroutine_handle<>)));
+    };
+
     "nested coroutine await"_test = [] mutable {
         coroutine_probe probeA;
         coroutine_probe probeB;
