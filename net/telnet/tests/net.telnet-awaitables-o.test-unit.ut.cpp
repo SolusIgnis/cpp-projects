@@ -147,6 +147,16 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         expect(eq(alignof(pathological_t), alignof(raw_t))); 
     };
 
+"check_alignment_glitch"_test = [] {
+    using task_t = test_task<void>;
+    task_t tasks[2]; // Create an array
+    auto delta = reinterpret_cast<char*>(&tasks[1]) - reinterpret_cast<char*>(&tasks[0]);
+    
+    // If delta is 16 but sizeof is 8, Clang's internal math is broken.
+    expect(eq(static_cast<size_t>(delta), sizeof(task_t)));
+};
+
+
     // ============================================================
     // Await semantics
     // ============================================================
