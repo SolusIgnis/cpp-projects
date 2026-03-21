@@ -15,7 +15,7 @@ using namespace std::literals;
 
 struct test_tag {};
 
-tagged_awaitable<test_tag, int, test_task<int>> echo(int value)
+tagged_awaitable<test_tag, test_task<int>> echo(int value)
 {
     co_return value;
 }
@@ -58,14 +58,14 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         expect(eq(std::default_initializable<option_enablement_awaitable>, true));
         expect(eq(std::default_initializable<option_disablement_awaitable>, true));
         expect(eq(std::default_initializable<subnegotiation_awaitable>, true));
-        expect(eq(std::is_default_constructible_v<tagged_awaitable<test_tag, int, test_task<int>>>, true));
+        expect(eq(std::is_default_constructible_v<tagged_awaitable<test_tag, test_task<int>>>, true));
     };
 
     "tagged_awaitable constructs from awaitable"_test = [] mutable {
         coroutine_probe probe;
         auto coro = []() -> test_task<void> { co_return; };
 
-        tagged_awaitable<test_tag, void, test_task<void>> a{coro().set_probe(&probe)};
+        tagged_awaitable<test_tag, test_task<void>> a{coro().set_probe(&probe)};
 
         expect(eq(probe.done, false));
     };
@@ -76,8 +76,8 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
 
     "tagged_awaitables with identical tags and underlying value/awaitable types are the same type"_test = [] mutable {
         // Sanity check correlating with subsequent tests
-        using foo_t = tagged_awaitable<test_tag, void, test_task<void>>;
-        using bar_t = tagged_awaitable<test_tag, void, test_task<void>>;
+        using foo_t = tagged_awaitable<test_tag, test_task<void>>;
+        using bar_t = tagged_awaitable<test_tag, test_task<void>>;
         using baz_t = foo_t;
 
         // Verify they are the same type
@@ -92,8 +92,8 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         struct bar_tag {};
 
         // Applied to wrapped awaitables       
-        using foo_t = tagged_awaitable<foo_tag, void, test_task<void>>;
-        using bar_t = tagged_awaitable<bar_tag, void, test_task<void>>;
+        using foo_t = tagged_awaitable<foo_tag, test_task<void>>;
+        using bar_t = tagged_awaitable<bar_tag, test_task<void>>;
 
         // Verify they are not the same type
         expect(eq(std::same_as<foo_t, bar_t>, false));
@@ -106,8 +106,8 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     };
     
     "tagged_awaitables with different underlying awaitable types are distinct types"_test = [] mutable {
-        using foo_t = tagged_awaitable<test_tag, int, immediate_suspend_resume<int>>;
-        using bar_t = tagged_awaitable<test_tag, int, test_task<int>>;
+        using foo_t = tagged_awaitable<test_tag, immediate_suspend_resume<int>>;
+        using bar_t = tagged_awaitable<test_tag, test_task<int>>;
 
         // Verify they are not the same type
         expect(eq(std::same_as<foo_t, bar_t>, false));
@@ -188,7 +188,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable supports co_await by free function (ADL)"_test = [] mutable {
         int expected = 42;
         
-        using wrapper_t = tagged_awaitable<test_tag, int, test_awaiting_adl::awaitable_by_adl<int>>;
+        using wrapper_t = tagged_awaitable<test_tag, test_awaiting_adl::awaitable_by_adl<int>>;
         // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
         wrapper_t wrapped = test_awaiting_adl::awaitable_by_adl{expected};
         
@@ -200,7 +200,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable supports co_await of wrapped awaiter"_test = [] mutable {
         int expected = 42;
 
-        using wrapper_t = tagged_awaitable<test_tag, int, immediate_suspend_resume<int>>;
+        using wrapper_t = tagged_awaitable<test_tag, immediate_suspend_resume<int>>;
         // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
         wrapper_t wrapped = immediate_suspend_resume{expected};
         
@@ -241,11 +241,11 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         int mult     = 3;
         int expected = base * mult;
 
-        auto sub = [&]() -> tagged_awaitable<test_tag, int, test_task<int>> {
+        auto sub = [&]() -> tagged_awaitable<test_tag, test_task<int>> {
             co_return base;
         };
 
-        auto main = [&]() -> tagged_awaitable<test_tag, int, test_task<int>> {
+        auto main = [&]() -> tagged_awaitable<test_tag, test_task<int>> {
             co_return (co_await sub()) * mult;
         };
 
@@ -272,13 +272,13 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable preserves underlying awaitable's promise type"_test = [] mutable {
-        static_assert(std::same_as<test_task<int>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, int, test_task<int>>>::promise_type>);
-        expect(eq(std::same_as<test_task<int>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, int, test_task<int>>>::promise_type>, true));
-        expect(eq(std::same_as<test_task<void>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, void, test_task<void>>>::promise_type>, true));
+        static_assert(std::same_as<test_task<int>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, test_task<int>>>::promise_type>);
+        expect(eq(std::same_as<test_task<int>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, test_task<int>>>::promise_type>, true));
+        expect(eq(std::same_as<test_task<void>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, test_task<void>>>::promise_type>, true));
     };
     
     "tagged_awaitable usable as coroutine return type"_test = [] mutable {
-        auto tagged_echo_coro = [](int value) -> tagged_awaitable<test_tag, int, test_task<int>> { co_return value; };
+        auto tagged_echo_coro = [](int value) -> tagged_awaitable<test_tag, test_task<int>> { co_return value; };
         
         int expected = 42;
         
@@ -292,7 +292,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable propagates exceptions"_test = [] mutable {
-        auto wrapped = [] (int value) -> tagged_awaitable<test_tag, int, test_task<int>> { throw std::runtime_error("boom"); co_return value; };
+        auto wrapped = [] (int value) -> tagged_awaitable<test_tag, test_task<int>> { throw std::runtime_error("boom"); co_return value; };
 
         int expected = 0;
         int result   = expected;
