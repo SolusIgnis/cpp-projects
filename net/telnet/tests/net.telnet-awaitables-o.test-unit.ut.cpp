@@ -135,7 +135,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable has zero size overhead"_test = [] mutable {
-        using raw_t = test_task<void>;
+        using raw_t = asio_awaitable<void>;
         using tagged_t = tagged_awaitable<test_tag, asio::awaitable<void>>;
         using pathological_t = tagged_awaitable<std::array<int, 4>, asio::awaitable<void>>;
         
