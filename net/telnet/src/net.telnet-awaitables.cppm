@@ -40,19 +40,16 @@ namespace net::telnet::awaitables {
 
     //Delete free `operator co_await` for ADL purposes.
     void operator co_await(adl_lookup_tag) = delete;
-} //namespace net::telnet::awaitables
- 
-export namespace net::telnet::awaitables {
+
     /**
      * @brief Wrapper for an awaitable with a semantic tag for type safety.
      * @tparam Tag The semantic tag type.
-     * @tparam T The awaitable's value type (i.e. the "return type" of `co_await`ing it) (e.g., `void`, `std::size_t`).
-     * @tparam AwaitableT The underlying `Awaitable` type (default: `asio::awaitable<T>`).
+     * @tparam AwaitableT The underlying `Awaitable` type (eg: `asio::awaitable<void>`).
      * @remark Provides implicit conversion to/from the underlying awaitable and supports direct `co_await`.
      * @see `tags` namespace for semantic tag types, `:protocol_fsm`, `:internal`
      */
-    template<typename Tag, typename T, typename AwaitableT = asio::awaitable<T>>
-    class tagged_awaitable {
+    template<typename Tag, typename AwaitableT>
+    class tagged_awaitable_impl {
     private:
         using awaitable_type = AwaitableT; ///< Underlying awaitable type
 
@@ -168,13 +165,38 @@ export namespace net::telnet::awaitables {
             }
         }
 #endif
-    }; //class tagged_awaitable
+    }; //class tagged_awaitable_impl
 
     /**
      * @fn tagged_awaitable::tagged_awaitable(awaitable_type awaitable) noexcept
      * @param awaitable The awaitable to wrap.
      * @note Implicit conversion from the underlying type allows direct returns from Boost.Asio asynchronous operations.
      */
+     
+    // 1. The "Catch-All" Primary
+    template<typename Tag, typename T, typename... Extra>
+    class tagged_awaitable_selector;
+
+    // 2. Specialization A: You passed a Type (e.g., asio::awaitable<int>)
+    // Usage: tagged_awaitable<my_tag, asio::awaitable<int>>
+    template<typename Tag, typename FullType>
+    class tagged_awaitable_selector<Tag, FullType> {
+        using type = tagged_awaitable_impl<Tag, FullType>;
+    };
+
+    // 3. Specialization B: You passed a Template + Args
+    // Usage: tagged_awaitable<my_tag, asio::awaitable, int>
+    template<typename Tag, template<typename...> typename Templ, typename... Args>
+    class tagged_awaitable_selector<Tag, Templ, Args...> {
+        using type = tagged_awaitable_impl<Tag, Templ<Args...>>;
+    };
+} //namespace net::telnet::awaitables
+ 
+export namespace net::telnet::awaitables {
+    
+    // 4. The Exported Alias
+    template<typename Tag, typename... Args>
+    using tagged_awaitable = typename tagged_awaitable_selector<Tag, Args...>::type;
 
     /// @brief Semantic tag `struct`s to specialize `tagged_awaitable`. @see `tagged_awaitable`
     namespace tags {
@@ -193,28 +215,28 @@ export namespace net::telnet::awaitables {
      * @brief Awaitable type for option enablement handlers.
      * @see `tagged_awaitable`, `tags::option_enablement_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using option_enablement_awaitable = tagged_awaitable<tags::option_enablement_tag, void>;
+    using option_enablement_awaitable = tagged_awaitable<tags::option_enablement_tag, asio::awaitable, void>;
 
     /**
      * @typedef option_disablement_awaitable
      * @brief Awaitable type for option disablement handlers.
      * @see `tagged_awaitable`, `tags::option_disablement_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using option_disablement_awaitable = tagged_awaitable<tags::option_disablement_tag, void>;
+    using option_disablement_awaitable = tagged_awaitable<tags::option_disablement_tag, asio::awaitable, void>;
 
     /**
      * @typedef subnegotiation_awaitable
      * @brief Awaitable type for subnegotiation handlers.
      * @see `tagged_awaitable`, `tags::subnegotiation_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using subnegotiation_awaitable = tagged_awaitable<tags::subnegotiation_tag, std::tuple<option, std::vector<byte_t>>>;
+    using subnegotiation_awaitable = tagged_awaitable<tags::subnegotiation_tag, asio::awaitable, std::tuple<option, std::vector<byte_t>>>;
 } //namespace net::telnet::awaitables
 
 namespace std {
     ///@brief Partial specialization of `std::coroutine_traits` forwarding the promise type for a `tagged_awaitable` to the promise type of its underlying awaitable type.
-    template<typename Tag, typename T, typename AwaitableT, typename... Args>
+    template<typename Tag, typename AwaitableT, typename... Args>
     struct coroutine_traits<
-        net::telnet::awaitables::tagged_awaitable<Tag, T, AwaitableT>,
+        net::telnet::awaitables::tagged_awaitable_impl<Tag, AwaitableT>,
         Args...
     > {
         using promise_type = typename std::coroutine_traits<AwaitableT, Args...>::promise_type;
