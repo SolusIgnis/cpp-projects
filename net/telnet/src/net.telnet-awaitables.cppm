@@ -51,10 +51,10 @@ export namespace net::telnet::awaitables {
      * @remark Provides implicit conversion to/from the underlying awaitable and supports direct `co_await`.
      * @see `tags` namespace for semantic tag types, `:protocol_fsm`, `:internal`
      */
-    template<typename Tag, typename T, typename AwaitableT = asio::awaitable>
+    template<typename Tag, typename T, typename AwaitableT = asio::awaitable<T>>
     class tagged_awaitable {
     private:
-        using awaitable_type = AwaitableT<T...>; ///< Underlying awaitable type
+        using awaitable_type = AwaitableT; ///< Underlying awaitable type
 
         awaitable_type awaitable_; ///< The wrapped awaitable
 
