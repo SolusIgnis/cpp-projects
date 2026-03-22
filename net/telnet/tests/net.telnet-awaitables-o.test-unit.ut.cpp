@@ -28,7 +28,7 @@ protected:
 
 public:
     constexpr trivial_awaiter_base() = default;
-    constexpr trivial_awaiter_base(T val) noexcept(std::is_nothrow_constructible_v<T>)
+    constexpr trivial_awaiter_base(T val) noexcept(std::is_nothrow_constructible_v<T>) requires (!is_void_v<T>)
         : storage_(val) {}
 
     constexpr auto await_resume() const noexcept {
