@@ -301,7 +301,7 @@ suite coroutine_harness_tests = [] mutable {
 
     "as_task forwards value (ready path)"_test = [] mutable {
         int expected = 55;
-        auto result = run(as_task<int>(ready_awaiter{expected}));
+        auto result = run(as_task<int>(dummies::ready_awaiter{expected}));
         expect(eq(result, expected));
     };
 
@@ -310,7 +310,7 @@ suite coroutine_harness_tests = [] mutable {
 
         coroutine_probe probe;
 
-        auto task = as_task<int>(immediate_awaiter{expected});
+        auto task = as_task<int>(dummies::immediate_awaiter{expected});
         task.set_probe(&probe);
 
         auto result = run(task);
