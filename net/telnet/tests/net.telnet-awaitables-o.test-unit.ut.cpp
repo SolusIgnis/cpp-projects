@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Unit tests for net.telnet:awaitables
 
-#include <asio.hpp>
-
 import net.telnet;
 import net.telnet.test_support;
 import ut;
