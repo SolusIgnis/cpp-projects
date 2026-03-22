@@ -430,7 +430,7 @@ suite coroutine_dummy_tests = [] mutable {
     "immediate_awaiter<void> suspends and resumes"_test = [] mutable {
         coroutine_probe probe;
 
-        auto task = as_task<void>(dummies::immediate_awaiter<void>);
+        auto task = as_task<void>(dummies::immediate_awaiter<void>{});
 
         task.set_probe(&probe);
 
