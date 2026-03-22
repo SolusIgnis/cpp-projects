@@ -18,6 +18,52 @@ tagged_awaitable<test_tag, test_task<int>> echo(int value)
     co_return value;
 }
 
+template<typename T>
+struct trivial_awaiter_base {
+protected:
+    // Only store value if T is not void
+    std::conditional_t<std::is_void_v<T>, std::monostate, T> storage_{};
+
+public:
+    constexpr trivial_awaiter_base() = default;
+    constexpr trivial_awaiter_base(T val) noexcept(std::is_nothrow_constructible<T>)
+        : storage_(val) {}
+
+    constexpr auto await_resume() const noexcept {
+        if constexpr (std::is_void_v<T>) {
+            return; // void optimization
+        } else {
+            return storage_;
+        }
+    }
+};
+
+// ready_awaiter now only defines ready/suspend
+template<typename T>
+struct ready_awaiter : trivial_awaiter_base<T> {
+    using base = trivial_awaiter_base<T>;
+    using base::base;
+
+    constexpr bool await_ready() const noexcept { return true; }
+
+    [[noreturn]] std::coroutine_handle<> await_suspend(std::coroutine_handle<>) const {
+        throw std::logic_error("ready_awaiter had await_suspend called: contract violation");
+    }
+};
+
+// immediate_awaiter now only defines ready/suspend
+template<typename T>
+struct immediate_awaiter : trivial_awaiter_base<T> {
+    using base = trivial_awaiter_base<T>;
+    using base::base;
+
+    constexpr bool await_ready() const noexcept { return false; }
+
+    std::coroutine_handle<> await_suspend(std::coroutine_handle<> caller) const noexcept {
+        return caller; // symmetric transfer → resume caller right away
+    }
+};
+
 // Trivial awaiter that is always ready and avoids suspension
 template<typename T>
 struct always_ready {
@@ -27,7 +73,7 @@ struct always_ready {
 
     // If the compiler (or wrapper) ignores await_ready, we blow up clearly.
     [[noreturn]] std::coroutine_handle<> await_suspend(std::coroutine_handle<>) const {
-        throw std::logic_error("always_ready had await_suspend called: contract violation");
+        throw std::logic_error("ready_awaiter had await_suspend called: contract violation");
     }
 
     constexpr auto await_resume() const noexcept { return value; }
@@ -58,7 +104,7 @@ namespace test_awaiting_adl {
     template<typename T>
     auto operator co_await(awaitable_by_adl<T> dummy)
     {
-        return always_ready<T>{dummy.value};
+        return ready_awaiter<T>{dummy.value};
     }
 } //namespace test_awaiting_adl
 
@@ -119,7 +165,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     };
     
     "tagged_awaitables with different underlying awaitable types are distinct types"_test = [] mutable {
-        using foo_t = tagged_awaitable<test_tag, immediate_suspend_resume<int>>;
+        using foo_t = tagged_awaitable<test_tag, immediate_awaiter<int>>;
         using bar_t = tagged_awaitable<test_tag, test_task<int>>;
 
         // Verify they are not the same type
@@ -165,11 +211,11 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         tester.operator()<test_task<int>>();
         tester.operator()<test_task<std::array<int, 4>>>();
 
-        tester.operator()<always_ready<int>>();
-        tester.operator()<always_ready<std::array<int, 4>>>();
+        tester.operator()<ready_awaiter<int>>();
+        tester.operator()<ready_awaiter<std::array<int, 4>>>();
 
-        tester.operator()<immediate_suspend_resume<int>>();
-        tester.operator()<immediate_suspend_resume<std::array<int, 4>>>();
+        tester.operator()<immediate_awaiter<int>>();
+        tester.operator()<immediate_awaiter<std::array<int, 4>>>();
 
         tester.operator()<test_awaiting_adl::awaitable_by_adl<int>>();
         tester.operator()<test_awaiting_adl::awaitable_by_adl<std::array<int, 4>>>();
@@ -228,9 +274,9 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable supports co_await of wrapped awaiter"_test = [] mutable {
         int expected = 42;
 
-        using wrapper_t = tagged_awaitable<test_tag, immediate_suspend_resume<int>>;
+        using wrapper_t = tagged_awaitable<test_tag, immediate_awaiter<int>>;
         // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
-        wrapper_t wrapped = immediate_suspend_resume{expected};
+        wrapper_t wrapped = immediate_awaiter{expected};
         
         expect(eq(run(as_task<int>(wrapped)), expected));
         expect(eq(run(as_task<int>(std::as_const(wrapped))), expected));
