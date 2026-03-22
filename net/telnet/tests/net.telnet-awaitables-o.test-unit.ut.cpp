@@ -156,7 +156,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         tester.operator()<asio::awaitable<int>>();
         tester.operator()<asio::awaitable<std::array<int, 4>>>();
     };
-#ifdef 0
+#if 0
 "check_alignment_glitch"_test = [] mutable {
     using task_t = test_task<void>;
     task_t tasks[2]; // Create an array
