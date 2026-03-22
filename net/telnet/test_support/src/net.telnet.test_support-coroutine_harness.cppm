@@ -350,7 +350,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         
         public:
             constexpr trivial_awaiter_base() = default;
-            constexpr trivial_awaiter_base(storage_t val) noexcept(std::is_nothrow_constructible_v<T>) requires (!std::is_void_v<T>)
+            constexpr trivial_awaiter_base(storage_t val) noexcept(std::is_nothrow_constructible_v<storage_t>) requires (!std::is_void_v<T>)
                 : storage_(val) {}
         
             constexpr auto await_resume() const noexcept {
@@ -410,6 +410,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         } //namespace adl
     } //namespace dummies
 
+    ///@brief Wrap a trivial awaiter or non-coroutine awaitable in a `test_task` so that it can be run as a task.
     template<typename T, typename Awaitable>
     auto as_task(Awaitable&& awaitable) -> test_task<T>
     {

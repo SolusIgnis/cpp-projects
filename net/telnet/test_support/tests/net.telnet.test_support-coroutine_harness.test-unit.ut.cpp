@@ -294,6 +294,170 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeE.destroyed, false));
         expect(eq(static_cast<int>(probeE.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
     };
+
+    // ============================================================
+    // as_task adapter
+    // ============================================================
+
+    "as_task forwards value (ready path)"_test = [] mutable {
+        int expected = 55;
+        auto result = run(as_task<int>(ready_awaiter{expected}));
+        expect(eq(result, expected));
+    };
+
+    "as_task preserves suspension semantics"_test = [] mutable {
+        int expected = 10;
+
+        coroutine_probe probe;
+
+        auto task = as_task<int>(immediate_awaiter{expected});
+        task.set_probe(&probe);
+
+        auto result = run(task);
+
+        expect(eq(result, expected));
+        expect(eq(probe.suspended, true));
+        expect(eq(probe.resumed, true));
+    };
+
+    "as_task propagates exception from await_resume"_test = [] mutable {
+        struct throwing_awaiter {
+            bool await_ready() const noexcept { return true; }
+            void await_suspend(std::coroutine_handle<>) const noexcept {}
+            int await_resume() {
+                throw std::runtime_error("boom");
+            }
+        };
+
+        bool threw = false;
+
+        try {
+            [[maybe_unused]] auto result =
+                run(as_task<int>(throwing_awaiter{}));
+        } catch (const std::runtime_error&) {
+            threw = true;
+        }
+
+        expect(eq(threw, true));
+    };
+};
+
+suite coroutine_dummy_tests = [] mutable {
+    // ============================================================
+    // trivial_awaiter_base
+    // ============================================================
+
+    "trivial_awaiter_base returns stored value"_test = [] mutable {
+        int expected = 42;
+        dummies::trivial_awaiter_base<int> base{expected};
+        expect(eq(base.await_resume(), expected));
+    };
+
+    "trivial_awaiter_base<void> is no-op"_test = [] mutable {
+        dummies::trivial_awaiter_base<void> base;
+
+        bool threw = false;
+        try {
+            base.await_resume();
+        } catch (...) {
+            threw = true;
+        }
+        expect(eq(threw, false));
+        expect(eq(std::is_void_v<decltype(base.await_resume())>, true));
+    };
+
+    // ============================================================
+    // ready_awaiter
+    // ============================================================
+
+    "ready_awaiter await_suspend throws (contract enforcement)"_test = [] mutable {
+        dummies::ready_awaiter<int> awaiter{};
+
+        bool threw = false;
+        try {
+            awaiter.await_suspend(std::noop_coroutine());
+        } catch (const std::logic_error&) {
+            threw = true;
+        }
+        expect(eq(threw, true));
+    };
+
+    "ready_awaiter returns value without suspension"_test = [] mutable {
+        int expected = 42;
+
+        coroutine_probe probe;
+
+        auto task = as_task<int>(dummies::ready_awaiter{expected});
+        task.set_probe(&probe);
+
+        auto result = run(task);
+
+        expect(eq(result, expected));
+        expect(eq(probe.suspended, false));
+    };
+
+    "ready_awaiter<void> completes without suspension"_test = [] mutable {
+        coroutine_probe probe;
+
+        auto task = as_task<void>(dummies::ready_awaiter<void>{});
+        task.set_probe(&probe);
+
+        run(task);
+
+        expect(eq(probe.suspended, false));
+    };
+
+    // ============================================================
+    // immediate_awaiter
+    // ============================================================
+
+    "immediate_awaiter suspends and resumes"_test = [] mutable {
+        int expected = 7;
+
+        coroutine_probe probe;
+
+        auto task = as_task<int>(dummies::immediate_awaiter{expected});
+
+        task.set_probe(&probe);
+
+        auto result = run(task);
+
+        expect(eq(result, expected);
+        expect(eq(probe.suspended, true));
+        expect(eq(probe.done, true));
+    };
+
+    "immediate_awaiter<void> suspends and resumes"_test = [] mutable {
+        coroutine_probe probe;
+
+        auto task = as_task<void>(dummies::immediate_awaiter<void>);
+
+        task.set_probe(&probe);
+
+        run(task);
+
+        expect(eq(probe.suspended, true));
+        expect(eq(probe.done, true));
+    };
+
+    // ============================================================
+    // ADL awaitable
+    // ============================================================
+
+    "adl awaitable resolves via operator co_await"_test = [] mutable {
+        int expected = 42;
+
+        coroutine_probe probe;
+
+        auto task = as_task<int>(dummies::adl::awaitable_by_adl<int>{expected});
+
+        task.set_probe(&probe);
+
+        auto result = run(task);
+
+        expect(eq(result, expected));
+        expect(eq(probe.suspended, false)); // uses ready_awaiter
+    };
 };
 
 int main() {}
