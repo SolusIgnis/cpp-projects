@@ -20,6 +20,21 @@ tagged_awaitable<test_tag, test_task<int>> echo(int value)
     co_return value;
 }
 
+// Trivial awaiter that is always ready and avoids suspension
+template<typename T>
+struct always_ready {
+    T value{};
+    
+    constexpr bool await_ready() const noexcept { return true; }
+
+    // If the compiler (or wrapper) ignores await_ready, we blow up clearly.
+    [[noreturn]] std::coroutine_handle<> await_suspend(std::coroutine_handle<>) const {
+        throw std::logic_error("always_ready had await_suspend called: contract violation");
+    }
+
+    constexpr auto await_resume() const noexcept { return value; }
+}:
+
 // Trivial awaiter that suspends once and immediately resumes via symmetric transfer
 template<typename T>
 struct immediate_suspend_resume {
@@ -152,6 +167,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         tester.operator()<test_task<int>>();
         tester.operator()<test_task<std::array<int, 4>>>();
 
+        tester.operator()<always_ready>();
         tester.operator()<immediate_suspend_resume>();
         tester.operator()<test_awaiting_adl::awaitable_by_adl>();
 
