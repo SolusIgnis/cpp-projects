@@ -24,11 +24,12 @@ template<typename T>
 struct trivial_awaiter_base {
 protected:
     // Only store value if T is not void
-    std::conditional_t<std::is_void_v<T>, std::monostate, T> storage_{};
+    using storage_t = std::conditional_t<std::is_void_v<T>, std::monostate, T>;
+    storage_t storage_{};
 
 public:
     constexpr trivial_awaiter_base() = default;
-    constexpr trivial_awaiter_base(T val) noexcept(std::is_nothrow_constructible_v<T>) requires (!std::is_void_v<T>)
+    constexpr trivial_awaiter_base(storage_t val) noexcept(std::is_nothrow_constructible_v<T>) requires (!std::is_void_v<T>)
         : storage_(val) {}
 
     constexpr auto await_resume() const noexcept {
