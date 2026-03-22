@@ -178,13 +178,13 @@ export namespace net::telnet::awaitables {
     /// @brief Semantic tag `struct`s to specialize `tagged_awaitable`. @see `tagged_awaitable`
     namespace tags {
         /// @brief Tag to specialize `tagged_awaitable` for option enablement handlers. @see `tagged_awaitable`
-        struct option_enablement_tag {};
+        struct option_enablement_tag;
 
         /// @brief Tag to specialize `tagged_awaitable` for option disablement handlers. @see `tagged_awaitable`
-        struct option_disablement_tag {};
+        struct option_disablement_tag;
 
         /// @brief Tag to specialize `tagged_awaitable` for subnegotiation handlers. @see `tagged_awaitable`
-        struct subnegotiation_tag {};
+        struct subnegotiation_tag;
     } //namespace tags
 
     /**
