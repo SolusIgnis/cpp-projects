@@ -167,9 +167,9 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         tester.operator()<test_task<int>>();
         tester.operator()<test_task<std::array<int, 4>>>();
 
-        tester.operator()<always_ready>();
-        tester.operator()<immediate_suspend_resume>();
-        tester.operator()<test_awaiting_adl::awaitable_by_adl>();
+        tester.operator()<always_ready<int>>();
+        tester.operator()<immediate_suspend_resume<int>>();
+        tester.operator()<test_awaiting_adl::awaitable_by_adl<int>>();
 
         //tester.operator()<asio::awaitable<void>>();
         //tester.operator()<asio::awaitable<int>>();
