@@ -339,6 +339,77 @@ export namespace net::telnet::test_support::coroutine_harness {
         void return_void() noexcept { this->value.emplace(); }
     };
 
+    namespace dummies {
+        ///@brief Base class for trivial awaiters handling storage and value return from resume.
+        template<typename T>
+        struct trivial_awaiter_base {
+        protected:
+            // Only store value if T is not void
+            using storage_t = std::conditional_t<std::is_void_v<T>, std::monostate, T>;
+            storage_t storage_{};
+        
+        public:
+            constexpr trivial_awaiter_base() = default;
+            constexpr trivial_awaiter_base(storage_t val) noexcept(std::is_nothrow_constructible_v<T>) requires (!std::is_void_v<T>)
+                : storage_(val) {}
+        
+            constexpr auto await_resume() const noexcept {
+                if constexpr (std::is_void_v<T>) {
+                    return; // void optimization
+                } else {
+                    return storage_;
+                }
+            }
+        };
+        
+        ///@brief Trivial awaiter that is always ready.
+        template<typename T>
+        struct ready_awaiter : trivial_awaiter_base<T> {
+            using base = trivial_awaiter_base<T>;
+            using base::base;
+        
+            constexpr bool await_ready() const noexcept { return true; }
+        
+            [[noreturn]] std::coroutine_handle<> await_suspend(std::coroutine_handle<>) const {
+                throw std::logic_error("ready_awaiter had await_suspend called: contract violation");
+            }
+        };
+        
+        template<typename T>
+        ready_awaiter(T) -> ready_awaiter<T>;
+        
+        ///@brief Trivial awaiter that suspends and immediately resumes via symmetric transfer.
+        template<typename T>
+        struct immediate_awaiter : trivial_awaiter_base<T> {
+            using base = trivial_awaiter_base<T>;
+            using base::base;
+        
+            constexpr bool await_ready() const noexcept { return false; }
+        
+            std::coroutine_handle<> await_suspend(std::coroutine_handle<> caller) const noexcept {
+                return caller; // symmetric transfer → resume caller right away
+            }
+        };
+        
+        template<typename T>
+        immediate_awaiter(T) -> immediate_awaiter<T>;
+    
+        namespace adl {
+            ///@brief Dummy type made awaitable by free `operator co_await`
+            template<typename T> requires (!std::is_void_v<T>)
+            struct awaitable_by_adl {
+                T value{};
+            };
+        
+            ///@brief `operator co_await` for the dummy. @see `awaitable_by_adl`
+            template<typename T>
+            auto operator co_await(awaitable_by_adl<T> dummy)
+            {
+                return ready_awaiter<T>{dummy.value};
+            }
+        } //namespace adl
+    } //namespace dummies
+
     template<typename T, typename Awaitable>
     auto as_task(Awaitable&& awaitable) -> test_task<T>
     {
