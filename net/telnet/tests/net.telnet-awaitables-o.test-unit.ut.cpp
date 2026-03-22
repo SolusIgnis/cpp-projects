@@ -148,13 +148,13 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
             expect(eq(alignof(raw_t), alignof(pathological_t))); 
         };
 
-        tester<test_task<void>>();
-        tester<test_task<int>>();
-        tester<test_task<std::array<int, 4>>>();
+        tester.operator()<test_task<void>>();
+        tester.operator()<test_task<int>>();
+        tester.operator()<test_task<std::array<int, 4>>>();
         
-        tester<asio::awaitable<void>>();
-        tester<asio::awaitable<int>>();
-        tester<asio::awaitable<std::array<int, 4>>>();
+        tester.operator()<asio::awaitable<void>>();
+        tester.operator()<asio::awaitable<int>>();
+        tester.operator()<asio::awaitable<std::array<int, 4>>>();
     };
 
 "check_alignment_glitch"_test = [] mutable {
