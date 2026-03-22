@@ -190,12 +190,15 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         tester.operator()<test_task<int>>();
         tester.operator()<test_task<std::array<int, 4>>>();
 
+        tester.operator()<dummies::ready_awaiter<void>>();
         tester.operator()<dummies::ready_awaiter<int>>();
         tester.operator()<dummies::ready_awaiter<std::array<int, 4>>>();
 
+        tester.operator()<dummies::immediate_awaiter<void>>();
         tester.operator()<dummies::immediate_awaiter<int>>();
         tester.operator()<dummies::immediate_awaiter<std::array<int, 4>>>();
 
+        tester.operator()<dummies::adl::awaitable_by_adl<void>>();
         tester.operator()<dummies::adl::awaitable_by_adl<int>>();
         tester.operator()<dummies::adl::awaitable_by_adl<std::array<int, 4>>>();
     };
