@@ -259,6 +259,23 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         expect(eq(probe.awaited, true));
         expect(eq(probe.done, true));
     };
+    
+    "tagged_awaitable propagates destruction to underlying awaitable"_test = [] mutable {
+        coroutine_probe probe;
+
+        {
+            //Wrap a task that hasn't started or finished
+            auto wrapped = echo({});
+            wrapped.get().set_probe(&probe);
+
+            expect(eq(probe.done, false));
+            expect(eq(probe.destroyed, false));
+        } //`wrapped` goes out of scope here. 
+
+        //Verify the destruction worked
+        expect(eq(probe.done, false));
+        expect(eq(probe.destroyed, true)); 
+    };
 
     // ============================================================
     // Nested awaitable composition
