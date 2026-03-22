@@ -422,7 +422,7 @@ suite coroutine_dummy_tests = [] mutable {
 
         auto result = run(task);
 
-        expect(eq(result, expected);
+        expect(eq(result, expected));
         expect(eq(probe.suspended, true));
         expect(eq(probe.done, true));
     };
