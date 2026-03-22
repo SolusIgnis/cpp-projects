@@ -51,6 +51,9 @@ struct ready_awaiter : trivial_awaiter_base<T> {
     }
 };
 
+template<typename T>
+ready_awaiter(T) -> ready_awaiter<T>;
+
 // immediate_awaiter now only defines ready/suspend
 template<typename T>
 struct immediate_awaiter : trivial_awaiter_base<T> {
@@ -63,6 +66,9 @@ struct immediate_awaiter : trivial_awaiter_base<T> {
         return caller; // symmetric transfer → resume caller right away
     }
 };
+
+template<typename T>
+immediate_awaiter(T) -> immediate_awaiter<T>;
 
 // Trivial awaiter that is always ready and avoids suspension
 template<typename T>
@@ -94,7 +100,7 @@ struct immediate_suspend_resume {
     constexpr auto await_resume() const noexcept { return value; }
 };
 
-namespace test_awaiting_adl {
+namespace adl {
     // Dummy type made awaitable by free operator co_await
     template<typename T>
     struct awaitable_by_adl {
@@ -106,7 +112,7 @@ namespace test_awaiting_adl {
     {
         return ready_awaiter<T>{dummy.value};
     }
-} //namespace test_awaiting_adl
+} //namespace adl
 
 suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
@@ -217,8 +223,8 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         tester.operator()<immediate_awaiter<int>>();
         tester.operator()<immediate_awaiter<std::array<int, 4>>>();
 
-        tester.operator()<test_awaiting_adl::awaitable_by_adl<int>>();
-        tester.operator()<test_awaiting_adl::awaitable_by_adl<std::array<int, 4>>>();
+        tester.operator()<adl::awaitable_by_adl<int>>();
+        tester.operator()<adl::awaitable_by_adl<std::array<int, 4>>>();
     };
 
     // ============================================================
@@ -262,9 +268,9 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable supports co_await by free function (ADL)"_test = [] mutable {
         int expected = 42;
         
-        using wrapper_t = tagged_awaitable<test_tag, test_awaiting_adl::awaitable_by_adl<int>>;
+        using wrapper_t = tagged_awaitable<test_tag, adl::awaitable_by_adl<int>>;
         // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
-        wrapper_t wrapped = test_awaiting_adl::awaitable_by_adl{expected};
+        wrapper_t wrapped = adl::awaitable_by_adl{expected};
         
         expect(eq(run(as_task<int>(wrapped)), expected));
         expect(eq(run(as_task<int>(std::as_const(wrapped))), expected));
