@@ -33,7 +33,7 @@ struct always_ready {
     }
 
     constexpr auto await_resume() const noexcept { return value; }
-}:
+};
 
 // Trivial awaiter that suspends once and immediately resumes via symmetric transfer
 template<typename T>
