@@ -42,7 +42,7 @@ After calling `run()`, you can assert against these boolean flags:
 ---
 
 ## 3. Key Feature: `test_task` is Awaitable
-A `test_task` is a fully compatible **Awaitable**. This means you can compose complex logic by having one coroutine `co_await` another. The harness handles the nested execution and tracking automatically.
+A `test_task` is a fully compatible **awaitable**. This means you can compose complex logic by having one coroutine `co_await` another. The harness handles the nested execution and tracking automatically.
 
 ```cpp
 auto sub_task() -> test_task<int> {
@@ -89,3 +89,43 @@ void test_example() {
 * **​Double Await:** Throws `logic_error` if you try to await the same task twice.
 ​* **Dangling Frames:** Throws `logic_error` if a coroutine is destroyed before finishing without a probe attached.
 ​* **Strict Moves:** Tracks if a task was moved, helping you verify that your async factory functions are behaving correctly.
+
+## 6. Test Dummies (`namespace dummies`)
+When you need to test how a component (like a wrapper or a registry) interacts with the C++ coroutine protocol, you can use these "Trivial Awaiters" instead of writing full coroutines.
+
+### `ready_awaiter<T>`
+An awaiter that is **always ready**. It never suspends the calling coroutine.
+* **Validation:** If it is accidentally suspended, it throws a `std::logic_error`.
+* **Usage:** `co_await ready_awaiter<int>{42};`
+
+### `immediate_awaiter<T>`
+An awaiter that **suspends once** and then immediately resumes the caller.
+* **Validation:** It uses *Symmetric Transfer* to resume the caller, making it a perfect tool for testing your code's suspension/resumption logic and stack safety.
+* **Usage:** `co_await immediate_awaiter<void>{};`
+
+### `adl::awaitable_by_adl<T>`
+A dummy type that is made awaitable via a free-function `operator co_await` in its own namespace.
+* **Validation:** Use this to verify that your wrappers correctly discover awaiters via Argument-Dependent Lookup (ADL) rather than just looking for member functions.
+
+## 7. Helper: `as_task<T>(awaitable)`
+This utility function template adapts any **awaitable** (like the test dummies) into a `test_task<T>`. This is extremely useful when you want to use the `run()` function on something that isn't a coroutine itself.
+
+The adapter uses **perfect forwarding** (`std::forward`) to preserve the value category of the awaitable. If you pass an **rvalue** (a temporary), the task will move it into the `co_await` expression instead of copying.
+
+```cpp
+using namespace net::telnet::test_support::coroutine_harness;
+using namespace net::telnet::test_support::coroutine_harness::dummies;
+
+void test_registry() {
+    // 1. Create a simple 'Ready' awaiter
+    auto awaiter = ready_awaiter<int>{42};
+
+    // 2. Wrap it in a task so 'run()' can execute it
+    auto task = as_task<int>(awaiter);
+
+    // 3. Execute synchronously
+    int result = run(task);
+
+    assert(result == 42);
+}
+```
