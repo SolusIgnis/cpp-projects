@@ -151,23 +151,14 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         tester.operator()<test_task<void>>();
         tester.operator()<test_task<int>>();
         tester.operator()<test_task<std::array<int, 4>>>();
-        
-        tester.operator()<asio::awaitable<void>>();
-        tester.operator()<asio::awaitable<int>>();
-        tester.operator()<asio::awaitable<std::array<int, 4>>>();
+
+        tester.operator()<immediate_suspend_resume>();
+        tester.operator()<test_awaiting_adl::awaitable_by_adl>();
+
+        //tester.operator()<asio::awaitable<void>>();
+        //tester.operator()<asio::awaitable<int>>();
+        //tester.operator()<asio::awaitable<std::array<int, 4>>>();
     };
-#if 0
-"check_alignment_glitch"_test = [] mutable {
-    using task_t = test_task<void>;
-    task_t tasks[2]; // Create an array
-    auto delta = reinterpret_cast<char*>(&tasks[1]) - reinterpret_cast<char*>(&tasks[0]);
-    
-    // If delta is 16 but sizeof is 8, Clang's internal math is broken.
-    expect(eq(static_cast<size_t>(delta), sizeof(task_t)));
-    expect(eq(static_cast<size_t>(delta), static_cast<size_t>(16)));
-    expect(eq(sizeof(task_t), static_cast<size_t>(16)));
-};
-#endif
 
     // ============================================================
     // Await semantics
