@@ -92,24 +92,23 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: Medium (code reuse, consistency, and future extensibility).
   - **Estimated Effort**: Completed in 0 days. (Prior refactoring made this unnecessary/impractical.)
   
-08. [ ] **Implement Tagged Predicates for telnet::option Local/Remote Enablement Predicates**:
-  - **Task**:
+08. [ ] **Implement Tagged Callables for telnet::option Local/Remote Enablement Predicates**:
+  - **Task**: Implement `tagged_callable` in `net.telnet:callables` partition with nested type aliases `telnet::option::local_predicate` and `telnet::option::remote_predicate`.
   - **Steps**:
-    - Define a nested template class for `option::enable_predicate` to own the `std::function`.
-    - Implement a function call operator to invoke the stored function.
-    - Use tags for local and remote with `using` aliases to create distinct types for the local predicate and remote predicate.
+    - Define a class template `tagged_callable` to attach semantic tags to callables (functions, `std::function`s, etc.).
+    - Use tags for local and remote (declared in `telnet::callables::tags`) with `using` aliases (nested in `telnet::option`) to create distinct types for the local predicate and remote predicate.
     - Update constructor call sites to use the new types.
   - **Dependencies**: Affects `:options`, `:protocol_config`.
   - **Priority**: Medium (cleans up telnet::option constructor parameters)
   - **Estimated Effort**: 1 day.
   
-09. [ ] **Investigate TaggedAwaitable Tags**:
+09. [✔️] **Investigate TaggedAwaitable Tags** (Completed March 21, 2026):
   - **Task**: Investigate whether the tag types for TaggedAwaitable need to be declared or defined to be used.
   - **Steps**:
     - See if the tag types work as incomplete types or if they need definitions.
   - **Dependencies**: `:awaitables`
   - **Priority**: Low (curiosity and minor redundancy reduction)
-  - **Estimated Effort**: 1 hour
+  - **Estimated Effort**: Completed in 15 minutes.
 
 ### Phase 7 Milestones
 01. [ ] **Implement a strand in `telnet::stream`**:
