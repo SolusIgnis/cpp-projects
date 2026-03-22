@@ -18,6 +18,8 @@ tagged_awaitable<test_tag, test_task<int>> echo(int value)
     co_return value;
 }
 
+namespace dummies {
+///@brief Base class for trivial awaiters handling storage and value return from resume.
 template<typename T>
 struct trivial_awaiter_base {
 protected:
@@ -38,7 +40,7 @@ public:
     }
 };
 
-// ready_awaiter now only defines ready/suspend
+///@brief Trivial awaiter that is always ready.
 template<typename T>
 struct ready_awaiter : trivial_awaiter_base<T> {
     using base = trivial_awaiter_base<T>;
@@ -54,7 +56,7 @@ struct ready_awaiter : trivial_awaiter_base<T> {
 template<typename T>
 ready_awaiter(T) -> ready_awaiter<T>;
 
-// immediate_awaiter now only defines ready/suspend
+///@brief Trivial awaiter that suspends and immediately resumes via symmetric transfer.
 template<typename T>
 struct immediate_awaiter : trivial_awaiter_base<T> {
     using base = trivial_awaiter_base<T>;
@@ -70,36 +72,6 @@ struct immediate_awaiter : trivial_awaiter_base<T> {
 template<typename T>
 immediate_awaiter(T) -> immediate_awaiter<T>;
 
-// Trivial awaiter that is always ready and avoids suspension
-template<typename T>
-struct always_ready {
-    T value{};
-    
-    constexpr bool await_ready() const noexcept { return true; }
-
-    // If the compiler (or wrapper) ignores await_ready, we blow up clearly.
-    [[noreturn]] std::coroutine_handle<> await_suspend(std::coroutine_handle<>) const {
-        throw std::logic_error("ready_awaiter had await_suspend called: contract violation");
-    }
-
-    constexpr auto await_resume() const noexcept { return value; }
-};
-
-// Trivial awaiter that suspends once and immediately resumes via symmetric transfer
-template<typename T>
-struct immediate_suspend_resume {
-    T value{};
-    
-    constexpr bool await_ready() const noexcept { return false; }
-
-    std::coroutine_handle<> await_suspend(std::coroutine_handle<> caller) const noexcept
-    {
-        return caller; // symmetric transfer → resume caller right away
-    }
-
-    constexpr auto await_resume() const noexcept { return value; }
-};
-
 namespace adl {
     // Dummy type made awaitable by free operator co_await
     template<typename T>
@@ -113,6 +85,7 @@ namespace adl {
         return ready_awaiter<T>{dummy.value};
     }
 } //namespace adl
+} //namespace dummies
 
 suite net_telnet_awaitables_unit_tests = [] mutable {
     // ============================================================
@@ -171,7 +144,7 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     };
     
     "tagged_awaitables with different underlying awaitable types are distinct types"_test = [] mutable {
-        using foo_t = tagged_awaitable<test_tag, immediate_awaiter<int>>;
+        using foo_t = tagged_awaitable<test_tag, dummies::immediate_awaiter<int>>;
         using bar_t = tagged_awaitable<test_tag, test_task<int>>;
 
         // Verify they are not the same type
@@ -217,14 +190,14 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         tester.operator()<test_task<int>>();
         tester.operator()<test_task<std::array<int, 4>>>();
 
-        tester.operator()<ready_awaiter<int>>();
-        tester.operator()<ready_awaiter<std::array<int, 4>>>();
+        tester.operator()<dummies::ready_awaiter<int>>();
+        tester.operator()<dummies::ready_awaiter<std::array<int, 4>>>();
 
-        tester.operator()<immediate_awaiter<int>>();
-        tester.operator()<immediate_awaiter<std::array<int, 4>>>();
+        tester.operator()<dummies::immediate_awaiter<int>>();
+        tester.operator()<dummies::immediate_awaiter<std::array<int, 4>>>();
 
-        tester.operator()<adl::awaitable_by_adl<int>>();
-        tester.operator()<adl::awaitable_by_adl<std::array<int, 4>>>();
+        tester.operator()<dummies::adl::awaitable_by_adl<int>>();
+        tester.operator()<dummies::adl::awaitable_by_adl<std::array<int, 4>>>();
     };
 
     // ============================================================
@@ -268,9 +241,9 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable supports co_await by free function (ADL)"_test = [] mutable {
         int expected = 42;
         
-        using wrapper_t = tagged_awaitable<test_tag, adl::awaitable_by_adl<int>>;
+        using wrapper_t = tagged_awaitable<test_tag, dummies::adl::awaitable_by_adl<int>>;
         // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
-        wrapper_t wrapped = adl::awaitable_by_adl{expected};
+        wrapper_t wrapped = dummies::adl::awaitable_by_adl{expected};
         
         expect(eq(run(as_task<int>(wrapped)), expected));
         expect(eq(run(as_task<int>(std::as_const(wrapped))), expected));
@@ -280,9 +253,9 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
     "tagged_awaitable supports co_await of wrapped awaiter"_test = [] mutable {
         int expected = 42;
 
-        using wrapper_t = tagged_awaitable<test_tag, immediate_awaiter<int>>;
+        using wrapper_t = tagged_awaitable<test_tag, dummies::immediate_awaiter<int>>;
         // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
-        wrapper_t wrapped = immediate_awaiter{expected};
+        wrapper_t wrapped = dummies::immediate_awaiter{expected};
         
         expect(eq(run(as_task<int>(wrapped)), expected));
         expect(eq(run(as_task<int>(std::as_const(wrapped))), expected));
