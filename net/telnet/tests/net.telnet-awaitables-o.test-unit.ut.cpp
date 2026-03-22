@@ -58,7 +58,7 @@ namespace test_awaiting_adl {
     template<typename T>
     auto operator co_await(awaitable_by_adl<T> dummy)
     {
-        return immediate_suspend_resume<T>{dummy.value};
+        return always_ready<T>{dummy.value};
     }
 } //namespace test_awaiting_adl
 
@@ -166,12 +166,13 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         tester.operator()<test_task<std::array<int, 4>>>();
 
         tester.operator()<always_ready<int>>();
-        tester.operator()<immediate_suspend_resume<int>>();
-        tester.operator()<test_awaiting_adl::awaitable_by_adl<int>>();
+        tester.operator()<always_ready<std::array<int, 4>>>();
 
-        //tester.operator()<asio::awaitable<void>>();
-        //tester.operator()<asio::awaitable<int>>();
-        //tester.operator()<asio::awaitable<std::array<int, 4>>>();
+        tester.operator()<immediate_suspend_resume<int>>();
+        tester.operator()<immediate_suspend_resume<std::array<int, 4>>>();
+
+        tester.operator()<test_awaiting_adl::awaitable_by_adl<int>>();
+        tester.operator()<test_awaiting_adl::awaitable_by_adl<std::array<int, 4>>>();
     };
 
     // ============================================================
