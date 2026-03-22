@@ -12,7 +12,7 @@ using namespace ut;
 using namespace net::telnet::awaitables;
 using namespace net::telnet::test_support::coroutine_harness;
 
-struct test_tag {};
+struct test_tag;
 using test_wrapper_int = tagged_awaitable<test_tag, asio::awaitable<int>>;
 using test_wrapper_void = tagged_awaitable<test_tag, asio::awaitable<void>>;
 
