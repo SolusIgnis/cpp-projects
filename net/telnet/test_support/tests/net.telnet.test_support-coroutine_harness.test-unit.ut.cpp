@@ -380,12 +380,12 @@ suite as_task_adapter_tests = [] mutable {
             [[noreturn]] void await_suspend(std::coroutine_handle<>) {
                 throw std::runtime_error("boom");
             }
-            constexpr int await_resume() const noexcept { return {}; }
+            constexpr void await_resume() const noexcept { return; }
         };
     
         bool threw = false;
         try {
-            run(as_task<int>(throwing_suspend_awaiter{}));
+            run(as_task<void>(throwing_suspend_awaiter{}));
         } catch (const std::runtime_error&) {
             threw = true;
         }
@@ -456,11 +456,11 @@ suite dummy_awaitable_tests = [] mutable {
     };
     
     "trivial_awaiter_base await_resume value category correctness"_test = [] mutable {
-        bool const_lvalue = requires(int& result, trivial_awaiter_base<int>& base) { result = std::as_const(base).await_resume(); };
-        bool lvalue       = requires(int& result, trivial_awaiter_base<int>& base) { result = base.await_resume(); };
-        bool rvalue       = requires(int& result, trivial_awaiter_base<int>& base) { result = std::move(base).await_resume(); };
+        bool const_lvalue = requires(int& result, dummies::trivial_awaiter_base<int>& base) { result = std::as_const(base).await_resume(); };
+        bool lvalue       = requires(int& result, dummies::trivial_awaiter_base<int>& base) { result = base.await_resume(); };
+        bool rvalue       = requires(int& result, dummies::trivial_awaiter_base<int>& base) { result = std::move(base).await_resume(); };
 
-        bool clvalue_move = requires(std::unique_ptr<int>& result, trivial_awaiter_base<std::unique_ptr<int>>& base) { result = std::as_const(base).await_resume(); };
+        bool clvalue_move = requires(std::unique_ptr<int>& result, dummies::trivial_awaiter_base<std::unique_ptr<int>>& base) { result = std::as_const(base).await_resume(); };
         
         expect(eq(const_lvalue, true));
         expect(eq(lvalue, true));
