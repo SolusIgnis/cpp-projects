@@ -461,7 +461,7 @@ suite dummy_awaitable_tests = [] mutable {
         bool rvalue       = requires(int& result, dummies::trivial_awaiter_base<int>& base) { result = std::move(base).await_resume(); };
 
         bool clvalue_move = false;
-        if constexpr (requires(std::unique_ptr<int>& result, dummies::trivial_awaiter_base<std::unique_ptr<int>>& base) { result = std::as_const(base).await_resume(); })
+        if constexpr (requires(dummies::trivial_awaiter_base<std::unique_ptr<int>>& base) { auto result = std::as_const(base).await_resume(); })
             clvalue_move = true;
         
         expect(eq(const_lvalue, true));
