@@ -454,7 +454,20 @@ suite dummy_awaitable_tests = [] mutable {
             expect(eq(*result, expected));
         }
     };
+    
+    "trivial_awaiter_base await_resume value category correctness"_test = [] mutable {
+        bool const_lvalue = requires(int& result, trivial_awaiter_base<int>& base) { result = std::as_const(base).await_resume(); };
+        bool lvalue       = requires(int& result, trivial_awaiter_base<int>& base) { result = base.await_resume(); };
+        bool rvalue       = requires(int& result, trivial_awaiter_base<int>& base) { result = std::move(base).await_resume(); };
 
+        bool clvalue_move = requires(std::unique_ptr<int>& result, trivial_awaiter_base<std::unique_ptr<int>>& base) { result = std::as_const(base).await_resume(); };
+        
+        expect(eq(const_lvalue, true));
+        expect(eq(lvalue, true));
+        expect(eq(rvalue, true));
+        expect(eq(clvalue_move, false));
+    };
+    
     // ============================================================
     // ready_awaiter
     // ============================================================
