@@ -430,6 +430,17 @@ suite dummy_awaitable_tests = [] mutable {
         expect(eq(std::is_void_v<decltype(base.await_resume())>, true));
     };
 
+    "trivial_awaiter_base supports move-only return types (unique_ptr)"_test = [] mutable {
+        int expected = 42;
+        dummies::trivial_awaiter_base<std::unique_ptr<int>> base{std::make_unique<int>(expected)};
+        auto result = base.await_resume();
+        
+        expect(eq(static_cast<bool>(result), true));
+        if (result) {
+            expect(eq(*result, expected));
+        }
+    };
+
     // ============================================================
     // ready_awaiter
     // ============================================================
@@ -503,6 +514,16 @@ suite dummy_awaitable_tests = [] mutable {
         expect(eq(probe.suspended, true));
         expect(eq(probe.done, true));
     };
+    
+    "immediate_awaiter fallback path (non-test_task)"_test = [] mutable {
+        dummies::immediate_awaiter<void> awaiter{};
+    
+        auto coro = std::noop_coroutine();
+        auto result = awaiter.await_suspend(coro);
+    
+        // This confirms immediate symmetric transfer back to the caller.
+       expect(eq(result.address(), coro.address()));
+    };
 
     // ============================================================
     // ADL awaitable
@@ -522,6 +543,10 @@ suite dummy_awaitable_tests = [] mutable {
         expect(eq(result, expected));
         expect(eq(probe.suspended, false)); // uses ready_awaiter
     };
+};
+
+suite coroutine_harness_integration_tests = [] mutable {
+    
 };
 
 int main() {}
