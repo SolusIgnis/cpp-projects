@@ -340,6 +340,24 @@ suite coroutine_harness_tests = [] mutable {
 
         expect(eq(threw, true));
     };
+    
+    "as_task supports move-only return types (unique_ptr)"_test = [] mutable {
+        int expected = 42;
+        
+        // Create an awaiter that holds a move-only type
+        auto awaiter = dummies::immediate_awaiter{std::make_unique<int>(expected)};
+    
+        // Wrap it. This requires perfect forwarding to work inside 'as_task'
+        auto task = as_task<std::unique_ptr<int>>(std::move(awaiter));
+    
+        // Run it. This requires the promise_type to correctly move the value out.
+        std::unique_ptr<int> result = run(std::move(task));
+    
+        expect(eq(static_cast<bool>(result), true));
+        if (result) {
+            expect(eq(*result, expected));
+        }
+    };
 };
 
 suite coroutine_dummy_tests = [] mutable {
