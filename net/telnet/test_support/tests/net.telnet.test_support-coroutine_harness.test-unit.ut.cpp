@@ -304,7 +304,7 @@ suite coroutine_harness_tests = [] mutable {
             int value{};
             [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
             void await_suspend(std::coroutine_handle<>) const noexcept {}
-            [[nodiscard]] int await_suspend() { return value; }
+            [[nodiscard]] int await_resume() { return value; }
         };
         
         int expected = 55;
