@@ -390,7 +390,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> caller) noexcept
                 -> std::coroutine_handle<test_promise<U>>
             {
-                if (typename test_promise<U>::probe_ptr probe{awaiting_handle.promise().probe}; probe)
+                if (typename test_promise<U>::probe_ptr probe{caller.promise().probe}; probe)
                     probe->suspended = true;
                 return caller; // symmetric transfer → resume caller right away
             }
