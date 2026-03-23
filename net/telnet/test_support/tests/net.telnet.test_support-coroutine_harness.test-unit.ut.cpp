@@ -294,7 +294,9 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeE.destroyed, false));
         expect(eq(static_cast<int>(probeE.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
     };
+};
 
+suite as_task_adapter_tests = [] mutable {
     // ============================================================
     // as_task adapter
     // ============================================================
@@ -359,6 +361,24 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(threw, true));
     };
     
+    "as_task propagates exception from await_suspend"_test = [] mutable {
+        struct throwing_suspend_awaiter {
+            constexpr bool await_ready() const noexcept { return false; }
+            [[noreturn]] void await_suspend(std::coroutine_handle<>) {
+                throw std::runtime_error("boom");
+            }
+            constexpr int await_resume() const noexcept { return {}; }
+        };
+    
+        bool threw = false;
+        try {
+            run(as_task<int>(throwing_suspend_awaiter{}));
+        } catch (const std::runtime_error&) {
+            threw = true;
+        }
+        expect(eq(threw, true));
+    };
+    
     "as_task supports move-only return types (unique_ptr)"_test = [] mutable {
         // Bespoke trivial awaiter for bootstrapping tests. as_task tests can't depend on the test dummies namespace since their tests depend on as_task.
         struct echo_ready_awaiter {
@@ -368,7 +388,7 @@ suite coroutine_harness_tests = [] mutable {
             [[nodiscard]] constexpr std::unique_ptr<int> await_resume() { return std::move(value); }
         };
 
-        int expected = 42;
+        constexpr int expected = 42;
         
         // Create an awaiter that holds a move-only type
         auto awaiter = echo_ready_awaiter{std::make_unique<int>(expected)};
@@ -386,7 +406,7 @@ suite coroutine_harness_tests = [] mutable {
     };
 };
 
-suite coroutine_dummy_tests = [] mutable {
+suite dummy_awaitable_tests = [] mutable {
     // ============================================================
     // trivial_awaiter_base
     // ============================================================
