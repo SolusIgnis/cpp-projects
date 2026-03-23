@@ -21,11 +21,12 @@ test_task<test_task<int>> make_echo(int value, base::vocab::ptr::alias_ptr<corou
 
 suite coroutine_harness_tests = [] mutable {
     "run returns value"_test = [] mutable {
-        auto task = echo(42);
+        constexpr int expected = 42;
+        auto task = echo(expected);
 
-        auto result = run(task);
+        const auto result = run(task);
 
-        expect(eq(result, 42));
+        expect(eq(result, expected));
     };
 
     "probe initialization"_test = [] mutable {
@@ -57,11 +58,11 @@ suite coroutine_harness_tests = [] mutable {
         coroutine_probe probe;
 
         {
-            auto task = echo(42);
+            auto task = echo({});
 
             task.set_probe(&probe);
 
-            [[maybe_unused]] auto result = run(task);
+            [[maybe_unused]] const auto result = run(task);
 
             expect(eq(probe.awaited, true));
             expect(eq(probe.suspended, false));
@@ -78,10 +79,10 @@ suite coroutine_harness_tests = [] mutable {
     "rvalue await path"_test = [] mutable {
         coroutine_probe probe;
 
-        auto task = echo(42);
+        auto task = echo({});
         task.set_probe(&probe);
 
-        [[maybe_unused]] auto result = run(std::move(task));
+        [[maybe_unused]] const auto result = run(std::move(task));
 
         expect(eq(probe.awaited, true));
         expect(eq(probe.resumed, true));
@@ -93,7 +94,7 @@ suite coroutine_harness_tests = [] mutable {
     "premature destruction"_test = [] mutable {
         coroutine_probe probe;
 
-        echo(0).set_probe(&probe);
+        echo({}).set_probe(&probe); //temporary object destroyed at the ;
 
         expect(eq(probe.awaited, false));
         expect(eq(probe.done, false));
@@ -103,26 +104,29 @@ suite coroutine_harness_tests = [] mutable {
     "premature destruction throws without probe"_test = [] mutable {
         bool threw = false;
         try {
-            auto unawaited_task = echo(0);
+            auto unawaited_task = echo({});
         } catch (const std::logic_error&) {
             threw = true;
         }
         expect(eq(threw, true));
     };
 
-    "move assignment sets moved"_test = [] mutable {
+    "move assignment sets moved and destroys assigned-to"_test = [] mutable {
+        constexpr int expected  = 5;
+        constexpr int discarded = 10;
+        
         coroutine_probe probe1;
-        auto task1 = echo(5);
+        auto task1 = echo(expected);
         task1.set_probe(&probe1);
 
         coroutine_probe probe2;
-        auto task2 = echo(10);
+        auto task2 = echo(discarded);
         task2.set_probe(&probe2);
 
         task2       = std::move(task1); // move assignment
-        auto result = run(task2);
+        const auto result = run(task2);
 
-        expect(eq(result, 5));
+        expect(eq(result, expected));
         expect(eq(probe1.moved, true));
         expect(eq(probe1.awaited, true));
         expect(eq(probe1.destroyed, false));
@@ -132,22 +136,26 @@ suite coroutine_harness_tests = [] mutable {
     };
 
     "self assignment is safe"_test = [] mutable {
+        constexpr int expected = 42;
         coroutine_probe probe;
-        auto task = echo(42);
+
+        auto task = echo(expected);
         task.set_probe(&probe);
         task = std::move(task);         // NOLINT(clang-diagnostic-self-move): testing safety of self-assignment
         expect(eq(probe.moved, false)); //self-assignment doesn't actually move
-        expect(eq(run(task), 42));
+        expect(eq(run(task), expected));
     };
 
     "task factory"_test = [] mutable {
+        constexpr int expected = 42;
+
         coroutine_probe factory_probe;
         coroutine_probe task_probe;
 
         test_task<int> task;
 
         { //make sure factory is destroyed before we run the result task
-            auto factory = make_echo(42, &task_probe);
+            auto factory = make_echo(expected, &task_probe);
             factory.set_probe(&factory_probe);
             task = run(factory);
 
@@ -159,21 +167,21 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(task_probe.awaited, false));
         expect(eq(task_probe.destroyed, false));
 
-        auto result = run(task);
+        const auto result = run(task);
 
-        expect(eq(result, 42));
+        expect(eq(result, expected));
         expect(eq(task_probe.awaited, true));
         expect(eq(task_probe.done, true));
     };
 
     "double await throws"_test = [] mutable {
-        auto task = echo(42);
+        auto task = echo({});
 
-        [[maybe_unused]] auto result1 = run(task);
+        [[maybe_unused]] const auto result1 = run(task);
 
         bool threw = false;
         try {
-            [[maybe_unused]] auto result2 = run(task);
+            [[maybe_unused]] const auto result2 = run(task);
         } catch (const std::logic_error&) {
             threw = true;
         }
@@ -183,7 +191,7 @@ suite coroutine_harness_tests = [] mutable {
     "exception propagates"_test = [] mutable {
         auto task = []() -> test_task<int> {
             throw std::runtime_error("boom");
-            co_return 0;
+            co_return {};
         }();
 
         bool threw = false;
@@ -215,6 +223,11 @@ suite coroutine_harness_tests = [] mutable {
     };
 
     "nested coroutine await"_test = [] mutable {
+        constexpr int dividend   = 42;
+        constexpr int divisor    = 7;
+        constexpr int subtrahend = 1;
+        constexpr int expected   = (dividend / divisor) - subtrahend;
+        
         coroutine_probe probeA;
         coroutine_probe probeB;
         coroutine_probe probeC;
@@ -222,14 +235,14 @@ suite coroutine_harness_tests = [] mutable {
         coroutine_probe probeE;
 
         // Lvalue task
-        auto taskA = echo(42);
+        auto taskA = echo(dividend);
         taskA.set_probe(&probeA);
 
         // Temporary moved into taskB after probe is set
-        auto taskB = echo(7).set_probe(&probeB);
+        auto taskB = echo(divisor).set_probe(&probeB);
 
         // Factory for rvalue task
-        auto make_taskC = []() -> test_task<int> { co_return co_await echo(1); };
+        auto make_taskC = []() -> test_task<int> { co_return co_await echo(subtrahend); };
 
         auto taskE = [&]() -> test_task<int> {
             int quotient; //42 / 7 == 6
@@ -241,13 +254,13 @@ suite coroutine_harness_tests = [] mutable {
                              .set_probe(&probeD)
             );
 
-            auto difference = quotient - co_await make_taskC().set_probe(&probeC); //6 - 1 == 5
+            const auto difference = quotient - co_await make_taskC().set_probe(&probeC); //6 - 1 == 5
             co_return difference;                                                  //5
         }();
         taskE.set_probe(&probeE);
 
-        int result = run(taskE);
-        expect(eq(result, 5));
+        const int result = run(taskE);
+        expect(eq(result, expected));
 
         // Assertions for taskA (unmoved lvalue)
         expect(eq(probeA.awaited, true));
@@ -311,7 +324,7 @@ suite as_task_adapter_tests = [] mutable {
         };
         
         constexpr int expected = 55;
-        auto result = run(as_task<int>(echo_ready_awaiter{expected}));
+        const auto result = run(as_task<int>(echo_ready_awaiter{expected}));
         expect(eq(result, expected));
     };
 
@@ -336,7 +349,7 @@ suite as_task_adapter_tests = [] mutable {
         auto task = as_task<int>(echo_immediate_awaiter{expected});
         task.set_probe(&probe);
 
-        auto result = run(task);
+        const auto result = run(task);
 
         expect(eq(result, expected));
         expect(eq(probe.suspended, true));
@@ -397,7 +410,7 @@ suite as_task_adapter_tests = [] mutable {
         auto task = as_task<std::unique_ptr<int>>(std::move(awaiter));
     
         // Run it. This requires the promise_type to correctly move the value out.
-        std::unique_ptr<int> result = run(std::move(task));
+        const std::unique_ptr<int> result = run(std::move(task));
     
         expect(eq(static_cast<bool>(result), true));
         if (result) {
@@ -412,7 +425,7 @@ suite dummy_awaitable_tests = [] mutable {
     // ============================================================
 
     "trivial_awaiter_base returns stored value"_test = [] mutable {
-        int expected = 42;
+        constexpr int expected = 42;
         dummies::trivial_awaiter_base<int> base{expected};
         expect(eq(base.await_resume(), expected));
     };
@@ -431,9 +444,10 @@ suite dummy_awaitable_tests = [] mutable {
     };
 
     "trivial_awaiter_base supports move-only return types (unique_ptr)"_test = [] mutable {
-        int expected = 42;
+        constexpr int expected = 42;
         dummies::trivial_awaiter_base<std::unique_ptr<int>> base{std::make_unique<int>(expected)};
-        auto result = base.await_resume();
+
+        const auto result = base.await_resume();
         
         expect(eq(static_cast<bool>(result), true));
         if (result) {
@@ -465,7 +479,7 @@ suite dummy_awaitable_tests = [] mutable {
         auto task = as_task<int>(dummies::ready_awaiter{expected});
         task.set_probe(&probe);
 
-        auto result = run(task);
+        const auto result = run(task);
 
         expect(eq(result, expected));
         expect(eq(probe.suspended, false));
@@ -495,7 +509,7 @@ suite dummy_awaitable_tests = [] mutable {
 
         task.set_probe(&probe);
 
-        auto result = run(task);
+        const auto result = run(task);
 
         expect(eq(result, expected));
         expect(eq(probe.suspended, true));
@@ -519,7 +533,7 @@ suite dummy_awaitable_tests = [] mutable {
         dummies::immediate_awaiter<void> awaiter{};
     
         auto coro = std::noop_coroutine();
-        auto result = awaiter.await_suspend(coro);
+        const auto result = awaiter.await_suspend(coro);
     
         // This confirms immediate symmetric transfer back to the caller.
        expect(eq(result.address(), coro.address()));
@@ -538,15 +552,15 @@ suite dummy_awaitable_tests = [] mutable {
 
         task.set_probe(&probe);
 
-        auto result = run(task);
+        const auto result = run(task);
 
         expect(eq(result, expected));
         expect(eq(probe.suspended, false)); // uses ready_awaiter
     };
 };
-
+#if 0
 suite coroutine_harness_integration_tests = [] mutable {
     
 };
-
+#endif
 int main() {}
