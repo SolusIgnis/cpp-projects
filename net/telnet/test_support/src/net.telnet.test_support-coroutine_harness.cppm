@@ -368,7 +368,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             using base = trivial_awaiter_base<T>;
             using base::base;
         
-            constexpr bool await_ready() const noexcept { return true; }
+            [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
         
             [[noreturn]] std::coroutine_handle<> await_suspend(std::coroutine_handle<>) const {
                 throw std::logic_error("ready_awaiter had await_suspend called: contract violation");
@@ -384,9 +384,18 @@ export namespace net::telnet::test_support::coroutine_harness {
             using base = trivial_awaiter_base<T>;
             using base::base;
         
-            constexpr bool await_ready() const noexcept { return false; }
+            [[nodiscard]] constexpr bool await_ready() const noexcept { return false; }
         
-            std::coroutine_handle<> await_suspend(std::coroutine_handle<> caller) const noexcept {
+            template<typename U>
+            [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
+                -> std::coroutine_handle<promise_type>
+            {
+                if (typename test_promise<U>::probe_ptr probe{awaiting_handle.promise().probe}; probe)
+                    probe->suspended = true;
+                return caller; // symmetric transfer → resume caller right away
+            }
+        
+            [[nodiscard]] std::coroutine_handle<> await_suspend(std::coroutine_handle<> caller) const noexcept {
                 return caller; // symmetric transfer → resume caller right away
             }
         };
@@ -403,7 +412,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         
             ///@brief `operator co_await` for the dummy. @see `awaitable_by_adl`
             template<typename T>
-            auto operator co_await(awaitable_by_adl<T> dummy)
+            [[nodiscard]] auto operator co_await(awaitable_by_adl<T> dummy)
             {
                 return ready_awaiter<T>{dummy.value};
             }
@@ -412,7 +421,7 @@ export namespace net::telnet::test_support::coroutine_harness {
 
     ///@brief Wrap a trivial awaiter or non-coroutine awaitable in a `test_task` so that it can be run as a task.
     template<typename T, typename Awaitable>
-    auto as_task(Awaitable&& awaitable) -> test_task<T>
+    [[nodiscard]] auto as_task(Awaitable&& awaitable) -> test_task<T>
     {
         co_return co_await std::forward<Awaitable>(awaitable);
     }
