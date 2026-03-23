@@ -300,6 +300,7 @@ suite coroutine_harness_tests = [] mutable {
     // ============================================================
 
     "as_task forwards value (ready path)"_test = [] mutable {
+        // Bespoke trivial awaiter for bootstrapping tests. as_task tests can't depend on the test dummies namespace since their tests depend on as_task.
         struct echo_ready_awaiter {
             int value{};
             [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
@@ -313,9 +314,10 @@ suite coroutine_harness_tests = [] mutable {
     };
 
     "as_task preserves suspension semantics"_test = [] mutable {
+        // Bespoke trivial awaiter for bootstrapping tests. as_task tests can't depend on the test dummies namespace since their tests depend on as_task.
         struct echo_immediate_awaiter {
             int value{};
-            [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
+            [[nodiscard]] constexpr bool await_ready() const noexcept { return false; }
             [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<int>> caller) noexcept
             {
                 if (typename test_promise<int>::probe_ptr probe{caller.promise().probe}; probe)
@@ -341,18 +343,15 @@ suite coroutine_harness_tests = [] mutable {
 
     "as_task propagates exception from await_resume"_test = [] mutable {
         struct throwing_awaiter {
-            bool await_ready() const noexcept { return true; }
-            void await_suspend(std::coroutine_handle<>) const noexcept {}
-            int await_resume() {
-                throw std::runtime_error("boom");
-            }
+            [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
+            constexpr void await_suspend(std::coroutine_handle<>) const noexcept {}
+            [[noreturn]] int await_resume() { throw std::runtime_error("boom"); }
         };
 
         bool threw = false;
 
         try {
-            [[maybe_unused]] auto result =
-                run(as_task<int>(throwing_awaiter{}));
+            [[maybe_unused]] auto result = run(as_task<int>(throwing_awaiter{}));
         } catch (const std::runtime_error&) {
             threw = true;
         }
