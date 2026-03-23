@@ -130,43 +130,6 @@ export namespace net::telnet::awaitables {
                 return std::forward<decltype(awaitable)>(awaitable);
             }
         }
-#if 0
-        ///@brief Supports ADL co_await for lvalue.
-        friend decltype(auto) operator co_await(tagged_awaitable& wrapper)
-            requires (!requires { wrapper.awaitable_.operator co_await(); })
-        {
-            using net::telnet::awaitables::operator co_await;
-            if constexpr (requires { operator co_await(wrapper.awaitable_); }) {
-                return operator co_await(wrapper.awaitable_);
-            } else {
-                return (wrapper.awaitable_);
-            }
-        }
-
-        ///@brief Supports ADL co_await for const lvalue.
-        friend decltype(auto) operator co_await(const tagged_awaitable& wrapper)
-            requires (!requires { wrapper.awaitable_.operator co_await(); })
-        {
-            using net::telnet::awaitables::operator co_await;
-            if constexpr (requires { operator co_await(wrapper.awaitable_); }) {
-                return operator co_await(wrapper.awaitable_);
-            } else {
-                return (wrapper.awaitable_);
-            }
-        }
-
-        ///@brief Supports ADL co_await for rvalue.
-        friend decltype(auto) operator co_await(tagged_awaitable&& wrapper)
-            requires (!requires { std::move(wrapper.awaitable_).operator co_await(); })
-        {
-            using net::telnet::awaitables::operator co_await;
-            if constexpr (requires { operator co_await(std::move(wrapper.awaitable_)); }) {
-                return operator co_await(std::move(wrapper.awaitable_));
-            } else {
-                return std::move(wrapper.awaitable_);
-            }
-        }
-#endif
     }; //class tagged_awaitable
 
     /**
