@@ -360,10 +360,18 @@ suite coroutine_harness_tests = [] mutable {
     };
     
     "as_task supports move-only return types (unique_ptr)"_test = [] mutable {
+        // Bespoke trivial awaiter for bootstrapping tests. as_task tests can't depend on the test dummies namespace since their tests depend on as_task.
+        struct echo_ready_awaiter {
+            std::unique_ptr<int> value{};
+            [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
+            constexpr void await_suspend(std::coroutine_handle<>) const noexcept {}
+            [[nodiscard]] constexpr std::unique_ptr<int> await_resume() { return std::move(value); }
+        };
+
         int expected = 42;
         
         // Create an awaiter that holds a move-only type
-        auto awaiter = dummies::immediate_awaiter{std::make_unique<int>(expected)};
+        auto awaiter = echo_ready_awaiter{std::make_unique<int>(expected)};
     
         // Wrap it. This requires perfect forwarding to work inside 'as_task'
         auto task = as_task<std::unique_ptr<int>>(std::move(awaiter));
