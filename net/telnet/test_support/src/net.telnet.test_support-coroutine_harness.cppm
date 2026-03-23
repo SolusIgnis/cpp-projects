@@ -353,7 +353,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             constexpr trivial_awaiter_base(storage_t val) noexcept(std::is_nothrow_move_constructible_v<storage_t>) requires (!std::is_void_v<T>)
                 : storage_(std::move(val)) {}
         
-            constexpr auto await_resume() const& noexcept(std::is_nothrow_copy_constructible_v<T>) {
+            constexpr T await_resume() const& noexcept(std::is_nothrow_copy_constructible_v<T>) {
                 if constexpr (std::is_void_v<T>) {
                     return; // void optimization
                 } else {
@@ -361,7 +361,7 @@ export namespace net::telnet::test_support::coroutine_harness {
                 }
             }
             
-            constexpr auto await_resume() & noexcept(std::is_nothrow_copy_constructible_v<T>)
+            constexpr T await_resume() & noexcept(std::is_nothrow_copy_constructible_v<T>)
             {
                 if constexpr (std::is_void_v<T>) {
                     return; // void optimization
@@ -372,7 +372,7 @@ export namespace net::telnet::test_support::coroutine_harness {
                 }
             }
             
-            constexpr auto await_resume() && noexcept(std::is_nothrow_move_constructible_v<T>) {
+            constexpr T await_resume() && noexcept(std::is_nothrow_move_constructible_v<T>) {
                 if constexpr (std::is_void_v<T>) {
                     return; // void optimization
                 } else {
