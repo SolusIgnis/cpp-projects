@@ -387,7 +387,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             [[nodiscard]] constexpr bool await_ready() const noexcept { return false; }
         
             template<typename U>
-            [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
+            [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> caller) noexcept
                 -> std::coroutine_handle<promise_type>
             {
                 if (typename test_promise<U>::probe_ptr probe{awaiting_handle.promise().probe}; probe)
