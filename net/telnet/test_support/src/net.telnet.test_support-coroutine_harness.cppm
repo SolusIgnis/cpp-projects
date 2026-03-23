@@ -350,8 +350,8 @@ export namespace net::telnet::test_support::coroutine_harness {
         
         public:
             constexpr trivial_awaiter_base() = default;
-            constexpr trivial_awaiter_base(storage_t val) noexcept(std::is_nothrow_constructible_v<storage_t>) requires (!std::is_void_v<T>)
-                : storage_(val) {}
+            constexpr trivial_awaiter_base(storage_t val) noexcept(std::is_nothrow_move_constructible_v<storage_t>) requires (!std::is_void_v<T>)
+                : storage_(std::move(val)) {}
         
             constexpr auto await_resume() const& noexcept {
                 if constexpr (std::is_void_v<T>) {
