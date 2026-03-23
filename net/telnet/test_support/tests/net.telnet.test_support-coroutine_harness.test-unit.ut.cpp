@@ -300,8 +300,15 @@ suite coroutine_harness_tests = [] mutable {
     // ============================================================
 
     "as_task forwards value (ready path)"_test = [] mutable {
+        struct echo_ready_awaiter {
+            int value{};
+            [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
+            void await_suspend(std::coroutine_handle<>) const noexcept {}
+            [[nodiscard]] int await_suspend() { return value; }
+        };
+        
         int expected = 55;
-        auto result = run(as_task<int>(dummies::ready_awaiter{expected}));
+        auto result = run(as_task<int>(echo_ready_awaiter{expected}));
         expect(eq(result, expected));
     };
 
