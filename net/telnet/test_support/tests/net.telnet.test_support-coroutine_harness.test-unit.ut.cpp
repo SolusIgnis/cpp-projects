@@ -303,21 +303,33 @@ suite coroutine_harness_tests = [] mutable {
         struct echo_ready_awaiter {
             int value{};
             [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
-            void await_suspend(std::coroutine_handle<>) const noexcept {}
-            [[nodiscard]] int await_resume() { return value; }
+            constexpr void await_suspend(std::coroutine_handle<>) const noexcept {}
+            [[nodiscard]] constexpr int await_resume() { return value; }
         };
         
-        int expected = 55;
+        constexpr int expected = 55;
         auto result = run(as_task<int>(echo_ready_awaiter{expected}));
         expect(eq(result, expected));
     };
 
     "as_task preserves suspension semantics"_test = [] mutable {
-        int expected = 10;
+        struct echo_immediate_awaiter {
+            int value{};
+            [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
+            [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<int>> caller) noexcept
+            {
+                if (typename test_promise<int>::probe_ptr probe{caller.promise().probe}; probe)
+                    probe->suspended = true;
+                return caller; // symmetric transfer → resume caller right away
+            }
+            [[nodiscard]] constexpr int await_resume() { return value; }
+        };
+
+        constexpr int expected = 10;
 
         coroutine_probe probe;
 
-        auto task = as_task<int>(dummies::immediate_awaiter{expected});
+        auto task = as_task<int>(echo_immediate_awaiter{expected});
         task.set_probe(&probe);
 
         auto result = run(task);
