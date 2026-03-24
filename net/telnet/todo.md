@@ -90,9 +90,17 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
     - Add overloads or tag-based specializations if certain handler types need pre/post-processing.
   - **Dependencies**: Depends on **Implement Tagged Awaitables**; affects `:stream`, `:awaitables`, `:protocol_fsm`, `:internal`.
   - **Priority**: Medium (code reuse, consistency, and future extensibility).
-  - **Estimated Effort**: Completed in 0 days. (Prior refactoring made this unnecessary/impractical.)
+  - **Estimated Effort**: Completed in 0 days. (Prior refactoring made this unnecessary/impractical.
   
-08. [ ] **Implement Tagged Callables for telnet::option Local/Remote Enablement Predicates**:
+08. [✔️] **Investigate TaggedAwaitable Tags** (Completed March 21, 2026):
+  - **Task**: Investigate whether the tag types for TaggedAwaitable need to be declared or defined to be used.
+  - **Steps**:
+    - See if the tag types work as incomplete types or if they need definitions.
+  - **Dependencies**: `:awaitables`
+  - **Priority**: Low (curiosity and minor redundancy reduction)
+  - **Estimated Effort**: Completed in 15 minutes.
+  
+09. [ ] **Implement Tagged Callables for telnet::option Local/Remote Enablement Predicates**:
   - **Task**: Implement `tagged_callable` in `net.telnet:callables` partition with nested type aliases `telnet::option::local_predicate` and `telnet::option::remote_predicate`.
   - **Steps**:
     - Define a class template `tagged_callable` to attach semantic tags to callables (functions, `std::function`s, etc.).
@@ -102,13 +110,15 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Priority**: Medium (cleans up telnet::option constructor parameters)
   - **Estimated Effort**: 1 day.
   
-09. [✔️] **Investigate TaggedAwaitable Tags** (Completed March 21, 2026):
-  - **Task**: Investigate whether the tag types for TaggedAwaitable need to be declared or defined to be used.
+10. [ ] **Use Flat Sets and Maps**:
+  - **Task**: Change `std::set` and `std::map` usage to `std::flat_set` and `std::flat_map` respectively.
   - **Steps**:
-    - See if the tag types work as incomplete types or if they need definitions.
-  - **Dependencies**: `:awaitables`
-  - **Priority**: Low (curiosity and minor redundancy reduction)
-  - **Estimated Effort**: Completed in 15 minutes.
+    - Change `option_registry` from using a `std::set<option>` to a `std::flat_set<option>`.
+    - Ensure implementations of registry methods do not rely on reference or iterator stability.
+    - Change `option_handler_registry` from using a `std::map<option::id_num, option_handler_record>` (AoS form) to `std::flat_map<OptionEnablementHandler>`, `std::flat_map<OptionDisablementHandler>`, and `std::flat_map<SubnegotiationHandler>` (SoA form).
+  - **Dependencies**: Affects `:options` and `:internal`.
+  - **Priority**: Medium (significant performance improvement)
+  - **Estimated Effort**: 1 day.
 
 ### Phase 7 Milestones
 01. [ ] **Implement a strand in `telnet::stream`**:
