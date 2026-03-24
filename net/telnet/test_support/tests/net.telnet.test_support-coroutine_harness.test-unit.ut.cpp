@@ -419,6 +419,9 @@ suite as_task_adapter_tests = [] mutable {
     };
 };
 
+template<typename AwaiterT, typename T>
+concept const_lvalue_resumable = requires(T& result, AwaiterT& awaiter) { result = std::as_const(awaiter).await_resume(); };
+
 suite dummy_awaitable_tests = [] mutable {
     // ============================================================
     // trivial_awaiter_base
@@ -456,13 +459,10 @@ suite dummy_awaitable_tests = [] mutable {
     };
     
     "trivial_awaiter_base await_resume value category correctness"_test = [] mutable {
-        bool const_lvalue = requires(int& result, dummies::trivial_awaiter_base<int>& base) { result = std::as_const(base).await_resume(); };
         bool lvalue       = requires(int& result, dummies::trivial_awaiter_base<int>& base) { result = base.await_resume(); };
         bool rvalue       = requires(int& result, dummies::trivial_awaiter_base<int>& base) { result = std::move(base).await_resume(); };
-
-        bool clvalue_move = false;
-        if constexpr (requires(dummies::trivial_awaiter_base<std::unique_ptr<int>>& base) { auto result = std::as_const(base).await_resume(); })
-            clvalue_move = true;
+        bool const_lvalue = const_lvalue_resumable<dummies::trivial_awaiter_base<int>, int>;
+        bool clvalue_move = const_lvalue_resumable<dummies::trivial_awaiter_base<std::unique_ptr<int>>, std::unique_ptr<int>>;
         
         expect(eq(const_lvalue, true));
         expect(eq(lvalue, true));
