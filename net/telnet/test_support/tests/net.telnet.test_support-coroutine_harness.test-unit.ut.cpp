@@ -307,6 +307,42 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probeE.destroyed, false));
         expect(eq(static_cast<int>(probeE.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
     };
+    
+    "continuation chaining preserves strict resume order"_test = [] mutable {
+        std::vector<int> trace;
+        constexpr int first  = 1;
+        constexpr int second = 2;
+        constexpr int third  = 3;
+        constexpr int fourth = 4;
+        constexpr int fifth  = 5;
+        std::vector<int> expected{first, second, third, fourth, fifth};
+    
+        auto leaf = [&]() -> test_task<void> {
+            trace.push_back(third);
+            co_return;
+        };
+    
+        auto mid = [&]() -> test_task<void> {
+            trace.push_back(second);
+            co_await leaf();
+            trace.push_back(fourth);
+        };
+    
+        auto root = [&]() -> test_task<void> {
+            trace.push_back(first);
+            co_await mid();
+            trace.push_back(fifth);
+        };
+    
+        run(root());
+    
+        expect(eq(trace.size(), expected.size()));
+        if (trace.size() == expected.size()) {
+            for (std::size_t i = 0, size = trace.size(); i < size; ++i) {
+              expect(eq(trace.at(i), expected.at(i)));
+            }
+        }
+    };
 };
 
 suite as_task_adapter_tests = [] mutable {
