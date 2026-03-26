@@ -469,18 +469,20 @@ suite as_task_adapter_tests = [] mutable {
             constexpr void await_suspend(std::coroutine_handle<>) const noexcept {}
             [[nodiscard]] constexpr int await_resume() { return value; }
         };
+        coroutine_probe probeA;
+        coroutine_probe probeB;
+        coroutine_probe probeAnon;
 
         int expected = 42;
-try {
+
         auto taskA = as_task<int>(echo_ready_awaiter{expected});
-  try {
-        auto taskB = as_task<int>(std::move(as_task<int>(taskA)));
-    try {
+        taskA.set_probe(&probeA);
+        
+        auto taskB = as_task<int>(as_task<int>(taskA).set_probe(&probeAnon));
+        taskB.set_probe(&probeB);
+
         auto result = run(taskB);
         expect(eq(result, expected));
-    } catch(...) { expect(eq(true, false)); }
-  } catch(...) { expect(eq(true, false)); }
-} catch(...) { expect(eq(true, false)); }
     };
 };
 
