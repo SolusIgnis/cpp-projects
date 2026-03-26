@@ -109,9 +109,11 @@ suite telnet_awaitables_integration_tests = [] mutable {
                 co_return 123;
             };
 
-            // lvalue co_await
+            // lvalue to co_await
             tagged_awaitable<tags::subnegotiation_tag, int> ta_l = make();
-            int lv                                               = co_await ta_l;
+
+            // lvalue co_await
+            int lv = co_await ta_l;
 
             // rvalue co_await
             int rv = co_await make();

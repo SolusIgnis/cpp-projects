@@ -464,10 +464,10 @@ suite as_task_adapter_tests = [] mutable {
     "as_task supports nested calls"_test = [] mutable {
         // Bespoke trivial awaiter for bootstrapping tests. as_task tests can't depend on the test dummies namespace since their tests depend on as_task.
         struct echo_ready_awaiter {
-            std::unique_ptr<int> value{};
+            int value{};
             [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
             constexpr void await_suspend(std::coroutine_handle<>) const noexcept {}
-            [[nodiscard]] constexpr std::unique_ptr<int> await_resume() { return std::move(value); }
+            [[nodiscard]] constexpr int await_resume() { return value; }
         };
 
         int expected = 42;
