@@ -472,11 +472,15 @@ suite as_task_adapter_tests = [] mutable {
         int expected = 42;
 
         auto taskA = as_task<int>(echo_ready_awaiter{expected});
-try {
-        auto taskB = as_task<int>(
-            [&]{ try { return as_task<int>(std::move(taskA)); } catch(...) { expect(eq(true, false)); } }()
-        );
-} catch(...) { expect(eq(true, false)); }
+
+        auto taskB = []{
+            try {
+                return as_task<int>(
+                    [&]{ try { return as_task<int>(std::move(taskA)); } catch(...) { expect(eq(true, false)); } }()
+                );
+            } catch(...) { expect(eq(true, false)); }
+        }();
+        
         auto result = run(taskB);
         expect(eq(result, expected));
     };
