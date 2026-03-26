@@ -456,8 +456,9 @@ suite as_task_adapter_tests = [] mutable {
     
     "as_task supports wrapping a test_task"_test = [] mutable {
         int expected = 42;
+        try {
         auto result = run(as_task<int>(echo(expected)));
-        
+        } catch(...) { expect(eq(true, false)); }
         expect(eq(result, expected));
     };
     
@@ -471,9 +472,15 @@ suite as_task_adapter_tests = [] mutable {
         };
 
         int expected = 42;
+        try {
         auto taskA = as_task<int>(echo_ready_awaiter{expected});
+        } catch(...) { expect(eq(true, false)); }
+        try {
         auto taskB = as_task<int>(as_task<int>(taskA));
+        } catch(...) { expect(eq(true, false)); }
+        try {
         auto result = run(taskB);
+        } catch(...) { expect(eq(true, false)); }
 
         expect(eq(result, expected));
     };
