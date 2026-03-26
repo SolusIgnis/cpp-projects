@@ -473,7 +473,7 @@ suite as_task_adapter_tests = [] mutable {
 
         auto taskA = as_task<int>(echo_ready_awaiter{expected});
 
-        auto taskB = []{
+        auto taskB = [&]{
             try {
                 return as_task<int>(
                     [&]{ try { return as_task<int>(std::move(taskA)); } catch(...) { expect(eq(true, false)); } }()
