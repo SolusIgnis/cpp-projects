@@ -472,7 +472,7 @@ suite as_task_adapter_tests = [] mutable {
         int expected = 42;
 
         auto taskA = as_task<int>(echo_ready_awaiter{expected});
-        auto taskB = as_task<int>(as_task<int>(taskA));
+        auto taskB = as_task<int>(as_task<int>(std::move(taskA)));
 
         auto result = run(taskB);
         expect(eq(result, expected));
