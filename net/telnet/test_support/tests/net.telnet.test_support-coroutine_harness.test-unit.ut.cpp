@@ -478,7 +478,7 @@ suite as_task_adapter_tests = [] mutable {
         auto taskA = as_task<int>(echo_ready_awaiter{expected});
         taskA.set_probe(&probeA);
         
-        auto taskB = as_task<int>(as_task<int>(taskA).set_probe(&probeAnon));
+        auto taskB = as_task<int>(as_task<int>(taskA));
         taskB.set_probe(&probeB);
 
         auto result = run(taskB);
