@@ -453,6 +453,30 @@ suite as_task_adapter_tests = [] mutable {
             expect(eq(*result, expected));
         }
     };
+    
+    "as_task supports wrapping a test_task"_test = [] mutable {
+        int expected = 42;
+        auto result = run(as_task<int>(echo(expected)));
+        
+        expect(eq(result, expected));
+    };
+    
+    "as_task supports nested calls"_test = [] mutable {
+        // Bespoke trivial awaiter for bootstrapping tests. as_task tests can't depend on the test dummies namespace since their tests depend on as_task.
+        struct echo_ready_awaiter {
+            std::unique_ptr<int> value{};
+            [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
+            constexpr void await_suspend(std::coroutine_handle<>) const noexcept {}
+            [[nodiscard]] constexpr std::unique_ptr<int> await_resume() { return std::move(value); }
+        };
+
+        int expected = 42;
+        auto taskA = as_task<int>(echo_ready_awaiter{expected});
+        auto taskB = as_task<int>(as_task<int>(taskA));
+        auto result = run(taskB);
+
+        expect(eq(result, expected));
+    };
 };
 
 template<typename AwaiterT, typename T>
