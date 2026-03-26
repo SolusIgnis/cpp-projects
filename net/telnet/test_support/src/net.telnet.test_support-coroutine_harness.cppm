@@ -447,7 +447,8 @@ export namespace net::telnet::test_support::coroutine_harness {
     template<typename T, typename Awaitable>
     [[nodiscard]] auto as_task(Awaitable&& awaitable) -> test_task<T>
     {
-        co_return co_await std::forward<Awaitable>(awaitable);
+        auto stored = std::forward<Awaitable>(awaitable);
+        co_return co_await std::move(stored);
     }
 
     template<typename Task>
