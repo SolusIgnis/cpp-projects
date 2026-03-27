@@ -476,9 +476,9 @@ suite as_task_adapter_tests = [] mutable {
         auto taskB = [&]{
             try {
                 return as_task<int>(
-                    [&]{ try { return as_task<int>(std::move(taskA)); } catch(...) { expect(eq(true, false)); } }()
+                    [&]{ try { return as_task<int>(std::move(taskA)); } catch(...) { expect(eq(true, false)); return {}; } }()
                 );
-            } catch(...) { expect(eq(true, false)); }
+            } catch(...) { expect(eq(true, false)); return{}; }
         }();
         
         auto result = run(taskB);
