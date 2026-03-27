@@ -445,10 +445,9 @@ export namespace net::telnet::test_support::coroutine_harness {
 
     ///@brief Wrap a trivial awaiter or non-coroutine awaitable in a `test_task` so that it can be run as a task.
     template<typename T, typename Awaitable>
-    [[nodiscard]] auto as_task(Awaitable&& awaitable) -> test_task<T>
+    [[nodiscard]] auto as_task(Awaitable awaitable) -> test_task<T>
     {
-        std::unique_ptr<std::remove_reference_t<Awaitable>> stored{std::make_unique<std::remove_reference_t<Awaitable>>(std::forward<Awaitable>(awaitable))};
-        co_return co_await *stored;
+        co_return co_await std::move(awaitable) ;
     }
 
     template<typename Task>
