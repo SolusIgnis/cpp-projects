@@ -355,7 +355,7 @@ suite coroutine_harness_tests = [] mutable {
         coroutine_probe probe;
         
         auto task1 = echo({});
-        auto task2 = echo({}).set_probe(&probe); //set probe to allow destruction without execution
+        auto task2;
 
         [[maybe_unused]] const auto result1 = run(task1);
         
