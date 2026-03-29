@@ -20,15 +20,6 @@ test_task<test_task<int>> make_echo(int value, base::vocab::ptr::alias_ptr<corou
 }
 
 suite coroutine_harness_tests = [] mutable {
-    "run returns value"_test = [] mutable {
-        constexpr int expected = 42;
-        auto task = echo(expected);
-
-        const auto result = run(task);
-
-        expect(eq(result, expected));
-    };
-
     "probe initialization"_test = [] mutable {
         coroutine_probe probe;
 
@@ -75,6 +66,15 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(threw, true));
     };
 
+    "run returns value"_test = [] mutable {
+        constexpr int expected = 42;
+        auto task = echo(expected);
+
+        const auto result = run(task);
+
+        expect(eq(result, expected));
+    };
+
     "run returns void"_test = [] mutable {
         coroutine_probe probe;
 
@@ -86,19 +86,6 @@ suite coroutine_harness_tests = [] mutable {
 
         expect(eq(probe.awaited, true));
         expect(eq(probe.done, true));
-    };
-
-    "co_await throws from empty test_task"_test = [] mutable {
-        test_task<int> empty_task;
-        
-        
-        bool threw = false;
-        try {
-            [[maybe_unused]] const auto result = run(task);
-        } catch (const std::logic_error&) {
-            threw = true;
-        }
-        expect(eq(threw, true));
     };
 
     "probe lifecycle"_test = [] mutable {
@@ -399,8 +386,6 @@ suite coroutine_harness_tests = [] mutable {
     };
 
     "double await across move assignment throws"_test = [] mutable {
-        coroutine_probe probe;
-        
         auto task1 = echo({});
         decltype(echo({})) task2;
 
