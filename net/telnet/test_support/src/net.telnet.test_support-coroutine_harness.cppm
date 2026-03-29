@@ -229,10 +229,10 @@ export namespace net::telnet::test_support::coroutine_harness {
                 handle_.promise().probe->moved = true;
         }
 
-        test_task& operator=(test_task&& other)
+        test_task& operator=(test_task&& other) noexcept(std::is_nothrow_swappable_v<test_task>)
         {
             if (this != &other) {
-                handle_ = std::exchange(other.handle_, {});
+                swap(*this, other);
 
                 if (handle_ && handle_.promise().probe)
                     handle_.promise().probe->moved = true;
@@ -264,6 +264,13 @@ export namespace net::telnet::test_support::coroutine_harness {
         {
             prepare_co_await(coroutine_probe::path::rvalue);
             return owning_awaiter{std::exchange(handle_, {})};
+        }
+        
+        friend void swap(test_task& lhs, test_task& rhs) noexcept(std::is_nothrow_swappable_v<coroutine_handle_manager<T>>)
+        {
+            using std::swap;
+            swap(lhs.handle_, rhs.handle_);
+            swap(lhs.awaited_, rhs.awaited_);
         }
 
     private:
