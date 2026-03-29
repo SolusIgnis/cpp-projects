@@ -240,7 +240,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             return *this;
         }
 
-        explicit operator bool() const noexcept { return handle_ != nullptr; }
+        explicit operator bool() const noexcept { return static_cast<bool>(handle_); }
 
         test_task& set_probe(probe_ptr new_probe) &
         {
