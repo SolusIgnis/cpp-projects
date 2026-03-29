@@ -111,6 +111,54 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(threw, true));
     };
 
+    "swap exchanges tasks and preserves invariants"_test = [] {
+        constexpr int expected1 = 1;
+        constexpr int expected2 = 2;
+    
+        coroutine_probe probe1{};
+        coroutine_probe probe2{};
+        {
+            auto task1 = echo(expected1);
+            auto task2 = echo(expected2);
+        
+            task1.set_probe(&probe1);
+            task2.set_probe(&probe2);
+        
+            // Perform swap
+            swap(task1, task2);
+        
+            // --- After swap, no lifecycle events should have happened yet ---
+            expect(eq(probe1.destroyed, false));
+            expect(eq(probe2.destroyed, false));
+            expect(eq(probe1.awaited, false));
+            expect(eq(probe2.awaited, false));
+            expect(eq(probe1.moved, false));
+            expect(eq(probe2.moved, false));
+        
+            // --- Run both tasks ---
+            const auto result1 = run(task1);  
+            
+            // --- Probe behavior must follow the coroutine, not the wrapper ---
+            expect(eq(probe1.awaited, false));
+            expect(eq(probe2.awaited, true));
+            
+            const auto result2 = run(task2);
+
+            // --- Probe behavior must follow the coroutine, not the wrapper ---
+            expect(eq(probe1.awaited, true));
+        
+            // Values must be swapped
+            expect(eq(result1, expected2));
+            expect(eq(result2, expected1));
+        
+            // Neither should be destroyed yet (still in scope)
+            expect(eq(probe1.destroyed, false));
+            expect(eq(probe2.destroyed, false));
+        } // Destruction happens here
+        expect(eq(probe1.destroyed, true));
+        expect(eq(probe2.destroyed, true));
+    };
+
     "move assignment sets moved and destroys assigned-to"_test = [] mutable {
         constexpr int expected  = 5;
         constexpr int discarded = 10;
