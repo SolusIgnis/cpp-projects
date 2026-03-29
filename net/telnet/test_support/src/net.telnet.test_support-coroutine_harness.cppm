@@ -108,7 +108,23 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         explicit coroutine_handle_manager(raw_handle_type handle) : handle_(handle) {}
 
-        ~coroutine_handle_manager() noexcept(false) { destroy(); }
+        ~coroutine_handle_manager() noexcept(false)
+        {
+            if (handle_) {
+                bool done{handle_.done()};
+                probe_ptr probe{handle_.promise().probe};
+                
+                std::exchange(handle_, {}).destroy();
+
+                if (probe) {
+                    probe->destroyed = true;
+                } else if (!done && (std::uncaught_exceptions() == 0)) {
+                    throw std::logic_error(
+                        "test_task coroutine frame destroyed before coroutine completion without probe attached"
+                    );
+                }
+            }
+        }
 
         coroutine_handle_manager(const coroutine_handle_manager&)            = delete;
         coroutine_handle_manager& operator=(const coroutine_handle_manager&) = delete;
@@ -137,27 +153,6 @@ export namespace net::telnet::test_support::coroutine_harness {
         {
             using std::swap;
             swap(lhs.handle_, rhs.handle_);
-        }
-
-    private:
-        void destroy() noexcept(false)
-        {
-            if (handle_) {
-                auto destroying_handle = std::exchange(handle_, {});
-
-                bool done{destroying_handle.done()};
-                probe_ptr probe{destroying_handle.promise().probe};
-
-                destroying_handle.destroy();
-
-                if (probe) {
-                    probe->destroyed = true;
-                } else if (!done && (std::uncaught_exceptions() == 0)) {
-                    throw std::logic_error(
-                        "test_task coroutine frame destroyed before coroutine completion without probe attached"
-                    );
-                }
-            }
         }
     };
 
