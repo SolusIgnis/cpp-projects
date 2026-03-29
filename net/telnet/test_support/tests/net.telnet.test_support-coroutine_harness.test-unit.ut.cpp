@@ -249,21 +249,32 @@ suite coroutine_harness_tests = [] mutable {
     };
     
     "double await across swap throws"_test = [] mutable {
-        auto task1 = echo({});
-        auto task2 = echo({});
+        auto task1 = echo({}); //A
+        auto task2 = echo({}); //B
 
-        [[maybe_unused]] const auto result1 = run(task1);
+        [[maybe_unused]] const auto result1 = run(task1); //run A as task1
         
         using std::swap;
-        swap(task1, task2);
+        swap(task1, task2); //swap A and B
 
-        bool threw = false;
-        try {
-            [[maybe_unused]] const auto result2 = run(task2);
-        } catch (const std::logic_error&) {
-            threw = true;
+        {
+            bool threw = false;
+            try {
+                [[maybe_unused]] const auto result2 = run(task2); //run A as task2
+            } catch (const std::logic_error&) {
+                threw = true;
+            }
+            expect(eq(threw, true));
         }
-        expect(eq(threw, true));
+        {
+            bool threw = false;
+            try {
+                [[maybe_unused]] const auto result3 = run(task1); //run B as task1
+            } catch (const std::logic_error&) {
+                threw = true;
+            }
+            expect(eq(threw, false));
+        }
     };
     
     "double await across move construction throws"_test = [] mutable {
@@ -283,8 +294,10 @@ suite coroutine_harness_tests = [] mutable {
     };
 
     "double await across move assignment throws"_test = [] mutable {
+        coroutine_probe probe;
+        
         auto task1 = echo({});
-        auto task2 = echo({});
+        auto task2 = echo({}).set_probe(&probe); //set probe to allow destruction without execution
 
         [[maybe_unused]] const auto result1 = run(task1);
         
