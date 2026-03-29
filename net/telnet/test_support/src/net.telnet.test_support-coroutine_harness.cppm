@@ -115,14 +115,9 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         coroutine_handle_manager(coroutine_handle_manager&& other) noexcept : handle_(std::exchange(other.handle_, {})) {}
 
-        coroutine_handle_manager& operator=(coroutine_handle_manager&& other) noexcept(false)
+        coroutine_handle_manager& operator=(coroutine_handle_manager&& other) noexcept(std::is_nothrow_swappable_v<coroutine_handle_manager>)
         {
-            if (this != &other) {
-                if (handle_)
-                    destroy();
-
-                handle_ = std::exchange(other.handle_, {});
-            }
+            swap(*this, other);
             return *this;
         }
 
@@ -137,6 +132,12 @@ export namespace net::telnet::test_support::coroutine_harness {
         bool done() const { return handle_.done(); }
 
         decltype(auto) promise() { return handle_.promise(); }
+
+        friend void swap(coroutine_handle_manager& lhs, coroutine_handle_manager& rhs) noexcept(std::is_nothrow_swappable_v<raw_handle_type>)
+        {
+            using std::swap;
+            swap(lhs.handle_, rhs.handle_);
+        }
 
     private:
         void destroy() noexcept(false)
