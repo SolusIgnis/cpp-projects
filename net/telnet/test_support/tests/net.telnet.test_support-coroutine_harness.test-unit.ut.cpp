@@ -41,7 +41,39 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::none)));
     };
     
+    "test_task default-constructs empty"_test = [] mutable {
+       test_task<int> task1;
+       test_task<void> task2;
+       test_task<std::array<int,1024>> task3;
+       
+       expect(eq(static_cast<bool>(task1), false));
+       expect(eq(static_cast<bool>(task2), false));
+       expect(eq(static_cast<bool>(task3), false));
+    };
     
+    "run throws on empty test_task"_test = [] mutable {
+        test_task<void> task;
+        
+        bool threw = false;
+        try {
+            [[maybe_unused]] const auto result = run(task);
+        } catch (const std::logic_error&) {
+            threw = true;
+        }
+        expect(eq(threw, true));
+    };
+    
+    "operator co_await throws from empty test_task"_test = [] mutable {
+        test_task<void> empty_task;
+        
+        bool threw = false;
+        try {
+            [[maybe_unused]] const auto awaiter = empty_task.operator co_await();
+        } catch (const std::logic_error&) {
+            threw = true;
+        }
+        expect(eq(threw, true));
+    };
 
     "run returns void"_test = [] mutable {
         coroutine_probe probe;
@@ -54,6 +86,19 @@ suite coroutine_harness_tests = [] mutable {
 
         expect(eq(probe.awaited, true));
         expect(eq(probe.done, true));
+    };
+
+    "co_await throws from empty test_task"_test = [] mutable {
+        test_task<int> empty_task;
+        
+        
+        bool threw = false;
+        try {
+            [[maybe_unused]] const auto result = run(task);
+        } catch (const std::logic_error&) {
+            threw = true;
+        }
+        expect(eq(threw, true));
     };
 
     "probe lifecycle"_test = [] mutable {

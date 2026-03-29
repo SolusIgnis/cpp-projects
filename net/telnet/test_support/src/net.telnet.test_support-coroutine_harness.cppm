@@ -145,7 +145,7 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         explicit operator bool() const noexcept { return handle_ != nullptr; }
 
-        bool done() const { return handle_.done(); }
+        bool done() const { return (handle_)?(handle_.done()):false; }
 
         decltype(auto) promise() { return handle_.promise(); }
 
@@ -282,6 +282,9 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         void prepare_co_await(coroutine_probe::path await_path)
         {
+            if (!handle_) {
+                throw std::logic_error("test_task awaited while empty");
+            }
             if (awaited_) {
                 throw std::logic_error("test_task awaited more than once");
             }
