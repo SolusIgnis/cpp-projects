@@ -223,7 +223,7 @@ export namespace net::telnet::test_support::coroutine_harness {
         test_task(const test_task&)            = delete;
         test_task& operator=(const test_task&) = delete;
 
-        test_task(test_task&& other) noexcept : handle_(std::exchange(other.handle_, {}))
+        test_task(test_task&& other) noexcept : handle_(std::exchange(other.handle_, {}), awaited_(std::exchange(other.awaited_, {})))
         {
             if (handle_ && handle_.promise().probe)
                 handle_.promise().probe->moved = true;
