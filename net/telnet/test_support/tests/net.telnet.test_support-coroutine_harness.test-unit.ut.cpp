@@ -158,6 +158,14 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probe1.destroyed, true));
         expect(eq(probe2.destroyed, true));
     };
+    
+    "swap is its own inverse operation (involution)"_test = [] mutable {
+
+    };
+    
+    "self-swap is idempotent"_test = [] mutable {
+        
+    };
 
     "move assignment sets moved and destroys assigned-to"_test = [] mutable {
         constexpr int expected  = 5;
@@ -239,6 +247,58 @@ suite coroutine_harness_tests = [] mutable {
         }
         expect(eq(threw, true));
     };
+    
+    "double await across swap throws"_test = [] mutable {
+        auto task1 = echo({});
+        auto task2 = echo({});
+
+        [[maybe_unused]] const auto result1 = run(task1);
+        
+        using std::swap;
+        swap(task1, task2);
+
+        bool threw = false;
+        try {
+            [[maybe_unused]] const auto result2 = run(task2);
+        } catch (const std::logic_error&) {
+            threw = true;
+        }
+        expect(eq(threw, true));
+    };
+    
+    "double await across move construction throws"_test = [] mutable {
+        auto task1 = echo({});
+
+        [[maybe_unused]] const auto result1 = run(task1);
+        
+        auto task2 = std::move(task1); //move construction
+
+        bool threw = false;
+        try {
+            [[maybe_unused]] const auto result2 = run(task2);
+        } catch (const std::logic_error&) {
+            threw = true;
+        }
+        expect(eq(threw, true));
+    };
+
+    "double await across move assignment throws"_test = [] mutable {
+        auto task1 = echo({});
+        auto task2 = echo({});
+
+        [[maybe_unused]] const auto result1 = run(task1);
+        
+        task2 = std::move(task1); //move assignment
+
+        bool threw = false;
+        try {
+            [[maybe_unused]] const auto result2 = run(task2);
+        } catch (const std::logic_error&) {
+            threw = true;
+        }
+        expect(eq(threw, true));
+    };
+
 
     "exception propagates"_test = [] mutable {
         auto task = []() -> test_task<int> {
