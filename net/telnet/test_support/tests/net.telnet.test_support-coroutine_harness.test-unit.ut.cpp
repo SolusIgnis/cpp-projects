@@ -116,14 +116,18 @@ suite coroutine_harness_tests = [] mutable {
         constexpr int discarded = 10;
         
         coroutine_probe probe1;
-        auto task1 = echo(expected);
-        task1.set_probe(&probe1);
-
         coroutine_probe probe2;
+        
         auto task2 = echo(discarded);
         task2.set_probe(&probe2);
+        {
+            auto task1 = echo(expected);
+            task1.set_probe(&probe1);
 
-        task2       = std::move(task1); // move assignment
+            task2 = std::move(task1); // move assignment
+            expect(eq(probe1.moved, true));
+            expect(eq(probe2.destroyed, false));
+        } //destruction of discarded task occurs here when task1 destructor runs
         const auto result = run(task2);
 
         expect(eq(result, expected));
