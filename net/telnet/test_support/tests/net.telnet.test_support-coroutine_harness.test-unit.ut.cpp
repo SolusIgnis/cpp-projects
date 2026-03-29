@@ -111,7 +111,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(threw, true));
     };
 
-    "swap exchanges tasks and preserves invariants"_test = [] {
+    "swap exchanges tasks and preserves invariants"_test = [] mutable {
         constexpr int expected1 = 1;
         constexpr int expected2 = 2;
     
