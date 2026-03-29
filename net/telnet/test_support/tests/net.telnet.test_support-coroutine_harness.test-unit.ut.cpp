@@ -40,6 +40,8 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probe.moved, false));
         expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::none)));
     };
+    
+    
 
     "run returns void"_test = [] mutable {
         coroutine_probe probe;
@@ -355,7 +357,7 @@ suite coroutine_harness_tests = [] mutable {
         coroutine_probe probe;
         
         auto task1 = echo({});
-        decltype(echo) task2;
+        decltype(echo({})) task2;
 
         [[maybe_unused]] const auto result1 = run(task1);
         
