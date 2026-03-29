@@ -112,22 +112,22 @@ suite coroutine_harness_tests = [] mutable {
     };
 
     "swap exchanges tasks and preserves invariants"_test = [] mutable {
-        constexpr int expected1 = 1;
-        constexpr int expected2 = 2;
+        constexpr int expected1 = 1; //A
+        constexpr int expected2 = 2; //B
     
         coroutine_probe probe1{};
         coroutine_probe probe2{};
         {
-            auto task1 = echo(expected1);
-            auto task2 = echo(expected2);
+            auto task1 = echo(expected1); //A
+            auto task2 = echo(expected2); //B
         
-            task1.set_probe(&probe1);
-            task2.set_probe(&probe2);
+            task1.set_probe(&probe1); //A
+            task2.set_probe(&probe2); //B
         
             // Perform swap
-            swap(task1, task2);
+            swap(task1, task2); //swap A and B
         
-            // --- After swap, no lifecycle events should have happened yet ---
+            // After swap, no lifecycle events should have happened yet
             expect(eq(probe1.destroyed, false));
             expect(eq(probe2.destroyed, false));
             expect(eq(probe1.awaited, false));
@@ -135,21 +135,20 @@ suite coroutine_harness_tests = [] mutable {
             expect(eq(probe1.moved, false));
             expect(eq(probe2.moved, false));
         
-            // --- Run both tasks ---
-            const auto result1 = run(task1);  
+            const auto result1 = run(task1); // Run B
             
-            // --- Probe behavior must follow the coroutine, not the wrapper ---
-            expect(eq(probe1.awaited, false));
-            expect(eq(probe2.awaited, true));
+            // Probe behavior must follow the coroutine, not the wrapper
+            expect(eq(probe1.awaited, false)); //A
+            expect(eq(probe2.awaited, true));  //B
             
-            const auto result2 = run(task2);
+            const auto result2 = run(task2); // Run A
 
-            // --- Probe behavior must follow the coroutine, not the wrapper ---
-            expect(eq(probe1.awaited, true));
+            // Probe behavior must follow the coroutine, not the wrapper
+            expect(eq(probe1.awaited, true)); //A
         
             // Values must be swapped
-            expect(eq(result1, expected2));
-            expect(eq(result2, expected1));
+            expect(eq(result1, expected2)); //B
+            expect(eq(result2, expected1)); //A
         
             // Neither should be destroyed yet (still in scope)
             expect(eq(probe1.destroyed, false));
