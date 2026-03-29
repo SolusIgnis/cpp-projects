@@ -125,6 +125,7 @@ suite coroutine_harness_tests = [] mutable {
             task2.set_probe(&probe2); //B
         
             // Perform swap
+            using std::swap;
             swap(task1, task2); //swap A and B
         
             // After swap, no lifecycle events should have happened yet
@@ -159,11 +160,67 @@ suite coroutine_harness_tests = [] mutable {
     };
     
     "swap is its own inverse operation (involution)"_test = [] mutable {
+        constexpr int expected1 = 1; //A
+        constexpr int expected2 = 2; //B
+    
+        coroutine_probe probe1{};
+        coroutine_probe probe2{};
+        
+        auto task1 = echo(expected1); //A
+        auto task2 = echo(expected2); //B
+    
+        task1.set_probe(&probe1); //A
+        task2.set_probe(&probe2); //B
+    
+        // Perform double swap
+        using std::swap;
+        swap(task1, task2); //swap A and B
+        swap(task1, task2); //swap B and A back
+  
+        const auto result1 = run(task1); // Run A
+        
+        // Probe behavior must follow the coroutine, not the wrapper
+        expect(eq(probe1.awaited, true));  //A
+        expect(eq(probe2.awaited, false)); //B
+        
+        const auto result2 = run(task2); // Run B
 
+        // Probe behavior must follow the coroutine, not the wrapper
+        expect(eq(probe2.awaited, true)); //B
+    
+        // Values must NOT be swapped
+        expect(eq(result1, expected1)); //A
+        expect(eq(result2, expected2)); //B
     };
     
     "self-swap is idempotent"_test = [] mutable {
-        
+        constexpr int expected = 42;
+    
+        coroutine_probe probe{};
+    
+        {
+            auto task = echo(expected);
+            task.set_probe(&probe);
+    
+            // Perform self-swap
+            using std::swap;
+            swap(task, task);
+    
+            // After swap, no lifecycle events should have happened yet
+            expect(eq(probe.destroyed, false));
+            expect(eq(probe.awaited, false));
+            expect(eq(probe.moved, false));
+    
+            // Still behaves normally
+            const auto result = run(task);
+            expect(eq(result, expected));
+    
+            expect(eq(probe.awaited, true));
+    
+            // Should not be destroyed yet (still in scope)
+            expect(eq(probe.destroyed, false));
+        } // Destruction happens here
+        expect(eq(probe.destroyed, true));
     };
 
     "move assignment sets moved and destroys assigned-to"_test = [] mutable {
@@ -283,6 +340,8 @@ suite coroutine_harness_tests = [] mutable {
         
         auto task2 = std::move(task1); //move construction
 
+        expect(eq(static_cast<bool>(task1), false));
+
         bool threw = false;
         try {
             [[maybe_unused]] const auto result2 = run(task2);
@@ -302,6 +361,8 @@ suite coroutine_harness_tests = [] mutable {
         
         task2 = std::move(task1); //move assignment
 
+        expect(eq(static_cast<bool>(task1), false));
+
         bool threw = false;
         try {
             [[maybe_unused]] const auto result2 = run(task2);
@@ -310,7 +371,6 @@ suite coroutine_harness_tests = [] mutable {
         }
         expect(eq(threw, true));
     };
-
 
     "exception propagates"_test = [] mutable {
         auto task = []() -> test_task<int> {
