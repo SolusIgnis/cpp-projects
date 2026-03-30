@@ -31,25 +31,29 @@ module; //Including Asio in the Global Module Fragment until importable header u
 // Module partition interface unit
 export module net.telnet:awaitables;
 
-import std; //NOLINT for std::move
+import std; //NOLINT
 
 export import :options; ///< @see "net.telnet-options.cppm" for `option`
 
-//namespace asio = boost::asio;
+namespace net::telnet::awaitables {
+    struct adl_lookup_tag {};
+
+    //Delete free `operator co_await` for ADL purposes.
+    void operator co_await(adl_lookup_tag) = delete;
+} //namespace net::telnet::awaitables
 
 export namespace net::telnet::awaitables {
     /**
      * @brief Wrapper for an awaitable with a semantic tag for type safety.
      * @tparam Tag The semantic tag type.
-     * @tparam T The awaitable's value type (i.e. the "return type" of `co_await`ing it) (e.g., `void`).
-     * @tparam Awaitable The underlying awaitable type (default: `boost::asio::awaitable<T>`).
+     * @tparam AwaitableT The underlying `Awaitable` type (e.g.: `asio::awaitable<void>`).
      * @remark Provides implicit conversion to/from the underlying awaitable and supports direct `co_await`.
      * @see `tags` namespace for semantic tag types, `:protocol_fsm`, `:internal`
      */
-    template<typename Tag, typename T, typename Awaitable = asio::awaitable<T>>
+    template<typename Tag, typename AwaitableT>
     class tagged_awaitable {
     private:
-        using awaitable_type = Awaitable; ///< Underlying awaitable type
+        using awaitable_type = AwaitableT; ///< Underlying awaitable type
 
         awaitable_type awaitable_; ///< The wrapped awaitable
 
@@ -60,27 +64,72 @@ export namespace net::telnet::awaitables {
         tagged_awaitable() = default;
 
         ///@brief Constructs from an awaitable.
-        tagged_awaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
+        explicit(false) tagged_awaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
+
+        ///@brief Prevent copy construction from a tagged_awaitable with a different tag.
+        template<typename OtherTag, typename OtherAwaitable>
+        tagged_awaitable(const tagged_awaitable<OtherTag, OtherAwaitable>&) = delete;
+
+        ///@brief Prevent move construction from a tagged_awaitable with a different tag.
+        template<typename OtherTag, typename OtherAwaitable>
+        tagged_awaitable(tagged_awaitable<OtherTag, OtherAwaitable>&&) = delete;
 
         ///@brief Implicit conversion to underlying awaitable (lvalue).
-        operator awaitable_type&() noexcept { return awaitable_; }
+        explicit(false) operator awaitable_type() & noexcept { return awaitable_; }
 
         ///@brief Implicit conversion to underlying awaitable (const lvalue).
-        operator const awaitable_type&() const noexcept { return awaitable_; }
+        explicit(false) operator awaitable_type() const& noexcept { return awaitable_; }
 
         ///@brief Implicit conversion to underlying awaitable (rvalue).
-        operator awaitable_type&&() noexcept { return std::move(awaitable_); }
+        explicit(false) operator awaitable_type() && noexcept { return std::move(awaitable_); }
 
         //NOLINTEND(google-explicit-constructor)
 
-        ///@brief Supports co_await for lvalue.
-        auto operator co_await() & noexcept { return awaitable_.operator co_await(); }
+        ///@brief Explicit conversion to underlying awaitable (lvalue).
+        awaitable_type& get() & noexcept { return awaitable_; }
 
-        ///@brief Supports co_await for const lvalue.
-        auto operator co_await() const& noexcept { return awaitable_.operator co_await(); }
+        ///@brief Explicit conversion to underlying awaitable (const lvalue).
+        const awaitable_type& get() const& noexcept { return awaitable_; }
 
-        ///@brief Supports co_await for rvalue.
-        auto operator co_await() && noexcept { return std::move(awaitable_).operator co_await(); }
+        ///@brief Explicit conversion to underlying awaitable (rvalue).
+        awaitable_type&& get() && noexcept { return std::move(awaitable_); }
+
+        ///@brief Supports member `co_await` for lvalue.
+        decltype(auto) operator co_await() &
+            requires requires { awaitable_.operator co_await(); }
+        {
+            return awaitable_.operator co_await();
+        }
+
+        ///@brief Supports member `co_await` for const lvalue.
+        decltype(auto) operator co_await() const&
+            requires requires { awaitable_.operator co_await(); }
+        {
+            return awaitable_.operator co_await();
+        }
+
+        ///@brief Supports member `co_await` for rvalue.
+        decltype(auto) operator co_await() &&
+            requires requires { std::move(awaitable_).operator co_await(); }
+        {
+            return std::move(awaitable_).operator co_await();
+        }
+
+        ///@brief Supports ADL `co_await` universally.
+        template<typename Self>
+            requires std::same_as<std::remove_cvref_t<Self>, tagged_awaitable>
+        friend decltype(auto) operator co_await(Self&& wrapper)
+            requires (!requires { std::forward<Self>(wrapper).awaitable_.operator co_await(); })
+        {
+            using net::telnet::awaitables::operator co_await;
+            auto&& awaitable = std::forward<Self>(wrapper).awaitable_;
+
+            if constexpr (requires { operator co_await(std::forward<decltype(awaitable)>(awaitable)); }) {
+                return operator co_await(std::forward<decltype(awaitable)>(awaitable));
+            } else {
+                return std::forward<decltype(awaitable)>(awaitable);
+            }
+        }
     }; //class tagged_awaitable
 
     /**
@@ -92,13 +141,13 @@ export namespace net::telnet::awaitables {
     /// @brief Semantic tag `struct`s to specialize `tagged_awaitable`. @see `tagged_awaitable`
     namespace tags {
         /// @brief Tag to specialize `tagged_awaitable` for option enablement handlers. @see `tagged_awaitable`
-        struct option_enablement_tag {};
+        struct option_enablement_tag;
 
         /// @brief Tag to specialize `tagged_awaitable` for option disablement handlers. @see `tagged_awaitable`
-        struct option_disablement_tag {};
+        struct option_disablement_tag;
 
         /// @brief Tag to specialize `tagged_awaitable` for subnegotiation handlers. @see `tagged_awaitable`
-        struct subnegotiation_tag {};
+        struct subnegotiation_tag;
     } //namespace tags
 
     /**
@@ -106,19 +155,28 @@ export namespace net::telnet::awaitables {
      * @brief Awaitable type for option enablement handlers.
      * @see `tagged_awaitable`, `tags::option_enablement_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using option_enablement_awaitable = tagged_awaitable<tags::option_enablement_tag, void>;
+    using option_enablement_awaitable = tagged_awaitable<tags::option_enablement_tag, asio::awaitable<void>>;
 
     /**
      * @typedef option_disablement_awaitable
      * @brief Awaitable type for option disablement handlers.
      * @see `tagged_awaitable`, `tags::option_disablement_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using option_disablement_awaitable = tagged_awaitable<tags::option_disablement_tag, void>;
+    using option_disablement_awaitable = tagged_awaitable<tags::option_disablement_tag, asio::awaitable<void>>;
 
     /**
      * @typedef subnegotiation_awaitable
      * @brief Awaitable type for subnegotiation handlers.
      * @see `tagged_awaitable`, `tags::subnegotiation_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using subnegotiation_awaitable = tagged_awaitable<tags::subnegotiation_tag, std::tuple<option, std::vector<byte_t>>>;
+    using subnegotiation_awaitable =
+        tagged_awaitable<tags::subnegotiation_tag, asio::awaitable<std::tuple<option, std::vector<byte_t>>>>;
 } //namespace net::telnet::awaitables
+
+namespace std {
+    ///@brief Partial specialization of `std::coroutine_traits` forwarding the promise type for a `tagged_awaitable` to the promise type of its underlying awaitable type.
+    template<typename Tag, typename AwaitableT, typename... Args>
+    struct coroutine_traits<net::telnet::awaitables::tagged_awaitable<Tag, AwaitableT>, Args...> {
+        using promise_type = typename std::coroutine_traits<AwaitableT, Args...>::promise_type;
+    };
+} //namespace std

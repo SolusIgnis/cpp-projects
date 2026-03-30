@@ -26,9 +26,6 @@
  * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage, `:stream` for negotiation operations, `:types` for `telnet::command`
  */
 
-module; //Including Asio in the Global Module Fragment until importable header units are reliable.
-#include <asio.hpp>
-
 //Module partition interface unit
 export module net.telnet:options;
 
@@ -36,8 +33,6 @@ import std; //NOLINT For std::string, std::vector, std::function, std::optional,
 
 export import :types;  ///< @see "net.telnet-types.cppm" for `byte_t`
 export import :errors; ///< @see "net.telnet-errors.cppm" for `error` enum
-
-//namespace asio = boost::asio;
 
 export namespace net::telnet {
     /**
@@ -335,6 +330,18 @@ export namespace net::telnet {
         extended_options_list              = 0xFF  ///< Extended-Options-List (@see RFC 861)
         // clang-format on
     }; //enum class option::id_num
+
+    /**
+     * @brief Inserts an `option::id_num` into a `std::ostream`.
+     * @param o_str The `std::ostream` into which to insert the `command`.
+     * @param opt_id The `option::id_num` to insert.
+     * @return A reference to the stream for inserter chaining.
+     * @remark Inserts the `option::id_num` as its representation in the underlying type of the enum.
+     */
+    std::ostream& operator<<(std::ostream& o_str, option::id_num opt_id)
+    {
+        return o_str << std::to_underlying(opt_id);
+    }
 
     /**
      * @brief Thread-safe registry for managing `option` instances in the protocol state machine.

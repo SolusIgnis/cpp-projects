@@ -319,3 +319,9 @@ IntegerLiteralSeparator:
 #  Hex:                    0
 #  HexMinDigitsInsert:     0
 #  HexMaxDigitsRemove:     0
+
+#NumericLiteralCase:
+#  ExponentLetter: Leave
+#  HexDigit:       Upper
+#  Prefix:         Lower
+#  Suffix:         Upper

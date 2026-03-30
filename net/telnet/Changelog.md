@@ -3,6 +3,11 @@
 # Changelog.md
 
 ## [Unreleased] - TBD
+### Added
+- Added CMake support for unit testing frameworks and CTest.
+- Added unit tests for `net.asio_concepts` module.
+- Created `test_support` module with a coroutine test harness consisting of `test_task` coroutine tasks and a run(Task&&) template function to synchronously execute a chain of `test_task` coroutines.
+- Added unit tests for the `test_support` module.
 
 ## [0.5.7] - February 11, 2026
 ### Added

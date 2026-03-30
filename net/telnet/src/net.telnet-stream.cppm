@@ -336,10 +336,10 @@ export namespace net::telnet {
             void do_response(awaitables::subnegotiation_awaitable awaitable, Self&& self);
 
             ///@brief Handle any `tagged_awaitable` with optional `negotiation_response`.
-            template<typename Self, typename Tag, typename T, typename Awaitable>
+            template<typename Self, typename Tag, typename Awaitable>
             void do_response(
                 std::tuple<
-                    awaitables::tagged_awaitable<Tag, T, Awaitable>,
+                    awaitables::tagged_awaitable<Tag, Awaitable>,
                     std::optional<typename stream::fsm_type::negotiation_response>
                 > response,
                 Self&& self
@@ -761,10 +761,9 @@ export namespace net::telnet {
      * @see `:awaitables` for `SubnegotiationAwaitable`, `:errors` for error codes, RFC 855 for subnegotiation, "net.telnet-stream-async-impl.cpp" for `async_write_subnegotiation`
      */
     /**
-     * @overload void stream::input_processor::do_response(std::tuple<awaitables::tagged_awaitable<Tag, T, Awaitable>, std::optional<typename stream::fsm_type::negotiation_response>> response, Self&& self)
+     * @overload void stream::input_processor::do_response(std::tuple<awaitables::tagged_awaitable<Tag, Awaitable>, std::optional<typename stream::fsm_type::negotiation_response>> response, Self&& self)
      * @tparam Self The type of the coroutine self reference.
      * @tparam Tag The semantic tag for `tagged_awaitable`.
-     * @tparam T The underlying value type for `tagged_awaitable`.
      * @tparam Awaitable The underlying Awaitable type for `tagged_awaitable`.
      * @param response Tuple of awaitable and optional negotiation response.
      * @param self The completion handler to forward.

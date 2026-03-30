@@ -616,12 +616,10 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
-    template<typename Self, typename Tag, typename T, typename Awaitable>
+    template<typename Self, typename Tag, typename Awaitable>
     void stream<NLS, PC>::input_processor<MBS>::do_response(
-        std::tuple<
-            awaitables::tagged_awaitable<Tag, T, Awaitable>,
-            std::optional<typename stream::fsm_type::negotiation_response>
-        > response,
+        std::tuple<awaitables::tagged_awaitable<Tag, Awaitable>, std::optional<typename stream::fsm_type::negotiation_response>>
+            response,
         Self&& self
     )
     {
@@ -647,5 +645,5 @@ namespace net::telnet {
             },
             std::forward<Self>(self)
         );
-    } //stream::input_processor::do_response(tagged_awaitable<Tag, T, Awaitable>, Self&&)
+    } //stream::input_processor::do_response(tagged_awaitable<Tag, Awaitable>, Self&&)
 } //namespace net::telnet

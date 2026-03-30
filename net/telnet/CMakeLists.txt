@@ -62,4 +62,11 @@ target_link_libraries(net.telnet
     net::asio_concepts
 )
 
-add_tests_for_module(net.telnet)
+# Add the net.telnet.test_support library
+add_subdirectory(test_support)
+
+# Create and register test targets linked against the test support library
+add_tests_for_module(net.telnet
+  DEPENDENCIES
+    net.telnet.test_support
+)

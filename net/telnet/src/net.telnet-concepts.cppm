@@ -41,8 +41,6 @@ import std; //NOLINT For std::error_code, std::size_t, std::same_as, std::conver
 import :types;   ///< @see "net.telnet-types.cppm" for telnet::command
 import :options; ///< @see "net.telnet-options.cppm" for telnet::option
 
-//namespace asio = boost::asio;
-
 export namespace net::telnet::concepts {
     //Forward declaration referenced in a following concept definition.
     template<typename ConfigT>
