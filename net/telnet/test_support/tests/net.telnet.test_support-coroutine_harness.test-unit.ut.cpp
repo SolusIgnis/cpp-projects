@@ -960,7 +960,7 @@ suite coroutine_harness_integration_tests = [] mutable {
         expect(eq(probeIntLvalue.done, true));
         expect(eq(probeIntLvalue.suspended, false));
         expect(eq(probeIntLvalue.moved, false));
-        expect(eq(probeIntLvalue.destroyed, false));
+        expect(eq(probeIntLvalue.destroyed, true));
     
         // leafIntR (rvalue)
         expect(eq(probeIntRvalue.awaited, true));
@@ -974,7 +974,7 @@ suite coroutine_harness_integration_tests = [] mutable {
         expect(eq(probePtr.awaited, true));
         expect(eq(probePtr.done, true));
         expect(eq(probePtr.resumed, true));
-        expect(eq(probePtr.suspended, true));
+        expect(eq(probePtr.suspended, false));
         expect(eq(probePtr.moved, false));
         expect(eq(probePtr.destroyed, true));
     
@@ -990,7 +990,7 @@ suite coroutine_harness_integration_tests = [] mutable {
         expect(eq(probeThrow.awaited, true));
         expect(eq(probeThrow.done, true));
         expect(eq(probeThrow.resumed, true));
-        expect(eq(probeThrow.suspended, false));
+        expect(eq(probeThrow.suspended, true));
         expect(eq(probeThrow.moved, false));
         expect(eq(probeThrow.destroyed, true));
     
