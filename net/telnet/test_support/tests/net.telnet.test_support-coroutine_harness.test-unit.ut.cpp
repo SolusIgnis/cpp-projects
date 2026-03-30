@@ -849,7 +849,7 @@ suite dummy_awaitable_tests = [] mutable {
         expect(eq(probe.suspended, false)); // uses ready_awaiter
     };
 };
-#if 0
+#if 1
 suite coroutine_harness_integration_tests = [] mutable {
     "mega coroutine harness: full integration"_test = [] mutable {
         std::vector<int> trace;
