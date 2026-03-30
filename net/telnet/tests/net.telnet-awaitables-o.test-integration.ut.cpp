@@ -13,7 +13,7 @@ using namespace net::telnet::awaitables;
 using namespace net::telnet::test_support::coroutine_harness;
 
 struct test_tag;
-using test_wrapper_int = tagged_awaitable<test_tag, asio::awaitable<int>>;
+using test_wrapper_int  = tagged_awaitable<test_tag, asio::awaitable<int>>;
 using test_wrapper_void = tagged_awaitable<test_tag, asio::awaitable<void>>;
 
 asio::awaitable<int> echo(int value)
@@ -33,34 +33,25 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
     "tagged_awaitable (un)wraps on assignment to/from asio::awaitable"_test = [] mutable {
         int expected = 42;
-        
-        test_wrapper_int wrapped = echo(expected);
+
+        test_wrapper_int wrapped       = echo(expected);
         asio::awaitable<int> unwrapped = std::move(wrapped);
-        
+
         asio::io_context ctx;
 
-        auto fut = asio::co_spawn(
-            ctx,
-            std::move(unwrapped),
-            asio::use_future
-        );
+        auto fut = asio::co_spawn(ctx, std::move(unwrapped), asio::use_future);
 
         ctx.run();
 
         expect(eq(fut.get(), expected));
     };
 
-
     "tagged_awaitable forwards result correctly"_test = [] mutable {
         int expected = 42;
 
         asio::io_context ctx;
 
-        auto fut = asio::co_spawn(
-            ctx,
-            tagged_echo(expected).get(),
-            asio::use_future
-        );
+        auto fut = asio::co_spawn(ctx, tagged_echo(expected).get(), asio::use_future);
 
         ctx.run();
 
@@ -101,9 +92,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         auto leaf = echo(expected);
 
-        auto wrapped_leaf = [&]() mutable -> test_wrapper_int {
-            co_return co_await std::move(leaf);
-        }();
+        auto wrapped_leaf = [&]() mutable -> test_wrapper_int { co_return co_await std::move(leaf); }();
 
         auto fut = asio::co_spawn(ctx, std::move(wrapped_leaf).get(), asio::use_future);
 
@@ -145,8 +134,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
         subnegotiation_awaitable wrapped = []() mutable -> subnegotiation_awaitable {
             co_return std::tuple<option, std::vector<byte_t>>{
-                option::id_num::echo,
-                std::vector<byte_t>{1, 2, 3}
+                option::id_num::echo, std::vector<byte_t>{1, 2, 3}
             };
         }();
 
@@ -162,7 +150,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         ctx.run();
 
         auto [_, result] = fut.get();
-        
+
         expect(eq(result.has_value(), true));
         expect(eq(std::get<1>(*result).size(), std::size_t{3}));
     };
@@ -173,7 +161,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
 
     "tagged_awaitable preserves executor context"_test = [] mutable {
         bool ran_on_executor = false;
-        int expected = 123;
+        int expected         = 123;
 
         asio::io_context ctx;
 
@@ -209,15 +197,15 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         auto leaf = echo(start);
 
         auto middle = [&]() mutable -> test_wrapper_int {
-            int res = co_await std::move(leaf);
-            auto exec = co_await asio::this_coro::executor;
+            int res         = co_await std::move(leaf);
+            auto exec       = co_await asio::this_coro::executor;
             ran_on_executor = (exec == ctx.get_executor());
             co_return res + inc;
         }();
 
         auto top = [&]() mutable -> asio::awaitable<int> {
             int res = co_await std::move(middle).get();
-            co_return res * mult;
+            co_return res* mult;
         };
 
         auto fut = asio::co_spawn(ctx, top(), asio::use_future);
@@ -227,7 +215,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         expect(eq(ran_on_executor, true));
         expect(eq(fut.get(), expected));
     };
-    
+
     // ============================================================
     // Exception Propagation
     // ============================================================
@@ -244,7 +232,7 @@ suite net_telnet_awaitables_asio_integration_tests = [] mutable {
         } catch (std::logic_error&) {
             threw = true;
         }
-        
+
         expect(eq(threw, true));
     };
 };

@@ -113,7 +113,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             if (handle_) {
                 bool done{handle_.done()};
                 probe_ptr probe{handle_.promise().probe};
-                
+
                 std::exchange(handle_, {}).destroy();
 
                 if (probe) {
@@ -131,7 +131,8 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         coroutine_handle_manager(coroutine_handle_manager&& other) noexcept : handle_(std::exchange(other.handle_, {})) {}
 
-        coroutine_handle_manager& operator=(coroutine_handle_manager&& other) noexcept(std::is_nothrow_swappable_v<coroutine_handle_manager>)
+        coroutine_handle_manager&
+            operator=(coroutine_handle_manager&& other) noexcept(std::is_nothrow_swappable_v<coroutine_handle_manager>)
         {
             swap(*this, other);
             return *this;
@@ -145,11 +146,13 @@ export namespace net::telnet::test_support::coroutine_harness {
 
         explicit operator bool() const noexcept { return handle_ != nullptr; }
 
-        bool done() const { return (handle_)?(handle_.done()):false; }
+        bool done() const { return (handle_) ? (handle_.done()) : false; }
 
         decltype(auto) promise() { return handle_.promise(); }
 
-        friend void swap(coroutine_handle_manager& lhs, coroutine_handle_manager& rhs) noexcept(std::is_nothrow_swappable_v<raw_handle_type>)
+        friend void swap(coroutine_handle_manager& lhs, coroutine_handle_manager& rhs) noexcept(
+            std::is_nothrow_swappable_v<raw_handle_type>
+        )
         {
             using std::swap;
             swap(lhs.handle_, rhs.handle_);
@@ -223,7 +226,8 @@ export namespace net::telnet::test_support::coroutine_harness {
         test_task(const test_task&)            = delete;
         test_task& operator=(const test_task&) = delete;
 
-        test_task(test_task&& other) noexcept : handle_(std::exchange(other.handle_, {})), awaited_(std::exchange(other.awaited_, {}))
+        test_task(test_task&& other) noexcept
+            : handle_(std::exchange(other.handle_, {})), awaited_(std::exchange(other.awaited_, {}))
         {
             if (handle_ && handle_.promise().probe)
                 handle_.promise().probe->moved = true;
@@ -265,7 +269,7 @@ export namespace net::telnet::test_support::coroutine_harness {
             prepare_co_await(coroutine_probe::path::rvalue);
             return owning_awaiter{std::exchange(handle_, {})};
         }
-        
+
         friend void swap(test_task& lhs, test_task& rhs) noexcept(std::is_nothrow_swappable_v<coroutine_handle_manager<T>>)
         {
             using std::swap;
@@ -353,12 +357,15 @@ export namespace net::telnet::test_support::coroutine_harness {
             // Only store value if T is not void
             using storage_t = std::conditional_t<std::is_void_v<T>, std::monostate, T>;
             storage_t storage_{};
-        
+
         public:
             constexpr trivial_awaiter_base() = default;
-            constexpr trivial_awaiter_base(storage_t val) noexcept(std::is_nothrow_move_constructible_v<storage_t>) requires (!std::is_void_v<T>)
-                : storage_(std::move(val)) {}
-        
+
+            constexpr trivial_awaiter_base(storage_t val) noexcept(std::is_nothrow_move_constructible_v<storage_t>)
+                requires (!std::is_void_v<T>)
+                : storage_(std::move(val))
+            {}
+
             constexpr auto await_resume() const& noexcept(std::is_nothrow_copy_constructible_v<T>)
                 requires std::is_void_v<T> || std::is_copy_constructible_v<T>
             {
@@ -368,7 +375,7 @@ export namespace net::telnet::test_support::coroutine_harness {
                     return storage_;
                 }
             }
-            
+
             constexpr auto await_resume() & noexcept(std::is_nothrow_copy_constructible_v<T>)
                 requires std::is_void_v<T> || std::is_move_constructible_v<T> || std::is_copy_constructible_v<T>
             {
@@ -380,7 +387,7 @@ export namespace net::telnet::test_support::coroutine_harness {
                     return std::move(storage_);
                 }
             }
-            
+
             constexpr auto await_resume() && noexcept(std::is_nothrow_move_constructible_v<T>)
                 requires std::is_void_v<T> || std::is_move_constructible_v<T>
             {
@@ -391,31 +398,32 @@ export namespace net::telnet::test_support::coroutine_harness {
                 }
             }
         };
-        
+
         ///@brief Trivial awaiter that is always ready.
         template<typename T>
         struct ready_awaiter : trivial_awaiter_base<T> {
             using base = trivial_awaiter_base<T>;
             using base::base;
-        
+
             [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
-        
-            [[noreturn]] std::coroutine_handle<> await_suspend(std::coroutine_handle<>) const {
+
+            [[noreturn]] std::coroutine_handle<> await_suspend(std::coroutine_handle<>) const
+            {
                 throw std::logic_error("ready_awaiter had await_suspend called: contract violation");
             }
         };
-        
+
         template<typename T>
         ready_awaiter(T) -> ready_awaiter<T>;
-        
+
         ///@brief Trivial awaiter that suspends and immediately resumes via symmetric transfer.
         template<typename T>
         struct immediate_awaiter : trivial_awaiter_base<T> {
             using base = trivial_awaiter_base<T>;
             using base::base;
-        
+
             [[nodiscard]] constexpr bool await_ready() const noexcept { return false; }
-        
+
             template<typename U>
             [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> caller) noexcept
                 -> std::coroutine_handle<test_promise<U>>
@@ -424,22 +432,24 @@ export namespace net::telnet::test_support::coroutine_harness {
                     probe->suspended = true;
                 return caller; // symmetric transfer → resume caller right away
             }
-        
-            [[nodiscard]] std::coroutine_handle<> await_suspend(std::coroutine_handle<> caller) const noexcept {
+
+            [[nodiscard]] std::coroutine_handle<> await_suspend(std::coroutine_handle<> caller) const noexcept
+            {
                 return caller; // symmetric transfer → resume caller right away
             }
         };
-        
+
         template<typename T>
         immediate_awaiter(T) -> immediate_awaiter<T>;
-    
+
         namespace adl {
             ///@brief Dummy type made awaitable by free `operator co_await`
-            template<typename T> requires (!std::is_void_v<T>)
+            template<typename T>
+                requires (!std::is_void_v<T>)
             struct awaitable_by_adl {
                 T value{};
             };
-        
+
             ///@brief `operator co_await` for the dummy. @see `awaitable_by_adl`
             template<typename T>
             [[nodiscard]] auto operator co_await(awaitable_by_adl<T> dummy)
@@ -453,7 +463,7 @@ export namespace net::telnet::test_support::coroutine_harness {
     template<typename T, typename Awaitable>
     [[nodiscard]] auto as_task(Awaitable awaitable) -> test_task<T>
     {
-        co_return co_await std::move(awaitable) ;
+        co_return co_await std::move(awaitable);
     }
 
     template<typename Task>

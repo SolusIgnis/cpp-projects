@@ -41,7 +41,7 @@ namespace net::telnet::awaitables {
     //Delete free `operator co_await` for ADL purposes.
     void operator co_await(adl_lookup_tag) = delete;
 } //namespace net::telnet::awaitables
- 
+
 export namespace net::telnet::awaitables {
     /**
      * @brief Wrapper for an awaitable with a semantic tag for type safety.
@@ -68,7 +68,7 @@ export namespace net::telnet::awaitables {
 
         ///@brief Prevent copy construction from a tagged_awaitable with a different tag.
         template<typename OtherTag, typename OtherAwaitable>
-        tagged_awaitable(tagged_awaitable<OtherTag, OtherAwaitable> const&) = delete;
+        tagged_awaitable(const tagged_awaitable<OtherTag, OtherAwaitable>&) = delete;
 
         ///@brief Prevent move construction from a tagged_awaitable with a different tag.
         template<typename OtherTag, typename OtherAwaitable>
@@ -116,14 +116,14 @@ export namespace net::telnet::awaitables {
         }
 
         ///@brief Supports ADL `co_await` universally.
-        template <typename Self>
+        template<typename Self>
             requires std::same_as<std::remove_cvref_t<Self>, tagged_awaitable>
         friend decltype(auto) operator co_await(Self&& wrapper)
             requires (!requires { std::forward<Self>(wrapper).awaitable_.operator co_await(); })
         {
             using net::telnet::awaitables::operator co_await;
             auto&& awaitable = std::forward<Self>(wrapper).awaitable_;
-            
+
             if constexpr (requires { operator co_await(std::forward<decltype(awaitable)>(awaitable)); }) {
                 return operator co_await(std::forward<decltype(awaitable)>(awaitable));
             } else {
@@ -169,16 +169,14 @@ export namespace net::telnet::awaitables {
      * @brief Awaitable type for subnegotiation handlers.
      * @see `tagged_awaitable`, `tags::subnegotiation_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using subnegotiation_awaitable = tagged_awaitable<tags::subnegotiation_tag, asio::awaitable<std::tuple<option, std::vector<byte_t>>>>;
+    using subnegotiation_awaitable =
+        tagged_awaitable<tags::subnegotiation_tag, asio::awaitable<std::tuple<option, std::vector<byte_t>>>>;
 } //namespace net::telnet::awaitables
 
 namespace std {
     ///@brief Partial specialization of `std::coroutine_traits` forwarding the promise type for a `tagged_awaitable` to the promise type of its underlying awaitable type.
     template<typename Tag, typename AwaitableT, typename... Args>
-    struct coroutine_traits<
-        net::telnet::awaitables::tagged_awaitable<Tag, AwaitableT>,
-        Args...
-    > {
+    struct coroutine_traits<net::telnet::awaitables::tagged_awaitable<Tag, AwaitableT>, Args...> {
         using promise_type = typename std::coroutine_traits<AwaitableT, Args...>::promise_type;
     };
 } //namespace std
