@@ -16,9 +16,9 @@ set(_ADD_NAMED_MODULE_INCLUDED TRUE)
 # Private Helpers
 # ============================================================
 
-function(_nm_module_to_alias out_var module_name)
+function(_MODULES_module_to_alias out_var module_name)
   if (NOT module_name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
-    message(FATAL_ERROR "_nm_module_to_alias: invalid module name '${module_name}'")
+    message(FATAL_ERROR "_MODULES_module_to_alias(${module_name}): invalid module name: expected <identifier>[.<identifier>]*")
   endif()
 
   string(FIND "${module_name}" "." _dot_index)
@@ -33,12 +33,10 @@ function(_nm_module_to_alias out_var module_name)
   set(${out_var} "${_alias}" PARENT_SCOPE)
 endfunction()
 
-function(_nm_alias_to_module out_var alias_name)
+function(_MODULES_alias_to_module out_var alias_name)
   # --- Validate basic shape ---
   if (NOT alias_name MATCHES "^[A-Za-z0-9_]+(::[A-Za-z0-9_]+)+$")
-    message(FATAL_ERROR
-      "_nm_alias_to_module: invalid alias '${alias_name}'"
-    )
+    message(FATAL_ERROR "_MODULES_alias_to_module(${alias_name}): invalid alias: expected <identifier>[::<identifier>]*")
   endif()
 
   # Split into components
@@ -126,7 +124,7 @@ function(add_named_module name)
   # --- Target + alias ---
   add_library("${name}" "${_lib_type}")
     
-  _nm_module_to_alias(_alias "${name}")
+  _MODULES_module_to_alias(_alias "${name}")
 message(STATUS "Alias: ${_alias} for ${name}")
   if (TARGET "${_alias}")
     message(FATAL_ERROR "add_named_module(${name}): target \"${_alias}\" already exists")
@@ -181,7 +179,7 @@ message(STATUS "Alias: ${_alias} for ${name}")
 
   # Convert to aliases for linking
   foreach(_import_target IN LISTS NM_ARG_IMPORTS)
-    _nm_module_to_alias(_import_target "${_import_target}")
+    _MODULES_module_to_alias(_import_target "${_import_target}")
     list(APPEND _link_targets "${_import_target}")
   endforeach() 
   

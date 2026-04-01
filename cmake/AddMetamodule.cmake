@@ -55,7 +55,7 @@ function(add_metamodule name)
 
   foreach(_sub ${MM_ARG_SUBMODULES})
     # 2. Submodules must be in namespace
-    if (NOT _sub MATCHES "^${name}::")
+    if (NOT _sub MATCHES "^${name}(\\.|$)")
       message(FATAL_ERROR "add_metamodule(${name}): submodule '${_sub}' is not in namespace '${name}'")
     endif()
     # 3. Submodules must be valid targets
