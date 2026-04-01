@@ -18,7 +18,7 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   )
 endif()
 
-add_named_module(net.telnet.test_support STATIC)
+add_named_module(net.telnet.test_support STATIC
   INTERFACE_UNIT
     src/net.telnet.test_support.cppm
   PARTITIONS
