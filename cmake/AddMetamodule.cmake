@@ -66,10 +66,14 @@ function(add_metamodule name)
     message(FATAL_ERROR "add_metamodule(${name}): cannot include itself in SUBMODULES")
   endif()
 
-  # 2. Submodules must be in namespace
   foreach(_sub ${MM_ARG_SUBMODULES})
+    # 2. Submodules must be in namespace
     if (NOT _sub MATCHES "^${name}::")
       message(FATAL_ERROR "add_metamodule(${name}): submodule '${_sub}' is not in namespace '${name}'")
+    endif()
+    # 3. Submodules must be valid targets
+    if (NOT TARGET "${_sub}")
+      message(FATAL_ERROR "add_metamodule(${name}): submodule '${_sub}' is not a known target")
     endif()
   endforeach()
 

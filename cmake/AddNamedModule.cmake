@@ -20,7 +20,7 @@ function(add_named_module name)
   cmake_parse_arguments(NM_ARG
     "OBJECT;STATIC;NO_TESTS"
     "INTERFACE_UNIT;STD"
-    "BASE_DIRS;PARTITIONS;IMPLEMENTATIONS;LINK_LIBRARIES;TEST_DEPENDENCIES"
+    "BASE_DIRS;PARTITIONS;IMPLEMENTATIONS;IMPORTS;LINK_LIBRARIES;TEST_DEPENDENCIES"
     ${ARGN}
   )
 
@@ -137,9 +137,21 @@ function(add_named_module name)
   endif()
 
   # --- Link libraries ---
+
+  # Convert to aliases for linking
+  foreach(_import_target IN LISTS ${NM_ARG_IMPORTS})
+    string(REPLACE "." "::" _import_target "${_import_target}")
+    list(APPEND _link_targets "${_import_target}")
+  endforeach() 
+  
   if (NM_ARG_LINK_LIBRARIES)
+    list(APPEND _link_targets ${NM_ARG_LINK_LIBRARIES})
+  endif()
+  
+  if (_link_targets)
     target_link_libraries("${name}"
-      PUBLIC ${NM_ARG_LINK_LIBRARIES}
+      PUBLIC
+        ${_link_targets}
     )
   endif()
 
