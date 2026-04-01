@@ -39,19 +39,6 @@ function(add_metamodule name)
     )
   endif()
 
-  if (NOT MM_ARG_INTERFACE_UNIT)
-    message(FATAL_ERROR
-      "add_metamodule(${name}): INTERFACE_UNIT is required"
-    )
-  endif()
-
-  list(LENGTH MM_ARG_INTERFACE_UNIT _iface_len)
-  if (NOT _iface_len EQUAL 1)
-    message(FATAL_ERROR
-      "add_metamodule(${name}): INTERFACE_UNIT must contain exactly one file"
-    )
-  endif()
-
   if (NOT MM_ARG_SUBMODULES)
     message(FATAL_ERROR
       "add_metamodule(${name}): SUBMODULES is required"
@@ -81,9 +68,12 @@ function(add_metamodule name)
 
   set(_args
     STATIC
-    INTERFACE_UNIT ${MM_ARG_INTERFACE_UNIT}
-    LINK_LIBRARIES ${MM_ARG_SUBMODULES}
+    IMPORTS ${MM_ARG_SUBMODULES}
   )
+
+  if (MM_ARG_INTERFACE_UNIT)
+    list(APPEND _args INTERFACE_UNIT ${MM_ARG_INTERFACE_UNIT})
+  endif()
 
   if (MM_ARG_STD)
     list(APPEND _args STD ${MM_ARG_STD})
