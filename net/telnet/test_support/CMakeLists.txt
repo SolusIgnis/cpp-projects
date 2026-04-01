@@ -19,10 +19,8 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 endif()
 
 add_named_module(net.telnet.test_support STATIC
-  INTERFACE_UNIT
-    src/net.telnet.test_support.cppm
   PARTITIONS
     src/net.telnet.test_support-coroutine_harness.cppm
-  LINK_LIBRARIES
-    base::base
+  Imports
+    base
 )

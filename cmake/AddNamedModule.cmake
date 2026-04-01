@@ -13,6 +13,61 @@ include_guard(GLOBAL)
 set(_ADD_NAMED_MODULE_INCLUDED TRUE)
 
 # ============================================================
+# Private Helpers
+# ============================================================
+
+function(_nm_module_to_alias out_var module_name)
+  if (NOT module_name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
+    message(FATAL_ERROR
+      "_nm_module_to_alias: invalid module name '${module_name}'"
+    )
+  endif()
+
+  string(FIND "${module_name}" "." _dot_index)
+
+  if (_dot_index EQUAL -1)
+    # No dot → stutter
+    set(_alias "${module_name}::${module_name}")
+  else()
+    string(REPLACE "." "::" _alias "${module_name}")
+  endif()
+
+  set(${out_var} "${_alias}" PARENT_SCOPE)
+endfunction()
+
+function(_nm_alias_to_module out_var alias_name)
+  # --- Validate basic shape ---
+  if (NOT alias_name MATCHES "^[A-Za-z0-9_]+(::[A-Za-z0-9_]+)+$")
+    message(FATAL_ERROR
+      "_nm_alias_to_module: invalid alias '${alias_name}'"
+    )
+  endif()
+
+  # Split into components
+  string(REPLACE "::" ";" _parts "${alias_name}")
+  list(LENGTH _parts _len)
+
+  if (_len EQUAL 2)
+    # Possible stutter case: base::base
+    list(GET _parts 0 _first)
+    list(GET _parts 1 _second)
+
+    if (_first STREQUAL _second)
+      # Collapse stutter
+      set(${out_var} "${_first}" PARENT_SCOPE)
+      return()
+    endif()
+  endif()
+
+  # General case: replace :: with .
+  string(REPLACE "::" "." _module "${alias_name}")
+  set(${out_var} "${_module}" PARENT_SCOPE)
+endfunction()
+
+
+
+
+# ============================================================
 # Public API
 # ============================================================
 
@@ -73,19 +128,7 @@ function(add_named_module name)
   # --- Target + alias ---
   add_library("${name}" "${_lib_type}")
     
-  # Derive alias:
-  # - base             -> base::base
-  # - base.vocab       -> base::vocab
-  # - base.vocab.ptr   -> base::vocab::ptr
-  string(FIND "${name}" "." _dot_index)
-    
-  if (_dot_index EQUAL -1)
-    # No dot → stutter
-    set(_alias "${name}::${name}")
-  else()
-    # Replace all dots with ::
-    string(REPLACE "." "::" _alias "${name}")
-  endif()
+  _nm_module_to_alias(_alias, "${name}")
   
   if (TARGET "${_alias}")
     message(FATAL_ERROR "add_named_module(${name}): target \"${_alias}\" already exists")
@@ -140,7 +183,7 @@ function(add_named_module name)
 
   # Convert to aliases for linking
   foreach(_import_target IN LISTS NM_ARG_IMPORTS)
-    string(REPLACE "." "::" _import_target "${_import_target}")
+    _nm_module_to_alias(_import_target "${_import_target}")
     list(APPEND _link_targets "${_import_target}")
   endforeach() 
   

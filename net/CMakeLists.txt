@@ -22,7 +22,7 @@ add_subdirectory(asio_concepts)
 add_subdirectory(telnet)
 
 add_named_module(net STATIC
-  LINK_LIBRARIES
-    net::asio_concepts
-    net::telnet
+  IMPORTS
+    net.asio_concepts
+    net.telnet
 )

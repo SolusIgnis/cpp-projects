@@ -19,6 +19,6 @@ endif()
 add_subdirectory(ptr)
 
 add_named_module(base.vocab STATIC
-  LINK_LIBRARIES
-    base::vocab::ptr
+  IMPORTS
+    base.vocab.ptr
 )
