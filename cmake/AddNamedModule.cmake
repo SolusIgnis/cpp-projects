@@ -18,9 +18,7 @@ set(_ADD_NAMED_MODULE_INCLUDED TRUE)
 
 function(_nm_module_to_alias out_var module_name)
   if (NOT module_name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
-    message(FATAL_ERROR
-      "_nm_module_to_alias: invalid module name '${module_name}'"
-    )
+    message(FATAL_ERROR "_nm_module_to_alias: invalid module name '${module_name}'")
   endif()
 
   string(FIND "${module_name}" "." _dot_index)
@@ -128,7 +126,7 @@ function(add_named_module name)
   # --- Target + alias ---
   add_library("${name}" "${_lib_type}")
     
-  _nm_module_to_alias(_alias, "${name}")
+  _nm_module_to_alias(_alias "${name}")
 message(STATUS "Alias: ${_alias} for ${name}")
   if (TARGET "${_alias}")
     message(FATAL_ERROR "add_named_module(${name}): target \"${_alias}\" already exists")
