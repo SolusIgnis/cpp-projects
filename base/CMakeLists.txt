@@ -20,7 +20,7 @@ add_subdirectory(vocab)
 
 add_metamodule(base
   INTERFACE_UNIT 
-    src/base.cppm
+    /base/src/base.cppm
   SUBMODULES
     base::vocab
 )
