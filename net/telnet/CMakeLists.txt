@@ -22,7 +22,6 @@ endif()
 
 # Add the net.telnet.test_support library
 add_subdirectory(test_support)
-# If this fails, it's because the test_support library depends on telnet inappropriately.
 
 add_named_module(net.telnet STATIC
     INTERFACE_UNIT

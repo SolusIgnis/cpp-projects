@@ -18,36 +18,9 @@ endif()
 # Add the vocab library group
 add_subdirectory(vocab)
 
-add_library(base STATIC)
-add_library(base::base ALIAS base)
-
-register_tooling_target(base)
-
-# C++23 required for "import std;"
-target_compile_features(base
-  PUBLIC cxx_std_23
-)
-
-# Module interface units
-target_sources(base
-  PUBLIC
-    FILE_SET CXX_MODULES
-    BASE_DIRS src
-    FILES
-      # Primary Module Interface Unit
-      src/base.cppm
-)
-
-# Implementation Units
-#target_sources(base
-#  PRIVATE
-#    src/impl/nothing.cpp
-#)
-
-# Link against all the sub-modules of the group.
-target_link_libraries(base
-  PUBLIC
+add_named_module(base STATIC
+  INTERFACE_UNIT 
+    src/base.cppm
+  LINK_LIBRARIES
     base::vocab
 )
-
-add_tests_for_module(base)
