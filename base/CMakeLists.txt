@@ -18,11 +18,9 @@ endif()
 # Add the vocab library group
 add_subdirectory(vocab)
 
-message(STATUS "${CMAKE_CURRENT_SOURCE_DIR}/src/base.cppm")
-
 add_metamodule(base
   INTERFACE_UNIT 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/base.cppm
+    /home/runner/work/cpp-projects/cpp-projects/base/src/base.cppm
   SUBMODULES
     base::vocab
 )

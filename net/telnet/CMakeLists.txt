@@ -24,8 +24,6 @@ endif()
 add_subdirectory(test_support)
 
 add_named_module(net.telnet STATIC
-    INTERFACE_UNIT
-      src/net.telnet.cppm
     PARTITIONS
       src/net.telnet-awaitables.cppm
       src/net.telnet-concepts.cppm
