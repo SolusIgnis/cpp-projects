@@ -105,9 +105,7 @@ function(add_named_module name)
     message(FATAL_ERROR "${context}(${name}): target \"${name}\" already exists")
   endif()
   
-  if (NOT name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
-    message(FATAL_ERROR "${context}(${name}): invalid module name: expected <identifier>[.<identifier>]*")
-  endif()
+  _MODULES_validate_name("${name}" "${context}")
   
   if (NM_ARG_INTERFACE_UNIT)
     list(LENGTH NM_ARG_INTERFACE_UNIT _iface_len)
@@ -145,11 +143,12 @@ function(add_named_module name)
   # --- Target + alias ---
   add_library("${name}" "${_lib_type}")
     
-  _MODULES_module_to_alias(_alias "${name}")
-message(STATUS "Alias: ${_alias} for ${name}")
+  _MODULES_module_to_alias(_alias "${name}" "${context}")
+
   if (TARGET "${_alias}")
     message(FATAL_ERROR "${context}(${name}): target \"${_alias}\" already exists")
   endif()
+  
   add_library("${_alias}" ALIAS "${name}")
 
   # --- Tooling ---
@@ -200,7 +199,7 @@ message(STATUS "Alias: ${_alias} for ${name}")
 
   # Convert to aliases for linking
   foreach(_import_target IN LISTS NM_ARG_IMPORTS)
-    _MODULES_module_to_alias(_import_target "${_import_target}")
+    _MODULES_module_to_alias(_import_target "${_import_target}" "${context}")
     list(APPEND _link_targets "${_import_target}")
   endforeach() 
   
