@@ -13,5 +13,5 @@ add_metamodule(base
   INTERFACE_UNIT 
     /home/runner/work/cpp-projects/cpp-projects/base/src/base.cppm
   SUBMODULES
-    base::vocab
+    base.vocab
 )
