@@ -49,7 +49,7 @@ function(add_named_module name)
     set(_interface_unit "src/${name}.cppm")
   endif()
   
-  if (NOT EXISTS "${_interface_unit}")
+  if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_interface_unit}")
     message(FATAL_ERROR "add_named_module(${name}): INTERFACE_UNIT \"${_interface_unit}\" does not exist")
   endif()
   
