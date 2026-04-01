@@ -20,31 +20,40 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   )
 endif()
 
-add_library(net.asio_concepts OBJECT)
-add_library(net::asio_concepts ALIAS net.asio_concepts)
-
-register_tooling_target(net.asio_concepts)
-
-# C++23 required for "import std;"
-target_compile_features(net.asio_concepts
-  PUBLIC cxx_std_23
-)
-
-# Module interface units
-target_sources(net.asio_concepts
-  PUBLIC
-    FILE_SET CXX_MODULES
-    BASE_DIRS src
-    FILES
-      # Primary Module Interface Unit
-      src/net.asio_concepts.cppm
-)
-
 # Link OpenSSL if we have it. (Tests will need it.)
 find_package(OpenSSL)
-target_link_libraries(net.asio_concepts
-  PUBLIC
+
+add_named_module(net.asio_concepts OBJECT
+  INTERFACE_UNIT src/net.asio_concepts.cppm
+  LINK_LIBRARIES
     $<$<BOOL:${OPENSSL_FOUND}>:OpenSSL::SSL OpenSSL::Crypto>
 )
 
-add_tests_for_module(net.asio_concepts)
+#add_library(net.asio_concepts OBJECT)
+#add_library(net::asio_concepts ALIAS net.asio_concepts)
+
+#register_tooling_target(net.asio_concepts)
+
+# C++23 required for "import std;"
+#target_compile_features(net.asio_concepts
+#  PUBLIC cxx_std_23
+#)
+
+# Module interface units
+#target_sources(net.asio_concepts
+#  PUBLIC
+#    FILE_SET CXX_MODULES
+#    BASE_DIRS src
+#    FILES
+#      # Primary Module Interface Unit
+#      src/net.asio_concepts.cppm
+#)
+
+# Link OpenSSL if we have it. (Tests will need it.)
+#find_package(OpenSSL)
+#target_link_libraries(net.asio_concepts
+#  PUBLIC
+#    $<$<BOOL:${OPENSSL_FOUND}>:OpenSSL::SSL OpenSSL::Crypto>
+#)
+
+#add_tests_for_module(net.asio_concepts)
