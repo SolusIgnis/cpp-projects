@@ -21,7 +21,7 @@ add_subdirectory(asio_concepts)
 # Add the net.telnet library
 add_subdirectory(telnet)
 
-add_named_module(net STATIC)
+add_named_module(net STATIC
   INTERFACE_UNIT
     src/net.cppm
   LINK_LIBRARIES
