@@ -49,8 +49,10 @@ function(add_named_module name)
     set(_interface_unit "src/${name}.cppm")
   endif()
   
-  if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_interface_unit}")
-    message(FATAL_ERROR "add_named_module(${name}): INTERFACE_UNIT \"${_interface_unit}\" does not exist")
+  get_filename_component(_iface_path "${_interface_unit}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+  
+  if (NOT EXISTS "${_iface_path}")
+    message(FATAL_ERROR "add_named_module(${name}): INTERFACE_UNIT path \"${_iface_path}\" does not exist")
   endif()
   
   # --- Default BASE_DIRS is ./src/ ---
