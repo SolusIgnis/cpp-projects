@@ -48,7 +48,8 @@ function(add_named_module name)
   endif()
   
   # Guard interface name to ensure it matches the target name.
-  get_filename_component(_iface_name "${NM_ARG_INTERFACE_UNIT}" NAME_WE)
+  get_filename_component(_iface_name "${NM_ARG_INTERFACE_UNIT}" NAME)
+  string(REGEX REPLACE "\\.[^.]+$" "" _iface_name "${_iface_name}")
 
   if (NOT _iface_name STREQUAL "${name}")
     message(FATAL_ERROR
