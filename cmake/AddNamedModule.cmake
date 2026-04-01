@@ -129,7 +129,7 @@ function(add_named_module name)
   add_library("${name}" "${_lib_type}")
     
   _nm_module_to_alias(_alias, "${name}")
-  
+message(STATUS "Alias: ${_alias} for ${name}")
   if (TARGET "${_alias}")
     message(FATAL_ERROR "add_named_module(${name}): target \"${_alias}\" already exists")
   endif()
