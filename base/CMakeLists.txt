@@ -20,7 +20,7 @@ add_subdirectory(vocab)
 
 add_metamodule(base
   INTERFACE_UNIT 
-    /base/src/base.cppm
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/base.cppm
   SUBMODULES
     base::vocab
 )
