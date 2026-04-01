@@ -18,9 +18,9 @@ endif()
 # Add the vocab library group
 add_subdirectory(vocab)
 
-add_named_module(base STATIC
+add_metamodule(base
   INTERFACE_UNIT 
     src/base.cppm
-  LINK_LIBRARIES
+  SUBMODULES
     base::vocab
 )

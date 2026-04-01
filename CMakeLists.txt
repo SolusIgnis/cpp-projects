@@ -79,6 +79,7 @@ include(cmake/ToolingInfrastructure.cmake)
 # Add module utilities.
 # ===========================================================================
 include(cmake/AddNamedModule.cmake)
+include(cmake/AddMetamodule.cmake)
 
 # ===========================================================================
 # Add module group subdirectories.
