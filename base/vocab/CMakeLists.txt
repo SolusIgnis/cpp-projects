@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 4.1.2)
 # Add the ptr library
 add_subdirectory(ptr)
 
-add_named_module(base.vocab STATIC
-  IMPORTS
+add_metamodule(base.vocab STATIC
+  SUBMODULES
     base.vocab.ptr
 )
