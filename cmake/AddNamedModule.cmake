@@ -52,7 +52,7 @@ function(add_named_module name)
   get_filename_component(_iface_path "${_interface_unit}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
   
   if (NOT EXISTS "${_iface_path}")
-    message(FATAL_ERROR "add_named_module(${name}): INTERFACE_UNIT path \"${_iface_path}\" does not exist")
+    message(FATAL_ERROR "add_named_module(${name}): INTERFACE_UNIT \"${_interface_unit}\" does not exist at path \"${_iface_path}\"")
   endif()
   
   # --- Default BASE_DIRS is ./src/ ---
