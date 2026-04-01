@@ -21,6 +21,6 @@ endif()
 add_named_module(net.telnet.test_support STATIC
   PARTITIONS
     src/net.telnet.test_support-coroutine_harness.cppm
-  Imports
+  IMPORTS
     base
 )

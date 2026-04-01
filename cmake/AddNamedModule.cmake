@@ -198,7 +198,7 @@ message(STATUS "Alias: ${_alias} for ${name}")
     )
   endif()
   
-  message(STATUS "target_link_libraries(${name} PUBLIC " ${_link_targets})
+  message(STATUS "target_link_libraries(${name} PUBLIC  ${_link_targets}")
 
   # --- Tests ---
   if (NOT NM_ARG_NO_TESTS AND COMMAND add_tests_for_module)
