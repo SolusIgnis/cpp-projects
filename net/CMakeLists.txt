@@ -21,37 +21,10 @@ add_subdirectory(asio_concepts)
 # Add the net.telnet library
 add_subdirectory(telnet)
 
-add_library(net STATIC)
-add_library(net::net ALIAS net)
-
-register_tooling_target(net)
-
-# C++23 required for "import std;"
-target_compile_features(net
-  PUBLIC cxx_std_23
-)
-
-# Module interface units
-target_sources(net
-  PUBLIC
-    FILE_SET CXX_MODULES
-    BASE_DIRS src
-    FILES
-      # Primary Module Interface Unit
-      src/net.cppm
-)
-
-# Implementation Units
-#target_sources(net
-#  PRIVATE
-#    src/impl/nothing.cpp
-#)
-
-# Link against all the sub-modules of the group.
-target_link_libraries(net
-  PUBLIC
+add_named_module(net STATIC)
+  INTERFACE_UNIT
+    src/net.cppm
+  LINK_LIBRARIES
     net::asio_concepts
     net::telnet
 )
-
-add_tests_for_module(net)

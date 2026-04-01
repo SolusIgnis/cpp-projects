@@ -18,37 +18,11 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   )
 endif()
 
-add_library(tools.test.coroutine_harness STATIC)
-add_library(tools::test::coroutine_harness ALIAS tools.test.coroutine_harness)
-
-register_tooling_target(tools.test.coroutine_harness)
-
-# C++23 required for "import std;"
-target_compile_features(tools.test.coroutine_harness
-  PUBLIC cxx_std_23
-)
-
-# Module interface units
-target_sources(tools.test.coroutine_harness
-  PUBLIC
-    FILE_SET CXX_MODULES
-    BASE_DIRS src
-    FILES
-      # Primary Module Interface Unit
-      src/tools.test.coroutine_harness.cppm
-      # Partition Interface Units
-      #src/tools.test.coroutine_harness-test_task.cppm
-)
-
-# Implementation Units
-#target_sources(tools.test.coroutine_harness
-#  PRIVATE
-#    src/impl/nothing.cpp
-#)
-
-target_link_libraries(tools.test.coroutine_harness
-  PUBLIC
+add_named_module(tools.test.coroutine_harness STATIC
+  INTERFACE_UNIT
+    src/tools.test.coroutine_harness.cppm
+# PARTITIONS
+#   src/tools.test.coroutine_harness-test_task.cppm
+  LINK_LIBRARIES
     base::base
 )
-
-add_tests_for_module(tools.test.coroutine_harness)

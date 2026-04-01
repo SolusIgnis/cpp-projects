@@ -18,39 +18,11 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   )
 endif()
 
-add_library(base.vocab.ptr STATIC)
-add_library(base::vocab::ptr ALIAS base.vocab.ptr)
-
-register_tooling_target(base.vocab.ptr)
-
-# C++23 required for "import std;"
-target_compile_features(base.vocab.ptr
-  PUBLIC cxx_std_23
+add_named_module(base.vocab.ptr STATIC
+  INTERFACE_UNIT
+    src/base.vocab.ptr.cppm
+  PARTITIONS
+    src/base.vocab.ptr-alias_ptr.cppm
+    src/base.vocab.ptr-dependency_ptr.cppm
+    src/base.vocab.ptr-required_ptr.cppm
 )
-
-# Module interface units
-target_sources(base.vocab.ptr
-  PUBLIC
-    FILE_SET CXX_MODULES
-    BASE_DIRS src
-    FILES
-      # Primary Module Interface Unit
-      src/base.vocab.ptr.cppm
-      # Partition Interface Units
-      src/base.vocab.ptr-alias_ptr.cppm
-      src/base.vocab.ptr-dependency_ptr.cppm
-      src/base.vocab.ptr-required_ptr.cppm
-)
-
-# Implementation Units
-#target_sources(base.vocab.ptr
-#  PRIVATE
-#    src/impl/nothing.cpp
-#)
-
-#target_link_libraries(base.vocab.ptr
-#  PUBLIC
-#    no::dependencies
-#)
-
-add_tests_for_module(base.vocab.ptr)
