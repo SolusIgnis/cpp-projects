@@ -139,7 +139,7 @@ function(add_named_module name)
   # --- Link libraries ---
 
   # Convert to aliases for linking
-  foreach(_import_target IN LISTS ${NM_ARG_IMPORTS})
+  foreach(_import_target IN LISTS NM_ARG_IMPORTS)
     string(REPLACE "." "::" _import_target "${_import_target}")
     list(APPEND _link_targets "${_import_target}")
   endforeach() 
@@ -147,6 +147,8 @@ function(add_named_module name)
   if (NM_ARG_LINK_LIBRARIES)
     list(APPEND _link_targets ${NM_ARG_LINK_LIBRARIES})
   endif()
+  
+  list(REMOVE_DUPLICATES _link_targets)
   
   if (_link_targets)
     target_link_libraries("${name}"
