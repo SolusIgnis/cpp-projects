@@ -37,24 +37,20 @@ function(add_named_module name)
     message(FATAL_ERROR "add_named_module(${name}): invalid module name: expected <identifier>[.<identifier>]*")
   endif()
   
-  if (NOT NM_ARG_INTERFACE_UNIT)
-    message(FATAL_ERROR "add_named_module(${name}): INTERFACE_UNIT is required (exactly one)")
-  endif()
+  if (NM_ARG_INTERFACE_UNIT)
+    list(LENGTH NM_ARG_INTERFACE_UNIT _iface_len)
+    if (NOT _iface_len EQUAL 1)
+      message(FATAL_ERROR "add_named_module(${name}): INTERFACE_UNIT must contain only one file")
+    endif()
 
-  # Guard against accidental multiple values
-  list(LENGTH NM_ARG_INTERFACE_UNIT _iface_len)
-  if (NOT _iface_len EQUAL 1)
-    message(FATAL_ERROR "add_named_module(${name}): INTERFACE_UNIT must contain exactly one file")
+    set(_interface_unit "${NM_ARG_INTERFACE_UNIT}")
+  else()
+    # Default canonical path
+    set(_interface_unit "src/${name}.cppm")
   endif()
   
-  # Guard interface name to ensure it matches the target name.
-  get_filename_component(_iface_name "${NM_ARG_INTERFACE_UNIT}" NAME)
-
-  if (NOT _iface_name STREQUAL "${name}.cppm")
-    message(FATAL_ERROR
-      "add_named_module(${name}): INTERFACE_UNIT must match module name "
-      "(expected ${name}.cppm, got ${_iface_name})"
-    )
+  if (NOT EXISTS "${_interface_unit}")
+    message(FATAL_ERROR "add_named_module(${name}): INTERFACE_UNIT \"${_interface_unit}\" does not exist")
   endif()
   
   # --- Default BASE_DIRS is ./src/ ---
@@ -120,7 +116,7 @@ function(add_named_module name)
   )
 
   # --- Module units ---
-  set(_module_files ${NM_ARG_INTERFACE_UNIT})
+  set(_module_files ${_interface_unit})
   list(APPEND _module_files ${NM_ARG_PARTITIONS})
 
   target_sources("${name}"
