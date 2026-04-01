@@ -49,9 +49,8 @@ function(add_named_module name)
   
   # Guard interface name to ensure it matches the target name.
   get_filename_component(_iface_name "${NM_ARG_INTERFACE_UNIT}" NAME)
-  string(REGEX REPLACE "\\.[^.]+$" "" _iface_name "${_iface_name}")
 
-  if (NOT _iface_name STREQUAL "${name}")
+  if (NOT _iface_name STREQUAL "${name}.cppm")
     message(FATAL_ERROR
       "add_named_module(${name}): INTERFACE_UNIT must match module name "
       "(expected ${name}.cppm, got ${_iface_name})"
