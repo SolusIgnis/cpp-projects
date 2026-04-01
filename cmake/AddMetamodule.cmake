@@ -19,29 +19,34 @@ set(_ADD_METAMODULE_INCLUDED TRUE)
 function(add_metamodule name)
   cmake_parse_arguments(MM_ARG
     "NO_TESTS"
-    "INTERFACE_UNIT;STD"
+    "INTERFACE_UNIT;STD;_CONTEXT"
     "SUBMODULES;TEST_DEPENDENCIES"
     ${ARGN}
   )
 
+  set(context "${MM_ARG__CONTEXT}")
+  if (NOT context)
+    set(context "${CMAKE_CURRENT_FUNCTION}")
+  endif()
+
   # --- Validation ---
   if (NOT name)
-    message(FATAL_ERROR "add_metamodule: module name is required as first argument")
+    message(FATAL_ERROR "${context}: module name is required as first argument")
   endif()
 
   if (TARGET "${name}")
-    message(FATAL_ERROR "add_metamodule(${name}): target \"${name}\" already exists")
+    message(FATAL_ERROR "${context}(${name}): target \"${name}\" already exists")
   endif()
 
   if (NOT name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
     message(FATAL_ERROR
-      "add_metamodule(${name}): invalid module name"
+      "${context}(${name}): invalid module name"
     )
   endif()
 
   if (NOT MM_ARG_SUBMODULES)
     message(FATAL_ERROR
-      "add_metamodule(${name}): SUBMODULES is required"
+      "${context}(${name}): SUBMODULES is required"
     )
   endif()
 
@@ -50,17 +55,17 @@ function(add_metamodule name)
   # 1. Metamodule must not list itself
   list(FIND MM_ARG_SUBMODULES "${name}" _self_index)
   if (NOT _self_index EQUAL -1)
-    message(FATAL_ERROR "add_metamodule(${name}): cannot include itself in SUBMODULES")
+    message(FATAL_ERROR "${context}(${name}): cannot include itself in SUBMODULES")
   endif()
 
   foreach(_sub ${MM_ARG_SUBMODULES})
     # 2. Submodules must be in namespace
     if (NOT _sub MATCHES "^${name}(\\.|$)")
-      message(FATAL_ERROR "add_metamodule(${name}): submodule '${_sub}' is not in namespace '${name}'")
+      message(FATAL_ERROR "${context}(${name}): submodule '${_sub}' is not in namespace '${name}'")
     endif()
     # 3. Submodules must be valid targets
     if (NOT TARGET "${_sub}")
-      message(FATAL_ERROR "add_metamodule(${name}): submodule '${_sub}' is not a known target")
+      message(FATAL_ERROR "${context}(${name}): submodule '${_sub}' is not a known target")
     endif()
   endforeach()
 

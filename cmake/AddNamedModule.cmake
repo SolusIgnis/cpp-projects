@@ -16,10 +16,22 @@ set(_ADD_NAMED_MODULE_INCLUDED TRUE)
 # Private Helpers
 # ============================================================
 
-function(_MODULES_module_to_alias out_var module_name)
-  if (NOT module_name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
-    message(FATAL_ERROR "_MODULES_module_to_alias(${module_name}): invalid module name: expected <identifier>[.<identifier>]*")
+function(_MODULES_validate_name module_name context)
+  if (NOT DEFINED context OR NOT context)
+    set(context "${CMAKE_CURRENT_FUNCTION}")
   endif()
+  
+  if (NOT module_name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
+    message(FATAL_ERROR "${context}(${module_name}): invalid module name '${module_name}'")
+  endif()
+endfunction()
+
+function(_MODULES_module_to_alias out_var module_name context)
+  if (NOT DEFINED context OR NOT context)
+    set(context "${CMAKE_CURRENT_FUNCTION}")
+  endif()
+  
+  _MODULES_validate_name("${module_name}" "${context}")
 
   string(FIND "${module_name}" "." _dot_index)
 
@@ -33,10 +45,14 @@ function(_MODULES_module_to_alias out_var module_name)
   set(${out_var} "${_alias}" PARENT_SCOPE)
 endfunction()
 
-function(_MODULES_alias_to_module out_var alias_name)
+function(_MODULES_alias_to_module out_var alias_name context)
+  if (NOT DEFINED context OR NOT context)
+    set(context "${CMAKE_CURRENT_FUNCTION}")
+  endif()
+  
   # --- Validate basic shape ---
   if (NOT alias_name MATCHES "^[A-Za-z0-9_]+(::[A-Za-z0-9_]+)+$")
-    message(FATAL_ERROR "_MODULES_alias_to_module(${alias_name}): invalid alias: expected <identifier>[::<identifier>]*")
+    message(FATAL_ERROR "${context}(${alias_name}): invalid alias: expected <identifier>[::<identifier>]*")
   endif()
 
   # Split into components
@@ -70,28 +86,33 @@ endfunction()
 function(add_named_module name)
   cmake_parse_arguments(NM_ARG
     "OBJECT;STATIC;NO_TESTS"
-    "INTERFACE_UNIT;STD"
+    "INTERFACE_UNIT;STD;_CONTEXT"
     "BASE_DIRS;PARTITIONS;IMPLEMENTATIONS;IMPORTS;LINK_LIBRARIES;TEST_DEPENDENCIES"
     ${ARGN}
   )
 
+  set(context "${NM_ARG__CONTEXT}")
+  if (NOT context)
+    set(context "${CMAKE_CURRENT_FUNCTION}")
+  endif()
+
   # --- Validation ---
   if (NOT name)
-    message(FATAL_ERROR "add_named_module: module name is required as first argument")
+    message(FATAL_ERROR "${context}: module name is required as first argument")
   endif()
   
   if (TARGET "${name}")
-    message(FATAL_ERROR "add_named_module(${name}): target \"${name}\" already exists")
+    message(FATAL_ERROR "${context}(${name}): target \"${name}\" already exists")
   endif()
   
   if (NOT name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
-    message(FATAL_ERROR "add_named_module(${name}): invalid module name: expected <identifier>[.<identifier>]*")
+    message(FATAL_ERROR "${context}(${name}): invalid module name: expected <identifier>[.<identifier>]*")
   endif()
   
   if (NM_ARG_INTERFACE_UNIT)
     list(LENGTH NM_ARG_INTERFACE_UNIT _iface_len)
     if (NOT _iface_len EQUAL 1)
-      message(FATAL_ERROR "add_named_module(${name}): INTERFACE_UNIT must contain only one file")
+      message(FATAL_ERROR "${context}(${name}): INTERFACE_UNIT must contain only one file")
     endif()
 
     set(_interface_unit "${NM_ARG_INTERFACE_UNIT}")
@@ -103,7 +124,7 @@ function(add_named_module name)
   get_filename_component(_iface_path "${_interface_unit}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
   
   if (NOT EXISTS "${_iface_path}")
-    message(FATAL_ERROR "add_named_module(${name}): INTERFACE_UNIT \"${_interface_unit}\" does not exist at path \"${_iface_path}\"")
+    message(FATAL_ERROR "${context}(${name}): INTERFACE_UNIT \"${_interface_unit}\" does not exist at path \"${_iface_path}\"")
   endif()
   
   # --- Default BASE_DIRS is ./src/ ---
@@ -114,7 +135,7 @@ function(add_named_module name)
 
   # --- Determine library type ---
   if (NM_ARG_OBJECT AND NM_ARG_STATIC)
-    message(FATAL_ERROR "add_named_module(${name}): choose OBJECT or STATIC, not both")
+    message(FATAL_ERROR "${context}(${name}): choose OBJECT or STATIC, not both")
   elseif (NM_ARG_OBJECT)
     set(_lib_type OBJECT)
   else()
@@ -127,7 +148,7 @@ function(add_named_module name)
   _MODULES_module_to_alias(_alias "${name}")
 message(STATUS "Alias: ${_alias} for ${name}")
   if (TARGET "${_alias}")
-    message(FATAL_ERROR "add_named_module(${name}): target \"${_alias}\" already exists")
+    message(FATAL_ERROR "${context}(${name}): target \"${_alias}\" already exists")
   endif()
   add_library("${_alias}" ALIAS "${name}")
 
@@ -144,12 +165,12 @@ message(STATUS "Alias: ${_alias} for ${name}")
 
   # Validate STD is numeric
   if (NOT cxx_std MATCHES "^[0-9]+$")
-    message(FATAL_ERROR "add_named_module(${name}): STD must be a number (got '${cxx_std}')")
+    message(FATAL_ERROR "${context}(${name}): STD must be a number (got '${cxx_std}')")
   endif()
 
   # Enforce minimum
   if (cxx_std LESS 23)
-    message(FATAL_ERROR "add_named_module(${name}): STD must be >= 23 (got ${cxx_std})")
+    message(FATAL_ERROR "${context}(${name}): STD must be >= 23 (got ${cxx_std})")
   endif()
 
   target_compile_features("${name}"
@@ -195,8 +216,6 @@ message(STATUS "Alias: ${_alias} for ${name}")
         ${_link_targets}
     )
   endif()
-  
-  message(STATUS "target_link_libraries(${name} PUBLIC  ${_link_targets}")
 
   # --- Tests ---
   if (NOT NM_ARG_NO_TESTS AND COMMAND add_tests_for_module)
