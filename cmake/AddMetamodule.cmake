@@ -73,6 +73,7 @@ function(add_metamodule name)
 
   set(_args
     STATIC
+    _CONTEXT "${context}"
     IMPORTS ${MM_ARG_SUBMODULES}
   )
 
