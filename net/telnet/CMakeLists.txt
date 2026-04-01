@@ -39,8 +39,8 @@ add_named_module(net.telnet STATIC
       src/impl/net.telnet-stream-impl.cpp
       src/impl/net.telnet-stream-async-impl.cpp
       src/impl/net.telnet-stream-sync-impl.cpp
-    LINK_LIBRARIES
-      net::asio_concepts
+    IMPORTS
+      net.asio_concepts
     TEST_DEPENDENCIES
       net.telnet.test_support
 )
