@@ -20,25 +20,14 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   )
 endif()
 
-add_library(net.telnet STATIC)
-add_library(net::telnet ALIAS net.telnet)
+# Add the net.telnet.test_support library
+add_subdirectory(test_support)
+# If this fails, it's because the test_support library depends on telnet inappropriately.
 
-register_tooling_target(net.telnet)
-
-# C++23 required for "import std;"
-target_compile_features(net.telnet
-  PUBLIC cxx_std_23
-)
-
-# Module interface units
-target_sources(net.telnet
-  PUBLIC
-    FILE_SET CXX_MODULES
-    BASE_DIRS src
-    FILES
-      # Primary Module Interface Unit
+add_named_module(net.telnet STATIC
+    INTERFACE_UNIT
       src/net.telnet.cppm
-      # Partition Interface Units
+    PARTITIONS
       src/net.telnet-awaitables.cppm
       src/net.telnet-concepts.cppm
       src/net.telnet-errors.cppm
@@ -48,27 +37,13 @@ target_sources(net.telnet
       src/net.telnet-protocol_fsm.cppm
       src/net.telnet-stream.cppm
       src/net.telnet-types.cppm
-)
-
-# Implementation Units
-target_sources(net.telnet
-  PRIVATE
-    src/impl/net.telnet-protocol_fsm-impl.cpp
-    src/impl/net.telnet-stream-impl.cpp
-    src/impl/net.telnet-stream-async-impl.cpp
-    src/impl/net.telnet-stream-sync-impl.cpp
-)
-
-target_link_libraries(net.telnet
-  PUBLIC
-    net::asio_concepts
-)
-
-# Add the net.telnet.test_support library
-add_subdirectory(test_support)
-
-# Create and register test targets linked against the test support library
-add_tests_for_module(net.telnet
-  DEPENDENCIES
-    net.telnet.test_support
+    IMPLEMENTATIONS 
+      src/impl/net.telnet-protocol_fsm-impl.cpp
+      src/impl/net.telnet-stream-impl.cpp
+      src/impl/net.telnet-stream-async-impl.cpp
+      src/impl/net.telnet-stream-sync-impl.cpp
+    LINK_LIBRARIES
+      net::asio_concepts
+    TEST_DEPENDENCIES
+      net.telnet.test_support
 )

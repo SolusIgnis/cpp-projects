@@ -29,6 +29,7 @@ add_named_module(net.asio_concepts OBJECT
     $<$<BOOL:${OPENSSL_FOUND}>:OpenSSL::SSL OpenSSL::Crypto>
 )
 
+# --- Everything after this should be removed once AddNamedModule.cmake is verified. ---
 #add_library(net.asio_concepts OBJECT)
 #add_library(net::asio_concepts ALIAS net.asio_concepts)
 
