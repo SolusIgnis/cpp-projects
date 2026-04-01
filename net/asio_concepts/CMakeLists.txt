@@ -24,8 +24,6 @@ endif()
 find_package(OpenSSL)
 
 add_named_module(net.asio_concepts OBJECT
-  INTERFACE_UNIT
-    src/net.asio_concepts.cppm
   LINK_LIBRARIES
     $<$<BOOL:${OPENSSL_FOUND}>:OpenSSL::SSL OpenSSL::Crypto>
 )

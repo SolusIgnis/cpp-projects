@@ -22,8 +22,6 @@ add_subdirectory(asio_concepts)
 add_subdirectory(telnet)
 
 add_named_module(net STATIC
-  INTERFACE_UNIT
-    src/net.cppm
   LINK_LIBRARIES
     net::asio_concepts
     net::telnet

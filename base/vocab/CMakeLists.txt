@@ -19,8 +19,6 @@ endif()
 add_subdirectory(ptr)
 
 add_named_module(base.vocab STATIC
-  INTERFACE_UNIT
-    src/base.vocab.cppm
   LINK_LIBRARIES
     base::vocab::ptr
 )

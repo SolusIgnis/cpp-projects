@@ -19,8 +19,6 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 endif()
 
 add_named_module(base.vocab.ptr STATIC
-  INTERFACE_UNIT
-    src/base.vocab.ptr.cppm
   PARTITIONS
     src/base.vocab.ptr-alias_ptr.cppm
     src/base.vocab.ptr-dependency_ptr.cppm
