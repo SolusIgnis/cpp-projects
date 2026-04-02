@@ -62,13 +62,13 @@ function(add_metamodule name)
     IMPORTS ${MM_ARG_SUBMODULES}
   )
 
-  if (MM_ARG_TEST_DEPENDENCIES)
-    list(APPEND _args TEST_DEPENDENCIES ${MM_ARG_TEST_DEPENDENCIES})
+  if (MM_ARG_NO_TESTS)
+    list(APPEND _args NO_TESTS)
   endif()
   
   _MODULES_append_if_set(_args INTERFACE_UNIT ${MM_ARG_INTERFACE_UNIT})
   _MODULES_append_if_set(_args STD ${MM_ARG_STD})
-  _MODULES_append_if_set(_args NO_TESTS)
+  _MODULES_append_if_set(_args TEST_DEPENDENCIES ${MM_ARG_TEST_DEPENDENCIES})
 
   add_named_module(${name} ${_args})
 
