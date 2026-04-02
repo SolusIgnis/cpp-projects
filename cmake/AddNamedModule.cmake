@@ -26,6 +26,51 @@ function(_MODULES_validate_name module_name context)
   endif()
 endfunction()
 
+
+
+
+function(_MODULES_split_module_name out_list module_name context)
+  if (NOT DEFINED context OR NOT context)
+    set(context "${CMAKE_CURRENT_FUNCTION}")
+  endif()
+  
+  _MODULES_validate_name("${module_name}" "${context}")
+
+  string(REPLACE "." ";" _parts "${module_name}")
+  set(${out_list} ${_parts} PARENT_SCOPE)
+endfunction()
+
+function(_MODULES_parent_module out_var module_name context)
+  if (NOT DEFINED context OR NOT context)
+    set(context "${CMAKE_CURRENT_FUNCTION}")
+  endif()
+
+  _MODULES_split_module_name(_parts "${module_name}" "${context}")
+  
+  list(LENGTH _parts _len)
+
+  if (_len LESS 2)
+    set(${out_var} "" PARENT_SCOPE)
+    return()
+  endif()
+
+  list(POP_BACK _parts)
+  string(JOIN "." _parent ${_parts})
+  set(${out_var} "${_parent}" PARENT_SCOPE)
+endfunction()
+
+function(_MODULES_core_name out_var module_name context)
+  if (NOT DEFINED context OR NOT context)
+    set(context "${CMAKE_CURRENT_FUNCTION}")
+  endif()
+
+  _MODULES_split_module_name(_parts "${module_name}" "${context}")
+  list(GET _parts -1 _leaf)
+  set(${out_var} "${_leaf}" PARENT_SCOPE)
+endfunction()
+
+
+
 function(_MODULES_module_to_alias out_var module_name context)
   if (NOT DEFINED context OR NOT context)
     set(context "${CMAKE_CURRENT_FUNCTION}")
@@ -77,7 +122,12 @@ function(_MODULES_alias_to_module out_var alias_name context)
 endfunction()
 
 
-
+function(_MODULES_append_if_set list_var key value)
+  if (value)
+    list(APPEND ${list_var} ${key} ${value})
+    set(${list_var} "${${list_var}}" PARENT_SCOPE)
+  endif()
+endfunction()
 
 # ============================================================
 # Public API

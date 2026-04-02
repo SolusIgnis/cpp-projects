@@ -30,24 +30,8 @@ function(add_metamodule name)
   endif()
 
   # --- Validation ---
-  if (NOT name)
-    message(FATAL_ERROR "${context}: module name is required as first argument")
-  endif()
-
-  if (TARGET "${name}")
-    message(FATAL_ERROR "${context}(${name}): target \"${name}\" already exists")
-  endif()
-
-  if (NOT name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
-    message(FATAL_ERROR
-      "${context}(${name}): invalid module name"
-    )
-  endif()
-
   if (NOT MM_ARG_SUBMODULES)
-    message(FATAL_ERROR
-      "${context}(${name}): SUBMODULES is required"
-    )
+    message(FATAL_ERROR "${context}(${name}): SUBMODULES is required")
   endif()
 
   # --- Enforce metamodule invariants ---
@@ -59,9 +43,10 @@ function(add_metamodule name)
   endif()
 
   foreach(_sub ${MM_ARG_SUBMODULES})
-    # 2. Submodules must be in namespace
-    if (NOT _sub MATCHES "^${name}(\\.|$)")
-      message(FATAL_ERROR "${context}(${name}): submodule '${_sub}' is not in namespace '${name}'")
+    # 2. Metamodule must be parent of submodules
+    _MODULES_parent_module(_parent, "${sub}")
+    if (_parent NOT STREQUAL "${name}")
+      message(FATAL_ERROR "${context}(${name}): metamodule '${name}' is not the parent of submodule '${_sub}'")
     endif()
     # 3. Submodules must be valid targets
     if (NOT TARGET "${_sub}")
@@ -77,21 +62,13 @@ function(add_metamodule name)
     IMPORTS ${MM_ARG_SUBMODULES}
   )
 
-  if (MM_ARG_INTERFACE_UNIT)
-    list(APPEND _args INTERFACE_UNIT ${MM_ARG_INTERFACE_UNIT})
-  endif()
-
-  if (MM_ARG_STD)
-    list(APPEND _args STD ${MM_ARG_STD})
-  endif()
-
-  if (MM_ARG_NO_TESTS)
-    list(APPEND _args NO_TESTS)
-  endif()
-
   if (MM_ARG_TEST_DEPENDENCIES)
     list(APPEND _args TEST_DEPENDENCIES ${MM_ARG_TEST_DEPENDENCIES})
   endif()
+  
+  _MODULES_append_if_set(_args INTERFACE_UNIT ${MM_ARG_INTERFACE_UNIT})
+  _MODULES_append_if_set(_args STD ${MM_ARG_STD})
+  _MODULES_append_if_set(_args NO_TESTS)
 
   add_named_module(${name} ${_args})
 
