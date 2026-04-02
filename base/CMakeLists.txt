@@ -10,8 +10,6 @@ cmake_minimum_required(VERSION 4.1.2)
 add_subdirectory(vocab)
 
 add_metamodule(base
-  INTERFACE_UNIT 
-    /home/runner/work/cpp-projects/cpp-projects/base/src/base.cppm
   SUBMODULES
     base.vocab
 )
