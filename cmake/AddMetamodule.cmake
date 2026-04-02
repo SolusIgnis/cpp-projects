@@ -42,7 +42,7 @@ function(add_metamodule name)
     message(FATAL_ERROR "${context}(${name}): cannot include itself in SUBMODULES")
   endif()
 
-  foreach(_sub ${MM_ARG_SUBMODULES})
+  foreach(_sub IN LISTS MM_ARG_SUBMODULES)
     # 2. Metamodule must be parent of submodules
     _MODULES_parent_module(_parent "${sub}" "${context}")
     if (_parent NOT STREQUAL "${name}")
