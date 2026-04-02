@@ -66,9 +66,9 @@ function(add_metamodule name)
     list(APPEND _args NO_TESTS)
   endif()
   
-  _MODULES_append_if_set(_args INTERFACE_UNIT ${MM_ARG_INTERFACE_UNIT})
-  _MODULES_append_if_set(_args STD ${MM_ARG_STD})
-  _MODULES_append_if_set(_args TEST_DEPENDENCIES ${MM_ARG_TEST_DEPENDENCIES})
+  _MODULES_append_if_set(_args INTERFACE_UNIT "${MM_ARG_INTERFACE_UNIT}")
+  _MODULES_append_if_set(_args STD "${MM_ARG_STD}")
+  _MODULES_append_if_set(_args TEST_DEPENDENCIES "${MM_ARG_TEST_DEPENDENCIES}")
 
   add_named_module(${name} ${_args})
 
