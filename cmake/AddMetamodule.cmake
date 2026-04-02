@@ -44,8 +44,7 @@ function(add_metamodule name)
 
   foreach(_sub IN LISTS MM_ARG_SUBMODULES)
     # 2. Metamodule must be parent of submodules
-    _MODULES_parent_module(_parent "${_
-sub}" "${context}")
+    _MODULES_parent_module(_parent "${_sub}" "${context}")
     if (NOT _parent STREQUAL "${name}")
       message(FATAL_ERROR "${context}(${name}): metamodule '${name}' is not the parent of submodule '${_sub}'")
     endif()
