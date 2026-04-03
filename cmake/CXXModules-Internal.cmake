@@ -17,7 +17,7 @@ include_guard(GLOBAL)
 # Make sure we have our tooling registration function.
 # ============================================================
 
-include(ToolingInfrastructure.cmake)
+include(ToolingInfrastructure)
 
 # ============================================================
 # Private Helpers

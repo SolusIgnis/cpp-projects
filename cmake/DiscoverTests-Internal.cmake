@@ -14,16 +14,14 @@ include_guard(GLOBAL)
 # ============================================================
 
 if(NOT DEFINED TEST_DIALECTS)
-  message(FATAL_ERROR
-    "TEST_DIALECTS must be configured before including DiscoverTests-Internal.cmake"
-  )
+  message(FATAL_ERROR "TEST_DIALECTS must be configured before including DiscoverTests-Internal.cmake")
 endif()
 
 # ============================================================
 # Make sure we have our tooling registration function.
 # ============================================================
 
-include(${CMAKE_CURRENT_LIST_DIR}/ToolingInfrastructure.cmake)
+include(ToolingInfrastructure)
 
 # ============================================================
 # Internal: Parse filename metadata

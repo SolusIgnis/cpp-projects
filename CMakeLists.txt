@@ -30,7 +30,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # ===========================================================================
 # Check for adequate compilers supporting C++23 and "import std;".
 # ===========================================================================
-include(CompilerValidation.cmake)
+include(CompilerValidation)
 
 # ===========================================================================
 # Test Framework Dependencies
@@ -67,25 +67,25 @@ endif()
 find_package(ut QUIET)
 
 if(NOT TARGET ut::ut)
-  include(cmake/FetchUT.cmake)
+  include(FetchUT)
   fetch_ut()
 endif()
 
 # ===========================================================================
 # Test Discovery / Target Generation
 # ===========================================================================
-include(DiscoverTests.cmake)
+include(DiscoverTests)
 
 # ===========================================================================
 # Tooling Infrastructure (Options, Cache Variables, Registries, and Helper Functions)
 # ===========================================================================
-include(ToolingInfrastructure.cmake)
+include(ToolingInfrastructure)
 
 # ===========================================================================
 # Add module utilities.
 # ===========================================================================
-include(AddNamedModule.cmake)
-include(AddMetamodule.cmake)
+include(AddNamedModule)
+include(AddMetamodule)
 
 # ===========================================================================
 # Add module group subdirectories.
