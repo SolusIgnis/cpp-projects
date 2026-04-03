@@ -23,7 +23,7 @@ include(ToolingInfrastructure)
 # Private Helpers
 # ============================================================
 
-macro(cxxModules.resolve_context out_var provided_context)
+macro("cxxModules.resolve_context" out_var provided_context)
   if (provided_context)
     set(${out_var} "${provided_context}")
   else()
@@ -31,7 +31,7 @@ macro(cxxModules.resolve_context out_var provided_context)
   endif()
 endmacro()
 
-function(cxxModules.validate_name module_name context)
+function("cxxModules.validate_name" module_name context)
   cxxModules.resolve_context(context "${context}")
   
   if (NOT module_name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
@@ -42,7 +42,7 @@ endfunction()
 
 
 
-function(cxxModules.split_module_name out_list module_name context)
+function("cxxModules.split_module_name" out_list module_name context)
   cxxModules.resolve_context(context "${context}")
   
   cxxModules.validate_name("${module_name}" "${context}")
@@ -51,7 +51,7 @@ function(cxxModules.split_module_name out_list module_name context)
   set(${out_list} ${_parts} PARENT_SCOPE)
 endfunction()
 
-function(cxxModules.parent_module out_var module_name context)
+function("cxxModules.parent_module" out_var module_name context)
   cxxModules.resolve_context(context "${context}")
 
   cxxModules.split_module_name(_parts "${module_name}" "${context}")
@@ -68,7 +68,7 @@ function(cxxModules.parent_module out_var module_name context)
   set(${out_var} "${_parent}" PARENT_SCOPE)
 endfunction()
 
-function(cxxModules.core_name out_var module_name context)
+function("cxxModules.core_name" out_var module_name context)
   cxxModules.resolve_context(context "${context}")
 
   cxxModules.split_module_name(_parts "${module_name}" "${context}")
@@ -78,7 +78,7 @@ endfunction()
 
 
 
-function(cxxModules.module_to_alias out_var module_name context)
+function("cxxModules.module_to_alias" out_var module_name context)
   cxxModules.resolve_context(context "${context}")
   
   cxxModules.validate_name("${module_name}" "${context}")
@@ -95,7 +95,7 @@ function(cxxModules.module_to_alias out_var module_name context)
   set(${out_var} "${_alias}" PARENT_SCOPE)
 endfunction()
 
-function(cxxModules.alias_to_module out_var alias_name context)
+function("cxxModules.alias_to_module" out_var alias_name context)
   cxxModules.resolve_context(context "${context}")
   
   # --- Validate basic shape ---
@@ -125,7 +125,7 @@ function(cxxModules.alias_to_module out_var alias_name context)
 endfunction()
 
 
-function(cxxModules.append_if_set list_var key value)
+function("cxxModules.append_if_set" list_var key value)
   if (value)
     list(APPEND ${list_var} ${key} ${value})
     set(${list_var} "${${list_var}}" PARENT_SCOPE)
