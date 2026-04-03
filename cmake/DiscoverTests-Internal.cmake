@@ -4,9 +4,7 @@
 # DiscoverTests-Internal.cmake
 
 if(NOT _DISCOVER_TESTS_INCLUDED)
-  message(FATAL_ERROR
-    "DiscoverTests-Internal.cmake is internal and must not be included directly."
-  )
+  message(FATAL_ERROR "DiscoverTests-Internal.cmake is internal and must not be included directly.")
 endif()
 
 include_guard(GLOBAL)
@@ -24,6 +22,7 @@ endif()
 # ============================================================
 # Make sure we have our tooling registration function.
 # ============================================================
+
 include(${CMAKE_CURRENT_LIST_DIR}/ToolingInfrastructure.cmake)
 
 # ============================================================

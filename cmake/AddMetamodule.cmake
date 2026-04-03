@@ -13,6 +13,18 @@ include_guard(GLOBAL)
 set(_ADD_METAMODULE_INCLUDED TRUE)
 
 # ============================================================
+# Include the internal implementation helpers
+# ============================================================
+
+include(${CMAKE_CURRENT_LIST_DIR}/CXXModules-Internal.cmake)
+
+# ============================================================
+# Include add_named_module(...)
+# ============================================================
+
+include(${CMAKE_CURRENT_LIST_DIR}/AddNamedModule.cmake)
+
+# ============================================================
 # Public API
 # ============================================================
 
@@ -24,10 +36,7 @@ function(add_metamodule name)
     ${ARGN}
   )
 
-  set(context "${MM_ARG__CONTEXT}")
-  if (NOT context)
-    set(context "${CMAKE_CURRENT_FUNCTION}")
-  endif()
+  CXXMODULES_resolve_context(context "${MM_ARG__CONTEXT}")
 
   # --- Validation ---
   if (NOT MM_ARG_SUBMODULES)
@@ -44,7 +53,7 @@ function(add_metamodule name)
 
   foreach(_sub IN LISTS MM_ARG_SUBMODULES)
     # 2. Metamodule must be parent of submodules
-    _MODULES_parent_module(_parent "${_sub}" "${context}")
+    CXXMODULES_parent_module(_parent "${_sub}" "${context}")
     if (NOT _parent STREQUAL "${name}")
       message(FATAL_ERROR "${context}(${name}): metamodule '${name}' is not the parent of submodule '${_sub}'")
     endif()
@@ -66,9 +75,9 @@ function(add_metamodule name)
     list(APPEND _args NO_TESTS)
   endif()
   
-  _MODULES_append_if_set(_args INTERFACE_UNIT "${MM_ARG_INTERFACE_UNIT}")
-  _MODULES_append_if_set(_args STD "${MM_ARG_STD}")
-  _MODULES_append_if_set(_args TEST_DEPENDENCIES "${MM_ARG_TEST_DEPENDENCIES}")
+  CXXMODULES_append_if_set(_args INTERFACE_UNIT "${MM_ARG_INTERFACE_UNIT}")
+  CXXMODULES_append_if_set(_args STD "${MM_ARG_STD}")
+  CXXMODULES_append_if_set(_args TEST_DEPENDENCIES "${MM_ARG_TEST_DEPENDENCIES}")
 
   add_named_module(${name} ${_args})
 

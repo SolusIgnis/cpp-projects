@@ -22,9 +22,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_MODULE_STD 1)
 
 # ===========================================================================
+# Add project CMake modules (./cmake/*) to CMAKE_MODULE_PATH
+# ===========================================================================
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# ===========================================================================
 # Check for adequate compilers supporting C++23 and "import std;".
 # ===========================================================================
-include(cmake/CompilerValidation.cmake)
+include(CompilerValidation.cmake)
 
 # ===========================================================================
 # Test Framework Dependencies
@@ -68,18 +74,18 @@ endif()
 # ===========================================================================
 # Test Discovery / Target Generation
 # ===========================================================================
-include(cmake/DiscoverTests.cmake)
+include(DiscoverTests.cmake)
 
 # ===========================================================================
 # Tooling Infrastructure (Options, Cache Variables, Registries, and Helper Functions)
 # ===========================================================================
-include(cmake/ToolingInfrastructure.cmake)
+include(ToolingInfrastructure.cmake)
 
 # ===========================================================================
 # Add module utilities.
 # ===========================================================================
-include(cmake/AddNamedModule.cmake)
-include(cmake/AddMetamodule.cmake)
+include(AddNamedModule.cmake)
+include(AddMetamodule.cmake)
 
 # ===========================================================================
 # Add module group subdirectories.
@@ -94,9 +100,9 @@ add_subdirectory(net)
 # ===========================================================================
 # Aggregate the tooling-registered targets and their sources.
 # ===========================================================================
-include(cmake/ToolingSources.cmake)
+include(ToolingSources.cmake)
 
 # ===========================================================================
 # Create tooling targets for clang-format (real and check) and clang-tidy.
 # ===========================================================================
-include(cmake/ToolingTargets.cmake)
+include(ToolingTargets.cmake)

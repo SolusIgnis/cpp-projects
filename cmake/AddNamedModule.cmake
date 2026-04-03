@@ -13,121 +13,10 @@ include_guard(GLOBAL)
 set(_ADD_NAMED_MODULE_INCLUDED TRUE)
 
 # ============================================================
-# Private Helpers
+# Include the internal implementation helpers
 # ============================================================
 
-function(_MODULES_validate_name module_name context)
-  if (NOT DEFINED context OR NOT context)
-    set(context "${CMAKE_CURRENT_FUNCTION}")
-  endif()
-  
-  if (NOT module_name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
-    message(FATAL_ERROR "${context}(${module_name}): invalid module name '${module_name}'")
-  endif()
-endfunction()
-
-
-
-
-function(_MODULES_split_module_name out_list module_name context)
-  if (NOT DEFINED context OR NOT context)
-    set(context "${CMAKE_CURRENT_FUNCTION}")
-  endif()
-  
-  _MODULES_validate_name("${module_name}" "${context}")
-
-  string(REPLACE "." ";" _parts "${module_name}")
-  set(${out_list} ${_parts} PARENT_SCOPE)
-endfunction()
-
-function(_MODULES_parent_module out_var module_name context)
-  if (NOT DEFINED context OR NOT context)
-    set(context "${CMAKE_CURRENT_FUNCTION}")
-  endif()
-
-  _MODULES_split_module_name(_parts "${module_name}" "${context}")
-  
-  list(LENGTH _parts _len)
-
-  if (_len LESS 2)
-    set(${out_var} "" PARENT_SCOPE)
-    return()
-  endif()
-
-  list(POP_BACK _parts)
-  string(JOIN "." _parent ${_parts})
-  set(${out_var} "${_parent}" PARENT_SCOPE)
-endfunction()
-
-function(_MODULES_core_name out_var module_name context)
-  if (NOT DEFINED context OR NOT context)
-    set(context "${CMAKE_CURRENT_FUNCTION}")
-  endif()
-
-  _MODULES_split_module_name(_parts "${module_name}" "${context}")
-  list(GET _parts -1 _leaf)
-  set(${out_var} "${_leaf}" PARENT_SCOPE)
-endfunction()
-
-
-
-function(_MODULES_module_to_alias out_var module_name context)
-  if (NOT DEFINED context OR NOT context)
-    set(context "${CMAKE_CURRENT_FUNCTION}")
-  endif()
-  
-  _MODULES_validate_name("${module_name}" "${context}")
-
-  string(FIND "${module_name}" "." _dot_index)
-
-  if (_dot_index EQUAL -1)
-    # No dot → stutter
-    set(_alias "${module_name}::${module_name}")
-  else()
-    string(REPLACE "." "::" _alias "${module_name}")
-  endif()
-
-  set(${out_var} "${_alias}" PARENT_SCOPE)
-endfunction()
-
-function(_MODULES_alias_to_module out_var alias_name context)
-  if (NOT DEFINED context OR NOT context)
-    set(context "${CMAKE_CURRENT_FUNCTION}")
-  endif()
-  
-  # --- Validate basic shape ---
-  if (NOT alias_name MATCHES "^[A-Za-z0-9_]+(::[A-Za-z0-9_]+)+$")
-    message(FATAL_ERROR "${context}(${alias_name}): invalid alias: expected <identifier>[::<identifier>]*")
-  endif()
-
-  # Split into components
-  string(REPLACE "::" ";" _parts "${alias_name}")
-  list(LENGTH _parts _len)
-
-  if (_len EQUAL 2)
-    # Possible stutter case: base::base
-    list(GET _parts 0 _first)
-    list(GET _parts 1 _second)
-
-    if (_first STREQUAL _second)
-      # Collapse stutter
-      set(${out_var} "${_first}" PARENT_SCOPE)
-      return()
-    endif()
-  endif()
-
-  # General case: replace :: with .
-  string(REPLACE "::" "." _module "${alias_name}")
-  set(${out_var} "${_module}" PARENT_SCOPE)
-endfunction()
-
-
-function(_MODULES_append_if_set list_var key value)
-  if (value)
-    list(APPEND ${list_var} ${key} ${value})
-    set(${list_var} "${${list_var}}" PARENT_SCOPE)
-  endif()
-endfunction()
+include(${CMAKE_CURRENT_LIST_DIR}/CXXModules-Internal.cmake)
 
 # ============================================================
 # Public API
@@ -141,11 +30,8 @@ function(add_named_module name)
     ${ARGN}
   )
 
-  set(context "${NM_ARG__CONTEXT}")
-  if (NOT context)
-    set(context "${CMAKE_CURRENT_FUNCTION}")
-  endif()
-
+  CXXMODULES_resolve_context(context "${NM_ARG__CONTEXT}")
+  
   # --- Validation ---
   if (NOT name)
     message(FATAL_ERROR "${context}: module name is required as first argument")
@@ -155,7 +41,7 @@ function(add_named_module name)
     message(FATAL_ERROR "${context}(${name}): target \"${name}\" already exists")
   endif()
   
-  _MODULES_validate_name("${name}" "${context}")
+  CXXMODULES_validate_name("${name}" "${context}")
   
   if (NM_ARG_INTERFACE_UNIT)
     list(LENGTH NM_ARG_INTERFACE_UNIT _iface_len)
@@ -193,7 +79,7 @@ function(add_named_module name)
   # --- Target + alias ---
   add_library("${name}" "${_lib_type}")
     
-  _MODULES_module_to_alias(_alias "${name}" "${context}")
+  CXXMODULES_module_to_alias(_alias "${name}" "${context}")
 
   if (TARGET "${_alias}")
     message(FATAL_ERROR "${context}(${name}): target \"${_alias}\" already exists")
@@ -249,7 +135,7 @@ function(add_named_module name)
 
   # Convert to aliases for linking
   foreach(_import_target IN LISTS NM_ARG_IMPORTS)
-    _MODULES_module_to_alias(_import_target "${_import_target}" "${context}")
+    CXXMODULES_module_to_alias(_import_target "${_import_target}" "${context}")
     list(APPEND _link_targets "${_import_target}")
   endforeach() 
   
