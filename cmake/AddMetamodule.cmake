@@ -36,7 +36,7 @@ function(add_metamodule name)
     ${ARGN}
   )
 
-  CXXMODULES_resolve_context(context "${MM_ARG__CONTEXT}")
+  cxxModules.resolve_context(context "${MM_ARG__CONTEXT}")
 
   # --- Validation ---
   if (NOT MM_ARG_SUBMODULES)
@@ -53,7 +53,7 @@ function(add_metamodule name)
 
   foreach(_sub IN LISTS MM_ARG_SUBMODULES)
     # 2. Metamodule must be parent of submodules
-    CXXMODULES_parent_module(_parent "${_sub}" "${context}")
+    cxxModules.parent_module(_parent "${_sub}" "${context}")
     if (NOT _parent STREQUAL "${name}")
       message(FATAL_ERROR "${context}(${name}): metamodule '${name}' is not the parent of submodule '${_sub}'")
     endif()
@@ -75,9 +75,9 @@ function(add_metamodule name)
     list(APPEND _args NO_TESTS)
   endif()
   
-  CXXMODULES_append_if_set(_args INTERFACE_UNIT "${MM_ARG_INTERFACE_UNIT}")
-  CXXMODULES_append_if_set(_args STD "${MM_ARG_STD}")
-  CXXMODULES_append_if_set(_args TEST_DEPENDENCIES "${MM_ARG_TEST_DEPENDENCIES}")
+  cxxModules.append_if_set(_args INTERFACE_UNIT "${MM_ARG_INTERFACE_UNIT}")
+  cxxModules.append_if_set(_args STD "${MM_ARG_STD}")
+  cxxModules.append_if_set(_args TEST_DEPENDENCIES "${MM_ARG_TEST_DEPENDENCIES}")
 
   add_named_module(${name} ${_args})
 

@@ -30,7 +30,7 @@ function(add_named_module name)
     ${ARGN}
   )
 
-  CXXMODULES_resolve_context(context "${NM_ARG__CONTEXT}")
+  cxxModules.resolve_context(context "${NM_ARG__CONTEXT}")
   
   # --- Validation ---
   if (NOT name)
@@ -41,7 +41,7 @@ function(add_named_module name)
     message(FATAL_ERROR "${context}(${name}): target \"${name}\" already exists")
   endif()
   
-  CXXMODULES_validate_name("${name}" "${context}")
+  cxxModules.validate_name("${name}" "${context}")
   
   if (NM_ARG_INTERFACE_UNIT)
     list(LENGTH NM_ARG_INTERFACE_UNIT _iface_len)
@@ -79,7 +79,7 @@ function(add_named_module name)
   # --- Target + alias ---
   add_library("${name}" "${_lib_type}")
     
-  CXXMODULES_module_to_alias(_alias "${name}" "${context}")
+  cxxModules.module_to_alias(_alias "${name}" "${context}")
 
   if (TARGET "${_alias}")
     message(FATAL_ERROR "${context}(${name}): target \"${_alias}\" already exists")
@@ -135,7 +135,7 @@ function(add_named_module name)
 
   # Convert to aliases for linking
   foreach(_import_target IN LISTS NM_ARG_IMPORTS)
-    CXXMODULES_module_to_alias(_import_target "${_import_target}" "${context}")
+    cxxModules.module_to_alias(_import_target "${_import_target}" "${context}")
     list(APPEND _link_targets "${_import_target}")
   endforeach() 
   
