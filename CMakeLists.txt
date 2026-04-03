@@ -100,9 +100,9 @@ add_subdirectory(net)
 # ===========================================================================
 # Aggregate the tooling-registered targets and their sources.
 # ===========================================================================
-include(ToolingSources.cmake)
+include(ToolingSources)
 
 # ===========================================================================
 # Create tooling targets for clang-format (real and check) and clang-tidy.
 # ===========================================================================
-include(ToolingTargets.cmake)
+include(ToolingTargets)
