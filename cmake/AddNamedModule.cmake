@@ -30,7 +30,7 @@ function(add_named_module name)
     ${ARGN}
   )
 
-  cxxModules.resolve_context(context "${NM_ARG__CONTEXT}")
+  cxxModules_resolveContext(context "${NM_ARG__CONTEXT}")
   
   # --- Validation ---
   if (NOT name)
@@ -41,7 +41,7 @@ function(add_named_module name)
     message(FATAL_ERROR "${context}(${name}): target \"${name}\" already exists")
   endif()
   
-  cxxModules.validate_name("${name}" "${context}")
+  cxxModules_validateName("${name}" "${context}")
   
   if (NM_ARG_INTERFACE_UNIT)
     list(LENGTH NM_ARG_INTERFACE_UNIT _iface_len)
@@ -62,10 +62,7 @@ function(add_named_module name)
   endif()
   
   # --- Default BASE_DIRS is ./src/ ---
-  set(_base_dirs "src")
-  if (NM_ARG_BASE_DIRS)
-    set(_base_dirs ${NM_ARG_BASE_DIRS})
-  endif()
+  cxxModules_setWithDefault(_base_dirs NM_ARG_BASE_DIRS "src")
 
   # --- Determine library type ---
   if (NM_ARG_OBJECT AND NM_ARG_STATIC)
@@ -79,7 +76,7 @@ function(add_named_module name)
   # --- Target + alias ---
   add_library("${name}" "${_lib_type}")
     
-  cxxModules.module_to_alias(_alias "${name}" "${context}")
+  cxxModules_moduleToAlias(_alias "${name}" "${context}")
 
   if (TARGET "${_alias}")
     message(FATAL_ERROR "${context}(${name}): target \"${_alias}\" already exists")
@@ -93,23 +90,20 @@ function(add_named_module name)
   endif()
 
   # --- Language level ---
-  set(cxx_std 23)
-  if (NM_ARG_STD)
-    set(cxx_std "${NM_ARG_STD}")
-  endif()
+  cxxModules_setWithDefault(_cxx_std NM_ARG_STD 23)
 
   # Validate STD is numeric
-  if (NOT cxx_std MATCHES "^[0-9]+$")
-    message(FATAL_ERROR "${context}(${name}): STD must be a number (got '${cxx_std}')")
+  if (NOT _cxx_std MATCHES "^[0-9]+$")
+    message(FATAL_ERROR "${context}(${name}): STD must be a number (got '${_cxx_std}')")
   endif()
 
   # Enforce minimum
-  if (cxx_std LESS 23)
-    message(FATAL_ERROR "${context}(${name}): STD must be >= 23 (got ${cxx_std})")
+  if (_cxx_std LESS 23)
+    message(FATAL_ERROR "${context}(${name}): STD must be >= 23 (got ${_cxx_std})")
   endif()
 
   target_compile_features("${name}"
-    PUBLIC "cxx_std_${cxx_std}"
+    PUBLIC "cxx_std_${_cxx_std}"
   )
 
   # --- Module units ---
@@ -135,7 +129,7 @@ function(add_named_module name)
 
   # Convert to aliases for linking
   foreach(_import_target IN LISTS NM_ARG_IMPORTS)
-    cxxModules.module_to_alias(_import_target "${_import_target}" "${context}")
+    cxxModules_moduleToAlias(_import_target "${_import_target}" "${context}")
     list(APPEND _link_targets "${_import_target}")
   endforeach() 
   

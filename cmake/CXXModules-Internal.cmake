@@ -23,7 +23,7 @@ include(ToolingInfrastructure)
 # Private Helpers
 # ============================================================
 
-macro("cxxModules.resolve_context" out_var provided_context)
+macro(cxxModules_resolveContext out_var provided_context)
   if (provided_context)
     set(${out_var} "${provided_context}")
   else()
@@ -31,8 +31,8 @@ macro("cxxModules.resolve_context" out_var provided_context)
   endif()
 endmacro()
 
-function("cxxModules.validate_name" module_name context)
-  cxxModules.resolve_context(context "${context}")
+function(cxxModules_validateName module_name context)
+  cxxModules_resolveContext(context "${context}")
   
   if (NOT module_name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
     message(FATAL_ERROR "${context}(${module_name}): invalid module name '${module_name}'")
@@ -42,19 +42,19 @@ endfunction()
 
 
 
-function("cxxModules.split_module_name" out_list module_name context)
-  cxxModules.resolve_context(context "${context}")
+function(cxxModules_splitModuleName out_list module_name context)
+  cxxModules_resolveContext(context "${context}")
   
-  cxxModules.validate_name("${module_name}" "${context}")
+  cxxModules_validateName("${module_name}" "${context}")
 
   string(REPLACE "." ";" _parts "${module_name}")
   set(${out_list} ${_parts} PARENT_SCOPE)
 endfunction()
 
-function("cxxModules.parent_module" out_var module_name context)
-  cxxModules.resolve_context(context "${context}")
+function(cxxModules_parentModule out_var module_name context)
+  cxxModules_resolveContext(context "${context}")
 
-  cxxModules.split_module_name(_parts "${module_name}" "${context}")
+  cxxModules_splitModuleName(_parts "${module_name}" "${context}")
   
   list(LENGTH _parts _len)
 
@@ -68,20 +68,20 @@ function("cxxModules.parent_module" out_var module_name context)
   set(${out_var} "${_parent}" PARENT_SCOPE)
 endfunction()
 
-function("cxxModules.core_name" out_var module_name context)
-  cxxModules.resolve_context(context "${context}")
+function(cxxModules_coreName out_var module_name context)
+  cxxModules_resolveContext(context "${context}")
 
-  cxxModules.split_module_name(_parts "${module_name}" "${context}")
+  cxxModules_splitModuleName(_parts "${module_name}" "${context}")
   list(GET _parts -1 _leaf)
   set(${out_var} "${_leaf}" PARENT_SCOPE)
 endfunction()
 
 
 
-function("cxxModules.module_to_alias" out_var module_name context)
-  cxxModules.resolve_context(context "${context}")
+function(cxxModules_moduleToAlias out_var module_name context)
+  cxxModules_resolveContext(context "${context}")
   
-  cxxModules.validate_name("${module_name}" "${context}")
+  cxxModules_validateName("${module_name}" "${context}")
 
   string(FIND "${module_name}" "." _dot_index)
 
@@ -95,8 +95,8 @@ function("cxxModules.module_to_alias" out_var module_name context)
   set(${out_var} "${_alias}" PARENT_SCOPE)
 endfunction()
 
-function("cxxModules.alias_to_module" out_var alias_name context)
-  cxxModules.resolve_context(context "${context}")
+function(cxxModules_aliasToModule out_var alias_name context)
+  cxxModules_resolveContext(context "${context}")
   
   # --- Validate basic shape ---
   if (NOT alias_name MATCHES "^[A-Za-z0-9_]+(::[A-Za-z0-9_]+)+$")
@@ -124,8 +124,15 @@ function("cxxModules.alias_to_module" out_var alias_name context)
   set(${out_var} "${_module}" PARENT_SCOPE)
 endfunction()
 
+function(cxxModules_setWithDefault out_var input default)
+  set(_result "${default}")
+  if (${input})
+    set(_result "${${input}}")
+  endif()
+  set(${out_var} ${_result} PARENT_SCOPE)
+endfunction()
 
-function("cxxModules.append_if_set" list_var key value)
+function(cxxModules_appendIfSet list_var key value)
   if (value)
     list(APPEND ${list_var} ${key} ${value})
     set(${list_var} "${${list_var}}" PARENT_SCOPE)
