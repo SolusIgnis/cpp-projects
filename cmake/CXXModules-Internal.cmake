@@ -125,11 +125,14 @@ function(cxxModules_aliasToModule out_var alias_name context)
 endfunction()
 
 function(cxxModules_setWithDefault out_var input default)
-  set(_result "${default}")
-  if (${input})
-    set(_result "${${input}}")
+  if (DEFINED ${input} AND
+      (${${input}} OR
+       ${${input}} EQUAL 0)
+     )
+    set(${out_var} "${${input}}" PARENT_SCOPE)
+  else()
+    set(${out_var} "${default}" PARENT_SCOPE)
   endif()
-  set(${out_var} ${_result} PARENT_SCOPE)
 endfunction()
 
 function(cxxModules_appendIfSet list_var key value)
