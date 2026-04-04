@@ -66,7 +66,7 @@ function(add_metamodule name)
   # --- Forward to add_named_module ---
 
   set(_args
-    STATIC
+    LIB_TYPE STATIC
     _CONTEXT "${context}"
     IMPORTS ${MM_ARG_SUBMODULES}
   )
