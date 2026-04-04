@@ -43,23 +43,7 @@ function(add_named_module name)
   
   cxxModules_validateName("${name}" "${context}")
   
-  if (NM_ARG_INTERFACE_UNIT)
-    list(LENGTH NM_ARG_INTERFACE_UNIT _iface_len)
-    if (NOT _iface_len EQUAL 1)
-      message(FATAL_ERROR "${context}(${name}): INTERFACE_UNIT must contain only one file")
-    endif()
-
-    set(_interface_unit "${NM_ARG_INTERFACE_UNIT}")
-  else()
-    # Default canonical path
-    set(_interface_unit "src/${name}.cppm")
-  endif()
-  
-  get_filename_component(_iface_path "${_interface_unit}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-  
-  if (NOT EXISTS "${_iface_path}")
-    message(FATAL_ERROR "${context}(${name}): INTERFACE_UNIT \"${_interface_unit}\" does not exist at path \"${_iface_path}\"")
-  endif()
+  cxxModules_validateInterfaceUnit(_interface_unit "${name}" "${NM_ARG_INTERFACE_UNIT}" "${context}")
   
   # --- Default BASE_DIRS is ./src/ ---
   cxxModules_setWithDefault(_base_dirs "${NM_ARG_BASE_DIRS}" "src")
@@ -98,13 +82,13 @@ function(add_named_module name)
   )
 
   # --- Module units ---
-  set(_module_files ${_interface_unit})
+  set(_module_files "${_interface_unit}")
   list(APPEND _module_files ${NM_ARG_PARTITIONS})
 
   target_sources("${name}"
     PUBLIC
       FILE_SET CXX_MODULES
-      BASE_DIRS ${_base_dirs}
+      BASE_DIRS "${_base_dirs}"
       FILES ${_module_files}
   )
 

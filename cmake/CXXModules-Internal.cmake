@@ -165,3 +165,25 @@ function(cxxModules_validateStd cxx_std context)
     message(FATAL_ERROR "${context}(${name}): STD must be >= 23 (got ${_cxx_std})")
   endif()
 endfunction()
+
+function(cxxModules_validateInterfaceUnit out_var module_name interface_unit context)
+  if (interface_unit)
+    list(LENGTH interface_unit _iface_len)
+    if (NOT _iface_len EQUAL 1)
+      message(FATAL_ERROR "${context}(${module_name}): INTERFACE_UNIT must contain only one file")
+    endif()
+
+    set(_iface_unit "${interface_unit}")
+  else()
+    # Default canonical path
+    set(_iface_unit "src/${module_name}.cppm")
+  endif()
+  
+  get_filename_component(_iface_path "${_iface_unit}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+  
+  if (NOT EXISTS "${_iface_path}")
+    message(FATAL_ERROR "${context}(${module_name}): INTERFACE_UNIT \"${_iface_unit}\" does not exist at path \"${_iface_path}\"")
+  endif()
+  
+  set(${out_var} "${_iface_unit}" PARENT_SCOPE)
+endfunction()
