@@ -124,12 +124,24 @@ function(cxxModules_aliasToModule out_var alias_name context)
   set(${out_var} "${_module}" PARENT_SCOPE)
 endfunction()
 
+
+function(cxxModules_isValid out_var input)
+  string(TOUPPER "${input}" input)
+  if (input
+      OR input STREQUAL "0"
+      OR input STREQUAL "FALSE"
+      OR input STREQUAL "OFF"
+      OR input STREQUAL "NO")
+    set(${out_var} "TRUE" PARENT_SCOPE)
+  else()
+    set(${out_var} "FALSE" PARENT_SCOPE)
+  endif()
+endfunction()
+
 function(cxxModules_setWithDefault out_var input default)
-  if (DEFINED ${input} AND
-      (${${input}} OR
-       ${${input}} EQUAL 0)
-     )
-    set(${out_var} "${${input}}" PARENT_SCOPE)
+  cxxModules_isValid(_valid_input "${input}")
+  if (_valid_input)
+    set(${out_var} "${input}" PARENT_SCOPE)
   else()
     set(${out_var} "${default}" PARENT_SCOPE)
   endif()
@@ -139,5 +151,17 @@ function(cxxModules_appendIfSet list_var key value)
   if (value)
     list(APPEND ${list_var} ${key} ${value})
     set(${list_var} "${${list_var}}" PARENT_SCOPE)
+  endif()
+endfunction()
+
+cxxModules_validateStd(cxx_std context)
+  # Validate STD is numeric
+  if (NOT cxx_std MATCHES "^[0-9]+$")
+    message(FATAL_ERROR "${context}(${name}): STD must be a number (got '${_cxx_std}')")
+  endif()
+
+  # Enforce minimum
+  if (cxx_std LESS 23)
+    message(FATAL_ERROR "${context}(${name}): STD must be >= 23 (got ${_cxx_std})")
   endif()
 endfunction()

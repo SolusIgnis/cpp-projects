@@ -62,7 +62,7 @@ function(add_named_module name)
   endif()
   
   # --- Default BASE_DIRS is ./src/ ---
-  cxxModules_setWithDefault(_base_dirs NM_ARG_BASE_DIRS "src")
+  cxxModules_setWithDefault(_base_dirs "${NM_ARG_BASE_DIRS}" "src")
 
   # --- Determine library type ---
   if (NM_ARG_OBJECT AND NM_ARG_STATIC)
@@ -90,17 +90,8 @@ function(add_named_module name)
   endif()
 
   # --- Language level ---
-  cxxModules_setWithDefault(_cxx_std NM_ARG_STD 23)
-
-  # Validate STD is numeric
-  if (NOT _cxx_std MATCHES "^[0-9]+$")
-    message(FATAL_ERROR "${context}(${name}): STD must be a number (got '${_cxx_std}')")
-  endif()
-
-  # Enforce minimum
-  if (_cxx_std LESS 23)
-    message(FATAL_ERROR "${context}(${name}): STD must be >= 23 (got ${_cxx_std})")
-  endif()
+  cxxModules_setWithDefault(_cxx_std "${NM_ARG_STD}" 23)
+  cxxModules_validateStd("${_cxx_std}" "${context}")
 
   target_compile_features("${name}"
     PUBLIC "cxx_std_${_cxx_std}"
