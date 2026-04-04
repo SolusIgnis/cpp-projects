@@ -16,7 +16,7 @@ set(_ADD_NAMED_MODULE_INCLUDED TRUE)
 # Include the internal implementation helpers
 # ============================================================
 
-include(${CMAKE_CURRENT_LIST_DIR}/CXXModules-Internal.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/AddNamedModule-Internal.cmake)
 
 # ============================================================
 # Public API
@@ -33,15 +33,8 @@ function(add_named_module name)
   cxxModules_resolveContext(context "${NM_ARG__CONTEXT}")
   
   # --- Validation ---
-  if (NOT name)
-    message(FATAL_ERROR "${context}: module name is required as first argument")
-  endif()
   
-  if (TARGET "${name}")
-    message(FATAL_ERROR "${context}(${name}): target \"${name}\" already exists")
-  endif()
-  
-  cxxModules_validateName("${name}" "${context}")
+  cxxModules_validateModuleName("${name}" "${context}")
   
   cxxModules_validateInterfaceUnit(_interface_unit "${name}" "${NM_ARG_INTERFACE_UNIT}" "${context}")
   
@@ -50,7 +43,7 @@ function(add_named_module name)
 
   # --- Determine library type ---
   if (NM_ARG_OBJECT AND NM_ARG_STATIC)
-    message(FATAL_ERROR "${context}(${name}): choose OBJECT or STATIC, not both")
+    message(FATAL_ERROR "${context}(${name}): OBJECT and STATIC are mutually exclusive")
   elseif (NM_ARG_OBJECT)
     set(_lib_type OBJECT)
   else()
@@ -63,7 +56,7 @@ function(add_named_module name)
   cxxModules_moduleToAlias(_alias "${name}" "${context}")
 
   if (TARGET "${_alias}")
-    message(FATAL_ERROR "${context}(${name}): target \"${_alias}\" already exists")
+    message(FATAL_ERROR "${context}(${name}): target '${_alias}' already exists")
   endif()
   
   add_library("${_alias}" ALIAS "${name}")
@@ -71,6 +64,8 @@ function(add_named_module name)
   # --- Tooling ---
   if (COMMAND register_tooling_target)
     register_tooling_target("${name}")
+  else()
+    message(WARNING "Function 'register_tooling_target' not found. Did you forget to 'include(ToolingInfrastructure)'?")
   endif()
 
   # --- Language level ---
@@ -102,17 +97,7 @@ function(add_named_module name)
 
   # --- Link libraries ---
 
-  # Convert to aliases for linking
-  foreach(_import_target IN LISTS NM_ARG_IMPORTS)
-    cxxModules_moduleToAlias(_import_target "${_import_target}" "${context}")
-    list(APPEND _link_targets "${_import_target}")
-  endforeach() 
-  
-  if (NM_ARG_LINK_LIBRARIES)
-    list(APPEND _link_targets ${NM_ARG_LINK_LIBRARIES})
-  endif()
-  
-  list(REMOVE_DUPLICATES _link_targets)
+  cxxModules_collectLinkTargets(_link_targets "${NM_ARG_IMPORTS}" "${NM_ARG_LINK_LIBRARIES}" "${context}")
   
   if (_link_targets)
     target_link_libraries("${name}"
@@ -122,13 +107,17 @@ function(add_named_module name)
   endif()
 
   # --- Tests ---
-  if (NOT NM_ARG_NO_TESTS AND COMMAND add_tests_for_module)
-    if (NM_ARG_TEST_DEPENDENCIES)
-      add_tests_for_module("${name}"
-        DEPENDENCIES ${NM_ARG_TEST_DEPENDENCIES}
-      )
+  if (NOT NM_ARG_NO_TESTS)
+    if (COMMAND add_tests_for_module)
+      if (NM_ARG_TEST_DEPENDENCIES)
+        add_tests_for_module("${name}"
+          DEPENDENCIES ${NM_ARG_TEST_DEPENDENCIES}
+        )
+      else()
+        add_tests_for_module("${name}")
+      endif()
     else()
-      add_tests_for_module("${name}")
+      message(WARNING "Function 'add_tests_for_module' not found. Did you forget to 'include(DiscoverTests)'?")
     endif()
   endif()
 

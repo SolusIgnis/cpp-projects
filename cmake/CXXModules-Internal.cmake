@@ -7,7 +7,7 @@ if(NOT _CXXMODULES_INCLUDED
    AND
    NOT _ADD_METAMODULE_INCLUDED
    AND
-   NOT _ADD_NAMED_MODULE_INCLUDED)
+   NOT _ADD_NAMED_MODULE_INTERNAL_INCLUDED)
   message(FATAL_ERROR "CXXModules-Internal.cmake is internal and must not be included directly.")
 endif()
 
@@ -31,12 +31,26 @@ macro(cxxModules_resolveContext out_var provided_context)
   endif()
 endmacro()
 
-function(cxxModules_validateName module_name context)
+function(cxxModules_validateModuleNameToken module_name context)
   cxxModules_resolveContext(context "${context}")
   
   if (NOT module_name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
     message(FATAL_ERROR "${context}(${module_name}): invalid module name '${module_name}'")
   endif()
+endfunction()
+
+function(cxxModules_validateModuleName module_name context)
+  cxxModules_resolveContext(context "${context}")
+  
+  if (NOT module_name)
+    message(FATAL_ERROR "${context}: module name is required as first argument")
+  endif()
+  
+  if (TARGET "${module_name}")
+    message(FATAL_ERROR "${context}(${module_name}): target '${name}' already exists")
+  endif()
+  
+  cxxModules_validateModuleNameToken("${module_name}" "${context}")
 endfunction()
 
 
@@ -45,7 +59,7 @@ endfunction()
 function(cxxModules_splitModuleName out_list module_name context)
   cxxModules_resolveContext(context "${context}")
   
-  cxxModules_validateName("${module_name}" "${context}")
+  cxxModules_validateModuleNameToken("${module_name}" "${context}")
 
   string(REPLACE "." ";" _parts "${module_name}")
   set(${out_list} ${_parts} PARENT_SCOPE)
@@ -81,7 +95,7 @@ endfunction()
 function(cxxModules_moduleToAlias out_var module_name context)
   cxxModules_resolveContext(context "${context}")
   
-  cxxModules_validateName("${module_name}" "${context}")
+  cxxModules_validateModuleNameToken("${module_name}" "${context}")
 
   string(FIND "${module_name}" "." _dot_index)
 
@@ -152,38 +166,4 @@ function(cxxModules_appendIfSet list_var key value)
     list(APPEND ${list_var} ${key} ${value})
     set(${list_var} "${${list_var}}" PARENT_SCOPE)
   endif()
-endfunction()
-
-function(cxxModules_validateStd cxx_std context)
-  # Validate STD is numeric
-  if (NOT cxx_std MATCHES "^[0-9]+$")
-    message(FATAL_ERROR "${context}(${name}): STD must be a number (got '${_cxx_std}')")
-  endif()
-
-  # Enforce minimum
-  if (cxx_std LESS 23)
-    message(FATAL_ERROR "${context}(${name}): STD must be >= 23 (got ${_cxx_std})")
-  endif()
-endfunction()
-
-function(cxxModules_validateInterfaceUnit out_var module_name interface_unit context)
-  if (interface_unit)
-    list(LENGTH interface_unit _iface_len)
-    if (NOT _iface_len EQUAL 1)
-      message(FATAL_ERROR "${context}(${module_name}): INTERFACE_UNIT must contain only one file")
-    endif()
-
-    set(_iface_unit "${interface_unit}")
-  else()
-    # Default canonical path
-    set(_iface_unit "src/${module_name}.cppm")
-  endif()
-  
-  get_filename_component(_iface_path "${_iface_unit}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-  
-  if (NOT EXISTS "${_iface_path}")
-    message(FATAL_ERROR "${context}(${module_name}): INTERFACE_UNIT \"${_iface_unit}\" does not exist at path \"${_iface_path}\"")
-  endif()
-  
-  set(${out_var} "${_iface_unit}" PARENT_SCOPE)
 endfunction()
