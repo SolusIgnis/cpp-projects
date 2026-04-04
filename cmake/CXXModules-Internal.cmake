@@ -154,7 +154,7 @@ function(cxxModules_appendIfSet list_var key value)
   endif()
 endfunction()
 
-cxxModules_validateStd(cxx_std context)
+function(cxxModules_validateStd cxx_std context)
   # Validate STD is numeric
   if (NOT cxx_std MATCHES "^[0-9]+$")
     message(FATAL_ERROR "${context}(${name}): STD must be a number (got '${_cxx_std}')")
