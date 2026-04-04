@@ -24,31 +24,26 @@ include(${CMAKE_CURRENT_LIST_DIR}/AddNamedModule-Internal.cmake)
 
 function(add_named_module name)
   cmake_parse_arguments(NM_ARG
-    "OBJECT;STATIC;NO_TESTS"
-    "INTERFACE_UNIT;STD;_CONTEXT"
+    "NO_TESTS"
+    "INTERFACE_UNIT;LIB_TYPE;STD;_CONTEXT"
     "BASE_DIRS;PARTITIONS;IMPLEMENTATIONS;IMPORTS;LINK_LIBRARIES;TEST_DEPENDENCIES"
     ${ARGN}
   )
 
   cxxModules_resolveContext(context "${NM_ARG__CONTEXT}")
   
+  if (NOT DEFINED NM_ARG_LIB_TYPE)
+    message(FATAL_ERROR "${context}(${name}): LIB_TYPE is required.")
+  endif()
+  
   # --- Validation ---
   
   cxxModules_validateModuleName("${name}" "${context}")
-  
-  cxxModules_validateInterfaceUnit(_interface_unit "${name}" "${NM_ARG_INTERFACE_UNIT}" "${context}")
+  cxxModules_validateInterfaceUnit(_interface_unit "${NM_ARG_INTERFACE_UNIT}" "${name}" "${context}")
+  cxxModules_validateLibType(_lib_type "${NM_ARG_LIB_TYPE}" "${name}" "${context}")
   
   # --- Default BASE_DIRS is ./src/ ---
   cxxModules_setWithDefault(_base_dirs "${NM_ARG_BASE_DIRS}" "src")
-
-  # --- Determine library type ---
-  if (NM_ARG_OBJECT AND NM_ARG_STATIC)
-    message(FATAL_ERROR "${context}(${name}): OBJECT and STATIC are mutually exclusive")
-  elseif (NM_ARG_OBJECT)
-    set(_lib_type OBJECT)
-  else()
-    set(_lib_type STATIC)
-  endif()
 
   # --- Target + alias ---
   add_library("${name}" "${_lib_type}")

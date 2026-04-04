@@ -25,7 +25,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/CXXModules-Internal.cmake)
 # Private Helpers
 # ============================================================
 
-function(cxxModules_validateInterfaceUnit out_var module_name interface_unit context)
+function(cxxModules_validateInterfaceUnit out_var interface_unit module_name context)
   cxxModules_resolveContext(context "${context}")
 
   if (interface_unit)
@@ -66,6 +66,7 @@ endfunction()
 function(cxxModules_collectLinkTargets out_var imports libraries context)
   cxxModules_resolveContext(context "${context}")
   
+  set(_link_targets)
   # Convert to aliases for linking
   foreach(_import_target IN LISTS imports)
     cxxModules_moduleToAlias(_import_target "${_import_target}" "${context}")
@@ -79,4 +80,21 @@ function(cxxModules_collectLinkTargets out_var imports libraries context)
   list(REMOVE_DUPLICATES _link_targets)
   
   set(${out_var} "${_link_targets}" PARENT_SCOPE)
+endfunction()
+
+function(cxxModules_validateLibType out_var lib_type module_name context)
+  cxxModules_resolveContext(context "${context}")
+  string(TOUPPER "${lib_type}" lib_type)
+  
+  # --- Determine library type ---
+  if (lib_type STREQUAL "STATIC")
+    set(${out_var} STATIC PARENT_SCOPE)
+  elseif(lib_type STREQUAL "OBJECT")
+    set(${out_var} OBJECT PARENT_SCOPE)
+  elseif(lib_type STREQUAL "SHARED")
+    message(WARNING "${context}(${module_name}): SHARED library type potentially dangerous for named modules.")
+    set(${out_var} SHARED PARENT_SCOPE)
+  else()
+    message(FATAL_ERROR "${context}(${module_name}): LIB_TYPE should be either 'OBJECT' or 'STATIC'.")
+  endif()
 endfunction()

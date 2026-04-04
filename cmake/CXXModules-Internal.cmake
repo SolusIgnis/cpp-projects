@@ -14,12 +14,6 @@ endif()
 include_guard(GLOBAL)
 
 # ============================================================
-# Make sure we have our tooling registration function.
-# ============================================================
-
-include(ToolingInfrastructure)
-
-# ============================================================
 # Private Helpers
 # ============================================================
 
@@ -62,7 +56,7 @@ function(cxxModules_splitModuleName out_list module_name context)
   cxxModules_validateModuleNameToken("${module_name}" "${context}")
 
   string(REPLACE "." ";" _parts "${module_name}")
-  set(${out_list} ${_parts} PARENT_SCOPE)
+  set(${out_list} "${_parts}" PARENT_SCOPE)
 endfunction()
 
 function(cxxModules_parentModule out_var module_name context)
