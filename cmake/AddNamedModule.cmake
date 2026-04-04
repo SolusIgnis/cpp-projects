@@ -117,7 +117,7 @@ function(add_named_module name)
         add_tests_for_module("${name}")
       endif()
     else()
-      message(WARNING "Function 'add_tests_for_module' not found. Did you forget to 'include(DiscoverTests)'?")
+      message(WARNING "${context}(${name}): Function 'add_tests_for_module' not found. Tests for module '${name}' may be unavailable. Did you forget to 'include(DiscoverTests)'?")
     endif()
   endif()
 
