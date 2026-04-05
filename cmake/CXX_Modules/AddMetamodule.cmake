@@ -38,6 +38,20 @@ function(add_metamodule name)
 
   cxxModules_resolveContext(context "${MM_ARG__CONTEXT}")
 
+  if (NOT DEFINED CXXMODULES_REGISTERED_MODULES)
+    message(FATAL_ERROR "No registered modules found.")
+  endif()
+
+  set(_child_modules)
+  foreach(_module IN LISTS CXXMODULES_REGISTERED_MODULES)
+    cxxModules_parentModule(_parent "${_module}" "${context}")
+    if(_parent STREQUAL name)
+      list(APPEND _child_modules "${_module}")
+    endif()
+  endforeach()
+  
+  message(STATUS "Found children of ${name}: " ${_child_modules})
+  
   # --- Validation ---
   if (NOT MM_ARG_SUBMODULES)
     message(FATAL_ERROR "${context}(${name}): SUBMODULES is required.")
