@@ -26,8 +26,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/CXXModules-Internal.cmake)
 # Private Helpers
 # ============================================================
 
-function(cxxModules_appendFlagIfSet list_var key)
-  if (${key})
+function(cxxModules_appendFlagIfSet list_var key value)
+  if (value)
     list(APPEND ${list_var} ${key})
     set(${list_var} "${${list_var}}" PARENT_SCOPE)
   endif()

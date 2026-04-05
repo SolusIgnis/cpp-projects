@@ -71,7 +71,7 @@ function(add_metamodule name)
     IMPORTS ${MM_ARG_SUBMODULES}
   )
 
-  cxxModules_appendFlagIfSet(_args NO_TESTS)
+  cxxModules_appendFlagIfSet(_args NO_TESTS "${MM_ARGS_NO_TESTS}")
   
   cxxModules_appendIfSet(_args INTERFACE_UNIT "${MM_ARG_INTERFACE_UNIT}")
   cxxModules_appendIfSet(_args STD "${MM_ARG_STD}")
