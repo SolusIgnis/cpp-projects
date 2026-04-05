@@ -116,5 +116,7 @@ function(add_named_module name)
       message(WARNING "${context}(${name}): Function 'add_tests_for_module' not found. Tests for module '${name}' may be unavailable. Did you forget to 'include(DiscoverTests)'?")
     endif()
   endif()
+  
+  cxxModules_registerModule("${name}" "${context}")
 
 endfunction()

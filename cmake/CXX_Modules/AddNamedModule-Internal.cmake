@@ -99,3 +99,18 @@ function(cxxModules_validateLibType out_var lib_type module_name context)
     message(FATAL_ERROR "${context}(${module_name}): LIB_TYPE should be either 'OBJECT' or 'STATIC'.")
   endif()
 endfunction()
+
+function(cxxModules_registerModule module_name context)
+  cxxModules_resolveContext(context "${context}")
+
+  set(_registered_modules "${CXXMODULES_REGISTERED_MODULES}")
+  # --- Prevent duplicate registration ---
+  list(FIND _registered_modules "${module_name}" _exists)
+  if (NOT _exists EQUAL -1)
+    message(FATAL_ERROR "${context}(${module_name}): module already registered")
+  endif()
+
+  # --- Append to global registry ---
+  list(APPEND _registered_modules "${module_name}")
+  set(CXXMODULES_REGISTERED_MODULES "${_registered_modules}" CACHE INTERNAL "" FORCE)
+endfunction()

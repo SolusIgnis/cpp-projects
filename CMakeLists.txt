@@ -87,6 +87,8 @@ include(ToolingInfrastructure)
 # ===========================================================================
 # Add module utilities.
 # ===========================================================================
+unset(CXXMODULES_REGISTERED_MODULES CACHE)
+
 include(AddNamedModule)
 include(AddMetamodule)
 
