@@ -23,6 +23,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/AddNamedModule-Internal.cmake)
 # ============================================================
 
 function(add_named_module name)
+
   cmake_parse_arguments(NM_ARG
     "NO_TESTS"
     "INTERFACE_UNIT;LIB_TYPE;STD;_CONTEXT"

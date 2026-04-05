@@ -2,10 +2,11 @@
 # SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 #
 # CXXModules-Internal.cmake
+# ============================================================
 
 if(NOT _CXXMODULES_INCLUDED
    AND
-   NOT _ADD_METAMODULE_INCLUDED
+   NOT _ADD_METAMODULE_INTERNAL_INCLUDED
    AND
    NOT _ADD_NAMED_MODULE_INTERNAL_INCLUDED)
   message(FATAL_ERROR "CXXModules-Internal.cmake is internal and must not be included directly.")
@@ -152,12 +153,5 @@ function(cxxModules_setWithDefault out_var input default)
     set(${out_var} "${input}" PARENT_SCOPE)
   else()
     set(${out_var} "${default}" PARENT_SCOPE)
-  endif()
-endfunction()
-
-function(cxxModules_appendIfSet list_var key value)
-  if (value)
-    list(APPEND ${list_var} ${key} ${value})
-    set(${list_var} "${${list_var}}" PARENT_SCOPE)
   endif()
 endfunction()

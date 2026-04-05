@@ -26,6 +26,9 @@ set(CMAKE_CXX_MODULE_STD 1)
 # ===========================================================================
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CXX_Modules")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Discover_Tests")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Tooling_Targets")
 
 # ===========================================================================
 # Check for adequate compilers supporting C++23 and "import std;".

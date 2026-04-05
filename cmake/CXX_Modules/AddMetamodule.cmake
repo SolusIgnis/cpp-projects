@@ -16,7 +16,7 @@ set(_ADD_METAMODULE_INCLUDED TRUE)
 # Include the internal implementation helpers
 # ============================================================
 
-include(${CMAKE_CURRENT_LIST_DIR}/CXXModules-Internal.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/AddMetamodule-Internal.cmake)
 
 # ============================================================
 # Include add_named_module(...)
@@ -40,7 +40,7 @@ function(add_metamodule name)
 
   # --- Validation ---
   if (NOT MM_ARG_SUBMODULES)
-    message(FATAL_ERROR "${context}(${name}): SUBMODULES is required")
+    message(FATAL_ERROR "${context}(${name}): SUBMODULES is required.")
   endif()
 
   # --- Enforce metamodule invariants ---
@@ -71,9 +71,7 @@ function(add_metamodule name)
     IMPORTS ${MM_ARG_SUBMODULES}
   )
 
-  if (MM_ARG_NO_TESTS)
-    list(APPEND _args NO_TESTS)
-  endif()
+  cxxModules_appendFlagIfSet(_args NO_TESTS)
   
   cxxModules_appendIfSet(_args INTERFACE_UNIT "${MM_ARG_INTERFACE_UNIT}")
   cxxModules_appendIfSet(_args STD "${MM_ARG_STD}")

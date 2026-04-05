@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 #
 # DiscoverTests-Internal.cmake
+# ============================================================
 
 if(NOT _DISCOVER_TESTS_INCLUDED)
   message(FATAL_ERROR "DiscoverTests-Internal.cmake is internal and must not be included directly.")

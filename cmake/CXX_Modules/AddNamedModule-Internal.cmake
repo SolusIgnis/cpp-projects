@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 #
 # AddNamedModule-Internal.cmake
+# ============================================================
 
 if(NOT _ADD_NAMED_MODULE_INCLUDED)
   message(FATAL_ERROR "AddNamedModule-Internal.cmake is internal and must not be included directly.")
