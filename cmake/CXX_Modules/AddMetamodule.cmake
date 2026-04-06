@@ -50,27 +50,7 @@ function(add_metamodule name)
 
   # --- Enforce metamodule invariants ---
 
-  if (NOT _submodules)
-    message(FATAL_ERROR "${context}(${name}): no submodules found for '${name}'. Ensure submodules are registered before adding parent metamodules or specify SUBMODULES explicitly.")
-  endif()
-
-  # 1. Metamodule must not list itself
-  list(FIND _submodules "${name}" _self_index)
-  if (NOT _self_index EQUAL -1)
-    message(FATAL_ERROR "${context}(${name}): ${name} cannot include itself in SUBMODULES")
-  endif()
-
-  foreach(_sub IN LISTS _submodules)
-    # 2. Metamodule must be parent of submodules
-    cxxModules_parentModule(_parent "${_sub}" "${context}")
-    if (NOT _parent STREQUAL name)
-      message(FATAL_ERROR "${context}(${name}): metamodule '${name}' is not the parent of submodule '${_sub}'")
-    endif()
-    # 3. Submodules must be valid targets
-    if (NOT TARGET "${_sub}")
-      message(FATAL_ERROR "${context}(${name}): submodule '${_sub}' is not a known target")
-    endif()
-  endforeach()
+  cxxModules_validateSubmodules("${_submodules}" "${name}" "${context}")
 
   # --- Forward to add_named_module ---
 
