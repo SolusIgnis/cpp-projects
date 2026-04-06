@@ -68,7 +68,7 @@ function(cxxModules_validateSubmodules submodules module_name context)
   foreach(_submodule IN LISTS submodules)
     # Metamodule must be parent of submodules
     cxxModules_parentModule(_parent "${_submodule}" "${context}")
-    if (NOT "${_parent}" STREQUAL $"{module_name}")
+    if (NOT "${_parent}" STREQUAL "${module_name}")
       message(FATAL_ERROR "${context}(${module_name}): metamodule '${module_name}' is not the parent of submodule '${_submodule}'")
     endif()
     # Submodules must be valid targets
