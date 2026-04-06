@@ -54,6 +54,5 @@ function(add_metamodule name)
   cxxModules_appendIfSet(_args STD "${MM_ARG_STD}")
   cxxModules_appendIfSet(_args TEST_DEPENDENCIES "${MM_ARG_TEST_DEPENDENCIES}")
 
-  add_named_module("${name}" ${_args})
-
+  add_named_module("${name}" ${_args})  
 endfunction()

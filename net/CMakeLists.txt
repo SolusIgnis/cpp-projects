@@ -12,8 +12,4 @@ add_subdirectory(asio_concepts)
 # Add the net.telnet library
 add_subdirectory(telnet)
 
-add_metamodule(net
-  SUBMODULES
-    net.asio_concepts
-    net.telnet
-)
+add_metamodule(net)
