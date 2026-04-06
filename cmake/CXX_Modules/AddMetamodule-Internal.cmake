@@ -39,3 +39,45 @@ function(cxxModules_appendIfSet list_var key value)
     set(${list_var} "${${list_var}}" PARENT_SCOPE)
   endif()
 endfunction()
+
+function(cxxModules_collectRegisteredSubmodules out_var module_name context)
+  set(_child_modules)
+  
+  foreach(_module IN LISTS CXXMODULES_REGISTERED_MODULES)
+    cxxModules_parentModule(_parent "${_module}" "${context}")
+    if(_parent STREQUAL module_name)
+      list(APPEND _child_modules "${_module}")
+    endif()
+  endforeach()
+  
+  set(${out_var} "${_child_modules}" PARENT_SCOPE)
+endfunction()
+
+function(cxxModules_validateSubmodules submodules module_name context)
+  # Metamodule must have at least one submodule
+  if (NOT submodules)
+    message(FATAL_ERROR "${context}(${module_name}): no submodules found for '${module_name}'. Ensure submodules are registered before adding parent metamodule or specify 'SUBMODULES' argument explicitly.")
+  endif()
+
+  # Metamodule must not list itself as a submodule
+  list(FIND submodules "${module_name}" _self_index)
+  if (NOT _self_index EQUAL -1)
+    message(FATAL_ERROR "${context}(${module_name}): ${module_name} cannot include itself in SUBMODULES")
+  endif()
+
+  foreach(_sub IN LISTS submodules)
+    # Metamodule must be parent of submodules
+    cxxModules_parentModule(_parent "${_sub}" "${context}")
+    if (NOT _parent STREQUAL name)
+      message(FATAL_ERROR "${context}(${module_name}): metamodule '${module_name}' is not the parent of submodule '${_sub}'")
+    endif()
+    # Submodules must be valid targets
+    if (NOT TARGET "${_sub}")
+      message(FATAL_ERROR "${context}(${module_name}): submodule '${_sub}' is not a known target")
+    endif()
+  endforeach()
+endfunction()
+
+function(cxxModules_processSubmodules out_var module_name context)
+
+endfunction()

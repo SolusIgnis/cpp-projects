@@ -38,37 +38,32 @@ function(add_metamodule name)
 
   cxxModules_resolveContext(context "${MM_ARG__CONTEXT}")
 
-  if (NOT DEFINED CXXMODULES_REGISTERED_MODULES)
-    message(FATAL_ERROR "No registered modules found.")
+  if (MM_ARG_SUBMODULES)
+    set(_submodules "${MM_ARG_SUBMODULES}")
+  else()
+    cxxModules_collectRegisteredSubmodules(_submodules "${name}" "${context}")
   endif()
 
-  set(_child_modules)
-  foreach(_module IN LISTS CXXMODULES_REGISTERED_MODULES)
-    cxxModules_parentModule(_parent "${_module}" "${context}")
-    if(_parent STREQUAL name)
-      list(APPEND _child_modules "${_module}")
-    endif()
-  endforeach()
-  
-  message(STATUS "Found children of ${name}: " ${_child_modules})
-  
-  # --- Validation ---
-  if (NOT MM_ARG_SUBMODULES)
-    message(FATAL_ERROR "${context}(${name}): SUBMODULES is required.")
-  endif()
+  list(REMOVE_DUPLICATES _submodules)
+  # SUBMODULES are treated as an unordered set; ordering is normalized
+  list(SORT _submodules)
 
   # --- Enforce metamodule invariants ---
 
-  # 1. Metamodule must not list itself
-  list(FIND MM_ARG_SUBMODULES "${name}" _self_index)
-  if (NOT _self_index EQUAL -1)
-    message(FATAL_ERROR "${context}(${name}): cannot include itself in SUBMODULES")
+  if (NOT _submodules)
+    message(FATAL_ERROR "${context}(${name}): no submodules found for '${name}'. Ensure submodules are registered before adding parent metamodules or specify SUBMODULES explicitly.")
   endif()
 
-  foreach(_sub IN LISTS MM_ARG_SUBMODULES)
+  # 1. Metamodule must not list itself
+  list(FIND _submodules "${name}" _self_index)
+  if (NOT _self_index EQUAL -1)
+    message(FATAL_ERROR "${context}(${name}): ${name} cannot include itself in SUBMODULES")
+  endif()
+
+  foreach(_sub IN LISTS _submodules)
     # 2. Metamodule must be parent of submodules
     cxxModules_parentModule(_parent "${_sub}" "${context}")
-    if (NOT _parent STREQUAL "${name}")
+    if (NOT _parent STREQUAL name)
       message(FATAL_ERROR "${context}(${name}): metamodule '${name}' is not the parent of submodule '${_sub}'")
     endif()
     # 3. Submodules must be valid targets
@@ -82,15 +77,15 @@ function(add_metamodule name)
   set(_args
     LIB_TYPE STATIC
     _CONTEXT "${context}"
-    IMPORTS ${MM_ARG_SUBMODULES}
+    IMPORTS ${_submodules}
   )
 
-  cxxModules_appendFlagIfSet(_args NO_TESTS "${MM_ARGS_NO_TESTS}")
+  cxxModules_appendFlagIfSet(_args NO_TESTS "${MM_ARG_NO_TESTS}")
   
   cxxModules_appendIfSet(_args INTERFACE_UNIT "${MM_ARG_INTERFACE_UNIT}")
   cxxModules_appendIfSet(_args STD "${MM_ARG_STD}")
   cxxModules_appendIfSet(_args TEST_DEPENDENCIES "${MM_ARG_TEST_DEPENDENCIES}")
 
-  add_named_module(${name} ${_args})
+  add_named_module("${name}" ${_args})
 
 endfunction()
