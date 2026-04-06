@@ -45,7 +45,7 @@ function(cxxModules_collectRegisteredSubmodules out_var module_name context)
   
   foreach(_module IN LISTS CXXMODULES_REGISTERED_MODULES)
     cxxModules_parentModule(_parent "${_module}" "${context}")
-    if(_parent STREQUAL module_name)
+    if("${_parent}" STREQUAL "${module_name}")
       list(APPEND _child_modules "${_module}")
     endif()
   endforeach()
@@ -68,7 +68,7 @@ function(cxxModules_validateSubmodules submodules module_name context)
   foreach(_submodule IN LISTS submodules)
     # Metamodule must be parent of submodules
     cxxModules_parentModule(_parent "${_submodule}" "${context}")
-    if (NOT _parent STREQUAL module_name)
+    if (NOT "${_parent}" STREQUAL $"{module_name}")
       message(FATAL_ERROR "${context}(${module_name}): metamodule '${module_name}' is not the parent of submodule '${_submodule}'")
     endif()
     # Submodules must be valid targets
@@ -78,6 +78,18 @@ function(cxxModules_validateSubmodules submodules module_name context)
   endforeach()
 endfunction()
 
-function(cxxModules_processSubmodules out_var module_name context)
+function(cxxModules_processSubmodules out_var submodules_arg module_name context)
+  if (submodules_arg)
+    set(_submodules "${submodules_arg}")
+  else()
+    cxxModules_collectRegisteredSubmodules(_submodules "${module_name}" "${context}")
+  endif()
 
+  list(REMOVE_DUPLICATES _submodules)
+  # SUBMODULES are treated as an unordered set; ordering is normalized
+  list(SORT _submodules)
+
+  # --- Enforce metamodule invariants ---
+  cxxModules_validateSubmodules("${_submodules}" "${module_name}" "${context}")
+  set(${out_var} "${_submodules}" PARENT_SCOPE)
 endfunction()

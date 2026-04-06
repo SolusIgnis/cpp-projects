@@ -121,7 +121,7 @@ function(cxxModules_aliasToModule out_var alias_name context)
     list(GET _parts 0 _first)
     list(GET _parts 1 _second)
 
-    if (_first STREQUAL _second)
+    if ("${_first}" STREQUAL "${_second}")
       # Collapse stutter
       set(${out_var} "${_first}" PARENT_SCOPE)
       return()
@@ -137,10 +137,10 @@ endfunction()
 function(cxxModules_isValid out_var input)
   string(TOUPPER "${input}" input)
   if (input
-      OR input STREQUAL "0"
-      OR input STREQUAL "FALSE"
-      OR input STREQUAL "OFF"
-      OR input STREQUAL "NO")
+      OR "${input}" STREQUAL "0"
+      OR "${input}" STREQUAL "FALSE"
+      OR "${input}" STREQUAL "OFF"
+      OR "${input}" STREQUAL "NO")
     set(${out_var} "TRUE" PARENT_SCOPE)
   else()
     set(${out_var} "FALSE" PARENT_SCOPE)

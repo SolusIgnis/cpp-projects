@@ -38,19 +38,7 @@ function(add_metamodule name)
 
   cxxModules_resolveContext(context "${MM_ARG__CONTEXT}")
 
-  if (MM_ARG_SUBMODULES)
-    set(_submodules "${MM_ARG_SUBMODULES}")
-  else()
-    cxxModules_collectRegisteredSubmodules(_submodules "${name}" "${context}")
-  endif()
-
-  list(REMOVE_DUPLICATES _submodules)
-  # SUBMODULES are treated as an unordered set; ordering is normalized
-  list(SORT _submodules)
-
-  # --- Enforce metamodule invariants ---
-
-  cxxModules_validateSubmodules("${_submodules}" "${name}" "${context}")
+  cxxModules_processSubmodules(_submodules "${MM_ARG_SUBMODULES}" "${name}" "${context}")
 
   # --- Forward to add_named_module ---
 
