@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
+ * @module base.vocab.ptr
  * @file base.vocab.ptr.cppm
  * @version 0.1.0
  * @date March 11, 2026

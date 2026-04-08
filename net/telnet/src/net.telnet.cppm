@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 /**
+ * @module net.telnet
  * @file net.telnet.cppm
  * @version 0.5.8
  * @date October 30, 2025
@@ -24,6 +25,7 @@
  *   - `:types`        = Telnet command enumeration plus miscellaneous utility types/typedefs.
  *   - `:errors`       = Telnet-specific error codes.
  *   - `:concepts`     = Concepts for Telnet stream constraints and protocol finite state machine configuration.
+ *   - `:awaitables`   = Tagged awaitable wrapper and semantic tags.
  *   - `:options`      = Option management and factory functions.
  *   - `:protocol_fsm` = Telnet protocol state machine.
  *   - `:stream`       = Asynchronous and synchronous stream operations filtering Telnet data from the raw socket byte stream.

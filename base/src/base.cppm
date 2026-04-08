@@ -18,7 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief Primary module interface for the base metamodule.
+ * @brief Primary module interface for the `base` metamodule.
  * @details Exports partitions for:
  *   - `base.vocab` = Vocabulary types metamodule.
  */

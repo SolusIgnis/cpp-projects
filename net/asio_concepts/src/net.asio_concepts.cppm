@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 /**
+ * @module net.asio_concepts
  * @file net.asio_concepts.cppm
  * @version 0.1.2
  * @date February 25, 2026
