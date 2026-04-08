@@ -24,7 +24,7 @@
  * @remark Defines `telnet::command` and `negotiation_direction` enumerations.
  * @remark Defines custom formatters for `telnet::command` and `negotiation_direction` for use with `std::format`.
  *
- * @remark This module is fully inline.
+ * @remark This module partition is fully inline.
  */
 
 //Module partition interface unit
