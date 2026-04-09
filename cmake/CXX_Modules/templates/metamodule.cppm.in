@@ -22,7 +22,6 @@
  * @brief Primary module interface for the `@module_name@` metamodule.
  * @details Exports partitions for:
 @submodules_header_comment@
- *   - `base.vocab`
  */
 
 //Primary module interface unit
@@ -30,4 +29,3 @@ export module @module_name@;
 
 //Export all sub-modules
 @submodules_export_imports@
-export import base.vocab; ///< @see "base.vocab.cppm"

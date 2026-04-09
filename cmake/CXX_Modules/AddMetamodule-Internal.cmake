@@ -135,6 +135,8 @@ function(cxxModules_resolveMetamoduleInterface
       "${_iface}"
       @ONLY
     )
+    
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E cat "${_iface}")
 
     set(_base_dir "${_gen_dir}")
   endif()

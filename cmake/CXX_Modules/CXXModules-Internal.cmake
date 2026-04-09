@@ -18,7 +18,7 @@ include_guard(GLOBAL)
 # Globals for where the module lives
 # ============================================================
 
-set(CXXMODULES_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}")
+set(CXXMODULES_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "")
 set(CXXMODULES_TEMPLATES_DIR "${CXXMODULES_ROOT_DIR}/templates" CACHE INTERNAL "")
 
 # ============================================================
@@ -55,9 +55,6 @@ function(cxxModules_validateModuleName module_name context)
   cxxModules_validateModuleNameToken("${module_name}" "${context}")
 endfunction()
 
-
-
-
 function(cxxModules_splitModuleName out_list module_name context)
   cxxModules_resolveContext(context "${context}")
   
@@ -91,8 +88,6 @@ function(cxxModules_coreName out_var module_name context)
   list(GET _parts -1 _leaf)
   set(${out_var} "${_leaf}" PARENT_SCOPE)
 endfunction()
-
-
 
 function(cxxModules_moduleToAlias out_var module_name context)
   cxxModules_resolveContext(context "${context}")
@@ -139,7 +134,6 @@ function(cxxModules_aliasToModule out_var alias_name context)
   string(REPLACE "::" "." _module "${alias_name}")
   set(${out_var} "${_module}" PARENT_SCOPE)
 endfunction()
-
 
 function(cxxModules_isValid out_var input)
   string(TOUPPER "${input}" input)
