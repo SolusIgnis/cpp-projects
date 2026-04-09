@@ -30,9 +30,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/AddNamedModule.cmake)
 
 function(add_metamodule name)
   cmake_parse_arguments(MM_ARG
-    "NO_TESTS"
+    "NO_TESTS;NO_TOOLING"
     "INTERFACE_UNIT;STD;_CONTEXT"
-    "SUBMODULES;TEST_DEPENDENCIES"
+    "BASE_DIRS;SUBMODULES;TEST_DEPENDENCIES"
     ${ARGN}
   )
 
@@ -40,17 +40,21 @@ function(add_metamodule name)
 
   cxxModules_processSubmodules(_submodules "${MM_ARG_SUBMODULES}" "${name}" "${context}")
 
+  cxxModules_resolveMetamoduleInterface(_interface_unit _base_dirs "${module_name}" "${_submodules}" "${MM_ARG_INTERFACE_UNIT}" "${context}")
+
   # --- Forward to add_named_module ---
 
   set(_args
     LIB_TYPE STATIC
+    INTERFACE_UNIT "${_interface_unit}"
     _CONTEXT "${context}"
     IMPORTS ${_submodules}
+    BASE_DIRS ${_base_dirs}
   )
 
   cxxModules_appendFlagIfSet(_args NO_TESTS "${MM_ARG_NO_TESTS}")
+  cxxModules_appendFlagIfSet(_args NO_TOOLING "${MM_ARG_NO_TOOLING}")
   
-  cxxModules_appendIfSet(_args INTERFACE_UNIT "${MM_ARG_INTERFACE_UNIT}")
   cxxModules_appendIfSet(_args STD "${MM_ARG_STD}")
   cxxModules_appendIfSet(_args TEST_DEPENDENCIES "${MM_ARG_TEST_DEPENDENCIES}")
 

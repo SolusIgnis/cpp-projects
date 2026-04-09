@@ -25,7 +25,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/AddNamedModule-Internal.cmake)
 function(add_named_module name)
 
   cmake_parse_arguments(NM_ARG
-    "NO_TESTS"
+    "NO_TESTS;NO_TOOLING"
     "INTERFACE_UNIT;LIB_TYPE;STD;_CONTEXT"
     "BASE_DIRS;PARTITIONS;IMPLEMENTATIONS;IMPORTS;LINK_LIBRARIES;TEST_DEPENDENCIES"
     ${ARGN}
@@ -58,10 +58,12 @@ function(add_named_module name)
   add_library("${_alias}" ALIAS "${name}")
 
   # --- Tooling ---
-  if (COMMAND register_tooling_target)
-    register_tooling_target("${name}")
-  else()
-    message(WARNING "Function 'register_tooling_target' not found. Did you forget to 'include(ToolingInfrastructure)'?")
+  if (NOT NM_ARG_NO_TOOLING)
+    if (COMMAND register_tooling_target)
+      register_tooling_target("${name}")
+    else()
+      message(WARNING "Function 'register_tooling_target' not found. Did you forget to 'include(ToolingInfrastructure)'?")
+    endif()
   endif()
 
   # --- Language level ---

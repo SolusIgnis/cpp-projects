@@ -41,7 +41,11 @@ function(cxxModules_validateInterfaceUnit out_var interface_unit module_name con
     set(_iface_unit "src/${module_name}.cppm")
   endif()
   
-  get_filename_component(_iface_path "${_iface_unit}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+  if(IS_ABSOLUTE "${_iface_unit}")
+    set(_iface_path "${_iface_unit}")
+  else()
+    get_filename_component(_iface_path "${_iface_unit}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+  endif()
   
   if (NOT EXISTS "${_iface_path}")
     message(FATAL_ERROR "${context}(${module_name}): INTERFACE_UNIT '${_iface_unit}' does not exist at path '${_iface_path}'")

@@ -94,4 +94,51 @@ function(cxxModules_processSubmodules out_var submodules_arg module_name context
   set(${out_var} "${_submodules}" PARENT_SCOPE)
 endfunction()
 
+function(cxxModules_resolveMetamoduleInterface
+  out_interface_unit
+  out_base_dirs
+  module_name
+  submodules
+  interface_unit_arg
+  context
+)
+  if (interface_unit_arg AND NOT "${interface_unit_arg}" STREQUAL "GENERATED")
+    set(_iface "${interface_unit_arg}")
 
+    # Derive base dir from path
+    get_filename_component(_base_dir "${_iface}" DIRECTORY)
+
+  else()
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src" AND NOT "${interface_unit_arg}" STREQUAL "GENERATED")
+      message(FATAL_ERROR
+        "${context}(${module_name}): Found src/ subdirectory, but INTERFACE_UNIT was not specified.\n"
+        "Either pass INTERFACE_UNIT explicitly to use it, remove the directory, or pass INTERFACE_UNIT GENERATED to ignore it."
+      )
+    endif()
+
+    # --- Generate ---
+    set(_gen_dir "${CMAKE_CURRENT_BINARY_DIR}/generated/metamodules")
+    set(_iface "${_gen_dir}/${module_name}.cppm")
+
+    file(MAKE_DIRECTORY "${_gen_dir}")
+
+    # Prepare export lines and header comments
+    set(submodules_header_comment "")
+    set(submodules_export_imports "")
+    foreach(_submodule IN LISTS submodules)
+      string(APPEND submodules_header_comment " *   - `${_submodule}`\n")
+      string(APPEND submodules_export_imports "export import ${_submodule}; ///< @see \"${_submodule}.cppm\"\n")
+    endforeach()
+
+    configure_file(
+      "${CMAKE_CURRENT_LIST_DIR}/templates/metamodule.cppm.in"
+      "${_iface}"
+      @ONLY
+    )
+
+    set(_base_dir "${_gen_dir}")
+  endif()
+  
+  set(${out_interface_unit} "${_iface}" PARENT_SCOPE)
+  set(${out_base_dirs} "${_base_dir}" PARENT_SCOPE)
+endfunction()
