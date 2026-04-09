@@ -131,7 +131,7 @@ function(cxxModules_resolveMetamoduleInterface
     endforeach()
 
     configure_file(
-      "${CMAKE_CURRENT_LIST_DIR}/templates/metamodule.cppm.in"
+      "${CXXMODULES_TEMPLATES_DIR}/metamodule.cppm.in"
       "${_iface}"
       @ONLY
     )

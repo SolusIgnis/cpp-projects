@@ -15,6 +15,13 @@ endif()
 include_guard(GLOBAL)
 
 # ============================================================
+# Globals for where the module lives
+# ============================================================
+
+set(CXXMODULES_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}")
+set(CXXMODULES_TEMPLATES_DIR "${CXXMODULES_ROOT_DIR}/templates" CACHE INTERNAL "")
+
+# ============================================================
 # Private Helpers
 # ============================================================
 
