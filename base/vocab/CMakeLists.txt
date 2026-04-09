@@ -10,6 +10,7 @@ cmake_minimum_required(VERSION 4.1.2)
 add_subdirectory(ptr)
 
 add_metamodule(base.vocab
+  INTERFACE_UNIT src/base.vocab.cppm
   SUBMODULES
     base.vocab.ptr
 )

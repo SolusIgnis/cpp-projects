@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 4.1.2)
 add_subdirectory(vocab)
 
 add_metamodule(base
-  NO_TESTS
+  INTERFACE_UNIT src/base.cppm
   SUBMODULES
     base.vocab
 )
