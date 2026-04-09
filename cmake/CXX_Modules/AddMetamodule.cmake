@@ -40,7 +40,7 @@ function(add_metamodule name)
 
   cxxModules_processSubmodules(_submodules "${MM_ARG_SUBMODULES}" "${name}" "${context}")
 
-  cxxModules_resolveMetamoduleInterface(_interface_unit _base_dirs "${module_name}" "${_submodules}" "${MM_ARG_INTERFACE_UNIT}" "${context}")
+  cxxModules_resolveMetamoduleInterface(_interface_unit _base_dirs "${name}" "${_submodules}" "${MM_ARG_INTERFACE_UNIT}" "${context}")
 
   # --- Forward to add_named_module ---
 
