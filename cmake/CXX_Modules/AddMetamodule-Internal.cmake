@@ -94,7 +94,7 @@ function(cxxModules_processSubmodules out_var submodules_arg module_name context
   set(${out_var} "${_submodules}" PARENT_SCOPE)
 endfunction()
 
-function(cxxModules_generateMetamoduleSourceCode out_var module_name submodules)
+function(cxxModules_generateMetamoduleSourceCode out_interface_unit out_base_dirs module_name submodules)
   set(_gen_dir "${CMAKE_CURRENT_BINARY_DIR}/generated/metamodules")
   set(_gen_path "${_gen_dir}/${module_name}.cppm")
 
@@ -118,7 +118,8 @@ function(cxxModules_generateMetamoduleSourceCode out_var module_name submodules)
     
   execute_process(COMMAND "${CMAKE_COMMAND}" -E cat "${_gen_path}")
   
-  set(${out_var} "${_gen_path}" PARENT_SCOPE)
+  set(${out_interface_unit} "${_gen_path}" PARENT_SCOPE)
+  set(${out_base_dirs} "${_gen_dir}" PARENT_SCOPE)
 endfunction()
 
 function(cxxModules_resolveMetamoduleInterface
@@ -146,9 +147,7 @@ function(cxxModules_resolveMetamoduleInterface
     endif()
 
     # --- Generate ---
-    cxxModules_generateMetamoduleSourceCode(_iface "${module_name}" "${submodules}")
-
-    set(_base_dir "${_gen_dir}")
+    cxxModules_generateMetamoduleSourceCode(_iface _base_dir "${module_name}" "${submodules}")
   endif()
   
   set(${out_interface_unit} "${_iface}" PARENT_SCOPE)
