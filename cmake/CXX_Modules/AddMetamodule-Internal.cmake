@@ -94,7 +94,7 @@ function(cxxModules_processSubmodules out_var submodules_arg module_name context
   set(${out_var} "${_submodules}" PARENT_SCOPE)
 endfunction()
 
-function(cxxModules_generateMetamoduleSourceCode(out_var module_name submodules)
+function(cxxModules_generateMetamoduleSourceCode out_var module_name submodules)
   set(_gen_dir "${CMAKE_CURRENT_BINARY_DIR}/generated/metamodules")
   set(_gen_path "${_gen_dir}/${module_name}.cppm")
 
