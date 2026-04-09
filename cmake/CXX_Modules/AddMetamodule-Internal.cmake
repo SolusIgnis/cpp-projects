@@ -105,7 +105,7 @@ function(cxxModules_generateMetamoduleSourceCode out_interface_unit out_base_dir
   set(_submodules_export_imports_lines "")
   foreach(_submodule IN LISTS submodules)
     list(APPEND _submodules_header_comment_lines " *   - `${_submodule}`")
-    list(APPEND _submodules_export_imports_lines "export import ${_submodule}; ///< @see \"${_submodule}.cppm\"")
+    list(APPEND _submodules_export_imports_lines "export import ${_submodule}\; ///< @see \"${_submodule}.cppm\"")
   endforeach()
   string(JOIN "\n" submodules_header_comment ${_submodules_header_comment_lines})
   string(JOIN "\n" submodules_export_imports ${_submodules_export_imports_lines})
