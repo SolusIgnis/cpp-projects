@@ -26,8 +26,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/CXXModules-Internal.cmake)
 # Private Helpers
 # ============================================================
 
-function(cxxModules_appendFlagIfSet list_var key value)
-  if (value)
+function(cxxModules_appendFlagIfSet list_var key condition)
+  if (condition)
     list(APPEND ${list_var} ${key})
     set(${list_var} "${${list_var}}" PARENT_SCOPE)
   endif()
@@ -125,6 +125,7 @@ endfunction()
 function(cxxModules_resolveMetamoduleInterface
   out_interface_unit
   out_base_dirs
+  out_is_generated
   module_name
   submodules
   interface_unit_arg
@@ -132,12 +133,10 @@ function(cxxModules_resolveMetamoduleInterface
 )
   cxxModules_resolveContext(context "${context}")
 
+  set(_base_dir "")
+  set(_is_generated FALSE)
   if (interface_unit_arg AND NOT "${interface_unit_arg}" STREQUAL "GENERATED")
     set(_iface "${interface_unit_arg}")
-
-    # Derive base dir from path
-    get_filename_component(_base_dir "${_iface}" DIRECTORY)
-
   else()
     if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src" AND NOT "${interface_unit_arg}" STREQUAL "GENERATED")
       message(FATAL_ERROR
@@ -148,8 +147,16 @@ function(cxxModules_resolveMetamoduleInterface
 
     # --- Generate ---
     cxxModules_generateMetamoduleSourceCode(_iface _base_dir "${module_name}" "${submodules}")
+    set(_is_generated TRUE)
   endif()
   
   set(${out_interface_unit} "${_iface}" PARENT_SCOPE)
   set(${out_base_dirs} "${_base_dir}" PARENT_SCOPE)
+  set(${out_is_generated} "${_is_generated}" PARENT_SCOPE)
+endfunction()
+
+function(cxxModules_resolveBaseDirs out_var base_dirs base_dirs_arg)
+  list(APPEND base_dirs ${base_dirs_arg})
+  list(REMOVE_DUPLICATES base_dirs)
+  set(${out_var} "${base_dirs}" PARENT_SCOPE)
 endfunction()
