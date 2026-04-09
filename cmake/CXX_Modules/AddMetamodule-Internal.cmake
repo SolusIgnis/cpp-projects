@@ -94,6 +94,33 @@ function(cxxModules_processSubmodules out_var submodules_arg module_name context
   set(${out_var} "${_submodules}" PARENT_SCOPE)
 endfunction()
 
+function(cxxModules_generateMetamoduleSourceCode(out_var module_name submodules)
+  set(_gen_dir "${CMAKE_CURRENT_BINARY_DIR}/generated/metamodules")
+  set(_gen_path "${_gen_dir}/${module_name}.cppm")
+
+  file(MAKE_DIRECTORY "${_gen_dir}")
+
+  # Prepare export lines and header comments
+  set(_submodules_header_comment_lines "")
+  set(_submodules_export_imports_lines "")
+  foreach(_submodule IN LISTS submodules)
+    string(APPEND _submodules_header_comment_lines " *   - `${_submodule}`\n")
+    string(APPEND _submodules_export_imports_lines "export import ${_submodule}; ///< @see \"${_submodule}.cppm\"\n")
+  endforeach()
+  string(JOIN "\n" submodules_header_comment "${_submodules_header_comment_lines}")
+  string(JOIN "\n" submodules_export_imports "${_submodules_export_imports_lines}")
+
+  configure_file(
+    "${CXXMODULES_TEMPLATES_DIR}/metamodule.cppm.in"
+    "${_gen_path}"
+    @ONLY
+  )
+    
+  execute_process(COMMAND "${CMAKE_COMMAND}" -E cat "${_gen_path}")
+  
+  set(${out_var} "${_gen_path}" PARENT_SCOPE)
+endfunction()
+
 function(cxxModules_resolveMetamoduleInterface
   out_interface_unit
   out_base_dirs
@@ -102,6 +129,8 @@ function(cxxModules_resolveMetamoduleInterface
   interface_unit_arg
   context
 )
+  cxxModules_resolveContext(context "${context}")
+
   if (interface_unit_arg AND NOT "${interface_unit_arg}" STREQUAL "GENERATED")
     set(_iface "${interface_unit_arg}")
 
@@ -117,26 +146,7 @@ function(cxxModules_resolveMetamoduleInterface
     endif()
 
     # --- Generate ---
-    set(_gen_dir "${CMAKE_CURRENT_BINARY_DIR}/generated/metamodules")
-    set(_iface "${_gen_dir}/${module_name}.cppm")
-
-    file(MAKE_DIRECTORY "${_gen_dir}")
-
-    # Prepare export lines and header comments
-    set(submodules_header_comment "")
-    set(submodules_export_imports "")
-    foreach(_submodule IN LISTS submodules)
-      string(APPEND submodules_header_comment " *   - `${_submodule}`\n")
-      string(APPEND submodules_export_imports "export import ${_submodule}; ///< @see \"${_submodule}.cppm\"\n")
-    endforeach()
-
-    configure_file(
-      "${CXXMODULES_TEMPLATES_DIR}/metamodule.cppm.in"
-      "${_iface}"
-      @ONLY
-    )
-    
-    execute_process(COMMAND "${CMAKE_COMMAND}" -E cat "${_iface}")
+    cxxModules_generateMetamoduleSourceCode(_iface "${module_name}" "${submodules}")
 
     set(_base_dir "${_gen_dir}")
   endif()
