@@ -22,6 +22,10 @@
  * @brief Primary module interface for the `@module_name@` metamodule.
  * @details Exports partitions for:
 @submodules_header_comment@
+ *
+ * @warning THIS FILE IS A GENERATED CONFIGURATION ARTIFACT.
+ *          ANY EDITS WILL BE OVERWRITTEN.
+ * @note Generated from "metamodule.cppm.in" template by @CMAKE_CURRENT_FUNCTION@
  */
 
 //Primary module interface unit

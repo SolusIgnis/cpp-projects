@@ -5,7 +5,7 @@
 # ============================================================
 
 if(NOT _ADD_METAMODULE_INCLUDED)
-  message(FATAL_ERROR "AddNamedModule-Internal.cmake is internal and must not be included directly.")
+  message(FATAL_ERROR "AddMetamodule-Internal.cmake is internal and must not be included directly.")
 endif()
 
 include_guard(GLOBAL)
@@ -25,7 +25,24 @@ include(${CMAKE_CURRENT_LIST_DIR}/CXXModules-Internal.cmake)
 # ============================================================
 # Private Helpers
 # ============================================================
+# Internal pipeline model
+# ------------------------------------------------------------
+# Metamodule construction follows a staged pipeline:
+#
+#   1. Collection    - gather candidate submodules
+#   2. Normalization - deduplicate and canonicalize inputs
+#   3. Validation    - enforce structural invariants
+#   4. Resolution    - determine interface unit and base dirs
+#   5. Emission      - generate source artifacts if required
+#
+# Each helper is expected to operate within exactly one stage.
+# ============================================================
 
+# ============================================================
+# cxxModules_appendFlagIfSet(list_var key condition)
+# ------------------------------------------------------------
+# Append a flag to a list if the condition evaluates to true.
+# ============================================================
 function(cxxModules_appendFlagIfSet list_var key condition)
   if (condition)
     list(APPEND ${list_var} ${key})
@@ -33,6 +50,11 @@ function(cxxModules_appendFlagIfSet list_var key condition)
   endif()
 endfunction()
 
+# ============================================================
+# cxxModules_appendIfSet(list_var key value)
+# ------------------------------------------------------------
+# Append a key-value pair to a list if the value is set.
+# ============================================================
 function(cxxModules_appendIfSet list_var key value)
   if (value)
     list(APPEND ${list_var} ${key} ${value})
@@ -40,6 +62,12 @@ function(cxxModules_appendIfSet list_var key value)
   endif()
 endfunction()
 
+# ============================================================
+# cxxModules_collectRegisteredSubmodules(out_var module_name context)
+# ------------------------------------------------------------
+# Populate `out_var` with all registered modules whose parent
+# is the given module.
+# ============================================================
 function(cxxModules_collectRegisteredSubmodules out_var module_name context)
   set(_child_modules)
   
@@ -53,6 +81,11 @@ function(cxxModules_collectRegisteredSubmodules out_var module_name context)
   set(${out_var} "${_child_modules}" PARENT_SCOPE)
 endfunction()
 
+# ============================================================
+# cxxModules_validateSubmodules(submodules module_name context)
+# ------------------------------------------------------------
+# Validate that submodules satisfy metamodule invariants.
+# ============================================================
 function(cxxModules_validateSubmodules submodules module_name context)
   # Metamodule must have at least one submodule
   if (NOT submodules)
@@ -78,6 +111,13 @@ function(cxxModules_validateSubmodules submodules module_name context)
   endforeach()
 endfunction()
 
+
+# ============================================================
+# cxxModules_processSubmodules(out_var submodules_arg module_name context)
+# ------------------------------------------------------------
+# Resolve, normalize, and validate the effective submodule
+# set from `submodules_arg` or the registry list.
+# ============================================================
 function(cxxModules_processSubmodules out_var submodules_arg module_name context)
   if (submodules_arg)
     set(_submodules "${submodules_arg}")
@@ -86,7 +126,7 @@ function(cxxModules_processSubmodules out_var submodules_arg module_name context
   endif()
 
   list(REMOVE_DUPLICATES _submodules)
-  # SUBMODULES are treated as an unordered set; ordering is normalized
+  # Submodules are treated as an unordered set; ordering is normalized for deterministic behavior.
   list(SORT _submodules)
 
   # --- Enforce metamodule invariants ---
@@ -94,6 +134,14 @@ function(cxxModules_processSubmodules out_var submodules_arg module_name context
   set(${out_var} "${_submodules}" PARENT_SCOPE)
 endfunction()
 
+# ============================================================
+# cxxModules_generateMetamoduleSourceCode(out_interface_unit out_base_dirs module_name submodules)
+# ------------------------------------------------------------
+# Generate a synthetic interface unit that `export import`s
+# submodules. This is the generation boundary; emitted strings
+# containing raw C++ source code must escape `;` to avoid
+# CMake list interpretation.
+# ============================================================
 function(cxxModules_generateMetamoduleSourceCode out_interface_unit out_base_dirs module_name submodules)
   set(_gen_dir "${CMAKE_CURRENT_BINARY_DIR}/generated/metamodules")
   set(_gen_path "${_gen_dir}/${module_name}.cppm")
@@ -115,22 +163,19 @@ function(cxxModules_generateMetamoduleSourceCode out_interface_unit out_base_dir
     "${_gen_path}"
     @ONLY
   )
-    
-  execute_process(COMMAND "${CMAKE_COMMAND}" -E cat "${_gen_path}")
-  
+execute_process(COMMAND ${CMAKE_COMMAND} -E "cat ${_gen_path}")
   set(${out_interface_unit} "${_gen_path}" PARENT_SCOPE)
   set(${out_base_dirs} "${_gen_dir}" PARENT_SCOPE)
 endfunction()
 
-function(cxxModules_resolveMetamoduleInterface
-  out_interface_unit
-  out_base_dirs
-  out_is_generated
-  module_name
-  submodules
-  interface_unit_arg
-  context
-)
+# ============================================================
+# cxxModules_resolveMetamoduleInterfaceUnit(out_interface_unit out_base_dirs out_is_generated module_name submodules interface_unit_arg context)
+# ------------------------------------------------------------
+# Resolve the metamodule interface unit, generating one if
+# needed. Also provides the base directory to append and
+# whether the interface unit was generated.
+# ============================================================
+function(cxxModules_resolveMetamoduleInterfaceUnit out_interface_unit out_base_dirs out_is_generated module_name submodules interface_unit_arg context)
   cxxModules_resolveContext(context "${context}")
 
   set(_base_dir "")
@@ -155,6 +200,11 @@ function(cxxModules_resolveMetamoduleInterface
   set(${out_is_generated} "${_is_generated}" PARENT_SCOPE)
 endfunction()
 
+# ============================================================
+# cxxModules_resolveBaseDirs(out_var base_dirs base_dirs_arg)
+# ------------------------------------------------------------
+# Merge and deduplicate BASE_DIRS from multiple sources.
+# ============================================================
 function(cxxModules_resolveBaseDirs out_var base_dirs base_dirs_arg)
   list(APPEND base_dirs ${base_dirs_arg})
   list(REMOVE_DUPLICATES base_dirs)
