@@ -217,7 +217,9 @@ endfunction()
 # ============================================================
 # cxxModules_isValid(out_var input)
 # ------------------------------------------------------------
-# Normalize a CMake-style boolean-like value into TRUE/FALSE.
+# Determine whether a CMake boolean-like string represents a
+# valid real value (like a boolean literal or a number) or an
+# invalid value like unsetx empty, or not found.
 # ============================================================
 function(cxxModules_isValid out_var input)
   string(TOUPPER "${input}" input)
