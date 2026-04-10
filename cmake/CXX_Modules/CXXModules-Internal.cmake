@@ -15,16 +15,21 @@ endif()
 include_guard(GLOBAL)
 
 # =================================================================
-# Globals for where the module lives
+# Globals for where the CMake module lives
 # =================================================================
 
 set(CXXMODULES_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "")
 set(CXXMODULES_TEMPLATES_DIR "${CXXMODULES_ROOT_DIR}/templates" CACHE INTERNAL "")
 
 # =================================================================
-# Private Helpers
+# Initialize the CACHE INTERNAL global registry list to empty.
 # =================================================================
 
+unset(CXXMODULES_REGISTERED_MODULES CACHE)
+
+# =================================================================
+# Private Helpers
+# =================================================================
 
 # ============================================================
 # MACRO: cxxModules_resolveContext(out_var provided_context)
@@ -42,6 +47,56 @@ macro(cxxModules_resolveContext out_var provided_context)
 endmacro()
 
 # =================================================================
+# Semantic Presence Layer
+# -----------------------------------------------------------------
+# Imposes a `null` abstraction over CMake's untyped string
+# values to distinguish between disengaged "semantically null"
+# states and engaged values (including "false" and "0") that
+# must be preserved for interpretation by higher layers.
+# =================================================================
+
+# ============================================================
+# cxxModules_hasValue(out_var input)
+# ------------------------------------------------------------
+# Determine whether a value is present (i.e., not semantically
+# null) in the CMake evaluation model.
+#
+# This function behaves like a null check or
+# std::optional::has_value():
+#   - TRUE  → a value is present (engaged)
+#   - FALSE → no value is present (null / disengaged)
+#
+# This is a pre-interpretation check and does not determine
+# what the value means--only whether a semantic value exists.
+# ============================================================
+function(cxxModules_hasValue out_var input)
+  string(TOUPPER "${input}" input)
+  if (input
+      OR "${input}" STREQUAL "0"
+      OR "${input}" STREQUAL "FALSE"
+      OR "${input}" STREQUAL "OFF"
+      OR "${input}" STREQUAL "NO")
+    set(${out_var} "TRUE" PARENT_SCOPE)
+  else()
+    set(${out_var} "FALSE" PARENT_SCOPE)
+  endif()
+endfunction()
+
+# ============================================================
+# cxxModules_setWithDefault(out_var input default)
+# ------------------------------------------------------------
+# Set output to `input` if present; otherwise use default.
+# ============================================================
+function(cxxModules_setWithDefault out_var input default)
+  cxxModules_hasValue(_engaged_input "${input}")
+  if (_engaged_input)
+    set(${out_var} "${input}" PARENT_SCOPE)
+  else()
+    set(${out_var} "${default}" PARENT_SCOPE)
+  endif()
+endfunction()
+
+# =================================================================
 # Validation Layer
 # -----------------------------------------------------------------
 # Enforces syntactic and semantic correctness of module names.
@@ -52,7 +107,7 @@ endmacro()
 # ------------------------------------------------------------
 # Validate that a module name matches the allowed token
 # grammar:
-#           [A-Za-z0-9_]+(. [A-Za-z0-9_]+)*
+#           [A-Za-z0-9_]+(\.[A-Za-z0-9_]+)*
 #           <identifier>[.<identifier>]*
 # ============================================================
 function(cxxModules_validateModuleNameToken module_name context)
@@ -206,45 +261,4 @@ function(cxxModules_aliasToModule out_var alias_name context)
   # General case: replace :: with .
   string(REPLACE "::" "." _module "${alias_name}")
   set(${out_var} "${_module}" PARENT_SCOPE)
-endfunction()
-
-# =================================================================
-# Boolean Normalization Layer
-# -----------------------------------------------------------------
-# Interprets CMake-style truthy/falsy values in a consistent way.
-# =================================================================
-
-# ============================================================
-# cxxModules_isValid(out_var input)
-# ------------------------------------------------------------
-# Determine whether a CMake boolean-like string represents a
-# valid real value (like a boolean literal or a number) or an
-# invalid value like unsetx empty, or not found.
-# ============================================================
-function(cxxModules_isValid out_var input)
-  string(TOUPPER "${input}" input)
-  if (input
-      OR "${input}" STREQUAL "0"
-      OR "${input}" STREQUAL "FALSE"
-      OR "${input}" STREQUAL "OFF"
-      OR "${input}" STREQUAL "NO")
-    set(${out_var} "TRUE" PARENT_SCOPE)
-  else()
-    set(${out_var} "FALSE" PARENT_SCOPE)
-  endif()
-endfunction()
-
-
-# ============================================================
-# cxxModules_setWithDefault(out_var input default)
-# ------------------------------------------------------------
-# Set output to input if it is truthy; otherwise use default.
-# ============================================================
-function(cxxModules_setWithDefault out_var input default)
-  cxxModules_isValid(_valid_input "${input}")
-  if (_valid_input)
-    set(${out_var} "${input}" PARENT_SCOPE)
-  else()
-    set(${out_var} "${default}" PARENT_SCOPE)
-  endif()
 endfunction()
