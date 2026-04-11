@@ -94,6 +94,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/AddNamedModule-Internal.cmake)
 # ============================================================
 function(add_named_module name)
 
+  # --- Argument parsing + context resolution ---
+
   cmake_parse_arguments(NM_ARG
     "NO_TESTS;NO_TOOLING"
     "INTERFACE_UNIT;LIB_TYPE;STD;_CONTEXT"
@@ -107,16 +109,19 @@ function(add_named_module name)
     message(FATAL_ERROR "${context}(${name}): LIB_TYPE is required.")
   endif()
   
-  # --- Validation ---
+  # --- Validation + core resolution ---
   
   cxxModules_validateModuleName("${name}" "${context}")
   cxxModules_resolveInterfaceUnit(_interface_unit "${NM_ARG_INTERFACE_UNIT}" "${name}" "${context}")
   cxxModules_resolveLibType(_lib_type "${NM_ARG_LIB_TYPE}" "${name}" "${context}")
   
-  # --- Default BASE_DIRS is ./src/ ---
+  # --- Default configuration ---
+  # BASE_DIRS defaults to ./src/
+  
   cxxModules_setWithDefault(_base_dirs "${NM_ARG_BASE_DIRS}" "src")
 
-  # --- Target + alias ---
+  # --- Target definition + alias binding ---
+  
   add_library("${name}" "${_lib_type}")
     
   cxxModules_moduleToAlias(_alias "${name}" "${context}")
@@ -127,7 +132,8 @@ function(add_named_module name)
   
   add_library("${_alias}" ALIAS "${name}")
 
-  # --- Tooling ---
+  # --- Tooling integration (optional) ---
+  
   if (NOT NM_ARG_NO_TOOLING)
     if (COMMAND register_tooling_target)
       register_tooling_target("${name}")
@@ -136,7 +142,8 @@ function(add_named_module name)
     endif()
   endif()
 
-  # --- Language level ---
+  # --- Language standard configuration ---
+  
   cxxModules_setWithDefault(_cxx_std "${NM_ARG_STD}" 23)
   cxxModules_validateStd("${_cxx_std}" "${context}")
 
@@ -144,7 +151,8 @@ function(add_named_module name)
     PUBLIC "cxx_std_${_cxx_std}"
   )
 
-  # --- Module units ---
+  # --- Module interface + partitions ---
+  
   set(_module_files "${_interface_unit}")
   list(APPEND _module_files ${NM_ARG_PARTITIONS})
 
@@ -155,7 +163,8 @@ function(add_named_module name)
       FILES ${_module_files}
   )
 
-  # --- Implementation units ---
+  # --- Implementation units (private sources) ---
+  
   if (NM_ARG_IMPLEMENTATIONS)
     target_sources("${name}"
       PRIVATE
@@ -163,8 +172,8 @@ function(add_named_module name)
     )
   endif()
 
-  # --- Link libraries ---
-
+  # --- Dependency resolution + linkage ---
+  
   cxxModules_collectLinkTargets(_link_targets "${NM_ARG_IMPORTS}" "${NM_ARG_LINK_LIBRARIES}" "${context}")
   
   if (_link_targets)
@@ -174,7 +183,8 @@ function(add_named_module name)
     )
   endif()
 
-  # --- Tests ---
+  # --- Test integration (optional) ---
+  
   if (NOT NM_ARG_NO_TESTS)
     if (COMMAND add_tests_for_module)
       if (NM_ARG_TEST_DEPENDENCIES)
@@ -188,6 +198,8 @@ function(add_named_module name)
       message(WARNING "${context}(${name}): Function 'add_tests_for_module' not found. Tests for module '${name}' may be unavailable. Did you forget to 'include(DiscoverTests)'?")
     endif()
   endif()
+  
+  # --- Module registration (global) ---
   
   cxxModules_registerModule("${name}" "${context}")
 
