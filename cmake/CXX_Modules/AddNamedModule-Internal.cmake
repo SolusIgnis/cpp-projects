@@ -26,34 +26,55 @@ include(${CMAKE_CURRENT_LIST_DIR}/CXXModules-Internal.cmake)
 # Private Helpers
 # ============================================================
 
-function(cxxModules_validateInterfaceUnit out_var interface_unit module_name context)
-  cxxModules_resolveContext(context "${context}")
+# =================================================================
+# Module Registry + Linking Resolution Layer
+# =================================================================
 
-  if (interface_unit)
-    list(LENGTH interface_unit _iface_len)
-    if (NOT _iface_len EQUAL 1)
-      message(FATAL_ERROR "${context}(${module_name}): INTERFACE_UNIT must contain only one file")
-    endif()
-
-    set(_iface_unit "${interface_unit}")
-  else()
-    # Default canonical path
-    set(_iface_unit "src/${module_name}.cppm")
+# ============================================================
+# cxxModules_validateInterfaceUnit(interface_unit module_name context)
+# ------------------------------------------------------------
+# Validate that `interface_unit` is a single file and that it
+# exists in the filesystem.
+# ============================================================
+function(cxxModules_validateInterfaceUnit interface_unit module_name context)
+  list(LENGTH interface_unit _iface_len)
+  if (NOT _iface_len EQUAL 1)
+    message(FATAL_ERROR "${context}(${module_name}): INTERFACE_UNIT must contain only one file")
   endif()
   
-  if(IS_ABSOLUTE "${_iface_unit}")
-    set(_iface_path "${_iface_unit}")
+  if(IS_ABSOLUTE "${interface_unit}")
+    set(_iface_path "${interface_unit}")
   else()
-    get_filename_component(_iface_path "${_iface_unit}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    get_filename_component(_iface_path "${interface_unit}" ABSOLUTE BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
   endif()
   
   if (NOT EXISTS "${_iface_path}")
-    message(FATAL_ERROR "${context}(${module_name}): INTERFACE_UNIT '${_iface_unit}' does not exist at path '${_iface_path}'")
+    message(FATAL_ERROR "${context}(${module_name}): INTERFACE_UNIT '${interface_unit}' does not exist at path '${_iface_path}'")
   endif()
-  
+endfunction()
+
+# ============================================================
+# cxxModules_resolveInterfaceUnit(out_var interface_unit module_name context)
+# ------------------------------------------------------------
+# Resolve and validate the identity of a module's primary
+# module interface unit, falling back to a canonical default
+# (src/<module_name>.cppm) when no path argument is passed.
+# ============================================================
+function(cxxModules_resolveInterfaceUnit out_var interface_unit module_name context)
+  cxxModules_resolveContext(context "${context}")
+
+  cxxModules_setWithDefault(_iface_unit "${interface_unit}" "src/${module_name}.cppm")
+  cxxModules_validateInterfaceUnit("${_iface_unit}" "${module_name}" "${context}")
+
   set(${out_var} "${_iface_unit}" PARENT_SCOPE)
 endfunction()
 
+# ============================================================
+# cxxModules_validateStd(cxx_std context)
+# ------------------------------------------------------------
+# Validate that the requested C++ standard is supported.
+# Parameter `cxx_std` must be a number and at least 23.
+# ============================================================
 function(cxxModules_validateStd cxx_std context)
   cxxModules_resolveContext(context "${context}")
 
@@ -62,12 +83,21 @@ function(cxxModules_validateStd cxx_std context)
     message(FATAL_ERROR "${context}: STD must be a number (got '${cxx_std}')")
   endif()
 
-  # Enforce minimum
+  # Enforce minimum (C++23 is required for `import std`)⁰
   if (cxx_std LESS 23)
     message(FATAL_ERROR "${context}: STD must be >= 23 (got ${cxx_std})")
   endif()
 endfunction()
 
+# ============================================================
+# cxxModules_collectLinkTargets(out_var imports libraries context)
+# ------------------------------------------------------------
+# Aggregate the set of link targets for a module by resolving
+# imported modules into library targets and appending any
+# additional library dependencies. 
+#
+# Output a deduplicated list of linkable library targets.
+# ============================================================
 function(cxxModules_collectLinkTargets out_var imports libraries context)
   cxxModules_resolveContext(context "${context}")
   
@@ -87,7 +117,14 @@ function(cxxModules_collectLinkTargets out_var imports libraries context)
   set(${out_var} "${_link_targets}" PARENT_SCOPE)
 endfunction()
 
-function(cxxModules_validateLibType out_var lib_type module_name context)
+# ============================================================
+# cxxModules_resolveLibType(out_var lib_type module_name context)
+# ------------------------------------------------------------
+# Resolve and validate the library type for a module target
+# by normalizing the input and enforcing membership in the
+# supported set.
+# ============================================================
+function(cxxModules_resolveLibType out_var lib_type module_name context)
   cxxModules_resolveContext(context "${context}")
   string(TOUPPER "${lib_type}" lib_type)
   
@@ -104,6 +141,12 @@ function(cxxModules_validateLibType out_var lib_type module_name context)
   endif()
 endfunction()
 
+# ============================================================
+# cxxModules_registerModule(module_name context)
+# ------------------------------------------------------------
+# Register a module in the global module registry enforcing
+# uniqueness in the CXXMODULES_REGISTERED_MODULES list.
+# ============================================================
 function(cxxModules_registerModule module_name context)
   cxxModules_resolveContext(context "${context}")
 

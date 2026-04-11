@@ -31,7 +31,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/AddNamedModule.cmake)
 # ============================================================
 # add_metamodule(name [ARGN])
 # ------------------------------------------------------------
-# Defines a metamodule that aggregates and re-exports a set of
+# Define a metamodule that aggregates and re-exports a set of
 # submodules (nested named modules) as a single named module
 # linked as a STATIC library.
 #
