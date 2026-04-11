@@ -4,13 +4,13 @@
 #include <asio.hpp>
 
 import net.telnet;
-import net.telnet.test_support;
+import tools.test.coroutine_harness;
 import ut;
 import std;
 
 using namespace ut;
 using namespace net::telnet::awaitables;
-using namespace net::telnet::test_support::coroutine_harness;
+using namespace tools::test::coroutine_harness;
 
 struct test_tag;
 using test_wrapper_int  = tagged_awaitable<test_tag, asio::awaitable<int>>;

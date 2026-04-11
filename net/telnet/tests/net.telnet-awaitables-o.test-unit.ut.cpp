@@ -2,13 +2,13 @@
 // Unit tests for net.telnet:awaitables
 
 import net.telnet;
-import net.telnet.test_support;
+import tools.test.coroutine_harness;
 import ut;
 import std;
 
 using namespace ut;
 using namespace net::telnet::awaitables;
-using namespace net::telnet::test_support::coroutine_harness;
+using namespace tools::test::coroutine_harness;
 using namespace std::literals;
 
 struct test_tag;
