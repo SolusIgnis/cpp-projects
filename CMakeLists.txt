@@ -94,10 +94,13 @@ include(AddMetamodule)
 # Add module group subdirectories.
 # ===========================================================================
 
-# Add the "base" module group.
+# Add the "base" metamodule.
 add_subdirectory(base)
 
-# Add the "net" module group.
+# Add the "tools" metamodule.
+add_subdirectory(tools)
+
+# Add the "net" metamodule.
 add_subdirectory(net)
 
 # ===========================================================================
