@@ -6,9 +6,6 @@
 cmake_minimum_required(VERSION 4.1.2)
 # Will be bumped to 4.3 most likely when "import std;" is no longer experimental
 
-# Add the net.telnet.test_support library
-add_subdirectory(test_support)
-
 add_named_module(net.telnet
     LIB_TYPE STATIC
     PARTITIONS
@@ -29,5 +26,5 @@ add_named_module(net.telnet
     IMPORTS
       net.asio_concepts
     TEST_DEPENDENCIES
-      net.telnet.test_support
+      tools.test.coroutine_harness
 )
