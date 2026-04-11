@@ -9,8 +9,4 @@ cmake_minimum_required(VERSION 4.1.2)
 # Add the vocab library group
 add_subdirectory(vocab)
 
-add_metamodule(base
-  INTERFACE_UNIT src/base.cppm
-  SUBMODULES
-    base.vocab
-)
+add_metamodule(base INTERFACE_UNIT GENERATED)

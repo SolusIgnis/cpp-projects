@@ -9,8 +9,4 @@ cmake_minimum_required(VERSION 4.1.2)
 # Add the ptr library
 add_subdirectory(ptr)
 
-add_metamodule(base.vocab
-  INTERFACE_UNIT src/base.vocab.cppm
-  SUBMODULES
-    base.vocab.ptr
-)
+add_metamodule(base.vocab INTERFACE_UNIT GENERATED)

@@ -10,6 +10,7 @@ cmake_minimum_required(VERSION 4.1.2)
 add_subdirectory(asio_concepts)
 
 # Add the net.telnet library
+# Note: dependency net.asio_concepts MUST be added first
 add_subdirectory(telnet)
 
 add_metamodule(net INTERFACE_UNIT GENERATED)
