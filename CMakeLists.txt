@@ -93,6 +93,13 @@ include(AddMetamodule)
 # ===========================================================================
 # Add module directory tree.
 # ===========================================================================
+function(trace_me)
+  file(RELATIVE_PATH _scoped_path "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
+
+  message(STATUS "Processing: //${_scoped_path}")
+endfunction()
+
+
 add_subdirectory("modules")
 
 # ===========================================================================
