@@ -163,7 +163,7 @@ function(cxxModules_generateMetamoduleSourceCode out_interface_unit out_base_dir
     "${_gen_path}"
     @ONLY
   )
-execute_process(COMMAND "${CMAKE_COMMAND}" -E cat "${_gen_path}")
+
   set(${out_interface_unit} "${_gen_path}" PARENT_SCOPE)
   set(${out_base_dirs} "${_gen_dir}" PARENT_SCOPE)
 endfunction()
