@@ -35,9 +35,9 @@
 //Module partition interface unit
 export module tools.test.coroutine_harness:dummies;
 
-import std;
+import std; //NOLINT
 
-import :task;
+import :task; ///< @see "tools.test.coroutine_harness-task.cppm"
 
 export namespace tools::test::coroutine_harness::dummies {
     ///@brief Base class for trivial awaiters handling storage and value return from resume.

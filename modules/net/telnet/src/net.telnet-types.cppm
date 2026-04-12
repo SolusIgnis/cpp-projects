@@ -31,7 +31,6 @@
 export module net.telnet:types;
 
 import std;        //NOLINT For std::format, std::string_view, std::format_context
-import std.compat; //NOLINT For std::uint8_t
 
 export namespace net::telnet {
     /**

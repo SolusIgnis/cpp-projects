@@ -35,11 +35,11 @@
 //Module partition interface unit
 export module tools.test.coroutine_harness:task;
 
-import std;
+import std; //NOLINT
 
-import base.vocab.ptr;
+import base.vocab.ptr; ///< for `alias_ptr`
 
-import :core;
+import :core; ///< @see "tools.test.coroutine_harness-core.cppm"
 
 export namespace tools::test::coroutine_harness {
     template<typename T>

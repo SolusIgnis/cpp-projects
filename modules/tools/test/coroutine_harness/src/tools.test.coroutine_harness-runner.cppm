@@ -34,10 +34,12 @@
  * Depends only on `:task`
  */
 
+//Module partition interface unit
 export module tools.test.coroutine_harness:runner;
 
-import std;
-import :task;
+import std; //NOLINT
+
+import :task; ///< @see "tools.test.coroutine_harness-task.cppm"
 
 export namespace tools::test::coroutine_harness {
     ///@brief Wrap a trivial awaiter or non-coroutine awaitable in a `test_task` so that it can be run as a task.

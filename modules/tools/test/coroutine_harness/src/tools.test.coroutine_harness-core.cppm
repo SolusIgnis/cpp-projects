@@ -29,7 +29,10 @@
  * - Destroying an incomplete coroutine without a probe is a logic error. [Attach a probe to allow/observe premature destruction.]
  */
 
-import std;
+//Module partition interface unit
+export module tools.test.coroutine_harness:core;
+
+import std; //NOLINT
 
 export namespace tools::test::coroutine_harness {
 
