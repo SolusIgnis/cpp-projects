@@ -7,6 +7,8 @@
 cmake_minimum_required(VERSION 4.1.2)
 # Will be bumped to 4.3 most likely when "import std;" is no longer experimental
 
+message(STATUS "Processing: ${CMAKE_CURRENT_LIST_DIR}")
+
 add_named_module(tools.test.coroutine_harness
   LIB_TYPE STATIC
   INTERFACE_UNIT
