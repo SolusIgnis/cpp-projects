@@ -7,7 +7,7 @@
 cmake_minimum_required(VERSION 4.1.2)
 # Will be bumped to 4.3 most likely when "import std;" is no longer experimental
 
-message(STATUS "Processing: ${CMAKE_CURRENT_LIST_DIR}")
+trace_me()
 
 # Link OpenSSL if we have it. (Tests will need it.)
 find_package(OpenSSL)
