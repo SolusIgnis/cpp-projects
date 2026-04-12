@@ -13,8 +13,8 @@ add_named_module(tools.test.coroutine_harness
   LIB_TYPE STATIC
   INTERFACE_UNIT
     src/tools.test.coroutine_harness.cppm
- PARTITIONS
-   src/tools.test.coroutine_harness-test_task.cppm
+  PARTITIONS
+    src/tools.test.coroutine_harness-test_task.cppm
   LINK_LIBRARIES
     base::base
 )
