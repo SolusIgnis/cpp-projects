@@ -69,7 +69,7 @@
  */
 
 //Module partition interface unit
-export module tools.test.coroutine_harness:task;
+export module tools.test.coroutine_harness:test_task;
 
 import std;
 
