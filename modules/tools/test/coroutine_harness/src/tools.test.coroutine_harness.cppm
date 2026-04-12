@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
- * @module tools.test.coroutine_harness
  * @file tools.test.coroutine_harness.cppm
- * @version 0.2.0
- * @date March 30, 2026
+ * @version 0.3.0
+ * @date April 11, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -20,6 +19,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
+ * @brief Primary module interface unit for the coroutine test harness.
+ *
+ * @details Exports partitions for:
+ *   - `:core`      = low-level primitives and lifecycle tracking
+ *   - `:task` = coroutine types (`test_task`, `test_promise`)
+ *   - `:dummies`   = trivial awaitables for testing
+ *   - `:runner`    = synchronous execution (`run`)
+ */ 
+/**
+ * @module tools.test.coroutine_harness
  * @brief Coroutine test harness with synchronous runner.
  *
  * This module provides `test_task` and `test_promise` types for unit-testing coroutines
@@ -72,4 +81,7 @@
 export module tools.test.coroutine_harness;
 
 //Export all partition interfaces
-export import :test_task; ///< @see "tools.test.coroutine_harness-test_task.cppm"
+export import :core;    ///< @see "tools.test.coroutine_harness-core.cppm"
+export import :task;    ///< @see "tools.test.coroutine_harness-task.cppm"
+export import :dummies; ///< @see "tools.test.coroutine_harness-dummies.cppm"
+export import :runner;  ///< @see "tools.test.coroutine_harness-runner.cppm"
