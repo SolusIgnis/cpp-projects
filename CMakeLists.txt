@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 
 # ===========================================================================
-# Repository-Level CML
+# //CMakeLists.txt
 # ===========================================================================
 
 cmake_minimum_required(VERSION 4.1.2)
@@ -91,17 +91,9 @@ include(AddNamedModule)
 include(AddMetamodule)
 
 # ===========================================================================
-# Add module group subdirectories.
+# Add module directory tree.
 # ===========================================================================
-
-# Add the "base" metamodule.
-add_subdirectory(base)
-
-# Add the "tools" metamodule.
-add_subdirectory(tools)
-
-# Add the "net" metamodule.
-add_subdirectory(net)
+add_subdirectory("modules")
 
 # ===========================================================================
 # Aggregate the tooling-registered targets and their sources.
