@@ -69,7 +69,7 @@ export namespace net::telnet {
             enable_predicate_type local_pred  = always_reject,
             enable_predicate_type remote_pred = always_reject,
             bool subneg_supported             = false,
-            size_t max_subneg_size            = max_subnegotiation_buffer_size
+            std::size_t max_subneg_size            = max_subnegotiation_buffer_size
         )
             : id_(id),
               name_(std::move(name)),
@@ -86,7 +86,7 @@ export namespace net::telnet {
             bool local_supported   = false,
             bool remote_supported  = false,
             bool subneg_supported  = false,
-            size_t max_subneg_size = max_subnegotiation_buffer_size
+            std::size_t max_subneg_size = max_subnegotiation_buffer_size
         )
         {
             enable_predicate_type local_pred  = local_supported ? always_accept : always_reject;
@@ -122,7 +122,7 @@ export namespace net::telnet {
         }
 
         ///@brief Gets the maximum subnegotiation buffer size.
-        [[nodiscard]] size_t max_subnegotiation_size() const noexcept { return max_subneg_size_; }
+        [[nodiscard]] std::size_t max_subnegotiation_size() const noexcept { return max_subneg_size_; }
 
         ///@brief Checks if the `option` supports subnegotiation.
         [[nodiscard]] bool supports_subnegotiation() const noexcept { return supports_subnegotiation_; }
@@ -134,7 +134,7 @@ export namespace net::telnet {
         [[nodiscard]] static bool always_reject(id_num /*unused*/) noexcept { return false; }
 
     private:
-        static constexpr size_t max_subnegotiation_buffer_size = 1024;
+        static constexpr std::size_t max_subnegotiation_buffer_size = 1024;
 
         id_num id_;
         std::string name_;
@@ -144,11 +144,11 @@ export namespace net::telnet {
 
         bool supports_subnegotiation_;
 
-        size_t max_subneg_size_;
+        std::size_t max_subneg_size_;
     }; //class option
 
     /**
-     * @fn explicit option::option(id_num id, std::string name, enable_predicate_type local_pred, enable_predicate_type remote_pred, bool subneg_supported, size_t max_subneg_size)
+     * @fn explicit option::option(id_num id, std::string name, enable_predicate_type local_pred, enable_predicate_type remote_pred, bool subneg_supported, std::size_t max_subneg_size)
      *
      * @param id The Telnet `option::id_num`.
      * @param name The option name (default empty; populated in C++26? with reflection).
@@ -158,7 +158,7 @@ export namespace net::telnet {
      * @param max_subneg_size Maximum subnegotiation buffer size (<=0 for unlimited; default `max_subnegotiation_size`).
      */
     /**
-     * @fn static option option::make_option(id_num id, std::string name, bool local_supported, bool remote_supported, bool subneg_supported, size_t max_subneg_size)
+     * @fn static option option::make_option(id_num id, std::string name, bool local_supported, bool remote_supported, bool subneg_supported, std::size_t max_subneg_size)
      *
      * @param id The Telnet `option::id_num` byte.
      * @param name The option name (required for debuggability).
@@ -214,7 +214,7 @@ export namespace net::telnet {
      * @return True if the `option` can be enabled in the designated direction, false otherwise.
      */
     /**
-     * @fn size_t option::max_subnegotiation_size() const noexcept
+     * @fn std::size_t option::max_subnegotiation_size() const noexcept
      *
      * @return The maximum subnegotiation buffer size (<=0 for unlimited).
      */
