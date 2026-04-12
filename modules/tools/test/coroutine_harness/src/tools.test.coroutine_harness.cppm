@@ -72,4 +72,4 @@
 export module tools.test.coroutine_harness;
 
 //Export all partition interfaces
-export import :task; ///< @see "tools.test.coroutine_harness-task.cppm"
+export import :test_task; ///< @see "tools.test.coroutine_harness-task.cppm"
