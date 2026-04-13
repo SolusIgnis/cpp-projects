@@ -1,0 +1,264 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
+/**
+ * @file net.telnet-types.cppm
+ * @version 0.5.8
+ * @date October 30, 2025
+ *
+ * @copyright © 2025-2026 Jeremy Murphy and any Contributors
+ * @par License: @parblock
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. @endparblock
+ *
+ * @brief Partition for Telnet protocol-related types.
+ * @remark Defines `byte_t` type alias for the byte stream's underlying type.
+ * @remark Defines `telnet::command` and `negotiation_direction` enumerations.
+ * @remark Defines custom formatters for `telnet::command` and `negotiation_direction` for use with `std::format`.
+ *
+ * @remark This module partition is fully inline.
+ */
+
+//Module partition interface unit
+export module net.telnet:types;
+
+import std; //NOLINT For std::format, std::string_view, std::format_context
+
+export namespace net::telnet {
+    /**
+     * @typedef byte_t
+     * @brief Type alias for bytes underlying the Telnet stream.
+     * @see `:stream` and `:protocol_fsm` for `byte_t` stream processing.
+     * @todo Future Development: Consider switching from `std::uint8_t` to `std::byte` when C++23 support is better.
+     */
+    using byte_t = std::uint8_t;
+
+    /**
+     * @brief Enumeration of Telnet commands as defined in RFC 854.
+     * @remark Used in stream operations and protocol state machine to represent Telnet commands.
+     * @see RFC 854 for Telnet protocol specification of command byte values.
+     * @see `:protocol_fsm` for reading `telnet::command` from the Telnet incoming byte stream by the protocol state machine and `:stream` for usage in transmitting `telnet::command` to a Telnet peer.
+     */
+    enum class command : byte_t {
+        eor      = 0xEF, ///< End of Record
+        se       = 0xF0, ///< Subnegotiation End
+        nop      = 0xF1, ///< No Operation
+        dm       = 0xF2, ///< Data Mark
+        brk      = 0xF3, ///< Break
+        ip       = 0xF4, ///< Interrupt Process
+        ao       = 0xF5, ///< Abort Output
+        ayt      = 0xF6, ///< Are You There
+        ec       = 0xF7, ///< Erase Character
+        el       = 0xF8, ///< Erase Line
+        ga       = 0xF9, ///< Go Ahead
+        sb       = 0xFA, ///< Subnegotiation Begin
+        will_opt = 0xFB, ///< Sender wants to enable option
+        wont_opt = 0xFC, ///< Sender wants to disable option
+        do_opt   = 0xFD, ///< Sender requests receiver to enable option
+        dont_opt = 0xFE, ///< Sender requests receiver to disable option
+        iac      = 0xFF  ///< Interpret As Command
+    }; //enum class command
+
+    /**
+     * @brief Enumeration representing option negotiation directions (i.e., local/remote enablement).
+     * @see RFC 854 for Telnet protocol specification and RFC 1143 for option negotiation guidelines.
+     * @see `:protocol_fsm` for use in option negotiation.
+     */
+    enum class negotiation_direction : std::uint8_t {
+        local, ///< Local side ("us", sends WILL/WONT, receives DO/DONT)
+        remote ///< Remote side ("them", sends DO/DONT, receives WILL/WONT)
+    }; //enum class NegotiationDirection
+} //namespace net::telnet
+
+export namespace std {
+    /**
+     * @brief Formatter specialization for `::net::telnet::command` to support `std::format`.
+     * @remark Formats `telnet::command` values for use in `ProtocolConfig::log_error` and other logging contexts.
+     * @see `:protocol_fsm` for logging usage.
+     */
+    template<>
+    struct formatter<::net::telnet::command, char> {
+    private:
+        char presentation_ = 'd'; ///< Format specifier: 'd' for name (0xXX), 'n' for name only, 'x' for hex only.
+    public:
+        /**
+         * @brief Parses the format specifier for `telnet::command`.
+         * @param ctx The format parse context.
+         * @return Iterator pointing to the end of the parsed format specifier.
+         * @throws std::format_error if the specifier is invalid (not 'd', 'n', or 'x').
+         * @remark Supports 'd' (default: name (0xXX)), 'n' (name only), and 'x' (hex only, 0xXX).
+         */
+        //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
+        constexpr auto parse(format_parse_context& ctx)
+        {
+            auto view = std::ranges::subrange(ctx.begin(), ctx.end());
+            if (!view.empty()) {
+                const char c = view.front(); //NOLINT(readability-identifier-length): Idiomatic
+                if (c == 'n' || c == 'x' || c == 'X' || c == 'd') {
+                    presentation_ = c;
+                    view          = view.advance(1);
+                }
+            }
+            if (!view.empty() && view.front() != '}') {
+                throw std::format_error("Invalid format specifier for telnet::command");
+            }
+            return view.begin();
+        } //parse(format_parse_context&)
+
+        /**
+         * @brief Formats a `telnet::command` value.
+         * @param cmd The `telnet::command` to format.
+         * @param ctx The format context.
+         * @return Output iterator after formatting.
+         * @details Formats as:
+         * - 'd': "name (0xXX)" (e.g., "WILL (0xFB)").
+         * - 'n': "name" (e.g., "WILL").
+         * - 'x': "0xxx" (e.g., "0xfb").
+         * - 'X': "0xXX" (e.g., "0xFB").
+         * - Unknown commands format as "UNKNOWN" ('n') or "0xXX" ('x').
+         */
+        //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
+        template<typename FormatContext>
+        auto format(::net::telnet::command cmd, FormatContext& ctx) const
+        {
+            std::string_view name;
+            switch (cmd) {
+                case ::net::telnet::command::eor:
+                    name = "EOR";
+                    break;
+                case ::net::telnet::command::se:
+                    name = "SE";
+                    break;
+                case ::net::telnet::command::nop:
+                    name = "NOP";
+                    break;
+                case ::net::telnet::command::dm:
+                    name = "DM";
+                    break;
+                case ::net::telnet::command::brk:
+                    name = "BRK";
+                    break;
+                case ::net::telnet::command::ip:
+                    name = "IP";
+                    break;
+                case ::net::telnet::command::ao:
+                    name = "AO";
+                    break;
+                case ::net::telnet::command::ayt:
+                    name = "AYT";
+                    break;
+                case ::net::telnet::command::ec:
+                    name = "EC";
+                    break;
+                case ::net::telnet::command::el:
+                    name = "EL";
+                    break;
+                case ::net::telnet::command::ga:
+                    name = "GA";
+                    break;
+                case ::net::telnet::command::sb:
+                    name = "SB";
+                    break;
+                case ::net::telnet::command::will_opt:
+                    name = "WILL";
+                    break;
+                case ::net::telnet::command::wont_opt:
+                    name = "WONT";
+                    break;
+                case ::net::telnet::command::do_opt:
+                    name = "DO";
+                    break;
+                case ::net::telnet::command::dont_opt:
+                    name = "DONT";
+                    break;
+                case ::net::telnet::command::iac:
+                    name = "IAC";
+                    break;
+                default:
+                    name = "UNKNOWN";
+                    break;
+            }
+
+            if (presentation_ == 'n') {
+                return std::format_to(ctx.out(), "{}", name);
+            } else if (presentation_ == 'x') {
+                return std::format_to(ctx.out(), "0x{:02x}", std::to_underlying(cmd));
+            } else if (presentation_ == 'X') {
+                return std::format_to(ctx.out(), "0x{:02X}", std::to_underlying(cmd));
+            } else { // 'd' (default: name (0xXX))
+                return std::format_to(ctx.out(), "{} (0x{:02X})", name, std::to_underlying(cmd));
+            }
+        } //format(::net::telnet::command, FormatContext&)
+    }; //struct formatter<::net::telnet::command>
+
+    /**
+     * @brief Formatter specialization for `::net::telnet::negotiation_direction` to support `std::format`.
+     * @remark Formats `negotiation_direction` values for use in `ProtocolConfig::log_error` during option negotiation.
+     * @see `:protocol_fsm` for logging usage.
+     */
+    template<>
+    struct formatter<::net::telnet::negotiation_direction, char> {
+        /**
+         * @brief Parses the format specifier for `negotiation_direction`.
+         * @param ctx The format parse context.
+         * @return Iterator pointing to the end of the parsed format specifier.
+         * @throws std::format_error if the specifier is not '}' (only default {} is supported).
+         */
+        //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
+        constexpr auto parse(format_parse_context& ctx)
+        {
+            auto view = std::ranges::subrange(ctx.begin(), ctx.end());
+            if (!view.empty() && view.front() != '}') {
+                throw std::format_error("Invalid format specifier for NegotiationDirection");
+            }
+            return view.begin();
+        } //parse(format_parse_context&)
+
+        /**
+         * @brief Formats a `negotiation_direction` value.
+         * @param dir The `negotiation_direction` to format.
+         * @param ctx The format context.
+         * @return Output iterator after formatting.
+         */
+        template<typename FormatContext>
+        auto format(::net::telnet::negotiation_direction dir, FormatContext& ctx) const
+        {
+            std::string_view name = (dir == ::net::telnet::negotiation_direction::local ? "local" : "remote");
+            return std::format_to(ctx.out(), "{}", name);
+        } //format(::net::telnet::negotiation_direction, FormatContext&)
+    }; //struct formatter<::net::telnet::negotiation_direction>
+} //namespace std
+
+export namespace net::telnet {
+    /**
+     * @brief Inserts a `command` into a `std::ostream`.
+     * @param o_str The `std::ostream` into which to insert the `command`.
+     * @param cmd The `command` to insert.
+     * @return A reference to the stream for inserter chaining.
+     * @remark Inserts the `command` as its representation in the underlying type of the enum.
+     */
+    std::ostream& operator<<(std::ostream& o_str, command cmd)
+    {
+        return o_str << std::to_underlying(cmd);
+    }
+
+    /**
+     * @brief Inserts a `negotiation_direction` into a `std::ostream`.
+     * @param o_str The `std::ostream` into which to insert the `command`.
+     * @param dir The `negotiation_direction` to insert.
+     * @return A reference to the stream for inserter chaining.
+     * @remark Inserts the `negotiation_direction` as the result of `std::format`.
+     */
+    std::ostream& operator<<(std::ostream& o_str, negotiation_direction dir)
+    {
+        return o_str << std::format("{}", dir);
+    }
+} //namespace net::telnet

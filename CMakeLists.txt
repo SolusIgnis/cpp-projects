@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 
 # ===========================================================================
-# Repository-Level CML
+# //CMakeLists.txt
 # ===========================================================================
 
 cmake_minimum_required(VERSION 4.1.2)
@@ -22,9 +22,18 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_MODULE_STD 1)
 
 # ===========================================================================
+# Add project CMake modules (./cmake/*) to CMAKE_MODULE_PATH
+# ===========================================================================
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CXX_Modules")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Discover_Tests")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Tooling_Targets")
+
+# ===========================================================================
 # Check for adequate compilers supporting C++23 and "import std;".
 # ===========================================================================
-include(cmake/CompilerValidation.cmake)
+include(CompilerValidation)
 
 # ===========================================================================
 # Test Framework Dependencies
@@ -61,36 +70,44 @@ endif()
 find_package(ut QUIET)
 
 if(NOT TARGET ut::ut)
-  include(cmake/FetchUT.cmake)
+  include(FetchUT)
   fetch_ut()
 endif()
 
 # ===========================================================================
 # Test Discovery / Target Generation
 # ===========================================================================
-include(cmake/DiscoverTests.cmake)
+include(DiscoverTests)
 
 # ===========================================================================
 # Tooling Infrastructure (Options, Cache Variables, Registries, and Helper Functions)
 # ===========================================================================
-include(cmake/ToolingInfrastructure.cmake)
+include(ToolingInfrastructure)
 
 # ===========================================================================
-# Add module group subdirectories.
+# Add module utilities.
 # ===========================================================================
+include(AddNamedModule)
+include(AddMetamodule)
 
-# Add the "base" module group.
-add_subdirectory(base)
+# ===========================================================================
+# Add module directory tree.
+# ===========================================================================
+function(trace_me)
+  file(RELATIVE_PATH _scoped_path "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
 
-# Add the "net" module group.
-add_subdirectory(net)
+  message(STATUS "Processing: //${_scoped_path}")
+endfunction()
+
+
+add_subdirectory("modules")
 
 # ===========================================================================
 # Aggregate the tooling-registered targets and their sources.
 # ===========================================================================
-include(cmake/ToolingSources.cmake)
+include(ToolingSources)
 
 # ===========================================================================
 # Create tooling targets for clang-format (real and check) and clang-tidy.
 # ===========================================================================
-include(cmake/ToolingTargets.cmake)
+include(ToolingTargets)

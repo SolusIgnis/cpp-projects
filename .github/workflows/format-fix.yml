@@ -73,7 +73,7 @@ jobs:
       - name: Run clang-format
         run: |
           cmake --build --preset=clang-debug --target=format-fix
-          git add net
+          git add modules
           
           if git diff --cached --quiet; then
             echo "No changes to commit."
