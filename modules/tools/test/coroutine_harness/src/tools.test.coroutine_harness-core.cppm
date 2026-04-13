@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
- * @file tools.test.coroutine_harness-task.cppm
+ * @file tools.test.coroutine_harness-core.cppm
  * @version 0.3.0
  * @date April 12, 2026
  *
