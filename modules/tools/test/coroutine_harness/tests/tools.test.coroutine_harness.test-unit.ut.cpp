@@ -27,7 +27,7 @@ test_task<int> echo(int value)
     co_return value;
 }
 
-test_task<test_task<int>> make_echo(int value, base::vocab::ptr::alias_ptr<coroutine_probe> probe = nullptr)
+test_task<test_task<int>> make_echo(int value, base::vocab::alias_ptr<coroutine_probe> probe = nullptr)
 {
     co_return echo(value).set_probe(probe);
 }

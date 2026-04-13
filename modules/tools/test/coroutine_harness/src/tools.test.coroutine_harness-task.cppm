@@ -203,7 +203,7 @@ export namespace tools::test::coroutine_harness {
     template<typename T>
     struct test_promise_base {
         using storage_t = std::conditional_t<std::is_void_v<T>, std::monostate, T>;
-        using probe_ptr = base::vocab::ptr::alias_ptr<coroutine_probe>;
+        using probe_ptr = base::vocab::alias_ptr<coroutine_probe>;
 
         std::optional<storage_t> value{};
         std::exception_ptr exception{};

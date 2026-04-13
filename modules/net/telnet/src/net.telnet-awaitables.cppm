@@ -135,7 +135,7 @@ export namespace net::telnet::awaitables {
     /**
      * @fn tagged_awaitable::tagged_awaitable(awaitable_type awaitable) noexcept
      * @param awaitable The awaitable to wrap.
-     * @note Implicit conversion from the underlying type allows direct returns from Boost.Asio asynchronous operations.
+     * @note Implicit conversion from the underlying type allows direct returns from e.g. Asio asynchronous operations.
      */
 
     /// @brief Semantic tag `struct`s to specialize `tagged_awaitable`. @see `tagged_awaitable`
