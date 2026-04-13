@@ -22,7 +22,7 @@
  * @brief Core coroutine lifecycle tracking probe and handle RAII manager
  *
  * Defines `coroutine_probe` struct and `coroutine_handle_manager` class.
- * 
+ *
  * Invariants:
  * - A managed `coroutine_handle` is destroyed exactly once.
  * - If a probe is attached, destruction is always recorded.
@@ -35,7 +35,6 @@ export module tools.test.coroutine_harness:core;
 import std; //NOLINT
 
 export namespace tools::test::coroutine_harness {
-
     /// @brief Observes coroutine lifecycle events for testing and validation.
     struct coroutine_probe {
         /// @brief Indicates how a coroutine was awaited.
@@ -53,11 +52,11 @@ export namespace tools::test::coroutine_harness {
         bool moved{false};           ///< Task was moved
         path await_path{path::none}; ///< Await path classification
     };
-    
+
     //Forward declaration of promise type used by task type but defined later
     template<typename T>
     struct test_promise;
-    
+
     /**
      * @brief RAII wrapper for `std::coroutine_handle`.
      *
@@ -120,10 +119,7 @@ export namespace tools::test::coroutine_harness {
         }
 
         /// @brief Access underlying handle.
-        [[nodiscard]] decltype(auto) get(this auto&& self)
-        {
-            return std::forward_like<decltype(self)>(self.handle_);
-        }
+        [[nodiscard]] decltype(auto) get(this auto&& self) { return std::forward_like<decltype(self)>(self.handle_); }
 
         /// @brief Implicit conversion to raw handle.
         explicit(false) operator raw_handle_type() const { return handle_; }
@@ -137,8 +133,9 @@ export namespace tools::test::coroutine_harness {
         /// @brief Access promise.
         [[nodiscard]] decltype(auto) promise(this auto&& self) { return self.handle_.promise(); }
 
-        friend void swap(coroutine_handle_manager& lhs, coroutine_handle_manager& rhs)
-            noexcept(std::is_nothrow_swappable_v<raw_handle_type>)
+        friend void swap(coroutine_handle_manager& lhs, coroutine_handle_manager& rhs) noexcept(
+            std::is_nothrow_swappable_v<raw_handle_type>
+        )
         {
             using std::swap;
             swap(lhs.handle_, rhs.handle_);

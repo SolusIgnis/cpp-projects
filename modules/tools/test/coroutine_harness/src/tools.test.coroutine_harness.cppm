@@ -26,7 +26,7 @@
  *   - `:task` = coroutine types (`test_task`, `test_promise`)
  *   - `:dummies`   = trivial awaitables for testing
  *   - `:runner`    = synchronous execution (`run`)
- */ 
+ */
 /**
  * @module tools.test.coroutine_harness
  * @brief Coroutine test harness with synchronous runner.

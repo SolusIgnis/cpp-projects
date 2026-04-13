@@ -69,7 +69,7 @@ export namespace net::telnet {
             enable_predicate_type local_pred  = always_reject,
             enable_predicate_type remote_pred = always_reject,
             bool subneg_supported             = false,
-            std::size_t max_subneg_size            = max_subnegotiation_buffer_size
+            std::size_t max_subneg_size       = max_subnegotiation_buffer_size
         )
             : id_(id),
               name_(std::move(name)),
@@ -83,9 +83,9 @@ export namespace net::telnet {
         static option make_option(
             id_num id,
             std::string name,
-            bool local_supported   = false,
-            bool remote_supported  = false,
-            bool subneg_supported  = false,
+            bool local_supported        = false,
+            bool remote_supported       = false,
+            bool subneg_supported       = false,
             std::size_t max_subneg_size = max_subnegotiation_buffer_size
         )
         {

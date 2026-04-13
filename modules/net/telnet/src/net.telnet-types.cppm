@@ -30,7 +30,7 @@
 //Module partition interface unit
 export module net.telnet:types;
 
-import std;        //NOLINT For std::format, std::string_view, std::format_context
+import std; //NOLINT For std::format, std::string_view, std::format_context
 
 export namespace net::telnet {
     /**
