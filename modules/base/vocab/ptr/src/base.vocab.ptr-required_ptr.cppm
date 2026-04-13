@@ -25,7 +25,7 @@
 //Module partition interface unit
 export module base.vocab.ptr:required_ptr;
 
-export namespace base::vocab::ptr {
+export namespace base::vocab::inline ptr {
     template<typename T>
     using required_ptr = T*;
 }
