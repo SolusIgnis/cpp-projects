@@ -14,6 +14,7 @@ add_custom_target(format-fix
   COMMAND clang-format -i ${ALL_TOOLING_SOURCES}
   COMMENT "Fixing code formatting with clang-format\n${_sources}"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  COMMAND_EXPAND_LISTS
 )
 
 # Target to run clang-format in checking mode.
