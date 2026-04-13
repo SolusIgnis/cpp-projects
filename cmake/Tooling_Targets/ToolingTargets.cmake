@@ -7,10 +7,12 @@
 
 get_property(ALL_TOOLING_SOURCES GLOBAL PROPERTY ALL_TOOLING_SOURCES)
 
+string(JOIN "\n" _sources ${ALL_TOOLING_SOURCES})
+
 # Target to run clang-format in place on all sources.
 add_custom_target(format-fix
   COMMAND clang-format -i ${ALL_TOOLING_SOURCES}
-  COMMENT "Fixing code formatting with clang-format"
+  COMMENT "Fixing code formatting with clang-format\n${_sources}"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
