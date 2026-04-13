@@ -43,7 +43,7 @@
  * @example @parblock
  * ## Example Usage
  * @code ```cpp
- * using namespace tools::test;
+ * using namespace tools::test::coroutine_harness;
  *
  * coroutine_probe probe;
  *

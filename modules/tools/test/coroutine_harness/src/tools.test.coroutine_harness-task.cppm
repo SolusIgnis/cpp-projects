@@ -37,7 +37,7 @@ export module tools.test.coroutine_harness:task;
 
 import std; //NOLINT
 
-import base.vocab.ptr; ///< for `alias_ptr`
+export import base.vocab.ptr; ///< for `alias_ptr`
 
 import :core; ///< @see "tools.test.coroutine_harness-core.cppm"
 
