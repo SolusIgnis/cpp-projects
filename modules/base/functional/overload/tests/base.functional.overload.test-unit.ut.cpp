@@ -81,16 +81,18 @@ suite overload_tests = [] mutable {
         expect(eq(std::move(overloaded)(), std::to_underlying(rval)));
     };
     
-    "base.functional.overload example 1"_test = [] mutable {
-        //NOLINTBEGIN(readability-magic-numbers)
-        std::variant<int, float, std::string> v = "Hello World";
-    
-        std::visit(overload {
-            [](int i) { std::cout << "Integer: " << i << "\n"; },
-            [](float f) { std::cout << "Float: " << f << "\n"; },
-            [](const std::string& s) { std::cout << "String: " << s << "\n"; }
-        }, v);
-        //NOLINTEND(readability-magic-numbers)
+    "overload{...} integrates with std::visit"_test = [] mutable {
+        using var_t = std::variant<int, std::string, double>;
+        
+        auto visitor = overload{
+            [](int i)              { return "int"s; },
+            [](const std::string&) { return "string"s; },
+            [](double)             { return "double"s; }
+        };
+
+        expect(eq(std::visit(visitor, var_t{42}), "int"s));
+        expect(eq(std::visit(visitor, var_t{"hello"s}), "string"s));
+        expect(eq(std::visit(visitor, var_t{3.14}), "double"s));
     };
 };
 
