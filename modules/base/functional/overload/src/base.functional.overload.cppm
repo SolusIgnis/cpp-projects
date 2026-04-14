@@ -45,12 +45,12 @@ export namespace base::functional {
      * ## Example Usage
      * @code
      * auto f = base::functional::overload{
-     *     [](int i)    { return i + 1; },
-     *     [](double d) { return d * 2.0; }
+     *     [](int i)  { return i + 1; },
+     *     [](char c) { return c - ('a' - 'A'); }
      * };
      *
-     * f(3);    // calls int overload
-     * f(1.5);  // calls double overload
+     * f('c'); // calls char overload
+     * f(3);   // calls int overload
      * @endcode @endparblock
      *
      * @example @parblock
