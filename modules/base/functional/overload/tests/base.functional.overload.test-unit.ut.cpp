@@ -45,13 +45,11 @@ suite overload_tests = [] mutable {
         expect(eq(result_sv, expected_sv));
     };
     
-    "overload{...} resolves by arity"_test_test = [] mutable {
+    "overload{...} resolves by arity"_test = [] mutable {
         constexpr int arg1 = 40;
         constexpr int arg2 = 2;
         constexpr int expected1 = -arg1;
         constexpr int expected2 = arg1 + arg2;
-        
-        constexpr std::string_view expected_sv = "42"sv;
         
         auto overloaded = overload{
                               [](auto i, auto j){ return i + j; },
@@ -68,10 +66,10 @@ suite overload_tests = [] mutable {
         struct functor {
             enum class val_cat : std::uint8_t { lval, clval, rval };
             
-            int operator()(this       functor&)  { return std::to_underlying(val_cat::lval); }
-            int operator()(this const functor&)  { return std::to_underlying(val_cat::clval); }
-            int operator()(this       functor&&) { return std::to_underlying(val_cat::rval); }
-            int operator()(this const functor&&) = delete;
+            std::uint8_t operator()(this       functor&)  { return std::to_underlying(val_cat::lval); }
+            std::uint8_t operator()(this const functor&)  { return std::to_underlying(val_cat::clval); }
+            std::uint8_t operator()(this       functor&&) { return std::to_underlying(val_cat::rval); }
+            std::uint8_t operator()(this const functor&&) = delete;
         };
     
         auto overloaded = overload{functor{}};
