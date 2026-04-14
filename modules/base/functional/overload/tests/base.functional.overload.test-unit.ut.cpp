@@ -88,7 +88,7 @@ suite overload_tests = [] mutable {
         std::variant<int, float, std::string> v = "Hello World";
     
         std::visit(overload {
-            [](int i) { return std::format("Integer: " << i << "\n"; },
+            [](int i) { std::cout << "Integer: " << i << "\n"; },
             [](float f) { std::cout << "Float: " << f << "\n"; },
             [](const std::string& s) { std::cout << "String: " << s << "\n"; }
         }, v);
