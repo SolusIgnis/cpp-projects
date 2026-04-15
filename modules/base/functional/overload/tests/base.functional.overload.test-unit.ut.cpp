@@ -136,6 +136,12 @@ suite overload_tests = [] mutable {
                                    f2{},
                                    [](double arg){ return std::format("lambda double {}", arg); }};
     
+        if constexpr (std::invocable<decltype(overloaded), int>) {
+            expect(eq(std::invoke(overloaded, 0), ""s));
+        }
+        if constexpr (std::invocable<decltype(overloaded), double>) {
+            expect(eq(std::invoke(overloaded, 1.0), ""s));
+        }
         expect(eq(std::invocable<decltype(overloaded), int>, false));
         expect(eq(std::invocable<decltype(overloaded), double>, false));
         expect(eq(std::invocable<decltype(overloaded), std::string>, true));
