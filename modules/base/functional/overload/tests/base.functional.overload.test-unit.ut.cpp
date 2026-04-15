@@ -113,7 +113,7 @@ suite overload_tests = [] mutable {
         expect(eq(std::visit(visitor, var_t{"hello"s}), "string"s));
         expect(eq(std::visit(visitor, var_t{3.14}), "double"s));
     };
-    /*
+    //*
     "overload{...} preserves ambiguity across identical signatures"_test = [] {
         auto overloaded = overload{[](int){ return 1; },
                                    [](int){ return 2; }};
