@@ -41,6 +41,14 @@ export namespace base::functional {
      *
      * @tparam Callables Callable types to be aggregated.
      *
+     * @note `overload` produces an overload set for its function call operator
+     *       that is the union of the overload sets of the function call operators
+     *       of its bases. The overload sets for the function call operators of
+     *       all of the bases must therefore be disjoint. This is the essential
+     *       precondition for a well-formed call of the function call operator of
+     *       an `overload` object. Violation results in a call-site ambiguity in
+     *       overload resolution.
+     *
      * @example @parblock
      * ## Example Usage
      * @code
