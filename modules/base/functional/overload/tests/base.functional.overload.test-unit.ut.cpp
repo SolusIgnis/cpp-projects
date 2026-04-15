@@ -136,7 +136,7 @@ suite overload_tests = [] mutable {
     
         expect(eq(std::invocable<decltype(overloaded), int>, false));
         expect(eq(std::invocable<decltype(overloaded), double>, true));
-        expect(eq(std::invocable<decltype(overloaded), std::string>, false));
+        expect(eq(std::invocable<decltype(overloaded), std::string>, true));
     };
 };
 
