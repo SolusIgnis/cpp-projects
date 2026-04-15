@@ -61,7 +61,7 @@ suite overload_tests = [] mutable {
         int result1 = overloaded(arg1);
         expect(eq(result1, expected1));
     };
-    /*
+    //*
     "overload{...} composes overload sets of multiple multi-overload bases"_test = [] mutable {
         struct f1 {
             std::string operator()(int)    { return "int"s; }
@@ -113,13 +113,13 @@ suite overload_tests = [] mutable {
         expect(eq(std::visit(visitor, var_t{"hello"s}), "string"s));
         expect(eq(std::visit(visitor, var_t{3.14}), "double"s));
     };
-    //*
+    
     "overload{...} preserves ambiguity across identical signatures"_test = [] {
         auto overloaded = overload{[](int){ return 1; },
                                    [](int){ return 2; }};
     
         expect(eq(std::invocable<decltype(overloaded), int>, false));
-    };//*/
+    };
 };
 
 int main() {}
