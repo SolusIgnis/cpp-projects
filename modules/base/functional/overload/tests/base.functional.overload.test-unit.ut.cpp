@@ -123,19 +123,21 @@ suite overload_tests = [] mutable {
     
     "overload{...} preserves ambiguity across multiple aggregated callables"_test = [] mutable {
         struct f1 {
-            int operator()(int)    { return 0; }
-            int operator()(double) { return 1; }
+            auto operator()(int)    { return "f1 int"s; }
+            auto operator()(double) { return "f1 double"s; }
         };
     
         struct f2 {
-            int operator()(int)         { return 2; }
-            int operator()(std::string) { return 3; }
+            auto operator()(int)         { return "f2 int"s; }
+            auto operator()(std::string) { return "f2 string"s; }
         };
     
-        auto overloaded = overload{f1{}, f2{}};
+        auto overloaded = overload{f1{},
+                                   f2{},
+                                   [](double){ return "lambda double"s; }};
     
         expect(eq(std::invocable<decltype(overloaded), int>, false));
-        expect(eq(std::invocable<decltype(overloaded), double>, true));
+        expect(eq(std::invocable<decltype(overloaded), double>, false));
         expect(eq(std::invocable<decltype(overloaded), std::string>, true));
     };
 };
