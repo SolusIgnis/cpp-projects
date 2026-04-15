@@ -134,7 +134,7 @@ suite overload_tests = [] mutable {
     
         auto overloaded = overload{f1{},
                                    f2{},
-                                   [](double){ return "lambda double"s; }};
+                                   [](double num){ return std::format("lambda double {}", num); }};
     
         expect(eq(std::invocable<decltype(overloaded), int>, false));
         expect(eq(std::invocable<decltype(overloaded), double>, false));
