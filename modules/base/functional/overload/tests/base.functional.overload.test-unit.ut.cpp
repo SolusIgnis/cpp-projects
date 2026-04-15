@@ -61,7 +61,7 @@ suite overload_tests = [] mutable {
         int result1 = overloaded(arg1);
         expect(eq(result1, expected1));
     };
-    //*
+    
     "overload{...} composes overload sets of multiple multi-overload bases"_test = [] mutable {
         struct f1 {
             std::string operator()(int)    { return "int"s; }
@@ -80,7 +80,7 @@ suite overload_tests = [] mutable {
         expect(eq(overloaded("hello"s), "string"s));
         expect(eq(overloaded("view"sv), "string view"s));
     };
-    //*/
+    
     "overload{...} preserves value category"_test = [] mutable {
         struct functor {
             enum class val_cat : std::uint8_t { lval, clval, rval };
@@ -119,6 +119,24 @@ suite overload_tests = [] mutable {
                                    [](int){ return 2; }};
     
         expect(eq(std::invocable<decltype(overloaded), int>, false));
+    };
+    
+    "overload{...} preserves ambiguity across multiple aggregated callables"_test = [] mutable {
+        struct f1 {
+            int operator()(int)    { return 0; }
+            int operator()(double) { return 1; }
+        };
+    
+        struct f2 {
+            int operator()(int)         { return 2; }
+            int operator()(std::string) { return 3; }
+        };
+    
+        auto overloaded = overload{f1{}, f2{}};
+    
+        expect(eq(std::invocable<decltype(overloaded), int>, false));
+        expect(eq(std::invocable<decltype(overloaded), double>, true));
+        expect(eq(std::invocable<decltype(overloaded), std::string>, false));
     };
 };
 
