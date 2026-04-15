@@ -227,6 +227,11 @@ function(_create_test_from_file module_target test_file dependencies)
       "${TEST_FRAMEWORK.${TEST_DIALECT}}"
       ${dependencies}
   )
+  
+  target_link_options("${target}"
+    PRIVATE
+      "-Wl,--no-gc-sections" #This prevents a linker gc bug that gets triggered by ut.
+  )
 
   target_compile_features("${target}"
     PRIVATE
