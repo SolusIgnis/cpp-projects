@@ -18,6 +18,24 @@ using namespace ut;
 using namespace std::literals;
 using base::functional::overload;
 
+    template <typename F>
+    concept unambiguously_callable_with_int =
+    requires(F f) {
+        f(1);
+    };
+    
+    template <typename F>
+    concept unambiguously_callable_with_double =
+    requires(F f) {
+        f(1.0);
+    };
+    
+    template <typename F>
+    concept unambiguously_callable_with_string =
+    requires(F f) {
+        f("std::string literal"s);
+    };
+
 suite overload_tests = [] mutable {
     "overload{...} produces an invocable object"_test = [] mutable {
         constexpr int expected = 42;
@@ -112,24 +130,6 @@ suite overload_tests = [] mutable {
         expect(eq(std::visit(visitor, var_t{42}), "int"s));
         expect(eq(std::visit(visitor, var_t{"hello"s}), "string"s));
         expect(eq(std::visit(visitor, var_t{3.14}), "double"s));
-    };
-    
-    template <typename F>
-    concept unambiguously_callable_with_int =
-    requires(F f) {
-        f(1);
-    };
-    
-    template <typename F>
-    concept unambiguously_callable_with_double =
-    requires(F f) {
-        f(1.0);
-    };
-    
-    template <typename F>
-    concept unambiguously_callable_with_string =
-    requires(F f) {
-        f("std::string literal"s);
     };
     
     "overload{...} preserves ambiguity across identical signatures"_test = [] {
