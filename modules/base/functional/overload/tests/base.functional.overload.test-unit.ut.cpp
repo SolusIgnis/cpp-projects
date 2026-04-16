@@ -143,7 +143,7 @@ suite overload_tests = [] mutable {
         expect(eq(std::invocable<decltype(overloaded), std::string>, true));
         expect(eq(std::invoke(overloaded, "irrelevant"s), "f2 string"s));
         expect(eq(std::invocable<decltype(overloaded), const char*>, true));
-        expect(eq(std::invoke(overloaded, "irrelevant"), "f2 const char*"s));
+        expect(eq(std::invoke(overloaded, "irrelevant"), "f1 const char*"s));
     };
 };
 
