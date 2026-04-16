@@ -182,7 +182,7 @@ suite overload_tests = [] mutable {
     };
     
     "overload{...} supports simple recursion"_test = [] mutable  {
-        auto factorial_tester = [](int n, expected) {
+        auto factorial_tester = [](int n, int expected) {
             int steps = 0;
             
             auto factorial = overload{
