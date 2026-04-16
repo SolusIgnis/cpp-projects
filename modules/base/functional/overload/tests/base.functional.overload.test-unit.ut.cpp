@@ -220,11 +220,11 @@ suite overload_tests = [] mutable {
         
         auto tree_sum = overload{
             [](int val){ return val; },
-            [](this auto& self, std::unique_ptr<auto> ptr) {
+            []<typename T>(this auto& self, std::unique_ptr<T> ptr) {
                 if (!ptr) throw std::logic_error("test tree node holds null pointer");
                 return std::visit(self, *ptr);
             }
-            [](this auto& self, std::tuple<auto, auto> children) {
+            []<typename T>(this auto& self, std::tuple<T, T> children) {
                 auto [left, right] = children;
                 return std::visit(self, left.value) + std::visit(self, right.value);
             }
@@ -247,7 +247,7 @@ suite overload_tests = [] mutable {
         
         const int expected = (i * (i + 1)) / 2;
         expect(eq(std::visit(tree_sum, tree.value), expected));
-    }
+    };
 };
 
 int main() {}
