@@ -192,8 +192,8 @@ suite overload_tests = [] mutable {
             }
         };
         
-        constexpr num = 5;
-        constexpr expected = 120 // 5 * 4 * 3 * 2 * 1
+        constexpr int num = 5;
+        constexpr int expected = 120; // 5 * 4 * 3 * 2 * 1
     
         expect(eq(factorial(num), expected));
         expect(eq(steps, num));
