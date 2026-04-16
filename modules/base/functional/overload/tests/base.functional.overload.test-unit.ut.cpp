@@ -228,7 +228,7 @@ suite overload_tests = [] mutable {
                 auto [left, right] = children;
                 return std::visit(self, left.value) + std::visit(self, right.value);
             }
-        };79
+        };
         
         int i = 0;
         auto tree = node{
