@@ -213,6 +213,34 @@ suite overload_tests = [] mutable {
         factorial_tester(num3, expected3);
     };
 
+    "overload{...} supports recursive multi-overload dispatch (binary tree)"_test = [] {
+        struct node {
+            std::variant<int, std::tuple<node, node>> value;
+        };
+        
+        auto tree_sum = overload{
+            [](int val){ return val; },
+            [](this auto& self, std::tuple<node, node> children) {
+                auto [left, right] = children;
+                return std::visit(self, left.value) + std::visit(self, right.value);
+            }
+        };
+        
+        int i = 0;
+        node tree = {
+            {
+                {++i}, {
+                    {++i}, {++i}
+                }
+            },
+            {
+                {++i}, {++i}
+            }
+        };
+        
+        const int expected = (i * (i + 1)) / 2;
+        expect(eq(std::visit(tree_sum, tree.value), expected));
+    }
 };
 
 int main() {}
