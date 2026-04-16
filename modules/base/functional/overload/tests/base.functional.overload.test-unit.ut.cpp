@@ -143,7 +143,7 @@ suite overload_tests = [] mutable {
         struct f1 {
             auto operator()(int arg)    { return std::format("f1 int {}", arg); }
             auto operator()(double arg) { return std::format("f1 double {}", arg); }
-            auto operator()(const char*)   { return "f1 const char*"; }
+            auto operator()(const char*)   { return "f1 const char*"s; }
         };
     
         struct f2 {
@@ -153,8 +153,8 @@ suite overload_tests = [] mutable {
     
         auto overloaded = overload{f1{},
                                    f2{},
-                                   [](double arg) mutable { return std::format("lambda double {}", arg); }};
-                                   [](const char*) { return "lambda const char*"; }};
+                                   [](double arg) mutable { return std::format("lambda double {}", arg); },
+                                   [](const char*) { return "lambda const char*"s; }};
     
         expect(eq(std::invocable<decltype(overloaded), int>, false));
         expect(eq(std::invocable<decltype(overloaded), double>, false));
