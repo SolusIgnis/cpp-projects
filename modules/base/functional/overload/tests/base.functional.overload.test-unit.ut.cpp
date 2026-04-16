@@ -18,24 +18,6 @@ using namespace ut;
 using namespace std::literals;
 using base::functional::overload;
 
-    template <typename F>
-    concept unambiguously_callable_with_int =
-    requires(F f) {
-        f(1);
-    };
-    
-    template <typename F>
-    concept unambiguously_callable_with_double =
-    requires(F f) {
-        f(1.0);
-    };
-    
-    template <typename F>
-    concept unambiguously_callable_with_string =
-    requires(F f) {
-        f("std::string literal"s);
-    };
-
 suite overload_tests = [] mutable {
     "overload{...} produces an invocable object"_test = [] mutable {
         constexpr int expected = 42;
@@ -141,25 +123,27 @@ suite overload_tests = [] mutable {
     
     "overload{...} preserves ambiguity across multiple aggregated callables"_test = [] mutable {
         struct f1 {
-            auto operator()(int arg)    { return std::format("f1 int {}", arg); }
-            auto operator()(double arg) { return std::format("f1 double {}", arg); }
-            auto operator()(const char*)   { return "f1 const char*"s; }
+            auto operator()(int)         { return "f1 int"s; }
+            auto operator()(double)      { return "f1 double"s; }
+            auto operator()(const char*) { return "f1 const char*"s; }
         };
     
         struct f2 {
-            auto operator()(int arg)         { return std::format("f2 int {}", arg); }
-            auto operator()(std::string arg) { return std::format("f2 string {}", arg); }
+            auto operator()(int)         { return "f2 int"s; }
+            auto operator()(std::string) { return "f2 string"s; }
         };
     
         auto overloaded = overload{f1{},
                                    f2{},
-                                   [](double arg) mutable { return std::format("lambda double {}", arg); },
+                                   [](double arg) mutable { return "lambda double"s; },
                                    [](const char*) { return "lambda const char*"s; }};
     
         expect(eq(std::invocable<decltype(overloaded), int>, false));
         expect(eq(std::invocable<decltype(overloaded), double>, false));
         expect(eq(std::invocable<decltype(overloaded), std::string>, true));
-        expect(eq(std::invoke(overloaded, "irrelevant"s), "f2 string irrelevant"s));
+        expect(eq(std::invoke(overloaded, "irrelevant"s), "f2 string"s));
+        expect(eq(std::invocable<decltype(overloaded), const char*>, true));
+        expect(eq(std::invoke(overloaded, "irrelevant"), "f2 const char*"s));
     };
 };
 
