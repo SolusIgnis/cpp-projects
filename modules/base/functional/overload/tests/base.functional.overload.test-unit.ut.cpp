@@ -213,7 +213,7 @@ suite overload_tests = [] mutable {
         factorial_tester(num3, expected3);
     };
 
-    "overload{...} supports recursive multi-overload dispatch (binary tree)"_test = [] {
+    "overload{...} supports recursive multi-overload dispatch (binary tree)"_test = [] mutable {
         struct node {
             std::variant<int, std::tuple<std::unique_ptr<node>, std::unique_ptr<node>>> value;
         };
@@ -232,17 +232,17 @@ suite overload_tests = [] mutable {
         
         int i = 0;
         auto tree = node{
-            std::make_unique(node{
-                std::make_unique(node{++i}),
-                std::make_unique(node{
-                    std::make_unique(node{++i}),
-                    std::make_unique(node{++i})
-                })
-            }),
-            std::make_unique(node{
-                std::make_unique(node{++i}),
-                std::make_unique(node{++i})
-            })
+            std::make_unique<node>(
+                std::make_unique<node>(++i),
+                std::make_unique<node>(
+                    std::make_unique<node>(++i),
+                    std::make_unique<node>(++i)
+                )
+            ),
+            std::make_unique<node>(
+                std::make_unique<node>(++i),
+                std::make_unique<node>(++i)
+            )
         };
         
         const int expected = (i * (i + 1)) / 2;
