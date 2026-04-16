@@ -204,6 +204,10 @@ suite overload_tests = [] mutable {
         constexpr int num2 = 4;
         constexpr int expected2 = 24; // 4 * 3 * 2 * 1
         factorial_tester(num2, expected2);
+        
+        constexpr int num3 = 0;
+        constexpr int expected3 = 1; // sanity check
+        factorial_tester(num3, expected3);
     };
 
 };
