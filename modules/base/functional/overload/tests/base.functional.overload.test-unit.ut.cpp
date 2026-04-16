@@ -231,7 +231,7 @@ suite overload_tests = [] mutable {
         };
         
         int i = 0;
-        auto tree = node{
+        auto tree = node{std::tuple{
             std::make_unique<node>(std::tuple{
                 std::make_unique<node>(++i),
                 std::make_unique<node>(std::tuple{
@@ -243,7 +243,7 @@ suite overload_tests = [] mutable {
                 std::make_unique<node>(++i),
                 std::make_unique<node>(++i)
             })
-        };
+        }};
         
         const int expected = (i * (i + 1)) / 2;
         expect(eq(std::visit(tree_sum, tree.value), expected));
