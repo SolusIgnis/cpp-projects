@@ -173,10 +173,30 @@ suite overload_tests = [] mutable {
         // Deduced `self` reflects the `const`-ness of the `overload` object (derived type).
         expect(eq(overloaded(0), "non-const"s));
         expect(eq(const_ov(0), "const"s));
-        //explicit `std::string` parameter is a better match than template parameter
+
+        // Explicit `std::string` parameter is a better match than template parameter
         expect(eq(const_ov("foo"s), "foo"s));
-        //
+
+        // Template wins: better object parameter binding (non-`const` vs `const`) outweighs non-template preference
         expect(eq(overloaded("foo"s), "non-const"s));
+    };
+    
+    "overload{...} supports simple recursion"_test = [] mutable  {
+        int steps = 0;
+        
+        auto factorial = overload{
+            [&steps](this auto& self, int n) -> int {
+                ++steps;
+                if (n <= 1) return 1;
+                return n * self(n - 1);
+            }
+        };
+        
+        constexpr num = 5;
+        constexpr expected = 120 // 5 * 4 * 3 * 2 * 1
+    
+        expect(eq(factorial(num), expected));
+        expect(eq(steps, num));
     };
 
 };
