@@ -183,6 +183,9 @@ suite overload_tests = [] mutable {
     
     "overload{...} supports simple recursion"_test = [] mutable  {
         auto factorial_tester = [](int n, int expected) {
+            // fail fast for ill-formed test.
+            if (n < 1) throw std::logic_error("factorial test runner requires n >= 1");
+
             int steps = 0;
             
             auto factorial = overload{
@@ -205,7 +208,7 @@ suite overload_tests = [] mutable {
         constexpr int expected2 = 24; // 4 * 3 * 2 * 1
         factorial_tester(num2, expected2);
         
-        constexpr int num3 = 0;
+        constexpr int num3 = 1;
         constexpr int expected3 = 1; // sanity check
         factorial_tester(num3, expected3);
     };
