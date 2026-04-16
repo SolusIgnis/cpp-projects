@@ -114,6 +114,24 @@ suite overload_tests = [] mutable {
         expect(eq(std::visit(visitor, var_t{3.14}), "double"s));
     };
     
+    template <typename F>
+    concept unambiguously_callable_with_int =
+    requires(F f) {
+        f(1);
+    };
+    
+    template <typename F>
+    concept unambiguously_callable_with_double =
+    requires(F f) {
+        f(1.0);
+    };
+    
+    template <typename F>
+    concept unambiguously_callable_with_string =
+    requires(F f) {
+        f("std::string literal"s);
+    };
+    
     "overload{...} preserves ambiguity across identical signatures"_test = [] {
         auto overloaded = overload{[](int){ return 1; },
                                    [](int){ return 2; }};
@@ -136,15 +154,15 @@ suite overload_tests = [] mutable {
                                    f2{},
                                    [](double arg){ return std::format("lambda double {}", arg); }};
     
-        if constexpr (std::invocable<decltype(overloaded), int>) {
-            expect(eq(std::invoke(overloaded, 0), ""s));
+        if constexpr (unambiguously_callable_with_int<decltype(overloaded)>) {
+            expect(eq(std::invoke(overloaded, 1), ""s));
         }
-        if constexpr (std::invocable<decltype(overloaded), double>) {
+        if constexpr (unambiguously_callable_with_double<decltype(overloaded)>) {
             expect(eq(std::invoke(overloaded, 1.0), ""s));
         }
-        expect(eq(std::invocable<decltype(overloaded), int>, false));
-        expect(eq(std::invocable<decltype(overloaded), double>, false));
-        expect(eq(std::invocable<decltype(overloaded), std::string>, true));
+        expect(eq(unambiguously_callable_with_int<decltype(overloaded)>, false));
+        expect(eq(unambiguously_callable_with_double<decltype(overloaded)>, false));
+        expect(eq(unambiguously_callable_with_string<decltype(overloaded)>, true));
     };
 };
 
