@@ -154,9 +154,6 @@ suite overload_tests = [] mutable {
                                    f2{},
                                    [](double arg) mutable { return std::format("lambda double {}", arg); }};
     
-        if constexpr (unambiguously_callable_with_double<decltype(overloaded)>) {
-          expect(eq(overloaded(1.0), ""s));
-        }
         expect(eq(unambiguously_callable_with_int<decltype(overloaded)>, false));
         expect(eq(unambiguously_callable_with_double<decltype(overloaded)>, false));
         expect(eq(unambiguously_callable_with_string<decltype(overloaded)>, true));
