@@ -143,6 +143,7 @@ suite overload_tests = [] mutable {
         struct f1 {
             auto operator()(int arg)    { return std::format("f1 int {}", arg); }
             auto operator()(double arg) { return std::format("f1 double {}", arg); }
+            auto operator()(int* arg)   { return std::format("f1 int* {}", arg); }
         };
     
         struct f2 {
@@ -153,10 +154,11 @@ suite overload_tests = [] mutable {
         auto overloaded = overload{f1{},
                                    f2{},
                                    [](double arg) mutable { return std::format("lambda double {}", arg); }};
+                                   [](int* arg) { return std::format("lambda int* {}", arg); }};
     
-        expect(eq(unambiguously_callable_with_int<decltype(overloaded)>, false));
-        expect(eq(unambiguously_callable_with_double<decltype(overloaded)>, false));
-        expect(eq(unambiguously_callable_with_string<decltype(overloaded)>, true));
+        expect(eq(std::invocable<decltype(overloaded), int>, false));
+        expect(eq(std::invocable<decltype(overloaded), double>, false));
+        expect(eq(std::invocable<decltype(overloaded), std::string>, true));
     };
 };
 
