@@ -174,6 +174,7 @@ suite overload_tests = [] mutable {
         // proving the deduced `self` is the derived type.
         expect(eq(overloaded(0), "non-const"s));
         expect(eq(const_ov(0), "const"s));
+        expect(eq(const_ov("foo"s), "foo"s));
     };
 
 };
