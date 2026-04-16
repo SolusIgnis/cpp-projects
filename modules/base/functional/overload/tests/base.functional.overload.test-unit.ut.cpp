@@ -156,16 +156,16 @@ suite overload_tests = [] mutable {
         expect(eq(std::invoke(overloaded, "c-string"), "f1 const char*"s));
     };
     
-    "overload{...} with deduced `this` lambda preserves derived identity"_test = [] mutable {
+    "overload{...} with deduced `this` lambda sees derived object identity"_test = [] mutable {
         auto overloaded = overload{
-            // A single 'deducing this' lambda replacing 4 cv-ref overloads
             []<typename SelfT>(this SelfT&& self, auto arg) {
                 if constexpr (std::is_const_v<std::remove_reference_t<SelfT>>) {
                     return "const"s;
                 } else {
                     return "non-const"s;
                 }
-            }
+            },
+            [](this const auto& self, std::string arg) { return arg; }
         };
 
         const auto& const_ov = overloaded;
