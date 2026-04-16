@@ -165,16 +165,18 @@ suite overload_tests = [] mutable {
                     return "non-const"s;
                 }
             },
-            [](this const auto& self, std::string arg) { return arg; }
+            [](this const auto&, std::string arg) { return arg; }
         };
 
         const auto& const_ov = overloaded;
 
-        // The lambda correctly "sees" the `const`-ness of the `overload` object,
-        // proving the deduced `self` is the derived type.
+        // Deduced `self` reflects the `const`-ness of the `overload` object (derived type).
         expect(eq(overloaded(0), "non-const"s));
         expect(eq(const_ov(0), "const"s));
+        //explicit `std::string` parameter is a better match than template parameter
         expect(eq(const_ov("foo"s), "foo"s));
+        //
+        expect(eq(overloaded("foo"s), "non-const"s));
     };
 
 };
