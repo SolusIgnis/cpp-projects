@@ -182,21 +182,28 @@ suite overload_tests = [] mutable {
     };
     
     "overload{...} supports simple recursion"_test = [] mutable  {
-        int steps = 0;
-        
-        auto factorial = overload{
-            [&steps](this auto& self, int n) -> int {
-                ++steps;
-                if (n <= 1) return 1;
-                return n * self(n - 1);
-            }
+        auto factorial_tester = [](int n, expected) {
+            int steps = 0;
+            
+            auto factorial = overload{
+                [&steps](this auto& self, int n) -> int {
+                    ++steps;
+                    if (n <= 1) return 1;
+                    return n * self(n - 1);
+                }
+            };
+            
+            expect(eq(factorial(n), expected));
+            expect(eq(steps, n));
         };
         
-        constexpr int num = 5;
-        constexpr int expected = 120; // 5 * 4 * 3 * 2 * 1
+        constexpr int num1 = 5;
+        constexpr int expected1 = 120; // 5 * 4 * 3 * 2 * 1
+        factorial_tester(num1, expected1);
     
-        expect(eq(factorial(num), expected));
-        expect(eq(steps, num));
+        constexpr int num2 = 4;
+        constexpr int expected2 = 24; // 4 * 3 * 2 * 1
+        factorial_tester(num2, expected2);
     };
 
 };
