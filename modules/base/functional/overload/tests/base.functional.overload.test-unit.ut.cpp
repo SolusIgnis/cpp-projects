@@ -136,8 +136,8 @@ suite overload_tests = [] mutable {
         auto overloaded = overload{
                               f1{},
                               f2{},
-                              [](double arg) mutable { return "lambda double"s; }, //mutable => non-const operator()
-                              [](const char*) { return "lambda const char*"s; }    //const operator()
+                              [](double) mutable { return "lambda double"s; }, //mutable => non-const operator()
+                              [](const char*)    { return "lambda const char*"s; }    //const operator()
                           };
     
         // ambiguous: f1(int) vs f2(int)
@@ -158,7 +158,7 @@ suite overload_tests = [] mutable {
     
     "overload{...} with deduced `this` lambda sees derived object identity"_test = [] mutable {
         auto overloaded = overload{
-            []<typename SelfT>(this SelfT&& self, auto arg) {
+            []<typename SelfT>(this SelfT&&, auto) {
                 if constexpr (std::is_const_v<std::remove_reference_t<SelfT>>) {
                     return "const"s;
                 } else {
@@ -220,22 +220,26 @@ suite overload_tests = [] mutable {
         
         auto tree_sum = overload{
             [](int val){ return val; },
+            [](this auto& self, std::unique_ptr<auto> ptr) {
+                if (!ptr) throw std::logic_error("test tree node holds null pointer");
+                return std::visit(self, *ptr);
+            }
             [](this auto& self, std::tuple<node, node> children) {
                 auto [left, right] = children;
                 return std::visit(self, left.value) + std::visit(self, right.value);
             }
-        };
+        };79
         
         int i = 0;
         node tree = {
-            {
+            std::make_unique({
                 {++i}, {
-                    {++i}, {++i}
+                    std::make_unique({++i}, {++i})
                 }
-            },
-            {
-                {++i}, {++i}
-            }
+            }),
+            std::make_unique({
+                std::make_unique({++i}, {++i})
+            })
         };
         
         const int expected = (i * (i + 1)) / 2;
