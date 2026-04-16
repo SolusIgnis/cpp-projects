@@ -121,7 +121,7 @@ suite overload_tests = [] mutable {
         expect(eq(std::invocable<decltype(overloaded), int>, false));
     };
     
-    "overload{...} preserves ambiguity across multiple aggregated callables"_test = [] mutable {
+    "overload{...} preserves ambiguity and overload ranking across multiple aggregated callables"_test = [] mutable {
         struct f1 {
             auto operator()(int)         { return "f1 int"s; }
             auto operator()(double)      { return "f1 double"s; }
@@ -133,18 +133,49 @@ suite overload_tests = [] mutable {
             auto operator()(std::string) { return "f2 string"s; }
         };
     
-        auto overloaded = overload{f1{},
-                                   f2{},
-                                   [](double arg) mutable { return "lambda double"s; },
-                                   [](const char*) { return "lambda const char*"s; }};
+        auto overloaded = overload{
+                              f1{},
+                              f2{},
+                              [](double arg) mutable { return "lambda double"s; }, //mutable => non-const operator()
+                              [](const char*) { return "lambda const char*"s; }    //const operator()
+                          };
     
+        // ambiguous: f1(int) vs f2(int)
         expect(eq(std::invocable<decltype(overloaded), int>, false));
+        
+        // ambiguous: f1(double) vs lambda(double) [both non-const]
         expect(eq(std::invocable<decltype(overloaded), double>, false));
+        
+        // unambiguous: only f2(std::string) [const char* is not a match]
         expect(eq(std::invocable<decltype(overloaded), std::string>, true));
-        expect(eq(std::invoke(overloaded, "irrelevant"s), "f2 string"s));
+        expect(eq(std::invoke(overloaded, "std::string"s), "f2 string"s));
+        
+        // unambiguous: 1) non-const f1 beats const lambda [better implicit object parameter binding],
+        //              2) and f1(const char*) beats f2(std::string) [conversion is a worse match]
         expect(eq(std::invocable<decltype(overloaded), const char*>, true));
-        expect(eq(std::invoke(overloaded, "irrelevant"), "f1 const char*"s));
+        expect(eq(std::invoke(overloaded, "c-string"), "f1 const char*"s));
     };
+    
+    "overload{...} with deduced `this` lambda preserves derived identity"_test = [] mutable {
+        auto overloaded = overload{
+            // A single 'deducing this' lambda replacing 4 cv-ref overloads
+            []<typename SelfT>(this SelfT&& self, auto arg) {
+                if constexpr (std::is_const_v<std::remove_reference_t<SelfT>>) {
+                    return "const"s;
+                } else {
+                    return "non-const"s;
+                }
+            }
+        };
+
+        const auto& const_ov = overloaded;
+
+        // The lambda correctly "sees" the `const`-ness of the `overload` object,
+        // proving the deduced `self` is the derived type.
+        expect(eq(overloaded(0), "non-const"s));
+        expect(eq(const_ov(0), "const"s));
+    };
+
 };
 
 int main() {}
