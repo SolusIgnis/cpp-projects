@@ -152,7 +152,7 @@ suite overload_tests = [] mutable {
     
         auto overloaded = overload{f1{},
                                    f2{},
-                                   [](double arg){ return std::format("lambda double {}", arg); }};
+                                   [](double arg) mutable { return std::format("lambda double {}", arg); }};
     
         if constexpr (unambiguously_callable_with_double<decltype(overloaded)>) {
           expect(eq(overloaded(1.0), ""s));
