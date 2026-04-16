@@ -215,7 +215,7 @@ suite overload_tests = [] mutable {
 
     "overload{...} supports recursive multi-overload dispatch (binary tree)"_test = [] {
         struct node {
-            std::variant<int, std::tuple<node, node>> value;
+            std::variant<int, std::tuple<std::unique_ptr<node>, std::unique_ptr<node>>> value;
         };
         
         auto tree_sum = overload{
@@ -231,14 +231,17 @@ suite overload_tests = [] mutable {
         };79
         
         int i = 0;
-        node tree = {
-            std::make_unique({
-                {++i}, {
-                    std::make_unique({++i}, {++i})
-                }
+        auto tree = node{
+            std::make_unique(node{
+                std::make_unique(node{++i}),
+                std::make_unique(node{
+                    std::make_unique(node{++i}),
+                    std::make_unique(node{++i})
+                })
             }),
-            std::make_unique({
-                std::make_unique({++i}, {++i})
+            std::make_unique(node{
+                std::make_unique(node{++i}),
+                std::make_unique(node{++i})
             })
         };
         
