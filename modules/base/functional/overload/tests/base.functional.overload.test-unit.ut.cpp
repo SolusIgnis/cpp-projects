@@ -220,8 +220,7 @@ suite overload_tests = [] mutable {
             std::variant<int, std::tuple<alias_ptr<node>, alias_ptr<node>>> value;
         };
         
-        auto tree_sum = overload{
-            [](int val) -> int { return val; },
+        auto tree_traverse = overload{
             []<typename T>(this auto& self, alias_ptr<T> ptr) -> int {
                 if (!ptr) throw std::logic_error("test tree node holds null pointer");
                 return self(*ptr);
@@ -233,6 +232,16 @@ suite overload_tests = [] mutable {
             [](this auto& self, const node& next) -> int {
                 return std::visit(self, next.value);
             }
+        };
+        
+        auto tree_sum = overload{
+            [](int val) -> int { return val; },
+            tree_traverse
+        };
+        
+        auto tree_count = overload{
+            [](int) -> int { return 1; },
+            tree_traverse
         };
         
         int i = 0;
@@ -251,6 +260,7 @@ suite overload_tests = [] mutable {
         
         const int expected = (i * (i + 1)) / 2;
         expect(eq(std::visit(tree_sum, tree.value), expected));
+        expect(eq(std::visit(tree_count, tree.value), i));
     };
 };
 
