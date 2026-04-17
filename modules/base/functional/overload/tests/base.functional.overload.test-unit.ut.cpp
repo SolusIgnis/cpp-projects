@@ -141,21 +141,21 @@ suite overload_tests = [] mutable {
         expect(eq(std::invocable<decltype(overloaded), int>, false));
     };
     
-    "overload{...} preserves ambiguity and overload ranking across multiple aggregated callables"_test = [] mutable {
+    "overload{...} preserves ambiguity and overload ranking across multiple composed and aggregated callables"_test = [] mutable {
         struct f1 {
             auto operator()(int)         { return "f1 int"s; }
             auto operator()(double)      { return "f1 double"s; }
             auto operator()(const char*) { return "f1 const char*"s; }
         };
     
-        struct f2 {
-            auto operator()(int)         { return "f2 int"s; }
-            auto operator()(std::string) { return "f2 string"s; }
+        auto f2 = overload{
+            [](int)         { return "f2 int"s; }
+            [](std::string) { return "f2 string"s; }
         };
     
         auto overloaded = overload{
                               f1{},
-                              f2{},
+                              f2,
                               [](double) mutable { return "lambda double"s; }, //mutable => non-const operator()
                               [](const char*)    { return "lambda const char*"s; }    //const operator()
                           };
