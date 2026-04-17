@@ -114,7 +114,7 @@ export namespace framework::coroutines::awaitables {
         friend decltype(auto) operator co_await(Self&& wrapper)
             requires (!requires { std::forward<Self>(wrapper).awaitable_.operator co_await(); })
         {
-            using net::telnet::awaitables::operator co_await;
+            using framework::coroutines::awaitables::operator co_await;
             auto&& awaitable = std::forward<Self>(wrapper).awaitable_;
 
             if constexpr (requires { operator co_await(std::forward<decltype(awaitable)>(awaitable)); }) {
