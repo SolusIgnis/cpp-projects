@@ -11,12 +11,14 @@
 
 import base.functional.overload;
 
+import base.vocab.ptr;
 import ut;
 import std;
 
 using namespace ut;
 using namespace std::literals;
 using base::functional::overload;
+using base::vocab::alias_ptr;
 
 suite overload_tests = [] mutable {
     "overload{...} produces an invocable object"_test = [] mutable {
@@ -215,12 +217,12 @@ suite overload_tests = [] mutable {
 
     "overload{...} supports recursive multi-overload dispatch (binary tree)"_test = [] mutable {
         struct node {
-            std::variant<int, std::tuple<std::unique_ptr<node>, std::unique_ptr<node>>> value;
+            std::variant<int, std::tuple<alias_ptr<node>, alias_ptr<node>>> value;
         };
         
         auto tree_sum = overload{
             [](int val){ return val; },
-            []<typename T>(this auto& self, std::unique_ptr<T> ptr) {
+            []<typename T>(this auto& self, alias_ptr<T> ptr) {
                 if (!ptr) throw std::logic_error("test tree node holds null pointer");
                 return std::visit(self, *ptr);
             },
@@ -231,19 +233,18 @@ suite overload_tests = [] mutable {
         };
         
         int i = 0;
-        auto tree = node{std::tuple{
-            std::make_unique<node>(std::tuple{
-                std::make_unique<node>(++i),
-                std::make_unique<node>(std::tuple{
-                    std::make_unique<node>(++i),
-                    std::make_unique<node>(++i)
-                })
-            }),
-            std::make_unique<node>(std::tuple{
-                std::make_unique<node>(++i),
-                std::make_unique<node>(++i)
-            })
-        })};
+        
+        node leaf1{++i};
+        node leaf2{++i};
+        node leaf3{++i};
+        node leaf4{++i};
+        node leaf5{++i};
+        
+        node branch1{&leaf2, &leaf3};
+        node branch2{&leaf1, &branch1};
+        node branch3{&leaf4, &leaf5};
+        
+        node tree{&branch2, &branch3};
         
         const int expected = (i * (i + 1)) / 2;
         expect(eq(std::visit(tree_sum, tree.value), expected));

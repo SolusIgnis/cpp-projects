@@ -11,4 +11,6 @@ trace_me()
 
 add_named_module(base.functional.overload
   LIB_TYPE STATIC
+  TEST_DEPENDENCIES
+    base.vocab.ptr
 )
