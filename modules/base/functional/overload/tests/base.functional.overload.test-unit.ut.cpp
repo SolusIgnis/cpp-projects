@@ -240,11 +240,11 @@ suite overload_tests = [] mutable {
         node leaf4{++i};
         node leaf5{++i};
         
-        node branch1{&leaf2, &leaf3};
-        node branch2{&leaf1, &branch1};
-        node branch3{&leaf4, &leaf5};
+        node branch1{std::tuple{&leaf2, &leaf3}};
+        node branch2{std::tuple{&leaf1, &branch1}};
+        node branch3{std::tuple{&leaf4, &leaf5}};
         
-        node tree{&branch2, &branch3};
+        node tree{std::tuple{&branch2, &branch3}};
         
         const int expected = (i * (i + 1)) / 2;
         expect(eq(std::visit(tree_sum, tree.value), expected));
