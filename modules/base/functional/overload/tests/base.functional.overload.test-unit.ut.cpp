@@ -83,6 +83,24 @@ suite overload_tests = [] mutable {
         expect(eq(overloaded("view"sv), "string view"s));
     };
     
+    "overload{ overload{...}, ... } composes overload sets"_test = [] {
+        auto base = overload{
+            [](int){ return "int"s; },
+            [](double){ return "double"s; }
+        };
+    
+        auto extended = overload{
+            base,
+            [](std::string){ return "string"s; },
+            [](std::string_view) { return "string view"s; }
+        };
+    
+        expect(eq(extended(1), "int"s));
+        expect(eq(extended(3.14), "double"s));
+        expect(eq(extended("hello"s), "string"s));
+        expect(eq(extended("view"sv), "string view"s));
+    };
+    
     "overload{...} preserves value category"_test = [] mutable {
         struct functor {
             enum class val_cat : std::uint8_t { lval, clval, rval };
@@ -215,37 +233,47 @@ suite overload_tests = [] mutable {
         factorial_tester(num3, expected3);
     };
 
-    "overload{...} supports recursive multi-overload dispatch (binary tree)"_test = [] mutable {
+    "overload{...} supports composed recursive multi-overload dispatch/visitation (binary tree)"_test = [] mutable {
+        // Gauss Summation Formula
         auto sum_to = [](int n){ return (n * (n + 1)) / 2; };
 
+        // Recursive data structure defining a binary tree by its nodes
         struct node {
             std::variant<int, std::tuple<alias_ptr<node>, alias_ptr<node>>> value;
         };
         
+        // Reusable recursive traversal component
+        // Note: Leaf handling is NOT part of the traversal overload set.
         auto tree_traverse = overload{
+            // Pointer: Unwrap any pointers (safely).
             []<typename T>(this auto& self, alias_ptr<T> ptr) -> int {
                 if (!ptr) throw std::logic_error("test tree node holds null pointer");
                 return self(*ptr);
             },
+            // Branch: Sum the values of both children recursively.
             []<typename T>(this auto& self, const std::tuple<T, T>& children) -> int {
                 auto [left, right] = children;
                 return self(left) + self(right);
             },
-            [](this auto& self, const node& next) -> int {
-                return std::visit(self, next.value);
+            // Node: Visit the value of a node to dispatch into a leaf or recurse into a branch.
+            [](this auto& self, const node& tree_node) -> int {
+                return std::visit(self, tree_node.value);
             }
         };
         
+        // Compose value summation leaf handling with reusable traversal component
         auto tree_sum = overload{
             [](int val) -> int { return val; },
             tree_traverse
         };
         
+        // Compose fixed (counting) summation leaf handling with reusable traversal component
         auto tree_count = overload{
             [](int) -> int { return 1; },
             tree_traverse
         };
         
+        // Initialize the tree with the `i`th counting number for each leaf.
         int i = 0;
         
         node leaf1{++i};
@@ -254,12 +282,13 @@ suite overload_tests = [] mutable {
         node leaf4{++i};
         node leaf5{++i};
         
-        node branch1{std::tuple{&leaf2, &leaf3}};
-        node branch2{std::tuple{&leaf1, &branch1}};
+        node branch1{std::tuple{&leaf1, &leaf2}};
+        node branch2{std::tuple{&leaf3, &branch1}};
         node branch3{std::tuple{&leaf4, &leaf5}};
         
         node tree{std::tuple{&branch2, &branch3}};
         
+        // There should thus be `i` leaf nodes, and their sum the sum of the first `i` counting numbers.
         expect(eq(tree_sum(tree), sum_to(i)));
         expect(eq(tree_count(tree), i));
     };
