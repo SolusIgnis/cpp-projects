@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
+// SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
- * @file net.telnet-awaitables.cppm
- * @version 0.5.8
- * @date October 30, 2025
+ * @module framework.coroutines.tagged_awaitable
+ * @file framework.coroutines.tagged_awaitable.cppm
+ * @version 0.2.0
+ * @date April 12, 2026
  *
- * @copyright © 2025-2026 Jeremy Murphy and any Contributors
+ * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,38 +20,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief Partition defining tagged awaitable types for type-safe asynchronous operations in the Telnet library.
- * @remark Defines `tagged_awaitable` and associated semantic tag structs for option negotiation and subnegotiation handlers.
- *
- * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, `:protocol_fsm` for handler usage, `:internal` for handler definitions
+ * @brief Primary module interface for the `tagged_awaitable` library
+ * Defines `tagged_awaitable` class to wrap awaitable types with semantic tags.
  */
 
-module; //Including Asio in the Global Module Fragment until importable header units are reliable.
-#include <asio/awaitable.hpp>
+//Primary module interface unit
+export module framework.coroutines.tagged_awaitable;
 
-// Module partition interface unit
-export module net.telnet:awaitables;
+import std;
 
-import std; //NOLINT
-
-import framework.coroutines.tagged_awaitable;
-
-export import :options; ///< @see "net.telnet-options.cppm" for `option`
-
-namespace net::telnet::awaitables {
+namespace framework::coroutines::awaitables {
     struct adl_lookup_tag {};
 
     //Delete free `operator co_await` for ADL purposes.
     void operator co_await(adl_lookup_tag) = delete;
-} //namespace net::telnet::awaitables
+} //namespace framework::coroutines::awaitables
 
-export namespace net::telnet::awaitables {
+export namespace framework::coroutines::awaitables {
     /**
      * @brief Wrapper for an awaitable with a semantic tag for type safety.
      * @tparam Tag The semantic tag type.
-     * @tparam AwaitableT The underlying `Awaitable` type (e.g.: `asio::awaitable<void>`).
+     * @tparam AwaitableT The underlying awaitable type.
      * @remark Provides implicit conversion to/from the underlying awaitable and supports direct `co_await`.
-     * @see `tags` namespace for semantic tag types, `:protocol_fsm`, `:internal`
      */
     template<typename Tag, typename AwaitableT>
     class tagged_awaitable {
@@ -133,47 +124,13 @@ export namespace net::telnet::awaitables {
             }
         }
     }; //class tagged_awaitable
-
+    
     /**
      * @fn tagged_awaitable::tagged_awaitable(awaitable_type awaitable) noexcept
      * @param awaitable The awaitable to wrap.
      * @note Implicit conversion from the underlying type allows direct returns from e.g. Asio asynchronous operations.
      */
-
-    /// @brief Semantic tag `struct`s to specialize `tagged_awaitable`. @see `tagged_awaitable`
-    namespace tags {
-        /// @brief Tag to specialize `tagged_awaitable` for option enablement handlers. @see `tagged_awaitable`
-        struct option_enablement_tag;
-
-        /// @brief Tag to specialize `tagged_awaitable` for option disablement handlers. @see `tagged_awaitable`
-        struct option_disablement_tag;
-
-        /// @brief Tag to specialize `tagged_awaitable` for subnegotiation handlers. @see `tagged_awaitable`
-        struct subnegotiation_tag;
-    } //namespace tags
-
-    /**
-     * @typedef option_enablement_awaitable
-     * @brief Awaitable type for option enablement handlers.
-     * @see `tagged_awaitable`, `tags::option_enablement_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
-     */
-    using option_enablement_awaitable = tagged_awaitable<tags::option_enablement_tag, asio::awaitable<void>>;
-
-    /**
-     * @typedef option_disablement_awaitable
-     * @brief Awaitable type for option disablement handlers.
-     * @see `tagged_awaitable`, `tags::option_disablement_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
-     */
-    using option_disablement_awaitable = tagged_awaitable<tags::option_disablement_tag, asio::awaitable<void>>;
-
-    /**
-     * @typedef subnegotiation_awaitable
-     * @brief Awaitable type for subnegotiation handlers.
-     * @see `tagged_awaitable`, `tags::subnegotiation_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
-     */
-    using subnegotiation_awaitable =
-        tagged_awaitable<tags::subnegotiation_tag, asio::awaitable<std::tuple<option, std::vector<byte_t>>>>;
-} //namespace net::telnet::awaitables
+} //namespace framework::coroutines::awaitables
 
 namespace std {
     ///@brief Partial specialization of `std::coroutine_traits` forwarding the promise type for a `tagged_awaitable` to the promise type of its underlying awaitable type.
