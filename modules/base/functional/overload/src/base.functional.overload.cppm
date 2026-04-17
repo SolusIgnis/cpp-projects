@@ -77,7 +77,7 @@ export namespace base::functional {
         ///@brief Introduces the call operators of all base classes into the current scope.
         using Callables::operator()...;
     };
-    
+
     ///@brief Deduction guide to enable CTAD (Class Template Argument Deduction).
     template<typename... Callables>
     overload(Callables...) -> overload<Callables...>;
