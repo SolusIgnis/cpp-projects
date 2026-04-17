@@ -224,11 +224,14 @@ suite overload_tests = [] mutable {
             [](int val){ return val; },
             []<typename T>(this auto& self, alias_ptr<T> ptr) {
                 if (!ptr) throw std::logic_error("test tree node holds null pointer");
-                return std::visit(self, *ptr);
+                return self(*ptr);
             },
             []<typename T>(this auto& self, std::tuple<T, T> children) {
-                auto [left, right] = std::move(children);
-                return std::visit(self, left.value) + std::visit(self, right.value);
+                auto [left, right] = children;
+                return self(left) + self(right);
+            },
+            [](this auto& self, node next) {
+                return std::visit(self, next.value);
             }
         };
         
