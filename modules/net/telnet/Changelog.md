@@ -6,8 +6,13 @@
 ### Added
 - Added CMake support for unit testing frameworks and CTest.
 - Added unit tests for `net.asio_concepts` module.
-- Created `test_support` module with a coroutine test harness consisting of `test_task` coroutine tasks and a run(Task&&) template function to synchronously execute a chain of `test_task` coroutines.
-- Added unit tests for the `test_support` module.
+- Created `tools.test.coroutine_harness` module with a coroutine test harness consisting of `test_task` coroutine tasks and a `run(Task&&)` template function to synchronously execute a chain of `test_task` coroutines.
+- Added unit tests for the `tools.test.coroutine_harness` module.
+- Added CMake `CXX_Modules` tools `add_named_module` and `add_metamodule` to handle named module target creation.
+- Added `net` metamodule for `net.telnet` and `net.asio_concepts`.
+- Stubbed in `base.vocab.ptr` module and added `base.vocab` and `base` metamodules.
+- Added `tools.test` and `tools` metamodules.
+- Added `base.functional.overload` module to implement the overload pattern and `base.functional` metamodule.
 
 ## [0.5.7] - February 11, 2026
 ### Added
