@@ -221,16 +221,16 @@ suite overload_tests = [] mutable {
         };
         
         auto tree_sum = overload{
-            [](int val){ return val; },
-            []<typename T>(this auto& self, alias_ptr<T> ptr) {
+            [](int val) -> int { return val; },
+            []<typename T>(this auto& self, alias_ptr<T> ptr) -> int {
                 if (!ptr) throw std::logic_error("test tree node holds null pointer");
                 return self(*ptr);
             },
-            []<typename T>(this auto& self, std::tuple<T, T> children) {
+            []<typename T>(this auto& self, std::tuple<T, T> children) -> int {
                 auto [left, right] = children;
                 return self(left) + self(right);
             },
-            [](this auto& self, node next) {
+            [](this auto& self, node next) -> int {
                 return std::visit(self, next.value);
             }
         };
