@@ -3,8 +3,8 @@
 /**
  * @module base.functional.overload
  * @file base.functional.overload.cppm
- * @version 0.1.0
- * @date April 13, 2026
+ * @version 1.0.0
+ * @date April 17, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
