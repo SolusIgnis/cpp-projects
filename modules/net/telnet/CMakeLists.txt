@@ -27,6 +27,7 @@ add_named_module(net.telnet
       src/impl/net.telnet-stream-async-impl.cpp
       src/impl/net.telnet-stream-sync-impl.cpp
     IMPORTS
+      framework.coroutines.tagged_awaitable
       net.asio_concepts
     TEST_DEPENDENCIES
       tools.test.coroutine_harness
