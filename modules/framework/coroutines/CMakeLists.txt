@@ -20,4 +20,4 @@ add_subdirectory("tagged_awaitable")
 # Add generated metamodule from submodules registered above.
 # ===========================================================================
 
-add_metamodule(coroutines)
+add_metamodule(framework.coroutines)
