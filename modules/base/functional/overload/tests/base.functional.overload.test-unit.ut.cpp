@@ -216,7 +216,7 @@ suite overload_tests = [] mutable {
     };
 
     "overload{...} supports recursive multi-overload dispatch (binary tree)"_test = [] mutable {
-        auto sum_to = [](int n){ return (i * (i + 1)) / 2; };
+        auto sum_to = [](int n){ return (n * (n + 1)) / 2; };
 
         struct node {
             std::variant<int, std::tuple<alias_ptr<node>, alias_ptr<node>>> value;
