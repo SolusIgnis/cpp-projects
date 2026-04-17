@@ -5,11 +5,13 @@
 
 import net.telnet;
 import tools.test.coroutine_harness;
+import framework.coroutines.tagged_awaitable;
 import ut;
 import std;
 
 using namespace ut;
 using namespace net::telnet::awaitables;
+using framework::coroutines::tagged_awaitable;
 using namespace tools::test::coroutine_harness;
 
 struct test_tag;

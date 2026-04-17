@@ -31,4 +31,5 @@ add_named_module(net.telnet
       net.asio_concepts
     TEST_DEPENDENCIES
       tools.test.coroutine_harness
+      framework.coroutines.tagged_awaitable
 )

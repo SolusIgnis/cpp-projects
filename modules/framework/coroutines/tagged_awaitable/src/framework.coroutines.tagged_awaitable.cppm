@@ -29,14 +29,14 @@ export module framework.coroutines.tagged_awaitable;
 
 import std;
 
-namespace framework::coroutines::awaitables {
+namespace framework::coroutines {
     struct adl_lookup_tag {};
 
     //Delete free `operator co_await` for ADL purposes.
     void operator co_await(adl_lookup_tag) = delete;
-} //namespace framework::coroutines::awaitables
+} //namespace framework::coroutines
 
-export namespace framework::coroutines::awaitables {
+export namespace framework::coroutines {
     /**
      * @brief Wrapper for an awaitable with a semantic tag for type safety.
      * @tparam Tag The semantic tag type.
@@ -114,7 +114,7 @@ export namespace framework::coroutines::awaitables {
         friend decltype(auto) operator co_await(Self&& wrapper)
             requires (!requires { std::forward<Self>(wrapper).awaitable_.operator co_await(); })
         {
-            using framework::coroutines::awaitables::operator co_await;
+            using framework::coroutines::operator co_await;
             auto&& awaitable = std::forward<Self>(wrapper).awaitable_;
 
             if constexpr (requires { operator co_await(std::forward<decltype(awaitable)>(awaitable)); }) {
@@ -130,12 +130,12 @@ export namespace framework::coroutines::awaitables {
      * @param awaitable The awaitable to wrap.
      * @note Implicit conversion from the underlying type allows direct returns from e.g. Asio asynchronous operations.
      */
-} //namespace framework::coroutines::awaitables
+} //namespace framework::coroutines
 
 namespace std {
     ///@brief Partial specialization of `std::coroutine_traits` forwarding the promise type for a `tagged_awaitable` to the promise type of its underlying awaitable type.
     template<typename Tag, typename AwaitableT, typename... Args>
-    struct coroutine_traits<framework::coroutines::awaitables::tagged_awaitable<Tag, AwaitableT>, Args...> {
+    struct coroutine_traits<framework::coroutines::tagged_awaitable<Tag, AwaitableT>, Args...> {
         using promise_type = typename std::coroutine_traits<AwaitableT, Args...>::promise_type;
     };
 } //namespace std
