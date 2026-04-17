@@ -216,6 +216,8 @@ suite overload_tests = [] mutable {
     };
 
     "overload{...} supports recursive multi-overload dispatch (binary tree)"_test = [] mutable {
+        auto sum_to = [](int n){ return (i * (i + 1)) / 2; };
+
         struct node {
             std::variant<int, std::tuple<alias_ptr<node>, alias_ptr<node>>> value;
         };
@@ -258,9 +260,8 @@ suite overload_tests = [] mutable {
         
         node tree{std::tuple{&branch2, &branch3}};
         
-        const int expected = (i * (i + 1)) / 2;
-        expect(eq(std::visit(tree_sum, tree.value), expected));
-        expect(eq(std::visit(tree_count, tree.value), i));
+        expect(eq(tree_sum(tree), sum_to(i)));
+        expect(eq(tree_count(tree), i));
     };
 };
 
