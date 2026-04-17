@@ -412,7 +412,7 @@ CheckOptions:
   readability-magic-numbers.IgnoreTypeAliases:            'false'
   readability-magic-numbers.IgnoreUserDefinedLiterals:    'false'
   readability-magic-numbers.IgnoredFloatingPointValues:   '1.0;100.0;'
-  readability-magic-numbers.IgnoredIntegerValues:         '1;2;3;4;'
+  readability-magic-numbers.IgnoredIntegerValues:         '-1;0;1;2;3;4;'
   
   readability-named-parameter.InsertPlainNamesInForwardDecls: 'false'
   
