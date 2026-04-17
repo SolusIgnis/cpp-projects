@@ -102,19 +102,19 @@ suite overload_tests = [] mutable {
     };
     
     "overload{...} preserves value category"_test = [] mutable {
-        struct functor {
+        struct function_obj {
             enum class val_cat : std::uint8_t { lval, clval, rval };
             
-            std::uint8_t operator()(this       functor&)  { return std::to_underlying(val_cat::lval); }
-            std::uint8_t operator()(this const functor&)  { return std::to_underlying(val_cat::clval); }
-            std::uint8_t operator()(this       functor&&) { return std::to_underlying(val_cat::rval); }
-            std::uint8_t operator()(this const functor&&) = delete;
+            std::uint8_t operator()(this       function_obj&)  { return std::to_underlying(val_cat::lval); }
+            std::uint8_t operator()(this const function_obj&)  { return std::to_underlying(val_cat::clval); }
+            std::uint8_t operator()(this       function_obj&&) { return std::to_underlying(val_cat::rval); }
+            std::uint8_t operator()(this const function_obj&&) = delete;
         };
     
-        auto overloaded = overload{functor{}};
+        auto overloaded = overload{function_obj{}};
         const auto const_overloaded = overloaded;
     
-        using enum functor::val_cat;
+        using enum function_obj::val_cat;
         expect(eq(overloaded(), std::to_underlying(lval)));
         expect(eq(const_overloaded(), std::to_underlying(clval)));
         expect(eq(std::move(overloaded)(), std::to_underlying(rval)));

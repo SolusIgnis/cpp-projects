@@ -32,20 +32,21 @@ export namespace base::functional {
      *
      * `overload` is a variadic utility that constructs a single callable object
      * with an overload set composed from heterogeneous callables, most commonly
-     * lambdas. By inheriting from multiple lambdas or functors and bringing
-     * their call operators into the local scope, it allows for concise, ad-hoc
-     * pattern matching. This "overload pattern" is frequently used in conjunction
-     * with generic dispatch or visitation (via `std::visit`) of a `std::variant`.
-     * Overload resolution follows standard rules across all inherited function
-     * call operator members.
+     * lambdas. By inheriting from multiple lambdas or other function objects and
+     * bringing their call operators into the local scope, it allows for concise,
+     * ad-hoc pattern matching. This "overload pattern" is frequently used in
+     * conjunction with generic dispatch or visitation (via `std::visit`) of a
+     * `std::variant`. Overload resolution follows standard rules across all
+     * inherited function call operator members.
      *
      * @tparam Callables Callable types to be aggregated.
      *
-     * @note `overload` produces a function call operator whose overload set is the
-     *       union of the overload sets of its bases. For any given argument list,
-     *       overload resolution must yield a unique best viable function within
-     *       this union. If multiple candidates are viable and none is strictly
-     *       better than the others, the call is ill-formed due to ambiguity.
+     * @note `overload` produces a function object with a function call operator
+     *       whose overload set is the union of the overload sets of its bases.
+     *       For any given argument list, overload resolution must yield a unique
+     *       best viable function within this union. If multiple candidates are
+     *       viable and none is strictly better than the others, the call is ill-
+     *       formed due to ambiguity.
      *
      * @example @parblock
      * ## Example Usage
