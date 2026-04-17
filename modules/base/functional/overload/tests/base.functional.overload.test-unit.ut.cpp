@@ -149,15 +149,15 @@ suite overload_tests = [] mutable {
         };
     
         auto f2 = overload{
-            [](int)         { return "f2 int"s; },
-            [](std::string) { return "f2 string"s; }
+            [] mutable (int)         { return "f2 int"s; }, //mutable => non-const operator()
+            [] mutable (std::string) { return "f2 string"s; } //mutable => non-const operator()
         };
     
         auto overloaded = overload{
                               f1{},
                               f2,
                               [](double) mutable { return "lambda double"s; }, //mutable => non-const operator()
-                              [](const char*)    { return "lambda const char*"s; }    //const operator()
+                              [](const char*)    { return "lambda const char*"s; } //const operator()
                           };
     
         // ambiguous: f1(int) vs f2(int)
