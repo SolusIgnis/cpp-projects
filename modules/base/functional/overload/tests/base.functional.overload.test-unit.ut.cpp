@@ -149,7 +149,7 @@ suite overload_tests = [] mutable {
         };
     
         auto f2 = overload{
-            [](int)         { return "f2 int"s; }
+            [](int)         { return "f2 int"s; },
             [](std::string) { return "f2 string"s; }
         };
     
