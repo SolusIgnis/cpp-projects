@@ -45,7 +45,8 @@ export import :concepts;        ///< @see "net.telnet-concepts.cppm" for `telnet
 export import :options;         ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
 export import :protocol_config; ///< @see "net.telnet-protocol_config.cppm" for `default_protocol_fsm_config`
 export import :protocol_fsm;    ///< @see "net.telnet-protocol_fsm.cppm" for `protocol_fsm`
-export import :awaitables;      ///< @see "net.telnet-awaitables.cppm" for `tagged_awaitable`
+
+import framework.coroutines.tagged_awaitable; ///< @see `framework.coroutines.tagged_awaitable` for `tagged_awaitable`
 
 //namespace asio = boost::asio;
 
@@ -339,7 +340,7 @@ export namespace net::telnet {
             template<typename Self, typename Tag, typename Awaitable>
             void do_response(
                 std::tuple<
-                    awaitables::tagged_awaitable<Tag, Awaitable>,
+                    framework::coroutines::tagged_awaitable<Tag, Awaitable>,
                     std::optional<typename stream::fsm_type::negotiation_response>
                 > response,
                 Self&& self
@@ -761,7 +762,7 @@ export namespace net::telnet {
      * @see `:awaitables` for `SubnegotiationAwaitable`, `:errors` for error codes, RFC 855 for subnegotiation, "net.telnet-stream-async-impl.cpp" for `async_write_subnegotiation`
      */
     /**
-     * @overload void stream::input_processor::do_response(std::tuple<awaitables::tagged_awaitable<Tag, Awaitable>, std::optional<typename stream::fsm_type::negotiation_response>> response, Self&& self)
+     * @overload void stream::input_processor::do_response(std::tuple<framework::coroutines::tagged_awaitable<Tag, Awaitable>, std::optional<typename stream::fsm_type::negotiation_response>> response, Self&& self)
      * @tparam Self The type of the coroutine self reference.
      * @tparam Tag The semantic tag for `tagged_awaitable`.
      * @tparam Awaitable The underlying Awaitable type for `tagged_awaitable`.
@@ -769,7 +770,7 @@ export namespace net::telnet {
      * @param self The completion handler to forward.
      * @remark Spawns a coroutine to process the awaitable, optionally writing a negotiation response via `async_write_negotiation`.
      * @throws `std::system_error` for system errors, `telnet::error::internal_error` for unexpected exceptions.
-     * @see `:awaitables` for `tagged_awaitable`, `:protocol_fsm` for `negotiation_response`, `:errors` for error codes, RFC 855 for negotiation, "net.telnet-stream-async-impl.cpp" for `async_write_negotiation`
+     * @see `framework.coroutines.tagged_awaitable` for `tagged_awaitable`, `:protocol_fsm` for `negotiation_response`, `:errors` for error codes, RFC 855 for negotiation, "net.telnet-stream-async-impl.cpp" for `async_write_negotiation`
      */
     /**
      * @fn auto stream::sync_await(Awaitable&& awaitable)
