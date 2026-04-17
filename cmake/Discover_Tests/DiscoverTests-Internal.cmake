@@ -230,7 +230,7 @@ function(_create_test_from_file module_target test_file dependencies)
   
   target_link_options("${target}"
     PRIVATE
-      "LINKER:--no-gc-sections" #This prevents a linker gc bug that gets triggered by ut.
+      "--no-gc-sections" #This prevents a linker gc bug that gets triggered by ut.
   )
 
   target_compile_features("${target}"
