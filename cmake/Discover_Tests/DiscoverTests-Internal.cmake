@@ -230,7 +230,10 @@ function(_create_test_from_file module_target test_file dependencies)
   
   target_link_options("${target}"
     PRIVATE
-      "-Wl,--no-gc-sections" #This prevents a linker gc bug that gets triggered by ut.
+      #This prevents a linker gc bug that gets triggered by ut.
+      "$<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wl,--no-gc-sections>"
+      # This could be better in the future, but it's not yet reliable.
+      #"$<$<OR:$<LINKER_ID:GNU>,$<LINKER_ID:LLD>>:-Wl,--no-gc-sections>"
   )
 
   target_compile_features("${target}"
