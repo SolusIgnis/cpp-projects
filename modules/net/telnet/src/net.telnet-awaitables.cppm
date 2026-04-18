@@ -3,7 +3,7 @@
 /**
  * @file net.telnet-awaitables.cppm
  * @version 0.5.8
- * @date October 30, 2025
+ * @date April 17, 2026
  *
  * @copyright © 2025-2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
