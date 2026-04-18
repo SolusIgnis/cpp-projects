@@ -13,7 +13,7 @@ on:
       - "Dockerfile"
   #  branches: [ main ]
   # Triggers on ALL PRs regardless of location
-#  pull_request:
+  pull_request:
   # Allows manual workflow runs via the GitHub UI
   workflow_dispatch:
     inputs:
@@ -22,7 +22,7 @@ on:
         required: false
         type: boolean
         default: false
-  
+  # Runs any time a new CI Docker image is built.  
   workflow_run:
     workflows: ["Publish CI Image"]
     types:
@@ -162,15 +162,15 @@ jobs:
             -DCMAKE_CXX_FLAGS="-nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx-21/include/c++/v1 -nostdlib++ -Wall -Wextra -fcolor-diagnostics" \
             -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx-21/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx-21/lib"
 
-#      - name: clang-format check
-#        if: github.event.inputs.tooling == 'true' || github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
-#        run: cmake --build --preset=clang-debug --target=format-check
+      - name: clang-format check
+        if: github.event.inputs.tooling == 'true' || github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+        run: cmake --build --preset=clang-debug --target=format-check
 
       - name: Build
         run: cmake --build --preset=clang-debug
 
-#      - name: Run tests
-#        run: cmake --build --preset=clang-debug --target=tests.run
+      - name: Run tests
+        run: cmake --build --preset=clang-debug --target=tests.run
         
 #      - name: clang-tidy checks
 #        if: github.event.inputs.tooling == 'true' || github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
