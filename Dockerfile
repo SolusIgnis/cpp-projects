@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     ca-certificates \
     curl \
+    libssl-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------
@@ -92,9 +94,9 @@ RUN git clone --depth=1 --branch asio-1-36-0 https://github.com/chriskohlhoff/as
 # 8. Environment variables
 # ------------------------------------------------------------
 ENV LIBCXX_ROOT=/opt/libcxx-21
-ENV CPLUS_INCLUDE_PATH=/opt/libcxx-21/include/c++/v1:$CPLUS_INCLUDE_PATH
-ENV LIBRARY_PATH=/opt/libcxx-21/lib:$LIBRARY_PATH
-ENV LD_LIBRARY_PATH=/opt/libcxx-21/lib:$LD_LIBRARY_PATH
+ENV CPLUS_INCLUDE_PATH=/opt/libcxx-21/include/c++/v1:${CPLUS_INCLUDE_PATH:-}
+ENV LIBRARY_PATH=/opt/libcxx-21/lib:${LIBRARY_PATH:-}
+ENV LD_LIBRARY_PATH=/opt/libcxx-21/lib:${LD_LIBRARY_PATH:-}
 
 # ------------------------------------------------------------
 # 9. Default working directory for CI
