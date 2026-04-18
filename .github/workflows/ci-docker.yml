@@ -141,7 +141,7 @@ jobs:
   clang-ci:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/${{ github.repository_owner }}/clang-ci-env:latest
+      image: ghcr.io/solusignis/clang-ci-env:latest
 
     steps:
       - name: Checkout repository
