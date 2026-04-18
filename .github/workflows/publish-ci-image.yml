@@ -4,6 +4,10 @@
 name: Publish CI Image
 
 on:
+  push:
+#    paths:
+#      - "Dockerfile"
+#      - ".github/workflows/publish-ci-image.yml"
   workflow_dispatch:
 
 permissions:
