@@ -612,14 +612,16 @@ namespace net::telnet {
      * @internal
      * Spawns a coroutine to process a `tagged_awaitable`, optionally writing a `negotiation_response` via `async_write_negotiation`.
      * @remark Uses `asio::co_spawn` to execute the awaitable, followed by an optional negotiation write, handling exceptions by throwing `std::system_error` with `telnet::error::internal_error` for non-system errors.
-     * @see "net.telnet-stream.cppm" for interface, `:awaitables` for `tagged_awaitable`, `:protocol_fsm` for `negotiation_response`, `:errors` for error codes, RFC 855 for negotiation
+     * @see "net.telnet-stream.cppm" for interface, `framework.coroutines.tagged_awaitable` for `tagged_awaitable`, `:protocol_fsm` for `negotiation_response`, `:errors` for error codes, RFC 855 for negotiation
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self, typename Tag, typename Awaitable>
     void stream<NLS, PC>::input_processor<MBS>::do_response(
-        std::tuple<awaitables::tagged_awaitable<Tag, Awaitable>, std::optional<typename stream::fsm_type::negotiation_response>>
-            response,
+        std::tuple<
+            framework::coroutines::tagged_awaitable<Tag, Awaitable>,
+            std::optional<typename stream::fsm_type::negotiation_response>
+        > response,
         Self&& self
     )
     {
@@ -645,5 +647,5 @@ namespace net::telnet {
             },
             std::forward<Self>(self)
         );
-    } //stream::input_processor::do_response(tagged_awaitable<Tag, Awaitable>, Self&&)
+    } //stream::input_processor::do_response(std::tuple<framework::coroutines::tagged_awaitable<Tag, Awaitable>, std::optional<typename stream::fsm_type::negotiation_response>>, Self&&)
 } //namespace net::telnet

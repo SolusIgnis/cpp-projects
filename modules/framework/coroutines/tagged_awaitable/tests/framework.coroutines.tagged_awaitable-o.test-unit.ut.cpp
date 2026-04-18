@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
-// Unit tests for net.telnet:awaitables
+// Unit tests for framework.coroutines.tagged_awaitable
 
-import net.telnet;
+import framework.coroutines.tagged_awaitable;
+
 import tools.test.coroutine_harness;
 import ut;
 import std;
 
 using namespace ut;
-using namespace net::telnet::awaitables;
+using framework::coroutines::tagged_awaitable;
 using namespace tools::test::coroutine_harness;
 using namespace std::literals;
 
@@ -18,15 +19,12 @@ tagged_awaitable<test_tag, test_task<int>> echo(int value)
     co_return value;
 }
 
-suite net_telnet_awaitables_unit_tests = [] mutable {
+suite tagged_awaitable_unit_tests = [] mutable {
     // ============================================================
     // Basic construction
     // ============================================================
 
-    "tagged_awaitable default construction compiles"_test = [] mutable {
-        expect(eq(std::default_initializable<option_enablement_awaitable>, true));
-        expect(eq(std::default_initializable<option_disablement_awaitable>, true));
-        expect(eq(std::default_initializable<subnegotiation_awaitable>, true));
+    "tagged_awaitable default constructible"_test = [] mutable {
         expect(eq(std::is_default_constructible_v<tagged_awaitable<test_tag, test_task<int>>>, true));
     };
 
@@ -86,17 +84,6 @@ suite net_telnet_awaitables_unit_tests = [] mutable {
         expect(eq(std::convertible_to<bar_t, foo_t>, false));
         expect(eq(std::constructible_from<foo_t, bar_t>, false));
         expect(eq(std::constructible_from<bar_t, foo_t>, false));
-    };
-
-    "option_enablement_awaitable and option_disablement_awaitable are exposed as distinct types"_test = [] mutable {
-        // Verify they are not the same type
-        expect(eq(std::same_as<option_enablement_awaitable, option_disablement_awaitable>, false));
-
-        // Verify they are not cross-assignable or cross-constructible
-        expect(eq(std::convertible_to<option_enablement_awaitable, option_disablement_awaitable>, false));
-        expect(eq(std::convertible_to<option_disablement_awaitable, option_enablement_awaitable>, false));
-        expect(eq(std::constructible_from<option_enablement_awaitable, option_disablement_awaitable>, false));
-        expect(eq(std::constructible_from<option_disablement_awaitable, option_enablement_awaitable>, false));
     };
 
     // ============================================================
