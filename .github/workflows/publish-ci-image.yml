@@ -3,13 +3,17 @@
 
 name: Publish CI Image
 
+concurrency:
+  group: docker-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches:
       [feature/docker_ci]
     paths:
       - "Dockerfile"
-#      - ".github/workflows/publish-ci-image.yml"
+
   workflow_dispatch:
 
 permissions:

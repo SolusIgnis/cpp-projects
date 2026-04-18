@@ -3,7 +3,7 @@
 name: CI on Docker Image
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
   
 on:
@@ -141,6 +141,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git commit -m "chore: Update ${MODULE_PATH:+$MODULE_PATH/}VERSION file to $RELEASE_VERSION for release"
+          # In case someone immediately pushed a quick fix after opening the PR:
           git pull --rebase origin "${GITHUB_HEAD_REF}"
           git push origin "${GITHUB_HEAD_REF}"
           echo "Committed VERSION update."
@@ -172,6 +173,6 @@ jobs:
       - name: Run tests
         run: cmake --build --preset=clang-debug --target=tests.run
         
-#      - name: clang-tidy checks
-#        if: github.event.inputs.tooling == 'true' || github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
-#        run: cmake --build --preset=clang-debug --target=tidy-check-fast
+      - name: clang-tidy checks
+        if: github.event.inputs.tooling == 'true' || github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+        run: cmake --build --preset=clang-debug --target=tidy-check-fast
