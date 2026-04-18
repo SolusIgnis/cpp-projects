@@ -618,8 +618,10 @@ namespace net::telnet {
     template<MutableBufferSequence MBS>
     template<typename Self, typename Tag, typename Awaitable>
     void stream<NLS, PC>::input_processor<MBS>::do_response(
-        std::tuple<framework::coroutines::tagged_awaitable<Tag, Awaitable>, std::optional<typename stream::fsm_type::negotiation_response>>
-            response,
+        std::tuple<
+            framework::coroutines::tagged_awaitable<Tag, Awaitable>,
+            std::optional<typename stream::fsm_type::negotiation_response>
+        > response,
         Self&& self
     )
     {

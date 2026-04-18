@@ -38,11 +38,11 @@ suite net_telnet_awaitables_integration_tests = [] mutable {
         expect(eq(std::default_initializable<option_disablement_awaitable>, true));
         expect(eq(std::default_initializable<subnegotiation_awaitable>, true));
     };
-    
+
     // ============================================================
     // Type Safety and Tag Isolation
-    // ============================================================    
-    
+    // ============================================================
+
     "option_enablement_awaitable and option_disablement_awaitable are exposed as distinct types"_test = [] mutable {
         // Verify they are not the same type
         expect(eq(std::same_as<option_enablement_awaitable, option_disablement_awaitable>, false));
@@ -53,7 +53,7 @@ suite net_telnet_awaitables_integration_tests = [] mutable {
         expect(eq(std::constructible_from<option_enablement_awaitable, option_disablement_awaitable>, false));
         expect(eq(std::constructible_from<option_disablement_awaitable, option_enablement_awaitable>, false));
     };
-    
+
     // ============================================================
     // Basic wrapping of asio::awaitable
     // ============================================================

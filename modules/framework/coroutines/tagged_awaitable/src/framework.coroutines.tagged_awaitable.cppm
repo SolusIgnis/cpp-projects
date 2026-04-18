@@ -124,7 +124,7 @@ export namespace framework::coroutines {
             }
         }
     }; //class tagged_awaitable
-    
+
     /**
      * @fn tagged_awaitable::tagged_awaitable(awaitable_type awaitable) noexcept
      * @param awaitable The awaitable to wrap.

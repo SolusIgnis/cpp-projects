@@ -55,20 +55,22 @@ export namespace net::telnet::awaitables {
      * @brief Awaitable type for option enablement handlers.
      * @see `framework.coroutines.tagged_awaitable`, `tags::option_enablement_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using option_enablement_awaitable = framework::coroutines::tagged_awaitable<tags::option_enablement_tag, asio::awaitable<void>>;
+    using option_enablement_awaitable =
+        framework::coroutines::tagged_awaitable<tags::option_enablement_tag, asio::awaitable<void>>;
 
     /**
      * @typedef option_disablement_awaitable
      * @brief Awaitable type for option disablement handlers.
      * @see `framework.coroutines.tagged_awaitable`, `tags::option_disablement_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using option_disablement_awaitable = framework::coroutines::tagged_awaitable<tags::option_disablement_tag, asio::awaitable<void>>;
+    using option_disablement_awaitable =
+        framework::coroutines::tagged_awaitable<tags::option_disablement_tag, asio::awaitable<void>>;
 
     /**
      * @typedef subnegotiation_awaitable
      * @brief Awaitable type for subnegotiation handlers.
      * @see `framework.coroutines.tagged_awaitable`, `tags::subnegotiation_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
-    using subnegotiation_awaitable =
-        framework::coroutines::tagged_awaitable<tags::subnegotiation_tag, asio::awaitable<std::tuple<option, std::vector<byte_t>>>>;
+    using subnegotiation_awaitable = framework::coroutines::
+        tagged_awaitable<tags::subnegotiation_tag, asio::awaitable<std::tuple<option, std::vector<byte_t>>>>;
 } //namespace net::telnet::awaitables
