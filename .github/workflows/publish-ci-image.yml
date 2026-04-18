@@ -5,6 +5,8 @@ name: Publish CI Image
 
 on:
   push:
+    branches:
+      [feature/docker_ci]
     paths:
       - "Dockerfile"
 #      - ".github/workflows/publish-ci-image.yml"

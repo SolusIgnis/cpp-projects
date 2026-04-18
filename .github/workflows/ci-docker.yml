@@ -9,6 +9,8 @@ concurrency:
 on:
   # Triggers on all pushes but skips tooling checks except on pushes to main (to run post-PR)
   push:
+    paths-ignore:
+      - "Dockerfile"
   #  branches: [ main ]
   # Triggers on ALL PRs regardless of location
 #  pull_request:
@@ -20,6 +22,11 @@ on:
         required: false
         type: boolean
         default: false
+  
+  workflow_run:
+    workflows: ["Publish CI Image"]
+    types:
+      - completed
 
 jobs:
   fix-version:
