@@ -29,8 +29,7 @@ on:
         required: false
         type: boolean
         default: true
- 
-# Logic: (Standard triggers OR manual triggers) AND NOT explicitly skipped       
+
 env:
   USE_TOOLING: ${{ 
     (
