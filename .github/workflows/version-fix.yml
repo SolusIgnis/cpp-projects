@@ -145,7 +145,7 @@ jobs:
             -d '{
               "event_type": "ci-version-updated",
               "client_payload": {
-                "branch": "'"${BRANCH_NAME}"'"
+                "branch": "${GITHUB_REF_NAME}"
               }
             }'
             
