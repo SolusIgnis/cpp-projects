@@ -25,10 +25,23 @@ on:
   # Allows "reusable workflows" calls
   workflow_call:
     inputs:
-      tooling:
+      notooling:
         required: false
         type: boolean
         default: true
+        
+env:
+  # Logic: (Standard triggers OR manual triggers) AND NOT explicitly skipped
+  USE_TOOLING: ${{ 
+    (
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'push' && github.ref_name == 'main') ||
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'workflow_call'
+    )
+    && 
+    (inputs.notooling != true && github.event.inputs.notooling != 'true')
+  }}
 
 jobs:
   ci-clang_llvm:
@@ -49,7 +62,7 @@ jobs:
             -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx-21/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx-21/lib"
 
       - name: clang-format check
-        if: github.event.inputs.notooling != 'true' || github.event_name == 'pull_request' || github.ref_name == 'main'
+        if: env.USE_TOOLING == 'true'
         run: cmake --build --preset=clang-debug --target=format-check
 
       - name: Build
@@ -59,5 +72,5 @@ jobs:
         run: cmake --build --preset=clang-debug --target=tests.run
         
       - name: clang-tidy checks
-        if: github.event.inputs.notooling != 'true'  || github.event_name == 'pull_request' || github.ref_name == 'main'
+        if: env.USE_TOOLING == 'true'
         run: cmake --build --preset=clang-debug --target=tidy-check-fast
