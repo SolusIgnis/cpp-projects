@@ -100,5 +100,3 @@ jobs:
   trigger-ci:
     needs: build-and-push
     uses: ./.github/workflows/ci.yml
-    with:
-      tooling: true
