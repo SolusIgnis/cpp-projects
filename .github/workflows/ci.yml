@@ -3,7 +3,7 @@
 name: CI
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.client_payload.branch || github.head_ref || github.ref_name }}
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
   
 on:
@@ -31,6 +31,7 @@ on:
         default: true
 
 env:
+  # Logic: (Standard triggers OR manual triggers) AND NOT explicitly skipped       
   USE_TOOLING: >-
     ${{ 
       (
