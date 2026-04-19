@@ -9,6 +9,7 @@ jobs:
   fix-formatting:
     runs-on: ubuntu-latest
     container:
+      options: --user 1001:1001
       image: ghcr.io/solusignis/ci-env-llvm:latest
       
     permissions:
@@ -53,6 +54,6 @@ jobs:
             -d '{
               "event_type": "ci-formatting-fixed",
               "client_payload": {
-                "branch": "'"${BRANCH_NAME}"'"
+                "branch": "${GITHUB_REF_NAME}"
               }
             }'

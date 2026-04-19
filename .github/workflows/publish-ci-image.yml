@@ -106,6 +106,6 @@ jobs:
             -d '{
               "event_type": "ci-image-updated",
               "client_payload": {
-                "branch": "'"${BRANCH_NAME}"'"
+                "branch": "${GITHUB_REF_NAME}"
               }
             }'
