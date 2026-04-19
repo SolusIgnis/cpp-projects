@@ -9,7 +9,7 @@ jobs:
   fix-formatting:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/solusignis/clang-ci-env:latest
+      image: ghcr.io/solusignis/ci-env-llvm:latest
       
     permissions:
       contents: write

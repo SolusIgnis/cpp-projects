@@ -18,10 +18,18 @@ RUN apt-get update && apt-get install -y \
     python3 \
     build-essential \
     ca-certificates \
+    locales \
     curl \
     libssl-dev \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
+
+# Ensure consistent locale (avoids weird sorting / tool output issues)
+RUN locale-gen en_US.UTF-8 && \
+    update-locale LANG=en_US.UTF-8
+
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 
 # Allow Git to operate in containerized CI environments
 RUN git config --global --add safe.directory '*'

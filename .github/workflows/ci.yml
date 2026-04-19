@@ -44,7 +44,7 @@ jobs:
   ci-clang_llvm:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/solusignis/clang-ci-env:latest
+      image: ghcr.io/solusignis/ci-env-llvm:latest
 
     steps:
       - name: Checkout repository
