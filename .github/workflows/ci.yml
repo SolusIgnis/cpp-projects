@@ -41,7 +41,7 @@ on:
       - completed
 
 jobs:
-  clang-ci:
+  ci-clang_llvm:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/solusignis/clang-ci-env:latest

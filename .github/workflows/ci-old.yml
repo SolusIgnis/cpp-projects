@@ -8,10 +8,10 @@ concurrency:
   
 on:
   # Triggers on all pushes but skips tooling checks except on pushes to main (to run post-PR)
-  push:
+#  push:
   #  branches: [ main ]
   # Triggers on ALL PRs regardless of location
-  pull_request:
+#  pull_request:
   # Allows manual workflow runs via the GitHub UI
   workflow_dispatch:
     inputs:
