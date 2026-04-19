@@ -23,6 +23,9 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
+# Allow Git to operate in containerized CI environments
+RUN git config --global --add safe.directory '*'
+
 # ------------------------------------------------------------
 # 2. Install Clang 21 + tools
 # ------------------------------------------------------------
