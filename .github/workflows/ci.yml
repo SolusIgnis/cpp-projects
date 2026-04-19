@@ -31,16 +31,17 @@ on:
         default: true
 
 env:
-  USE_TOOLING: ${{ 
-    (
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'push' && github.ref_name == 'main') ||
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'workflow_call'
-    )
-    && 
-    (inputs.notooling != true && github.event.inputs.notooling != 'true')
-  }}
+  USE_TOOLING: >-
+    ${{ 
+      (
+        github.event_name == 'pull_request' ||
+        (github.event_name == 'push' && github.ref_name == 'main') ||
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'workflow_call'
+      )
+      && 
+      (inputs.notooling != true && github.event.inputs.notooling != 'true')
+    }}
 
 jobs:
   ci-clang_llvm:
