@@ -56,6 +56,7 @@ jobs:
 
       # Build and push
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -65,3 +66,43 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Wait for GHCR latest convergence
+        shell: bash
+        run: |
+          IMAGE="ghcr.io/solusignis/ci-env-llvm:latest"
+          EXPECTED="${{ steps.build.outputs.digest }}"
+
+          EXPECTED="${EXPECTED//\"/}"
+
+          echo "Waiting for latest → $EXPECTED"
+
+          sleep 1
+
+          for i in {1..60}; do
+            RESOLVED=$(docker buildx imagetools inspect "$IMAGE" \
+              --format '{{json .Manifest.Digest}}' 2>/dev/null || true)
+
+            RESOLVED="${RESOLVED//\"/}"
+
+            if [ "$EXPECTED" = "$RESOLVED" ]; then
+              echo "✔ GHCR is consistent"
+              exit 0
+            fi
+
+            echo "waiting... ($i)"
+            sleep 2
+          done
+
+          echo "❌ GHCR did not converge to expected digest"
+          exit 1
+          
+      - name: Trigger CI workflow
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/dispatches \
+            -d '{
+              "event_type": "ci-image-updated"
+            }'

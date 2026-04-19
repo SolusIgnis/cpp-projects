@@ -31,14 +31,11 @@ on:
         default: false
   # Runs any time a new CI Docker image is built.
   # Runs after a VERSION file update by version-fix or branch_init.
-  workflow_run:
-    workflows:
-      - "Publish CI Image"
-      - "VERSION Fixer"
-      - "Initialize Release Branch"
-      - "Fix Formatting"
+  repository_dispatch:
     types:
-      - completed
+      - 'ci-image-updated'
+      - 'ci-formatting-fixed'
+      - 'ci-version-updated'
 
 jobs:
   ci-clang_llvm:
