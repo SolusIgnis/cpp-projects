@@ -22,13 +22,8 @@ on:
         required: false
         type: boolean
         default: false
-  # Runs any time a new CI Docker image is built.
-  # Runs after a VERSION file update by version-fix or branch_init.
-  repository_dispatch:
-    types:
-      - 'ci-image-updated'
-      - 'ci-formatting-fixed'
-      - 'ci-version-updated'
+  # Allow "reusable workflows" calls
+  workflow_call:
 
 jobs:
   ci-clang_llvm:
