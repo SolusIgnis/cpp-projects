@@ -31,9 +31,6 @@ RUN locale-gen en_US.UTF-8 && \
 ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
-# Allow Git to operate in containerized CI environments
-RUN git config --global --add safe.directory '*'
-
 # ------------------------------------------------------------
 # 2. Install Clang 21 + tools
 # ------------------------------------------------------------
