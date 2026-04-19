@@ -97,15 +97,8 @@ jobs:
           echo "❌ GHCR did not converge to expected digest"
           exit 1
           
-      - name: Trigger CI workflow
-        run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.REPO_PAT }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/dispatches \
-            -d "{
-              \"event_type\": \"ci-image-updated\",
-              \"client_payload\": {
-                \"branch\": \"${GITHUB_REF_NAME}\"
-              }
-            }"
+  trigger-ci:
+    needs: build-and-push
+    uses: ./.github/workflows/ci.yml
+    with:
+      tooling: true

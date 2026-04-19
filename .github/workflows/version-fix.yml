@@ -17,6 +17,10 @@ jobs:
 
     if: github.actor != 'github-actions[bot]' && contains(github.head_ref, 'release/')
 
+    outputs:
+      # Map the step output to a job output
+      has_changes: ${{ steps.update_version.outputs.changed }}
+
     permissions:
       contents: write
 
@@ -135,16 +139,10 @@ jobs:
           echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "Committed VERSION update."
 
-      - name: Trigger CI workflow
-        if: steps.update_version.outputs.changed == 'true'
-        run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.REPO_PAT }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/dispatches \
-            -d "{
-              \"event_type\": \"ci-image-updated\",
-              \"client_payload\": {
-                \"branch\": \"${GITHUB_REF_NAME}\"
-              }
-            }"
+  trigger-ci:
+    needs: version-fix
+    # Only run if the formatting job actually committed something
+    if: needs.version-fix.outputs.has_changes == 'true'
+    uses: ./.github/workflows/ci.yml
+    with:
+      tooling: true
