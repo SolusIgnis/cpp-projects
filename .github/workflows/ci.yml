@@ -29,9 +29,9 @@ on:
         required: false
         type: boolean
         default: true
-        
+ 
+# Logic: (Standard triggers OR manual triggers) AND NOT explicitly skipped       
 env:
-# Logic: (Standard triggers OR manual triggers) AND NOT explicitly skipped
   USE_TOOLING: ${{ 
     (
       github.event_name == 'pull_request' ||
