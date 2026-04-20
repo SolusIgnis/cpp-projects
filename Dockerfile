@@ -96,7 +96,7 @@ RUN cp -rf /opt/libcxx-21/* /usr/lib/llvm-21
 # ------------------------------------------------------------
 WORKDIR /opt
 RUN git clone --depth=1 --branch asio-1-36-0 https://github.com/chriskohlhoff/asio.git && \
-    cp -r asio/asio/include/* /usr/local/include/
+    cp -r asio/asio/include/* /usr/local/include/ && \
     rm -rf asio
 
 # ------------------------------------------------------------
