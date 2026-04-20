@@ -8,20 +8,22 @@ on:
 jobs:
   fix-formatting:
     runs-on: ubuntu-latest
+
     container:
       options: --user 1001:1001
       image: ghcr.io/solusignis/ci-env-llvm:latest
+
     permissions:
       contents: write
-    outputs:
-      # Map the step output to a job output
-      has_changes: ${{ steps.format-run.outputs.changed }}
+
+    if: github.actor != 'github-actions[bot]'
       
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.BOT_PUSH_CI_TRIGGER_TOKEN }}
 
       - name: Configure
         run: |
