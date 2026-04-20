@@ -44,7 +44,8 @@ RUN wget https://apt.llvm.org/llvm.sh && \
         clang-tidy-21 \
         lldb-21 \
         lld-21 && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    rm llvm.sh
 
 # ------------------------------------------------------------
 # 3. Set Clang 21 as default
