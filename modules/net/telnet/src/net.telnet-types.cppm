@@ -243,11 +243,11 @@ export namespace net::telnet {
      * @param o_str The `std::ostream` into which to insert the `command`.
      * @param cmd The `command` to insert.
      * @return A reference to the stream for inserter chaining.
-     * @remark Inserts the `command` as its representation in the underlying type of the enum.
+     * @remark Inserts the `command` as the result of `std::format`.
      */
     std::ostream& operator<<(std::ostream& o_str, command cmd)
     {
-        return o_str << std::to_underlying(cmd);
+        return o_str << std::format("{}", cmd);
     }
 
     /**
