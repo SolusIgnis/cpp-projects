@@ -72,5 +72,5 @@ export namespace net::telnet::awaitables {
      * @see `framework.coroutines.tagged_awaitable`, `tags::subnegotiation_tag`, `:internal` (`option_handler_registry`), `:protocol_fsm` (for use)
      */
     using subnegotiation_awaitable = framework::coroutines::
-         tagged_awaitable<tags::subnegotiation_tag, asio::awaitable<std::tuple<option, std::vector<byte_t>>>>;
+        tagged_awaitable<tags::subnegotiation_tag, asio::awaitable<std::tuple<option, std::vector<byte_t>>>>;
 } //namespace net::telnet::awaitables
