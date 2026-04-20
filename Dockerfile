@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# SPDX-FileCopyrightText: 2026 Jeremy Murphy
+# SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 
 FROM ubuntu:24.04
 
@@ -97,6 +97,7 @@ RUN cp -rf /opt/libcxx-21/* /usr/lib/llvm-21
 WORKDIR /opt
 RUN git clone --depth=1 --branch asio-1-36-0 https://github.com/chriskohlhoff/asio.git && \
     cp -r asio/asio/include/* /usr/local/include/
+    rm -rf asio
 
 # ------------------------------------------------------------
 # 8. Environment variables
