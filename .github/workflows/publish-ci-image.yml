@@ -100,4 +100,4 @@ jobs:
       - name: Trigger CI Workflow
         env:
           GH_TOKEN: ${{ secrets.BOT_PUSH_CI_TRIGGER_TOKEN }}
-        run: gh workflow run ci.yml --ref ${{ github.ref_name }}
+        run: gh workflow run ci.yml --ref ${{ github.ref_name }} -f notooling=false

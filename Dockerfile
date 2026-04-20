@@ -60,6 +60,14 @@ RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 65536 &
     update-alternatives --set clang-tidy /usr/bin/clang-tidy-21
 
 # ------------------------------------------------------------
+# 4. Install CMake 4.1.2
+# ------------------------------------------------------------
+RUN wget https://github.com/Kitware/CMake/releases/download/v4.1.2/cmake-4.1.2-linux-x86_64.sh && \
+    chmod +x cmake-4.1.2-linux-x86_64.sh && \
+    ./cmake-4.1.2-linux-x86_64.sh --skip-license --prefix=/usr/local && \
+    rm cmake-4.1.2-linux-x86_64.sh
+
+# ------------------------------------------------------------
 # 5. Build libc++
 # ------------------------------------------------------------
 RUN git clone --depth=1 --branch llvmorg-21.1.8 https://github.com/llvm/llvm-project.git && \
@@ -82,14 +90,6 @@ RUN cmake --build . --parallel --target install-cxx install-cxxabi install-unwin
 # 6. Install libc++ into LLVM tree
 # ------------------------------------------------------------
 RUN cp -rf /opt/libcxx-21/* /usr/lib/llvm-21
-
-# ------------------------------------------------------------
-# 4. Install CMake 4.1.2
-# ------------------------------------------------------------
-RUN wget https://github.com/Kitware/CMake/releases/download/v4.1.2/cmake-4.1.2-linux-x86_64.sh && \
-    chmod +x cmake-4.1.2-linux-x86_64.sh && \
-    ./cmake-4.1.2-linux-x86_64.sh --skip-license --prefix=/usr/local && \
-    rm cmake-4.1.2-linux-x86_64.sh
 
 # ------------------------------------------------------------
 # 7. Install Asio
