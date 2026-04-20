@@ -25,24 +25,13 @@ on:
 
 env:
   # Logic: (Standard triggers OR manual triggers) AND NOT explicitly skipped       
-  USE_TOOLING: >-
-    ${{ 
-      (
-        github.event_name == 'pull_request' ||
-        (github.event_name == 'push' && github.ref_name == 'main') ||
-        github.event_name == 'workflow_dispatch' ||
-        github.event_name == 'workflow_call'
-      )
-      && 
-      (inputs.notooling != true && github.event.inputs.notooling != 'true')
-    }}
+  USE_TOOLING: 
 
 jobs:
-  ci-clang_llvm:
+  ci-build_and_test:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/solusignis/ci-env-llvm:latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -52,19 +41,49 @@ jobs:
       - name: Configure
         run: |
           cmake --preset=clang-debug \
+            -DBUILD_TESTING=ON \
             -DCMAKE_CXX_FLAGS="-nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx-21/include/c++/v1 -nostdlib++ -Wall -Wextra -fcolor-diagnostics" \
             -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx-21/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx-21/lib"
-
-      - name: clang-format check
-        if: env.USE_TOOLING == 'true'
-        run: cmake --build --preset=clang-debug --target=format-check
 
       - name: Build
         run: cmake --build --preset=clang-debug
 
       - name: Run tests
         run: cmake --build --preset=clang-debug --target=tests.run
+
+ci-tooling-clang_llvm:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/solusignis/ci-env-llvm:latest
+
+    if: >-
+      ${{ 
+        (
+          github.event_name == 'pull_request' ||
+          (github.event_name == 'push' && github.ref_name == 'main') ||
+          github.event_name == 'workflow_dispatch'
+        )
+        && 
+        (github.event.inputs.notooling != 'true')
+      }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure
+        run: |
+          cmake --preset=clang-debug \
+            -DBUILD_TESTING=OFF \
+            -DCMAKE_CXX_FLAGS="-nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx-21/include/c++/v1 -nostdlib++ -Wall -Wextra -fcolor-diagnostics" \
+            -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx-21/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx-21/lib"
+
+      - name: clang-format check
+        run: cmake --build --preset=clang-debug --target=format-check
+
+      - name: Build
+        run: cmake --build --preset=clang-debug
         
       - name: clang-tidy checks
-        if: env.USE_TOOLING == 'true'
         run: cmake --build --preset=clang-debug --target=tidy-check-fast
