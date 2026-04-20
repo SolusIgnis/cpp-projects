@@ -23,10 +23,6 @@ on:
         type: boolean
         default: true
 
-env:
-  # Logic: (Standard triggers OR manual triggers) AND NOT explicitly skipped       
-  USE_TOOLING: 
-
 jobs:
   ci-build_and_test:
     runs-on: ubuntu-latest
@@ -51,11 +47,10 @@ jobs:
       - name: Run tests
         run: cmake --build --preset=clang-debug --target=tests.run
 
-ci-tooling-clang_llvm:
+  ci-tooling-clang_llvm:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/solusignis/ci-env-llvm:latest
-
     if: >-
       ${{ 
         (
