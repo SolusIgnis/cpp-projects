@@ -71,20 +71,15 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v4.1.2/cmake-4.1.2-l
 # 5. Build libc++
 # ------------------------------------------------------------
 RUN git clone --depth=1 --branch llvmorg-21.1.8 https://github.com/llvm/llvm-project.git && \
-    mkdir llvm-project/build
-
-WORKDIR /opt/llvm-project/build
-
-RUN cmake -G Ninja -S ../runtimes -B . \
+    cmake -G Ninja -S llvm-project/runtimes -B llvm-project/build \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
     -DCMAKE_CXX_COMPILER=clang++ \
     -DCMAKE_C_COMPILER=clang \
-    -DCMAKE_INSTALL_PREFIX=/opt/libcxx-21
-
-RUN cmake --build . --parallel --target cxx cxxabi unwind
-
-RUN cmake --build . --parallel --target install-cxx install-cxxabi install-unwind
+    -DCMAKE_INSTALL_PREFIX=/opt/libcxx-21 && \
+    cmake --build llvm-project/build --parallel --target install-cxx install-cxxabi install-unwind && \
+    cp -rf /opt/libcxx-21/* /usr/lib/llvm-21 && \
+    rm -rf llvm-project
 
 # ------------------------------------------------------------
 # 6. Install libc++ into LLVM tree
