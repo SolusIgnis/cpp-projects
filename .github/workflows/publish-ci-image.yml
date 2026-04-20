@@ -86,7 +86,7 @@ jobs:
             RESOLVED="${RESOLVED//\"/}"
 
             if [ "$EXPECTED" = "$RESOLVED" ]; then
-              echo "✔ GHCR is consistent"
+              echo "GHCR is consistent"
               exit 0
             fi
 
@@ -94,9 +94,10 @@ jobs:
             sleep 2
           done
 
-          echo "❌ GHCR did not converge to expected digest"
+          echo "GHCR did not converge to expected digest"
           exit 1
           
-  trigger-ci:
-    needs: build-and-push
-    uses: ./.github/workflows/ci.yml
+      - name: Trigger CI Workflow
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PUSH_CI_TRIGGER_TOKEN }}
+        run: gh workflow run ci.yml --ref ${{ github.ref_name }}

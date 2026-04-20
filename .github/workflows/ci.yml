@@ -22,13 +22,6 @@ on:
         required: false
         type: boolean
         default: true
-  # Allows "reusable workflows" calls
-  workflow_call:
-    inputs:
-      notooling:
-        required: false
-        type: boolean
-        default: false
 
 env:
   # Logic: (Standard triggers OR manual triggers) AND NOT explicitly skipped       
