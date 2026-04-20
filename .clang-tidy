@@ -57,6 +57,9 @@ Checks:
 
   # Redundant declarations are generally benign, and this check does not play well with `import std;` 
   - '-readability-redundant-declaration'
+  
+  # This is extremely noisy with dependency headers.
+  - '-readability-use-concise-preprocessor-directives'
 
   # ============================================================
   # Vendor / legacy rule sets

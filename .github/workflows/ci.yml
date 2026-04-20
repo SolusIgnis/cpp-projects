@@ -3,290 +3,82 @@
 name: CI
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
   
 on:
   # Triggers on all pushes but skips tooling checks except on pushes to main (to run post-PR)
   push:
+    paths-ignore:
+      - "Dockerfile"
   #  branches: [ main ]
   # Triggers on ALL PRs regardless of location
   pull_request:
   # Allows manual workflow runs via the GitHub UI
   workflow_dispatch:
     inputs:
-      tooling:
-        description: "Run clang-format and clang-tidy?"
+      notooling:
+        description: "Skip clang-format and clang-tidy?"
         required: false
         type: boolean
-        default: false
+        default: true
 
 jobs:
-  fix-version:
+  ci-build_and_test:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}  # ensures local branch exists
-          fetch-depth: 0
-
-      - name: Extract module path and release version
-        id: parse_branch
-        run: |
-          BRANCH="${{ github.head_ref }}" # PR source branch
-          TARGET="${{ github.base_ref }}" # PR target branch
-
-          if [ -z "$BRANCH" ]; then
-            echo "Not a PR. Skipping."
-            echo "release_branch=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          
-          if [[ "$TARGET" != "main" ]]; then
-            echo "PR branch not merging to main. Skipping."
-            echo "release_branch=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "Source branch: $BRANCH"
-
-          # Match branches with an optional prefix path, release/, and a valid semantic version (X.Y.Z[-pre.release][+build]).
-          REGEX='^(.*\/)?release\/(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$'
-
-          if grep -Eq "$REGEX" <<< "$BRANCH"; then
-            echo "PR branch matches release branch pattern."
-            RELEASE_BRANCH=true
-            # Following branch name parsing assumes branch validation by regex above.
-
-            # Optional prefix before release/, strip trailing slash if any
-            MODULE_PATH="${BRANCH%release/*}"
-            MODULE_PATH="${MODULE_PATH%/}"
-            
-            # Version comes from everything after release/
-            VERSION_TAG="${BRANCH##*release/}"
-            
-            # Split build metadata (+...)
-            if [[ "$VERSION_TAG" == *"+"* ]]; then
-              VERSION_CORE="${VERSION_TAG%%+*}"
-              VERSION_BUILD="${VERSION_TAG#*+}"
-              VERSION_BUILD_TAG="+$VERSION_BUILD"
-            else
-              VERSION_CORE="$VERSION_TAG"
-              VERSION_BUILD=""
-              VERSION_BUILD_TAG=""
-            fi
-
-            # Split prerelease (-...)
-            if [[ "$VERSION_CORE" == *"-"* ]]; then
-              VERSION_NUMBER="${VERSION_CORE%%-*}"
-              VERSION_PRERELEASE="${VERSION_CORE#*-}"
-              VERSION_PRERELEASE_TAG="-$VERSION_PRERELEASE"
-            else
-              VERSION_NUMBER="$VERSION_CORE"
-              VERSION_PRERELEASE=""
-              VERSION_PRERELEASE_TAG=""
-            fi
-
-            RELEASE_VERSION="$VERSION_NUMBER$VERSION_PRERELEASE_TAG"
-
-            echo "module_path=$MODULE_PATH" >> "$GITHUB_OUTPUT"
-            echo "release_version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
-          else
-            echo "PR branch does NOT match release branch pattern. Skipping."
-            RELEASE_BRANCH=false
-          fi
-
-          echo "release_branch=$RELEASE_BRANCH" >> "$GITHUB_OUTPUT"
-
-      - name: Check and fix VERSION file
-        if: steps.parse_branch.outputs.release_branch == 'true'
-        run: |
-          MODULE_PATH="${{ steps.parse_branch.outputs.module_path }}"
-          RELEASE_VERSION="${{ steps.parse_branch.outputs.release_version }}"
-          VERSION_FILE="${MODULE_PATH:+$MODULE_PATH/}VERSION"
-
-          if [ ! -f "$VERSION_FILE" ]; then
-            echo "VERSION file missing — nothing to fix."
-            exit 0
-          fi
-
-          CURRENT_VERSION=$(tr -d '[:space:]' < "$VERSION_FILE")
-
-          if [[ "$RELEASE_VERSION" == "$CURRENT_VERSION" ]]; then
-            echo "VERSION file already matches branch ($RELEASE_VERSION) — nothing to do."
-            exit 0
-          fi
-
-          echo "$RELEASE_VERSION" > "$VERSION_FILE"
-          git add "$VERSION_FILE"
-
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-            exit 0
-          fi
-
-          # Using the official GitHub Actions Bot identity
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git commit -m "chore: Update ${MODULE_PATH:+$MODULE_PATH/}VERSION file to $RELEASE_VERSION for release"
-          git pull --rebase origin "${GITHUB_HEAD_REF}"
-          git push origin "${GITHUB_HEAD_REF}"
-          echo "Committed VERSION update."
-
-  build-libcxx:
-    needs: fix-version
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Cache libc++
-        id: cache-libcxx
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/libcxx-21
-          key: libcxx-21.1.8-${{ runner.os }}
-    
-      - name: Setup Cpp Build Tools
-        if: steps.cache-libcxx.outputs.cache-hit != 'true'
-        uses: aminya/setup-cpp@v1
-        with:
-          compiler: llvm-21
-          cmake: 4.1.2
-          ninja: true
-
-      - name: Checkout LLVM Project
-        if: steps.cache-libcxx.outputs.cache-hit != 'true'
-        # Use actions/checkout to get the source code, including all subprojects
-        uses: actions/checkout@v4
-        with:
-          repository: llvm/llvm-project
-          ref: llvmorg-21.1.8
-          fetch-depth: 1 # Only get the latest commit for speed
-
-      - name: Create Build Directory
-        if: steps.cache-libcxx.outputs.cache-hit != 'true'
-        run: mkdir build
-
-      - name: Configure libc++
-        if: steps.cache-libcxx.outputs.cache-hit != 'true'
-        working-directory: ./build
-        run: |
-          # Build libc++ and libc++abi only
-          cmake -G Ninja -S ../runtimes -B . \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
-            -DCMAKE_CXX_COMPILER=clang++ \
-            -DCMAKE_C_COMPILER=clang \
-            -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/libcxx-21
-
-      - name: Build libc++
-        if: steps.cache-libcxx.outputs.cache-hit != 'true'
-        working-directory: ./build
-        run: cmake --build . --parallel --target cxx cxxabi unwind  
-          
-      - name: Install libc++
-        if: steps.cache-libcxx.outputs.cache-hit != 'true'
-        working-directory: ./build
-        run: cmake --build . --parallel --target install-cxx install-cxxabi install-unwind
-
-      - name: Upload libc++ artifact
-        if: steps.cache-libcxx.outputs.cache-hit != 'true'
-        # This protects the main CI job against a cache miss since it runs immediately upon completion of this job.
-        uses: actions/upload-artifact@v4
-        with:
-          name: libcxx
-          path: $GITHUB_WORKSPACE/libcxx-21
-
-  clang-ci:
-    needs: build-libcxx
-    runs-on: ubuntu-latest
-
+    container:
+      image: ghcr.io/solusignis/ci-env-llvm:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Get CMake 4.1.2
-        uses: lukka/get-cmake@latest
-        with:
-          cmakeVersion: 4.1.2
-
-      - name: Install Clang 21 and tools
-        run: |
-          sudo apt update
-          sudo apt install -y wget lsb-release software-properties-common
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh 21
-          sudo apt install clang-format-21 clang-tidy-21
-          sudo apt install -y ninja-build
-
-      - name: Restore libc++ cache
-        id: cache-libcxx
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/libcxx-21
-          key: libcxx-21.1.8-${{ runner.os }}
-
-      - name: Download libc++ artifact
-        if: steps.cache-libcxx.outputs.cache-hit != 'true'
-        # On cache miss, the build job stores an artifact to protect against this case.
-        uses: actions/download-artifact@v4
-        with:
-          name: libcxx
-          path: $GITHUB_WORKSPACE/libcxx-21
-
-      - name: Install libc++
-        run: sudo cp -rf libcxx-21/* /usr/lib/llvm-21
-
-      - name: Export environment variables for libc++ runtime
-        run: |
-          # Set environment variables for Clang to find this libc++
-          echo "LIBCXX_ROOT=$GITHUB_WORKSPACE/libcxx-21" >> $GITHUB_ENV
-          echo "export CPLUS_INCLUDE_PATH=$GITHUB_WORKSPACE/libcxx-21/include/c++/v1:\$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
-          echo "export LIBRARY_PATH=$GITHUB_WORKSPACE/libcxx-21/lib:\$LIBRARY_PATH" >> $GITHUB_ENV
-          echo "export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/libcxx-21/lib:\$LD_LIBRARY_PATH" >> $GITHUB_ENV     
-
-      - name: Set Clang 21 as default
-        run: |
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-21 65536
-          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-21 65536
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-21 65536
-          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-21 65536
-          sudo update-alternatives --install /usr/bin/run-clang-tidy run-clang-tidy /usr/bin/run-clang-tidy-21 65536
-          sudo update-alternatives --set clang /usr/bin/clang-21
-          sudo update-alternatives --set clang++ /usr/bin/clang++-21
-          sudo update-alternatives --set clang-format /usr/bin/clang-format-21
-          sudo update-alternatives --set clang-tidy /usr/bin/clang-tidy-21
-          sudo update-alternatives --set run-clang-tidy /usr/bin/run-clang-tidy-21
-          
-      - name: Install Asio
-        run: |
-          git clone --depth=1 --branch asio-1-36-0 https://github.com/chriskohlhoff/asio.git
-          sudo cp -r asio/asio/include/* /usr/local/include/
-         
-
       - name: Configure
         run: |
           cmake --preset=clang-debug \
+            -DBUILD_TESTING=ON \
             -DCMAKE_CXX_FLAGS="-nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx-21/include/c++/v1 -nostdlib++ -Wall -Wextra -fcolor-diagnostics" \
             -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx-21/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx-21/lib"
-
-      - name: clang-format check
-        if: github.event.inputs.tooling == 'true' || github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
-        run: cmake --build --preset=clang-debug --target=format-check
 
       - name: Build
         run: cmake --build --preset=clang-debug
 
       - name: Run tests
         run: cmake --build --preset=clang-debug --target=tests.run
+
+  ci-tooling-clang_llvm:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/solusignis/ci-env-llvm:latest
+    if: >-
+      ${{ 
+        (
+          github.event_name == 'pull_request' ||
+          (github.event_name == 'push' && github.ref_name == 'main') ||
+          github.event_name == 'workflow_dispatch'
+        )
+        && 
+        (github.event.inputs.notooling != 'true')
+      }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure
+        run: |
+          cmake --preset=clang-debug \
+            -DBUILD_TESTING=OFF \
+            -DCMAKE_CXX_FLAGS="-nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx-21/include/c++/v1 -nostdlib++ -Wall -Wextra -fcolor-diagnostics" \
+            -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx-21/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx-21/lib"
+
+      - name: clang-format check
+        run: cmake --build --preset=clang-debug --target=format-check
+
+      - name: Build
+        run: cmake --build --preset=clang-debug
         
       - name: clang-tidy checks
-        if: github.event.inputs.tooling == 'true' || github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         run: cmake --build --preset=clang-debug --target=tidy-check-fast

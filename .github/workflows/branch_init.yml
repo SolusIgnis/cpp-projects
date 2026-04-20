@@ -3,7 +3,7 @@
 name: Initialize Release Branch
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: version-${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 on:
@@ -15,17 +15,18 @@ on:
 jobs:
   update-version:
     runs-on: ubuntu-latest
-
+    
     permissions:
       contents: write
 
-    if: github.ref_type == 'branch' && contains(github.ref_name, 'release/')
+    if: github.actor != 'github-actions[bot]' && github.ref_type == 'branch' && contains(github.ref_name, 'release/')
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.BOT_PUSH_CI_TRIGGER_TOKEN }}
 
       - name: Extract module path and version data
         id: parse_branch

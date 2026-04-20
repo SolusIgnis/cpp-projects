@@ -134,6 +134,9 @@ endforeach()
 # ============================================================
 
 function(add_tests_for_module module_target)
+  if(NOT BUILD_TESTING)
+    return()
+  endif()
 
   if(NOT TARGET ${module_target})
     message(FATAL_ERROR

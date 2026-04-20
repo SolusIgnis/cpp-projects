@@ -51,7 +51,8 @@ export namespace tools::test::coroutine_harness {
 
     /// @brief Entry trampoline used by `run`.
     template<typename Task>
-    auto test_runner_entry(Task&& task) -> std::remove_reference_t<Task>
+    auto test_runner_entry(Task&& task) // NOLINT(cppcoreguidelines-avoid-reference-coroutine-parameters)
+        -> std::remove_reference_t<Task>
     {
         co_return co_await std::forward<Task>(task);
     }
