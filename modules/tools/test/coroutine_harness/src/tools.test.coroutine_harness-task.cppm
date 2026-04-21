@@ -75,8 +75,9 @@ export namespace tools::test::coroutine_harness {
             [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> awaiting_handle) noexcept
                 -> std::coroutine_handle<promise_type>
             {
-                if (probe_ptr probe{awaiting_handle.promise().probe}; probe)
+                if (probe_ptr probe{awaiting_handle.promise().probe}; probe) {
                     probe->suspended = true;
+                }
                 my_handle.promise().continuation = awaiting_handle;
                 return my_handle;
             }
