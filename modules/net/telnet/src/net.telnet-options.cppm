@@ -336,11 +336,13 @@ export namespace net::telnet {
      * @param o_str The `std::ostream` into which to insert the `command`.
      * @param opt_id The `option::id_num` to insert.
      * @return A reference to the stream for inserter chaining.
-     * @remark Inserts the `option::id_num` as its representation in the underlying type of the enum.
+     * @remark Inserts the `option::id_num` as its representation in the underlying type of the enum (widened to avoid character interpretation).
      */
     std::ostream& operator<<(std::ostream& o_str, option::id_num opt_id)
     {
-        return o_str << std::to_underlying(opt_id);
+        using underlying_t = std::underlying_type_t<option::id_num>;
+        using target_t     = std::conditional_t<sizeof(underlying_t) == sizeof(char), std::int16_t, underlying_t>;
+        return o_str << static_cast<target_t>(opt_id);
     }
 
     /**
