@@ -57,7 +57,7 @@ jobs:
 
             # Optional prefix before release/, strip trailing slash if any
             MODULE_PATH="${BRANCH%release/*}"
-            MODULE_PATH="${MODULE_PATH%/}"
+            MODULE_PATH="modules/${MODULE_PATH%/}"
             
             # Version comes from everything after release/
             VERSION_TAG="${BRANCH##*release/}"
