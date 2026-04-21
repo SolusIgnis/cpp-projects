@@ -253,7 +253,7 @@ CheckOptions:
   misc-include-cleaner.MissingIncludes:     'true'
   misc-include-cleaner.UnusedIncludes:      'true'
   
-  misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: 'false'
+  misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: 'true'
   misc-non-private-member-variables-in-classes.IgnorePublicMemberVariables:                    'false'
   
   misc-throw-by-value-catch-by-reference.CheckThrowTemporaries: 'true'
