@@ -247,7 +247,9 @@ export namespace net::telnet {
      */
     std::ostream& operator<<(std::ostream& o_str, command cmd)
     {
-        return o_str << std::format("{}", cmd);
+        using underlying_t = std::underlying_type_t<command>;
+        using target_t     = std::conditional_t<sizeof(underlying_t) == sizeof(char), std::int16_t, underlying_t>;
+        return o_str << static_cast<target_t>(cmd);
     }
 
     /**
