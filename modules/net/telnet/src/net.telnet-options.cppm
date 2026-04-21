@@ -341,7 +341,7 @@ export namespace net::telnet {
     std::ostream& operator<<(std::ostream& o_str, option::id_num opt_id)
     {
         using underlying_t = std::underlying_type_t<option::id_num>;
-        using target_t     = std::conditional_t<sizeof(underlying_t) == sizeof(char), std::int16_t, underlying_t>;
+        using target_t     = std::conditional_t<sizeof(underlying_t) == 1, std::int16_t, underlying_t>;
         return o_str << static_cast<target_t>(opt_id);
     }
 
