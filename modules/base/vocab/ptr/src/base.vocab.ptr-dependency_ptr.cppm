@@ -47,9 +47,9 @@ export namespace base::vocab::inline ptr {
         dependency_ptr() = delete;
         dependency_ptr(rvalue_reference) = delete;
         dependency_ptr& operator=(rvalue_reference) = delete;
-        dependency_ptr& operator=(nullptr_t) = delete;
+        dependency_ptr& operator=(std::nullptr_t) = delete;
         
-        [[nodiscard]] bool operator==(dependency_ptr) const noexcept = default;
+        [[nodiscard]] bool operator==(const dependency_ptr&) const noexcept = default;
         auto operator<=>(dependency_ptr) const = delete;
         auto operator<=>(const pointer other) const = delete;
         
