@@ -38,38 +38,48 @@ export namespace base::vocab::inline ptr {
         using reference        = T&;
         using rvalue_reference = T&&;
         using difference_type  = std::ptrdiff_t;
+
     private:
         pointer ptr_;
-    public:   
-        constexpr explicit dependency_ptr(reference other) noexcept : ptr_(&other) {}
-        dependency_ptr& operator=(reference other) noexcept { ptr_ = &other; return *this; }
 
-        dependency_ptr() = delete;
-        dependency_ptr(rvalue_reference) = delete;
+    public:
+        constexpr explicit dependency_ptr(reference other) noexcept : ptr_(&other) {}
+
+        dependency_ptr& operator=(reference other) noexcept
+        {
+            ptr_ = &other;
+            return *this;
+        }
+
+        dependency_ptr()                            = delete;
+        dependency_ptr(rvalue_reference)            = delete;
         dependency_ptr& operator=(rvalue_reference) = delete;
-        dependency_ptr& operator=(std::nullptr_t) = delete;
-        
+        dependency_ptr& operator=(std::nullptr_t)   = delete;
+
         [[nodiscard]] bool operator==(const dependency_ptr&) const noexcept = default;
-        auto operator<=>(dependency_ptr) const = delete;
-        auto operator<=>(const pointer other) const = delete;
-        
+        auto operator<=>(dependency_ptr) const                              = delete;
+        auto operator<=>(const pointer other) const                         = delete;
+
         [[nodiscard]] constexpr pointer operator->() const noexcept { return ptr_; }
+
         [[nodiscard]] constexpr reference operator*() const noexcept { return *ptr_; }
+
         [[nodiscard]] constexpr pointer get() const noexcept { return ptr_; }
+
         [[nodiscard]] constexpr explicit(false) operator pointer() const noexcept { return this->get(); }
 
-        dependency_ptr& operator++() = delete;
-        dependency_ptr& operator--() = delete;
-        dependency_ptr operator++(int) = delete;
-        dependency_ptr operator--(int) = delete;
-        dependency_ptr& operator+=(difference_type) = delete;
-        dependency_ptr& operator-=(difference_type) = delete;
+        dependency_ptr& operator++()                                     = delete;
+        dependency_ptr& operator--()                                     = delete;
+        dependency_ptr operator++(int)                                   = delete;
+        dependency_ptr operator--(int)                                   = delete;
+        dependency_ptr& operator+=(difference_type)                      = delete;
+        dependency_ptr& operator-=(difference_type)                      = delete;
         friend dependency_ptr operator+(dependency_ptr, difference_type) = delete;
         friend dependency_ptr operator+(difference_type, dependency_ptr) = delete;
         friend difference_type operator-(dependency_ptr, dependency_ptr) = delete;
         friend dependency_ptr operator-(dependency_ptr, difference_type) = delete;
     };
-    
+
     template<typename T>
     dependency_ptr(T&) -> dependency_ptr<T>;
-} //namespace base::vocab::ptr
+} //namespace base::vocab::inline ptr
