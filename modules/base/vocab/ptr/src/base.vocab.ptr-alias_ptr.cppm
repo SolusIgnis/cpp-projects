@@ -20,6 +20,7 @@
  * limitations under the License. @endparblock
  *
  * @brief alias_ptr
+ * @todo Future Development: Use `= delete("reason")` once the C++26 feature becomes available.
  */
 
 //Module partition interface unit
