@@ -122,7 +122,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief (Covariance) Constructs a `dependency_ptr<Base>` implicitly from a `dependency_ptr<Derived>`
         template<std::derived_from<T> U>
-            requires (!std::is_same<U, T>)
+            requires (!std::same_as<U, T>)
         constexpr explicit(false) dependency_ptr(const dependency_ptr<U>& other) noexcept 
           : ptr_(other.get()) {}
 
@@ -135,7 +135,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief (Covariance) Assigns a `dependency_ptr<Derived>` to a `dependency_ptr<Base>`
         template<std::derived_from<T> U>
-            requires (!std::is_same<U, T>)
+            requires (!std::same_as<U, T>)
         dependency_ptr& operator=(const dependency_ptr<U>& other) noexcept
         {
             ptr_ = other.get();
