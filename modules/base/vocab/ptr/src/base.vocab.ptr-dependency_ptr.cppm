@@ -122,7 +122,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief (Covariance) Constructs a `dependency_ptr<Base>` implicitly from a `dependency_ptr<Derived>`
         template<std::derived_from<T> U>
-            requires (!is_same<U, T>)
+            requires (!std::is_same<U, T>)
         constexpr explicit(false) dependency_ptr(const dependency_ptr<U>& other) noexcept 
           : ptr_(other.get()) {}
 
@@ -135,7 +135,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief (Covariance) Assigns a `dependency_ptr<Derived>` to a `dependency_ptr<Base>`
         template<std::derived_from<T> U>
-            requires (!is_same<U, T>)
+            requires (!std::is_same<U, T>)
         dependency_ptr& operator=(const dependency_ptr<U>& other) noexcept
         {
             ptr_ = other.get();
@@ -175,7 +175,7 @@ export namespace base::vocab::inline ptr {
         // Comparison Operators (Equality Allowed, Others Deleted)
         //================================================================================
 
-        ///@brief Equality comparison operator returns true if both pointers alias each other.
+        ///@brief Defaulted equality comparison operator returns true if both pointers alias each other.
         [[nodiscard]] bool operator==(const dependency_ptr&) const noexcept = default;
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator.
