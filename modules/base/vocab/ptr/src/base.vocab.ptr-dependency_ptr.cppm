@@ -113,8 +113,18 @@ export namespace base::vocab::inline ptr {
         pointer ptr_;
 
     public:
+        //================================================================================
+        // Constructors and Assignment Operators
+        //================================================================================
+
         ///@brief Constructs a `dependency_ptr` bound to an existing object.
         constexpr explicit dependency_ptr(reference other) noexcept : ptr_(&other) {}
+
+        ///@brief (Covariance) Constructs a `dependency_ptr<Base>` implicitly from a `dependency_ptr<Derived>`
+        template<std::derived_from<T> U>
+            requires (!is_same<U, T>)
+        constexpr explicit(false) dependency_ptr(const dependency_ptr<U>& other) noexcept 
+          : ptr_(other.get()) {}
 
         ///@brief Rebinds the `dependency_ptr` to another object.
         dependency_ptr& operator=(reference other) noexcept
@@ -122,6 +132,19 @@ export namespace base::vocab::inline ptr {
             ptr_ = &other;
             return *this;
         }
+
+        ///@brief (Covariance) Assigns a `dependency_ptr<Derived>` to a `dependency_ptr<Base>`
+        template<std::derived_from<T> U>
+            requires (!is_same<U, T>)
+        dependency_ptr& operator=(const dependency_ptr<U>& other) noexcept
+        {
+            ptr_ = other.get();
+            return *this;
+        }
+
+        //================================================================================
+        // Deleted Constructors and Assignment Operators: Non-Null Structural Invariant
+        //================================================================================
 
         ///@brief Deleted default constructor to prevent null initialization.
         dependency_ptr() = delete/*("Default constructor deleted to prevent null initialization. Use `std::optional<dependency_ptr<T>>` for default-constructible optional dependencies.")*/;
@@ -132,17 +155,25 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted constructor from `pointer` to structurally guarantee non-null initialization.
         dependency_ptr(pointer) = delete/*("Constructor from `pointer` deleted. Dereference first to guarantee non-null initialization. Use `std::optional<dependency_ptr<T>>` for optional dependencies.")*/;
 
-        ///@brief Deleted constructor from `rvalue_reference` to discourage dangling by binding to temporaries.
-        dependency_ptr(rvalue_reference) = delete/*("Constructor from `rvalue_reference` deleted to discourage dangling by binding to temporaries.")*/;
-
         ///@brief Deleted assignment from `nullptr` to prevent invalid null reseating.
         dependency_ptr& operator=(std::nullptr_t) = delete/*("Assignment from `nullptr` deleted to prevent null reseating. Use `std::optional<dependency_ptr<T>>` for optional dependencies.")*/;
 
         ///@brief Deleted assignment from `pointer` to structurally guarantee non-null reseatng.
         dependency_ptr& operator=(pointer) = delete/*("Assignment from `pointer` deleted. Dereference first to guarantee non-null initialization. Use `std::optional<dependency_ptr<T>>` for default-constructible optional dependencies.")*/;
 
+        //================================================================================
+        // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
+        //================================================================================
+
+        ///@brief Deleted constructor from `rvalue_reference` to discourage dangling by binding to temporaries.
+        dependency_ptr(rvalue_reference) = delete/*("Constructor from `rvalue_reference` deleted to discourage dangling by binding to temporaries.")*/;
+
         ///@brief Deleted assignment from `rvalue_reference` to discourage dangling by binding to temporaries.
         dependency_ptr& operator=(rvalue_reference) = delete/*("Assignment from `rvalue_reference` deleted to discourage dangling by binding to temporaries.")*/;
+
+        //================================================================================
+        // Comparison Operators (Equality Allowed, Others Deleted)
+        //================================================================================
 
         ///@brief Equality comparison operator returns true if both pointers alias each other.
         [[nodiscard]] bool operator==(const dependency_ptr&) const noexcept = default;
@@ -152,6 +183,10 @@ export namespace base::vocab::inline ptr {
         
         ///@brief Deleted comparison operators to prevent misuse as an iterator.
         auto operator<=>(const pointer other) const = delete/*("Comparison operators deleted to prevent address comparisons. `dependency_ptr` is not an iterator.")*/;
+
+        //================================================================================
+        // Pointer Operations
+        //================================================================================
 
         ///@brief Provides pointer-like member access to the referenced object.
         [[nodiscard]] constexpr pointer operator->() const noexcept { return ptr_; }
@@ -164,6 +199,10 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Implicitly converts to the underlying raw pointer type.
         [[nodiscard]] constexpr explicit(false) operator pointer() const noexcept { return this->get(); }
+
+        //================================================================================
+        // Deleted Pointer Arithmetic Operators: Not an Iterator
+        //================================================================================
 
         ///@brief Deleted prefix increment to prevent misuse as an iterator.
         dependency_ptr& operator++() = delete/*("Prefix increment deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
@@ -206,6 +245,15 @@ export namespace base::vocab::inline ptr {
      * @remark Prevents binding to temporaries via deleted rvalue overload.
      */
     /**
+     * @fn dependency_ptr::dependency_ptr(const dependency_ptr<U>& other) noexcept
+     *
+     * @tparam U The element type [derived from T] of the `dependency_ptr` to convert from.
+     *
+     * @param other The pointer-to-derived being converted.
+     *
+     * @remark Preserves covariance. Converts from dependency_ptr-to-derived to dependency_ptr-to-base implicitly.
+     */
+    /**
      * @fn dependency_ptr& dependency_ptr::operator=(reference other) noexcept
      *
      * @param other The object to reference.
@@ -214,6 +262,16 @@ export namespace base::vocab::inline ptr {
      * @pre `other` must refer to a valid object that outlives the `dependency_ptr`.
      *
      * @remark Rebinds the dependency without affecting ownership or lifetime.
+     */
+    /**
+     * @fn dependency_ptr& dependency_ptr::operator=(const dependency_ptr<U>& other) noexcept
+     *
+     * @tparam U The element type [derived from T] of the `dependency_ptr` to convert from.
+     *
+     * @param other The pointer-to-derived being converted.
+     * @return Reference to `*this`.
+     *
+     * @remark Preserves covariance. Converts from dependency_ptr-to-derived to dependency_ptr-to-base implicitly.
      */
     /**
      * @fn constexpr pointer dependency_ptr::operator->() const noexcept
