@@ -51,7 +51,7 @@ namespace {
         };
 
         "not default constructible"_test = [] mutable {
-            expect(eq(std::default_constructible<dependency_ptr<int>>, false));
+            expect(eq(std::default_initializable<dependency_ptr<int>>, false));
         };
     
         "not constructible from nullptr"_test = [] mutable {
@@ -114,7 +114,7 @@ namespace {
         //============================================================
 
         "operator* dereferences correctly"_test = [] mutable {
-            const int x = 55;
+            int x = 55;
             dependency_ptr<int> ptr{x};
     
             expect(eq(*ptr, 55));
@@ -148,16 +148,16 @@ namespace {
 
         "conversion to raw pointer preserves address"_test = [] mutable {
             const int x{};
-            dependency_ptr<int> ptr{x};
+            dependency_ptr<const int> ptr{x};
     
-            int* raw = ptr;
+            const int* raw = ptr;
     
             expect(eq(raw, &x));
         };
     
         "get returns raw pointer"_test = [] mutable {
             const int x{};
-            dependency_ptr<int> ptr{x};
+            dependency_ptr<const int> ptr{x};
     
             expect(eq(ptr.get(), &x));
         };
@@ -166,7 +166,7 @@ namespace {
             expect(eq(std::convertible_to<dependency_ptr<int>, bool>));
             
             const int x{};
-            dependency_ptr<int> ptr{x};
+            dependency_ptr<const int> ptr{x};
             
             expect(eq(static_cast<bool>(ptr), true));
             expect(eq(!ptr, false));
@@ -180,7 +180,7 @@ namespace {
             const int a{};
             const int b = 2;
     
-            dependency_ptr<int> ptr{a};
+            dependency_ptr<const int> ptr{a};
             ptr = b;
     
             expect(eq(*ptr, 2));
@@ -195,9 +195,9 @@ namespace {
             const int x = 1;
             const int y = 1;
     
-            dependency_ptr<int> a{x};
-            dependency_ptr<int> b{x};
-            dependency_ptr<int> c{y};
+            dependency_ptr<const int> a{x};
+            dependency_ptr<const int> b{x};
+            dependency_ptr<const int> c{y};
     
             expect(eq(a == b, true));
             expect(eq(a == c, false));
