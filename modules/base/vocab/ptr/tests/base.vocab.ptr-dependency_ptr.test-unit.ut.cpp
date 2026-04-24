@@ -6,6 +6,7 @@ import ut;
 import std;
 
 using namespace ut;
+using base::vocab::dependency_ptr;
 
 namespace {
     struct Base {
