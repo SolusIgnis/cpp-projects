@@ -122,8 +122,6 @@ namespace {
             expect(eq(std::convertible_to<const int&, dependency_ptr<int>>, false));
             expect(eq(std::convertible_to<int&, dependency_ptr<const int>>, false));
             expect(eq(std::convertible_to<const int&, dependency_ptr<const int>>, false));
-            
-            expect(eq(std::constructible_from<dependency_ptr<int>, int>, false));
         };
 
         "not default constructible"_test = [] mutable {
@@ -141,6 +139,10 @@ namespace {
         };
     
         "not constructible from rvalue"_test = [] mutable {
+            expect(eq(std::constructible_from<dependency_ptr<int>, int>, false));
+            expect(eq(std::constructible_from<dependency_ptr<const int>, int>, false));
+            expect(eq(std::constructible_from<dependency_ptr<const int>, const int>, false));
+
             expect(eq(std::constructible_from<dependency_ptr<int>, int&&>, false));
             expect(eq(std::constructible_from<dependency_ptr<const int>, int&&>, false));
             expect(eq(std::constructible_from<dependency_ptr<const int>, const int&&>, false));
@@ -268,6 +270,11 @@ namespace {
         //============================================================
     
         "equality compares pointer identity"_test = [] mutable {
+            expect(eq(std::equality_comparable<dependency_ptr<int>, dependency_ptr<int>>, true));
+            expect(eq(std::equality_comparable<dependency_ptr<int>, dependency_ptr<float>>, true));
+            expect(eq(std::equality_comparable<dependency_ptr<int>, int*>, true));
+            expect(eq(std::equality_comparable<dependency_ptr<int>, float*>, true));
+
             const int x = 1;
             const int y = 1;
     
