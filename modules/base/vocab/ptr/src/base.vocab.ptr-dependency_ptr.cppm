@@ -45,7 +45,7 @@ export namespace base::vocab::inline ptr {
     /**
      * @brief Non-owning, never-null pointer type representing a required dependency.
      *
-     * @tparam T The pointed-to type (must not be a reference type per "C++ standard [dcl.ptr]").
+     * @tparam T The pointed-to type (must not be a reference type per "C++ standard [dcl.ptr]", `void`, nor a function pointer).
      *
      * @details `dependency_ptr` is designed for dependency injection scenarios, where a dependency
      * is required to exist and outlive the consumer. It serves as a replacement for references as
@@ -66,7 +66,7 @@ export namespace base::vocab::inline ptr {
      * @see `alias_ptr` for nullable aliasing, `required_ptr` for non-null aliasing, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */
     template<typename T>
-        requires (!std::is_reference_v<T>)
+        requires (!std::is_reference_v<T> && !std::is_void_v<T> && !std::is_function_v<T>)
     class [[nodiscard]] dependency_ptr {
     public:
         /**
@@ -200,6 +200,9 @@ export namespace base::vocab::inline ptr {
         ///@brief Implicitly converts to the underlying raw pointer type.
         [[nodiscard]] constexpr explicit(false) operator pointer() const noexcept { return this->get(); }
 
+        ///@brief Contextually converts to `bool` to test if the pointer is engaged. Always returns true to confirm structural invariant.
+        [[nodiscard]] constexpr explicit operator bool() const noexcept { return true; }
+
         //================================================================================
         // Deleted Pointer Arithmetic Operators: Not an Iterator
         //================================================================================
@@ -301,6 +304,14 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Enables seamless interoperability with legacy interfaces expecting raw pointers.
      * @warning Implicit conversion may obscure the non-owning, non-null semantics; prefer `get()` when clarity is important.
+     */
+    /**
+     * @fn dependency_ptr::operator bool() const noexcept
+     *
+     * @return `true` (The pointer is structurally guaranteed to always be engaged.)
+     *
+     * @remark Satisfies boolean-testable requirements in generic templates and logical contexts. 
+     * @note Because this always returns `true`, the compiler can elide checks in generic code when `dependency_ptr` is the concrete type.
      */
 
     /**
