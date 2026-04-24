@@ -9,6 +9,27 @@ using namespace ut;
 using base::vocab::dependency_ptr;
 
 namespace {
+    template<typename T>
+    concept HasAddition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
+    
+    template<typename T>
+    concept HasSubtraction = requires(T t) { t - 1; };
+    
+    template<typename T>
+    concept HasDifference = requires(T t) { t - t; };
+    
+    template<typename T>
+    concept HasPreIncrement = requires(T t) { ++t; };
+    
+    template<typename T>
+    concept HasPostIncrement = requires(T t) { t++; };
+    
+    template<typename T>
+    concept HasPreDecrement = requires(T t) { --t; };
+    
+    template<typename T>
+    concept HasPostDecrement = requires(T t) { t--; };
+   
     struct Base {
         int value{0};
     };
@@ -162,7 +183,7 @@ namespace {
         };
     
         "boolean conversion"_test = [] mutable {
-            expect(eq(std::convertible_to<dependency_ptr<int>, bool>));
+            expect(eq(std::convertible_to<dependency_ptr<int>, bool>, true));
             
             const int x{};
             dependency_ptr<const int> ptr{x};
@@ -234,21 +255,13 @@ namespace {
         "no pointer arithmetic operations"_test = [] mutable {
             using T = dependency_ptr<int>;
     
-            constexpr bool add = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
-            constexpr bool sub = requires(T t) { t - 1; };
-            constexpr bool dif = requires(T t) { t - t; };
-            constexpr bool preinc = requires(T t) { ++t; };
-            constexpr bool pstinc = requires(T t) { t++; };
-            constexpr bool predec = requires(T t) { --t; };
-            constexpr bool pstdec = requires(T t) { t--; };
-    
-            expect(eq(add, false));
-            expect(eq(sub, false));
-            expect(eq(dif, false));
-            expect(eq(preinc, false));
-            expect(eq(pstinc, false));
-            expect(eq(predec, false));
-            expect(eq(pstdec, false));
+            expect(eq(HasAddition<T>, false));
+            expect(eq(HasSubtraction<T>, false));
+            expect(eq(HasDifference<T>, false));
+            expect(eq(HasPreIncrement<T>, false));
+            expect(eq(HasPostIncrement<T>, false));
+            expect(eq(HasPreDecrement<T>, false));
+            expect(eq(HasPostDecrement<T>, false));
         };
     
         //============================================================
@@ -342,8 +355,7 @@ namespace {
         };
         
         "const dependency_ptr prevents rebinding but not mutation"_test = [] mutable {
-            int x = 1;
-            int y = 2;
+            int x{};
         
             const dependency_ptr<int> ptr{x};
         
