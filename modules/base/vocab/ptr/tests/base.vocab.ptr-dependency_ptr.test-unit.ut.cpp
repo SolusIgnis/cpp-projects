@@ -11,7 +11,6 @@ using base::vocab::dependency_ptr;
 namespace {
     struct Base {
         int value{0};
-        virtual ~Base() = default;
     };
     
     struct Derived : Base {
