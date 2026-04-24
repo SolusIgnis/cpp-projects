@@ -41,6 +41,60 @@ namespace {
     suite dependency_ptr_tests = [] mutable {
     
         //============================================================
+        // Triviality & ABI properties
+        //============================================================
+        
+        "triviality"_test = [] mutable {
+            using simple_t = std::int32_t;
+
+            expect(eq(std::is_trivially_copyable_v<dependency_ptr<simple_t>>, true));
+            expect(eq(std::is_standard_layout_v<dependency_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_destructible_v<dependency_ptr<simple_t>>, true));
+            expect(eq(std::is_nothrow_constructible_v<dependency_ptr<simple_t>, simple_t&>, true));
+            
+            using complex_t = std::map<std::string, std::vector<std::int32_t>>;
+            
+            expect(eq(std::is_trivially_copyable_v<dependency_ptr<complex_t>>, true));
+            expect(eq(std::is_standard_layout_v<dependency_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_destructible_v<dependency_ptr<complex_t>>, true));
+            expect(eq(std::is_nothrow_constructible_v<dependency_ptr<complex_t>, complex_t&>, true));
+        };
+
+        "size and alignment match raw pointers"_test = [] mutable {
+            using simple_t = std::int32_t;
+            
+            expect(eq(sizeof(dependency_ptr<simple_t>) == sizeof(simple_t*), true));
+            expect(eq(alignof(dependency_ptr<simple_t>) == alignof(simple_t*), true));
+
+            using complex_t = std::map<std::string, std::vector<std::int32_t>>;
+
+            expect(eq(sizeof(dependency_ptr<complex_t>) == sizeof(complex_t*), true));
+            expect(eq(alignof(dependency_ptr<complex_t>) == alignof(complex_t*), true));
+        };
+        
+        //============================================================
+        // Type properties
+        //============================================================
+    
+        "type aliases are correct"_test = [] mutable {
+            using T = dependency_ptr<const int>;
+    
+            constexpr bool element = std::same_as<T::element_type, const int>;
+            constexpr bool value   = std::same_as<T::value_type, int>;
+            constexpr bool pointer = std::same_as<T::pointer, const int*>;
+            constexpr bool ref     = std::same_as<T::reference, const int&>;
+            constexpr bool rref    = std::same_as<T::rvalue_reference, const int&&>;
+            constexpr bool ptrdiff = std::same_as<T::difference_type, std::ptrdiff_t>;
+    
+            expect(eq(element, true));
+            expect(eq(value, true));
+            expect(eq(pointer, true));
+            expect(eq(ref, true));
+            expect(eq(rref, true));
+            expect(eq(ptrdiff, true));
+        };
+
+        //============================================================
         // Construction
         //============================================================
     
@@ -183,7 +237,7 @@ namespace {
         };
     
         "boolean conversion"_test = [] mutable {
-            expect(eq(std::convertible_to<dependency_ptr<int>, bool>, true));
+            expect(eq(std::constructible_from<dependency_ptr<int>, bool>, true));
             
             const int x{};
             dependency_ptr<const int> ptr{x};
@@ -277,65 +331,11 @@ namespace {
         };
     
         //============================================================
-        // Type properties
-        //============================================================
-    
-        "type aliases are correct"_test = [] mutable {
-            using T = dependency_ptr<const int>;
-    
-            constexpr bool element = std::same_as<T::element_type, const int>;
-            constexpr bool value   = std::same_as<T::value_type, int>;
-            constexpr bool pointer = std::same_as<T::pointer, const int*>;
-            constexpr bool ref     = std::same_as<T::reference, const int&>;
-            constexpr bool rref    = std::same_as<T::rvalue_reference, const int&&>;
-            constexpr bool ptrdiff = std::same_as<T::difference_type, std::ptrdiff_t>;
-    
-            expect(eq(element, true));
-            expect(eq(value, true));
-            expect(eq(pointer, true));
-            expect(eq(ref, true));
-            expect(eq(rref, true));
-            expect(eq(ptrdiff, true));
-        };
-
-        //============================================================
-        // Triviality & ABI properties
-        //============================================================
-        
-        "triviality"_test = [] mutable {
-            using simple_t = std::int32_t;
-
-            expect(eq(std::is_trivially_copyable_v<dependency_ptr<simple_t>>, true));
-            expect(eq(std::is_standard_layout_v<dependency_ptr<simple_t>>, true));
-            expect(eq(std::is_trivially_destructible_v<dependency_ptr<simple_t>>, true));
-            expect(eq(std::is_nothrow_constructible_v<dependency_ptr<simple_t>, simple_t&>, true));
-            
-            using complex_t = std::map<std::string, std::vector<std::int32_t>>;
-            
-            expect(eq(std::is_trivially_copyable_v<dependency_ptr<complex_t>>, true));
-            expect(eq(std::is_standard_layout_v<dependency_ptr<complex_t>>, true));
-            expect(eq(std::is_trivially_destructible_v<dependency_ptr<complex_t>>, true));
-            expect(eq(std::is_nothrow_constructible_v<dependency_ptr<complex_t>, complex_t&>, true));
-        };
-
-        "size and alignment match raw pointers"_test = [] mutable {
-            using simple_t = std::int32_t;
-            
-            expect(eq(sizeof(dependency_ptr<simple_t>) == sizeof(simple_t*), true));
-            expect(eq(alignof(dependency_ptr<simple_t>) == alignof(simple_t*), true));
-
-            using complex_t = std::map<std::string, std::vector<std::int32_t>>;
-
-            expect(eq(sizeof(dependency_ptr<complex_t>) == sizeof(complex_t*), true));
-            expect(eq(alignof(dependency_ptr<complex_t>) == alignof(complex_t*), true));
-        };
-        
-        //============================================================
         // Const-correctness propagation
         //============================================================
         
         "const element forbids mutation through dereference"_test = [] mutable {
-            const int x = 5;
+            const int x{};
             dependency_ptr<const int> ptr{x};
         
             // Compile-time: *ptr must NOT be assignable
