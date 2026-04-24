@@ -122,6 +122,8 @@ namespace {
             expect(eq(std::convertible_to<const int&, dependency_ptr<int>>, false));
             expect(eq(std::convertible_to<int&, dependency_ptr<const int>>, false));
             expect(eq(std::convertible_to<const int&, dependency_ptr<const int>>, false));
+            
+            expect(eq(std::constructible_from<dependency_ptr<int>, int>, false));
         };
 
         "not default constructible"_test = [] mutable {
@@ -237,7 +239,7 @@ namespace {
         };
     
         "boolean conversion"_test = [] mutable {
-            expect(eq(std::constructible_from<dependency_ptr<int>, bool>, true));
+            expect(eq(std::constructible_from<bool, dependency_ptr<int>>, true));
             
             const int x{};
             dependency_ptr<const int> ptr{x};
