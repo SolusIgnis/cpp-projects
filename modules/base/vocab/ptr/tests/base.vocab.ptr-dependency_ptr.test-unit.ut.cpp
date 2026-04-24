@@ -172,14 +172,14 @@ namespace {
     
             const int* raw = ptr;
     
-            expect(eq(raw, &x));
+            expect(eq(raw, std::addressof(x)));
         };
     
         "get returns raw pointer"_test = [] mutable {
             const int x{};
             dependency_ptr<const int> ptr{x};
     
-            expect(eq(ptr.get(), &x));
+            expect(eq(ptr.get(), std::addressof(x)));
         };
     
         "boolean conversion"_test = [] mutable {
@@ -204,7 +204,7 @@ namespace {
             ptr = b;
     
             expect(eq(*ptr, 2));
-            expect(eq(ptr.get(), &b));
+            expect(eq(ptr.get(), std::addressof(b)));
         };
 
         //============================================================
@@ -233,7 +233,7 @@ namespace {
     
             dependency_ptr<Base> bptr{dptr};
     
-            expect(eq(bptr.get(), static_cast<Base*>(&d)));
+            expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
         };
     
         "assign base from derived dependency_ptr"_test = [] mutable {
@@ -245,7 +245,19 @@ namespace {
     
             bptr = dptr;
     
-            expect(eq(bptr.get(), static_cast<Base*>(&d)));
+            expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
+        };
+        
+        "assign const base from derived dependency_ptr"_test = [] mutable {
+            Derived d;
+            dependency_ptr<Derived> dptr{d};
+    
+            Base b;
+            dependency_ptr<const Base> bptr{b};
+    
+            bptr = dptr;
+    
+            expect(eq(bptr.get(), static_cast<const Base*>(std::addressof(d))));
         };
     
         //============================================================
@@ -398,7 +410,7 @@ namespace {
             constexpr int x = {};
             dependency_ptr ptr{x};
     
-            expect(eq(ptr.get(), &x));
+            expect(eq(ptr.get(), std::addressof(x)));
         };
     };
 } //namespace
