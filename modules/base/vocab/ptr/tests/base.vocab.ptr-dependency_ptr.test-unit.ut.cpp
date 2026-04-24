@@ -95,38 +95,38 @@ namespace {
         //============================================================
 
         "assignable from lvalue reference"_test = [] mutable {
-            expect(eq(std::assignable_from<dependency_ptr<int>&, int&>, true));
-            expect(eq(std::assignable_from<dependency_ptr<int>&, const int&>, false));
-            expect(eq(std::assignable_from<dependency_ptr<int>&, volatile int&>, false));
-            expect(eq(std::assignable_from<dependency_ptr<int>&, const volatile int&>, false));
-            expect(eq(std::assignable_from<dependency_ptr<const int>&, int&>, true));
-            expect(eq(std::assignable_from<dependency_ptr<const int>&, const int&>, true));
-            expect(eq(std::assignable_from<dependency_ptr<const int>&, volatile int&>, false));
-            expect(eq(std::assignable_from<dependency_ptr<const int>&, const volatile int&>, false));
-            expect(eq(std::assignable_from<dependency_ptr<volatile int>&, int&>, true));
-            expect(eq(std::assignable_from<dependency_ptr<volatile int>&, const int&>, false));
-            expect(eq(std::assignable_from<dependency_ptr<volatile int>&, volatile int&>, true));
-            expect(eq(std::assignable_from<dependency_ptr<volatile int>&, const volatile int&>, false));
-            expect(eq(std::assignable_from<dependency_ptr<const volatile int>&, int&>, true)); 
-            expect(eq(std::assignable_from<dependency_ptr<const volatile int>&, const int&>, true));
-            expect(eq(std::assignable_from<dependency_ptr<const volatile int>&, volatile int&>, true)); 
-            expect(eq(std::assignable_from<dependency_ptr<const volatile int>&, const volatile int&>, true)); 
+            expect(eq(std::is_assignable_v<dependency_ptr<int>&, int&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<int>&, const int&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<int>&, volatile int&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<int>&, const volatile int&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<const int>&, int&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<const int>&, const int&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<const int>&, volatile int&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<const int>&, const volatile int&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<volatile int>&, int&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<volatile int>&, const int&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<volatile int>&, volatile int&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<volatile int>&, const volatile int&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<const volatile int>&, int&>, true)); 
+            expect(eq(std::is_assignable_v<dependency_ptr<const volatile int>&, const int&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<const volatile int>&, volatile int&>, true)); 
+            expect(eq(std::is_assignable_v<dependency_ptr<const volatile int>&, const volatile int&>, true)); 
         };
 
         "not assignable from nullptr"_test = [] mutable {
-            expect(eq(std::assignable_from<dependency_ptr<int>&, std::nullptr_t>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<int>&, std::nullptr_t>, false));
         };
     
         "not assignable from raw pointer"_test = [] mutable {
-            expect(eq(std::assignable_from<dependency_ptr<int>&, int*>, false));
-            expect(eq(std::assignable_from<dependency_ptr<const int>&, int*>, false));
-            expect(eq(std::assignable_from<dependency_ptr<const int>&, const int*>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<int>&, int*>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<const int>&, int*>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<const int>&, const int*>, false));
         };
     
         "not assignable from rvalue"_test = [] mutable {
-            expect(eq(std::assignable_from<dependency_ptr<int>&, int&&>, false));
-            expect(eq(std::assignable_from<dependency_ptr<const int>&, int&&>, false));
-            expect(eq(std::assignable_from<dependency_ptr<const int>&, const int&&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<int>&, int&&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<const int>&, int&&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<const int>&, const int&&>, false));
         };
 
         //============================================================
