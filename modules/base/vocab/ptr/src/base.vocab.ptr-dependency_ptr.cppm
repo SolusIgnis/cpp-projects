@@ -176,7 +176,7 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Defaulted equality comparison operator returns true if both pointers alias each other.
-        [[nodiscard]] friend bool operator==(const dependency_ptr&, const dependency_ptr&) const noexcept = default;
+        [[nodiscard]] friend bool operator==(const dependency_ptr&, const dependency_ptr&) noexcept = default;
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         auto operator<=>(dependency_ptr) const = delete/*("Comparison operators deleted to prevent address comparisons. `dependency_ptr` is not an iterator.")*/;
