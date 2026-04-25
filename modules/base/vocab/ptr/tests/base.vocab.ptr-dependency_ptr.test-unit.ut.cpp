@@ -319,6 +319,12 @@ namespace {
     
             expect(eq(bptr.get(), static_cast<const Base*>(std::addressof(d))));
         };
+        
+        "covariant equality comparison"_test = [] mutable {
+            expect(eq(std::equality_comparable_with<dependency_ptr<Base>, dependency_ptr<Derived>>, true));
+            expect(eq(std::equality_comparable_with<dependency_ptr<Base>, Derived*>, true));
+            expect(eq(std::equality_comparable_with<Base*, dependency_ptr<Derived>>, true));
+        };
     
         //============================================================
         // Non-iterator guarantees
