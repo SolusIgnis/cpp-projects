@@ -118,8 +118,7 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Constructs a `dependency_ptr` bound to an existing object.
-        template<std::derived_from<T> U>
-        constexpr explicit dependency_ptr(U& source) noexcept : ptr_(&source) {}
+        constexpr explicit dependency_ptr(reference source) noexcept : ptr_(&source) {}
 
         ///@brief (Covariance) Constructs a `dependency_ptr<Base>` implicitly from a `dependency_ptr<Derived>`
         template<std::derived_from<T> U>
