@@ -176,14 +176,17 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Defaulted equality comparison operator returns true if both pointers alias each other.
+        [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const dependency_ptr& rhs) noexcept = default;
+
         template<std::derived_from<T> U>
-        [[nodiscard]] friend bool operator==(const dependency_ptr<T>& lhs, const dependency_ptr<U>& rhs) noexcept { return (lhs.get() == rhs.get()); }
+            requires (!std::same_as<U, T>)
+        [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const dependency_ptr<U>& rhs) noexcept { return (lhs.get() == rhs.get()); }
         
         template<std::derived_from<T> U>
-        [[nodiscard]] friend bool operator==(const dependency_ptr<T>& lhs, const U* rhs) noexcept { return (lhs.get() == rhs); }
+        [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const U* rhs) noexcept { return (lhs.get() == rhs); }
         
         template<std::derived_from<T> U>
-        [[nodiscard]] friend bool operator==(const T* lhs, const dependency_ptr<U>& rhs) noexcept { return (lhs == rhs.get()); }
+        [[nodiscard]] friend bool operator==(const pointer lhs, const dependency_ptr<U>& rhs) noexcept { return (lhs == rhs.get()); }
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         auto operator<=>(dependency_ptr) const = delete/*("Comparison operators deleted to prevent address comparisons. `dependency_ptr` is not an iterator.")*/;
