@@ -295,6 +295,14 @@ namespace {
     
             expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
         };
+        
+        "construct base from derived reference"_test = [] mutable {
+            Derived d;
+    
+            dependency_ptr<Base> bptr{d};
+    
+            expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
+        };
     
         "assign base from derived dependency_ptr"_test = [] mutable {
             Derived d;
@@ -304,6 +312,17 @@ namespace {
             dependency_ptr<Base> bptr{b};
     
             bptr = dptr;
+    
+            expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
+        };
+        
+        "rebind base from derived reference"_test = [] mutable {
+            Derived d;
+
+            Base b;
+            dependency_ptr<Base> bptr{b};
+    
+            bptr = d;
     
             expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
         };
@@ -319,7 +338,18 @@ namespace {
     
             expect(eq(bptr.get(), static_cast<const Base*>(std::addressof(d))));
         };
-        
+
+        "rebind const base from derived reference"_test = [] mutable {
+            Derived d;
+
+            Base b;
+            dependency_ptr<const Base> bptr{b};
+    
+            bptr = d;
+    
+            expect(eq(bptr.get(), static_cast<const Base*>(std::addressof(d))));
+        };
+
         "covariant equality comparison"_test = [] mutable {
             expect(eq(std::equality_comparable_with<dependency_ptr<Base>, dependency_ptr<Derived>>, true));
             expect(eq(std::equality_comparable_with<dependency_ptr<Base>, Derived*>, true));
