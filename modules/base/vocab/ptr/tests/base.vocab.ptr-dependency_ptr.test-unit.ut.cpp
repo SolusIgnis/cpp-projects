@@ -371,6 +371,15 @@ namespace {
             expect(eq(HasPreDecrement<T>, false));
             expect(eq(HasPostDecrement<T>, false));
         };
+        
+        "no ordering comparisons"_test = [] mutable {
+            expect(eq(std::three_way_comparable<dependency_ptr<int>>, false));
+            expect(eq(std::three_way_comparable_with<dependency_ptr<int>, int*>, false));
+            expect(eq(std::three_way_comparable<dependency_ptr<Base>>, false));
+            expect(eq(std::three_way_comparable_with<dependency_ptr<Base>, dependency_ptr<Derived>>, false));
+            expect(eq(std::three_way_comparable_with<dependency_ptr<Base>, Derived*>, false));
+            expect(eq(std::three_way_comparable_with<Base*, dependency_ptr<Derived>>, false));
+        };
     
         //============================================================
         // Const-correctness propagation
