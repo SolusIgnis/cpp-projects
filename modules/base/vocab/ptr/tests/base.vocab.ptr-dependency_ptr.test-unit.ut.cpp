@@ -44,10 +44,23 @@ namespace {
     };
     
     suite dependency_ptr_tests = [] mutable {
-
+        //============================================================
+        // Template Constraint Validation
+        //============================================================
 
         "template instantiation checks"_test = [] mutable {
-            expect(eq(instantiatable_with<dependency_ptr,  int>, true));
+            expect(eq(instantiatable_with<dependency_ptr, std::int32_t>, true));
+            expect(eq(instantiatable_with<dependency_ptr, std::int32_t*>, true));
+            expect(eq(instantiatable_with<dependency_ptr, std::map<std::string, std::vector<std::int32_t>>, true));
+
+            expect(eq(instantiatable_with<dependency_ptr, void>, false));
+            expect(eq(instantiatable_with<dependency_ptr, std::int32_t&>, false));
+            expect(eq(instantiatable_with<dependency_ptr, std::int32_t&&>, false));
+            expect(eq(instantiatable_with<dependency_ptr, void(int)>, false));
+            expect(eq(instantiatable_with<dependency_ptr, void(&)(int)>, false));
+            expect(eq(instantiatable_with<dependency_ptr, void(*)(int, float)>, false));
+            expect(eq(instantiatable_with<dependency_ptr, void(**)(std::string, int)>, false));
+            expect(eq(instantiatable_with<dependency_ptr, void(*******)(int)>, false));
         };
     
         //============================================================
