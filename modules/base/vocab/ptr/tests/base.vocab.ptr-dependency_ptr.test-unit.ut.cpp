@@ -9,6 +9,11 @@ using namespace ut;
 using base::vocab::dependency_ptr;
 
 namespace {
+    template <template <typename...> typename Template, typename... Args>
+    concept instantiatable_with = requires {
+        typename Template<Args...>;
+    };
+
     template<typename T>
     concept HasAddition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
     
@@ -39,6 +44,11 @@ namespace {
     };
     
     suite dependency_ptr_tests = [] mutable {
+
+
+        "template instantiation checks"_test = [] mutable {
+            expect(eq(instantiatable_with<dependency_ptr,  int>, true));
+        };
     
         //============================================================
         // Triviality & ABI properties
@@ -357,7 +367,7 @@ namespace {
         };
     
         //============================================================
-        // Non-iterator guarantees
+        // Non-iterator / non-arithmetic guarantees
         //============================================================
     
         "no pointer arithmetic operations"_test = [] mutable {
