@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-dependency_ptr.cppm
  * @version 0.2.0
- * @date March 11, 2026
+ * @date April 25, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -42,25 +42,33 @@ export module base.vocab.ptr:dependency_ptr;
 import std;
 
 namespace base::vocab::inline ptr {
-    ///@todo Refactor into base.meta.traits:remove_indirection
+    ///@todo Refactor into base.meta.traits:remove_all_indirections
     //Internal helper trait to recursively strip all levels of indirection from a type. 
     template<typename T>
-    struct remove_indirection {
+    struct remove_all_indirections {
         using type = T;
     };
     
     template<typename T>
-    struct remove_indirection<T*> : remove_indirection<T> {};
+    struct remove_all_indirections<T*> : remove_all_indirections<T> {};
     
     template<typename T>
-    struct remove_indirection<T&> : remove_indirection<T> {};
+    struct remove_all_indirections<T&> : remove_all_indirections<T> {};
     
     template<typename T>
-    struct remove_indirection<T&&> : remove_indirection<T> {};
-    
-    template<typename T>
-    using remove_indirection_t = typename remove_indirection<T>::type;
+    struct remove_all_indirections<T&&> : remove_all_indirections<T> {};
 
+    template<typename T, std::size_t N>
+    struct remove_all_indirections<T[N]> : remove_all_indirections<T> {};
+
+    template<typename T>
+    struct remove_all_indirections<T[]> : remove_all_indirections<T> {};
+
+    template<typename T>
+    using remove_all_indirections_t = typename remove_all_indirections<T>::type;
+
+    template<typename T>
+    concept is_func_or_memfunc = is_function_v<T> || is_member_function_pointer_v<T>;
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
@@ -91,7 +99,7 @@ export namespace base::vocab::inline ptr {
      * @see `alias_ptr` for nullable aliasing, `required_ptr` for non-null aliasing, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */
     template<typename T>
-        requires (!std::is_reference_v<T> && !std::is_void_v<T> && !std::is_function_v<remove_indirection_t<T>>)
+        requires (!std::is_reference_v<T> && !std::is_void_v<T> && !is_func_or_memfunc<remove_all_indirections_t<T>>)
     class [[nodiscard]] dependency_ptr {
     public:
         /**
