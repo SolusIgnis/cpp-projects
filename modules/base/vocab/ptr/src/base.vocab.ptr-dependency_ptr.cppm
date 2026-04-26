@@ -68,7 +68,7 @@ namespace base::vocab::inline ptr {
     using remove_all_indirections_t = typename remove_all_indirections<T>::type;
 
     template<typename T>
-    concept is_func_or_memfunc = is_function_v<T> || is_member_function_pointer_v<T>;
+    concept is_func_or_memfunc = std::is_function_v<T> || std::is_member_function_pointer_v<T>;
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
