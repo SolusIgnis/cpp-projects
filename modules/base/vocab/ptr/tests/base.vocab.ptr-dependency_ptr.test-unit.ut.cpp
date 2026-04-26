@@ -47,15 +47,15 @@ namespace {
         "triviality"_test = [] mutable {
             using simple_t = std::int32_t;
 
-            expect(eq(std::is_trivially_copyable_v<dependency_ptr<simple_t>>, true));
             expect(eq(std::is_standard_layout_v<dependency_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_copyable_v<dependency_ptr<simple_t>>, true));
             expect(eq(std::is_trivially_destructible_v<dependency_ptr<simple_t>>, true));
             expect(eq(std::is_nothrow_constructible_v<dependency_ptr<simple_t>, simple_t&>, true));
             
             using complex_t = std::map<std::string, std::vector<std::int32_t>>;
             
-            expect(eq(std::is_trivially_copyable_v<dependency_ptr<complex_t>>, true));
             expect(eq(std::is_standard_layout_v<dependency_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_copyable_v<dependency_ptr<complex_t>>, true));
             expect(eq(std::is_trivially_destructible_v<dependency_ptr<complex_t>>, true));
             expect(eq(std::is_nothrow_constructible_v<dependency_ptr<complex_t>, complex_t&>, true));
         };

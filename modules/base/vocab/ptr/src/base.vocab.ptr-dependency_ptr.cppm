@@ -19,15 +19,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief `dependency_ptr`: A non-owning, never-null pointer type for a required dependency.
+ * @brief `dependency_ptr`: A non-owning, never-null, non-arithmetic pointer type for a required dependency.
  *
- * @details `dependency_ptr` acts as a rebindable reference with pointer syntax. It is 
- * designed to express a mandatory dependency that must exist for the duration of the 
- * consumer's lifetime. Optional dependencies should be wrapped in `std::optional`
- * rather than using `nullptr` for a disengaged value.
+ * @details `dependency_ptr` acts like a rebindable reference with pointer syntax. It
+ * expresses a mandatory dependency that must exist for the duration of the consumer's
+ * lifetime. It naturally composes as `std::optional<dependency_ptr<T>>` to represent
+ * a contextually optional dependency decoupled from the pointer itself.
  *
  * By utilizing structural constraints (deleted constructors for `nullptr_t` and raw 
- * `pointer`), it enforces validity at the call site. It is intended to replace:
+ * `pointer`), it enforces validity at the point of construction. It is intended to replace:
  * - Non-static reference data members (which make a class non-assignable).
  * - Raw pointers used as dependencies (which are semantically muddy regarding optionality and ownership).
  * - `std::reference_wrapper` (when pointer-like `->` access is preferred).
@@ -41,32 +41,57 @@ export module base.vocab.ptr:dependency_ptr;
 
 import std;
 
+namespace base::vocab::inline ptr {
+    ///@todo Refactor into base.meta.traits:remove_indirection
+    //Internal helper trait to recursively strip all levels of indirection from a type. 
+    template<typename T>
+    struct remove_indirection {
+        using type = T;
+    };
+    
+    template<typename T>
+    struct remove_indirection<T*> : remove_indirection<T> {};
+    
+    template<typename T>
+    struct remove_indirection<T&> : remove_indirection<T> {};
+    
+    template<typename T>
+    struct remove_indirection<T&&> : remove_indirection<T> {};
+    
+    template<typename T>
+    using remove_indirection_t = typename remove_indirection<T>::type;
+
+} //namespace base::vocab::inline ptr
+
 export namespace base::vocab::inline ptr {
     /**
-     * @brief Non-owning, never-null pointer type representing a required dependency.
+     * @brief Pointer type representing a required dependency.
      *
      * @tparam T The pointed-to type (must not be a reference type per "C++ standard [dcl.ptr]", `void`, nor a function pointer).
      *
-     * @details `dependency_ptr` is designed for dependency injection scenarios, where a dependency
-     * is required to exist and outlive the consumer. It serves as a replacement for references as
-     * nonstatic data members and in other cases where rebinding, pointer semantics, or interoperability
-     * with pointer-based APIs is desirable.
+     * @details `dependency_ptr` models a non-owning, never-null, non-arithmetic pointer abstraction.
+     * It is designed for dependency injection scenarios, where a dependency is required to exist and
+     * outlive the consumer. It serves as a replacement for references as nonstatic data members and in
+     * other cases where rebinding, pointer semantics, or interoperability with pointer-based APIs is
+     * desirable. Optional dependencies naturally compose as `std::optional<dependency_ptr<T>>`.
      *
      * @note Semantically equivalent to a rebindable reference with a pointer interface.
-     * @invariant The stored pointer is guaranteed to be non-null by construction; this invariant is enforced structurally.
+     * @note Standard Layout type with size and alignment of a raw pointer.
+     * @invariant Always engaged: a `dependency_ptr` always refers to a valid object; there is no null/disengaged representation. The wrapped pointer is guaranteed to be non-null by construction.
      * @remark This type does not own the referenced object and does not participate in lifetime management.
      * @remark Copying and assignment rebind the pointer without affecting the lifetime of the underlying object.
      * @remark Marked `[[nodiscard]]` to prevent accidental construction of unused dependency objects. Intentional discards should use `[[maybe_unused]]` to document intent.
      * @remark Construction requires an lvalue reference, preventing null initialization and discouraging dangling by rejecting direct binding to temporaries.
-     * @remark Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator.
+     * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator.
      * @remark Implicit conversion to raw pointer is provided for interoperability with legacy or low-level APIs.
+     * @note All operations provide the no-throw guarantee; operations consist exclusively of non-throwing pointer manipulation.
      *
      * @warning The referenced object MUST outlive the `dependency_ptr`. Violating this results in undefined behavior.
      *
      * @see `alias_ptr` for nullable aliasing, `required_ptr` for non-null aliasing, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */
     template<typename T>
-        requires (!std::is_reference_v<T> && !std::is_void_v<T> && !std::is_function_v<T>)
+        requires (!std::is_reference_v<T> && !std::is_void_v<T> && !std::is_function_v<remove_indirection_t<T>>)
     class [[nodiscard]] dependency_ptr {
     public:
         /**
@@ -105,7 +130,7 @@ export namespace base::vocab::inline ptr {
          * @typedef difference_type
          * @brief Pointer difference type (`std::ptrdiff_t`).
          *
-         * @note Provided for compatibility with pointer-like conventions, though arithmetic is disabled.
+         * @note Provided to model pointer interface, though arithmetic is disabled.
          */
         using difference_type = std::ptrdiff_t;
 
@@ -120,7 +145,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Constructs a `dependency_ptr` bound to an existing object.
         constexpr explicit dependency_ptr(reference source) noexcept : ptr_(&source) {}
 
-        ///@brief (Covariance) Constructs a `dependency_ptr<Base>` implicitly from a `dependency_ptr<Derived>`
+        ///@brief (Covariance) Implicitly converts from `dependency_ptr<U>` to `dependency_ptr<T>` when `U` is publicly derived from `T`.
         template<std::derived_from<T> U>
             requires (!std::same_as<U, T>)
         constexpr explicit(false) dependency_ptr(const dependency_ptr<U>& source) noexcept 
@@ -133,7 +158,7 @@ export namespace base::vocab::inline ptr {
             return *this;
         }
 
-        ///@brief (Covariance) Assigns a `dependency_ptr<Derived>` to a `dependency_ptr<Base>`
+        ///@brief (Covariance) Assigns from `dependency_ptr<U>` to `dependency_ptr<T>` when `U` is publicly derived from `T`.
         template<std::derived_from<T> U>
             requires (!std::same_as<U, T>)
         dependency_ptr& operator=(const dependency_ptr<U>& source) noexcept
@@ -175,16 +200,19 @@ export namespace base::vocab::inline ptr {
         // Comparison Operators (Equality Allowed, Others Deleted)
         //================================================================================
 
-        ///@brief Defaulted equality comparison operator returns true if both pointers alias each other.
+        ///@brief Compares equality in terms of pointer identity.
         [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const dependency_ptr& rhs) noexcept = default;
 
+        ///@brief Covariantly compares equality in terms of pointer identity.
         template<std::derived_from<T> U>
             requires (!std::same_as<U, T>)
         [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const dependency_ptr<U>& rhs) noexcept { return (lhs.get() == rhs.get()); }
-        
+
+        ///@brief Covariantly compares equality of a `dependency_ptr`-to-base with a raw pointer-to-derived in terms of pointer identity.
         template<std::derived_from<T> U>
         [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const U* rhs) noexcept { return (lhs.get() == rhs); }
-        
+
+        ///@brief Covariantly compares equality of a raw pointer-to-base with a `dependency_ptr`-to-derived in terms of pointer identity.
         template<std::derived_from<T> U>
         [[nodiscard]] friend bool operator==(const pointer lhs, const dependency_ptr<U>& rhs) noexcept { return (lhs == rhs.get()); }
 
@@ -264,6 +292,8 @@ export namespace base::vocab::inline ptr {
      *
      * @param source The pointer-to-derived being converted.
      *
+     * @pre `*source` must refer to a valid object that outlives the resulting `dependency_ptr`.
+     *
      * @remark Preserves covariance. Converts from dependency_ptr-to-derived to dependency_ptr-to-base implicitly.
      */
     /**
@@ -284,6 +314,8 @@ export namespace base::vocab::inline ptr {
      * @param source The pointer-to-derived being converted.
      * @return Reference to `*this`.
      *
+     * @pre `*source` must refer to a valid object that outlives the resulting `dependency_ptr`.
+     *
      * @remark Preserves covariance. Converts from dependency_ptr-to-derived to dependency_ptr-to-base implicitly.
      */
     /**
@@ -292,6 +324,9 @@ export namespace base::vocab::inline ptr {
      * @return Pointer to the referenced object.
      *
      * @pre The stored pointer must remain valid (non-dangling).
+     * @post The returned pointer is non-null.
+     *
+     * @remark Operator syntax equivalent to `get()->`. Function syntax equivalent to calling `get()`.
      */
     /**
      * @fn constexpr reference dependency_ptr::operator*() const noexcept
@@ -299,11 +334,15 @@ export namespace base::vocab::inline ptr {
      * @return Reference to the referenced object.
      *
      * @pre The stored pointer must remain valid (non-dangling).
+     *
+     * @remark Equivalent to dereferencing `get()`.
      */
     /**
      * @fn constexpr pointer dependency_ptr::get() const noexcept
      *
      * @return The underlying raw pointer.
+     *
+     * @post The returned pointer is non-null.
      *
      * @remark Provided for interoperability with pointer-based APIs.
      */
@@ -311,6 +350,8 @@ export namespace base::vocab::inline ptr {
      * @fn dependency_ptr::operator pointer() const noexcept
      *
      * @return The underlying raw pointer.
+     *
+     * @post The returned pointer is non-null.
      *
      * @remark Enables seamless interoperability with legacy interfaces expecting raw pointers.
      * @warning Implicit conversion may obscure the non-owning, non-null semantics; prefer `get()` when clarity is important.
@@ -320,8 +361,61 @@ export namespace base::vocab::inline ptr {
      *
      * @return `true` (The pointer is structurally guaranteed to always be engaged.)
      *
-     * @remark Satisfies boolean-testable requirements in generic templates and logical contexts. 
+     * @post Always evaluates to `true`.
+     *
+     * @remark Satisfies boolean-testable requirements in generic templates and logical contexts.
+     * @remark Models pointer interface by providing contextual conversion to `bool` albeit redundantly.
      * @note Because this always returns `true`, the compiler can elide checks in generic code when `dependency_ptr` is the concrete type.
+     * @note This does not indicate engagement/optionality as `dependency_ptr` has no disengaged state.
+     */
+    /**
+     * @fn bool operator==(const dependency_ptr& lhs, const dependency_ptr& rhs) noexcept
+     *
+     * @param lhs The left-hand side `dependency_ptr`.
+     * @param rhs The right-hand side `dependency_ptr`.
+     *
+     * @return `true` if both pointers refer to the same object; otherwise `false`.
+     *
+     * @remark Compares the pointed-to addresses (aliasing), not object values.
+     */
+    /**
+     * @overload bool operator==(const dependency_ptr& lhs, const dependency_ptr<U>& rhs) noexcept
+     *
+     * @tparam U The element type, derived from `T`, of the right-hand side `dependency_ptr`.
+     *
+     * @param lhs The left-hand side `dependency_ptr`.
+     * @param rhs The right-hand side `dependency_ptr` to compare.
+     *
+     * @return `true` if both pointers refer to the same object; otherwise `false`.
+     *
+     * @remark Enables equality comparison between `dependency_ptr` instances of related types.
+     * @remark Compares the pointed-to addresses (aliasing), not object values.
+     */
+    /**
+     * @overload bool operator==(const dependency_ptr& lhs, const U* rhs) noexcept
+     *
+     * @tparam U The element type, derived from `T`, of the raw pointer.
+     *
+     * @param lhs The `dependency_ptr` being compared.
+     * @param rhs The raw pointer to compare against.
+     *
+     * @return `true` if the wrapped pointer in `lhs` equals `rhs`; otherwise `false`.
+     *
+     * @remark Enables comparison with raw pointers-to-derived for interoperability with legacy APIs.
+     * @remark Compares the pointed-to addresses (aliasing), not object values.
+     */
+    /**
+     * @overload bool operator==(const pointer lhs, const dependency_ptr<U>& rhs) noexcept
+     *
+     * @tparam U The element type, derived from `T`, of the right-hand side `dependency_ptr`.
+     *
+     * @param lhs The raw pointer to compare.
+     * @param rhs The `dependency_ptr` being compared.
+     *
+     * @return `true` if `lhs` equals the wrapped pointer in `rhs`; otherwise `false`.
+     *
+     * @remark Enables comparison with raw pointers-to-base for interoperability with legacy APIs.
+     * @remark Comparison is performed on the underlying addresses.
      */
 
     /**
@@ -329,7 +423,7 @@ export namespace base::vocab::inline ptr {
      *
      * @tparam T The type of the referenced object.
      *
-     * @remark Deduces `T` directly from `T&`, preserving cv-qualification.
+     * @remark Deduces `T` from the referenced object, preserving cv-qualification.
      */
     template<typename T>
     dependency_ptr(T&) -> dependency_ptr<T>;
