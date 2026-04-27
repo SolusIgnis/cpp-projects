@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-dependency_ptr.cppm
- * @version 0.2.0
+ * @version 0.3.0
  * @date April 26, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
