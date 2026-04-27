@@ -13,8 +13,11 @@ trace_me()
 # Add submodule directories in dependency order.
 # ===========================================================================
 
-# Add the `base.functional.traits` module
+# Add the `base.meta.traits` module
 add_subdirectory("traits")
+
+# Add the `concepts` metamodule
+add_subdirectory("concepts")
 
 # ===========================================================================
 # Add generated metamodule from submodules registered above.
