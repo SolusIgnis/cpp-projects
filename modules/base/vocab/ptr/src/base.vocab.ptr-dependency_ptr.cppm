@@ -41,53 +41,7 @@ export module base.vocab.ptr:dependency_ptr;
 
 import std;
 
-namespace base::vocab::inline ptr {
-    ///@todo Refactor into base.meta.traits:remove_all_indirections
-    //Internal helper trait to recursively strip all levels of indirection (including class membership) from a type to yield the core cv-qualified type.
-    template<typename T>
-    struct remove_all_indirections {
-        using type = T;
-    };
-
-    template<typename T>
-    struct remove_all_indirections<T*> : remove_all_indirections<T> {};
-
-    template<typename T>
-    struct remove_all_indirections<T* const> : remove_all_indirections<T> {};
-
-    template<typename T>
-    struct remove_all_indirections<T* volatile> : remove_all_indirections<T> {};
-
-    template<typename T>
-    struct remove_all_indirections<T* const volatile> : remove_all_indirections<T> {};
-
-    template<typename T, typename C>
-    struct remove_all_indirections<T C::*> : remove_all_indirections<T> {};
-
-    template<typename T, typename C>
-    struct remove_all_indirections<T C::* const> : remove_all_indirections<T> {};
-
-    template<typename T, typename C>
-    struct remove_all_indirections<T C::* volatile> : remove_all_indirections<T> {};
-
-    template<typename T, typename C>
-    struct remove_all_indirections<T C::* const volatile> : remove_all_indirections<T> {};
-
-    template<typename T>
-    struct remove_all_indirections<T&> : remove_all_indirections<T> {};
-
-    template<typename T>
-    struct remove_all_indirections<T&&> : remove_all_indirections<T> {};
-
-    template<typename T, std::size_t N>
-    struct remove_all_indirections<T[N]> : remove_all_indirections<T> {};
-
-    template<typename T>
-    struct remove_all_indirections<T[]> : remove_all_indirections<T> {};
-
-    template<typename T>
-    using remove_all_indirections_t = typename remove_all_indirections<T>::type;
-} //namespace base::vocab::inline ptr
+import base.meta.traits;
 
 export namespace base::vocab::inline ptr {
     /**
@@ -117,7 +71,7 @@ export namespace base::vocab::inline ptr {
      * @see `alias_ptr` for nullable aliasing, `required_ptr` for non-null aliasing, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */
     template<typename T>
-        requires (!std::is_reference_v<T> && !std::is_void_v<T> && !std::is_function_v<remove_all_indirections_t<T>>)
+        requires (!std::is_reference_v<T> && !std::is_void_v<T> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>)
     class [[nodiscard]] dependency_ptr {
     public:
         /**
