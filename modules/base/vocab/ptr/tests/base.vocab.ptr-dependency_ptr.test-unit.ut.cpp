@@ -9,40 +9,38 @@ using namespace ut;
 using base::vocab::dependency_ptr;
 
 namespace {
-    template <template <typename...> typename Template, typename... Args>
-    concept instantiatable_with = requires {
-        typename Template<Args...>;
-    };
+    template<template<typename...> typename Template, typename... Args>
+    concept instantiatable_with = requires { typename Template<Args...>; };
 
     template<typename T>
     concept HasAddition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
-    
+
     template<typename T>
     concept HasSubtraction = requires(T t) { t - 1; };
-    
+
     template<typename T>
     concept HasDifference = requires(T t) { t - t; };
-    
+
     template<typename T>
     concept HasPreIncrement = requires(T t) { ++t; };
-    
+
     template<typename T>
     concept HasPostIncrement = requires(T t) { t++; };
-    
+
     template<typename T>
     concept HasPreDecrement = requires(T t) { --t; };
-    
+
     template<typename T>
     concept HasPostDecrement = requires(T t) { t--; };
-   
+
     struct Base {
         int value{0};
     };
-    
+
     struct Derived : Base {
         int extra{42};
     };
-    
+
     suite dependency_ptr_tests = [] mutable {
         //============================================================
         // Template Constraint Validation
@@ -57,16 +55,16 @@ namespace {
             expect(eq(instantiatable_with<dependency_ptr, std::int32_t&>, false));
             expect(eq(instantiatable_with<dependency_ptr, std::int32_t&&>, false));
             expect(eq(instantiatable_with<dependency_ptr, void(int)>, false));
-            expect(eq(instantiatable_with<dependency_ptr, void(&)(int)>, false));
-            expect(eq(instantiatable_with<dependency_ptr, void(*)(int, float)>, false));
-            expect(eq(instantiatable_with<dependency_ptr, void(**)(std::string, int)>, false));
-            expect(eq(instantiatable_with<dependency_ptr, void(*******)(int)>, false));
+            expect(eq(instantiatable_with<dependency_ptr, void (&)(int)>, false));
+            expect(eq(instantiatable_with<dependency_ptr, void (*)(int, float)>, false));
+            expect(eq(instantiatable_with<dependency_ptr, void (**)(std::string, int)>, false));
+            expect(eq(instantiatable_with<dependency_ptr, void (*******)(int)>, false));
         };
-    
+
         //============================================================
         // Triviality & ABI properties
         //============================================================
-        
+
         "triviality"_test = [] mutable {
             using simple_t = std::int32_t;
 
@@ -74,9 +72,9 @@ namespace {
             expect(eq(std::is_trivially_copyable_v<dependency_ptr<simple_t>>, true));
             expect(eq(std::is_trivially_destructible_v<dependency_ptr<simple_t>>, true));
             expect(eq(std::is_nothrow_constructible_v<dependency_ptr<simple_t>, simple_t&>, true));
-            
+
             using complex_t = std::map<std::string, std::vector<std::int32_t>>;
-            
+
             expect(eq(std::is_standard_layout_v<dependency_ptr<complex_t>>, true));
             expect(eq(std::is_trivially_copyable_v<dependency_ptr<complex_t>>, true));
             expect(eq(std::is_trivially_destructible_v<dependency_ptr<complex_t>>, true));
@@ -85,7 +83,7 @@ namespace {
 
         "size and alignment match raw pointers"_test = [] mutable {
             using simple_t = std::int32_t;
-            
+
             expect(eq(sizeof(dependency_ptr<simple_t>) == sizeof(simple_t*), true));
             expect(eq(alignof(dependency_ptr<simple_t>) == alignof(simple_t*), true));
 
@@ -94,21 +92,21 @@ namespace {
             expect(eq(sizeof(dependency_ptr<complex_t>) == sizeof(complex_t*), true));
             expect(eq(alignof(dependency_ptr<complex_t>) == alignof(complex_t*), true));
         };
-        
+
         //============================================================
         // Type properties
         //============================================================
-    
+
         "type aliases are correct"_test = [] mutable {
             using T = dependency_ptr<const std::int32_t>;
-    
+
             constexpr bool element = std::same_as<T::element_type, const std::int32_t>;
             constexpr bool value   = std::same_as<T::value_type, std::int32_t>;
             constexpr bool pointer = std::same_as<T::pointer, const std::int32_t*>;
             constexpr bool ref     = std::same_as<T::reference, const std::int32_t&>;
             constexpr bool rref    = std::same_as<T::rvalue_reference, const std::int32_t&&>;
             constexpr bool ptrdiff = std::same_as<T::difference_type, std::ptrdiff_t>;
-    
+
             expect(eq(element, true));
             expect(eq(value, true));
             expect(eq(pointer, true));
@@ -120,7 +118,7 @@ namespace {
         //============================================================
         // Construction
         //============================================================
-    
+
         "constructible explicitly from lvalue reference"_test = [] mutable {
             //Explicitly constructible unless removing qualifier
             expect(eq(std::constructible_from<dependency_ptr<std::int32_t>, std::int32_t&>, true));
@@ -135,11 +133,13 @@ namespace {
             expect(eq(std::constructible_from<dependency_ptr<volatile std::int32_t>, const std::int32_t&>, false));
             expect(eq(std::constructible_from<dependency_ptr<volatile std::int32_t>, volatile std::int32_t&>, true));
             expect(eq(std::constructible_from<dependency_ptr<volatile std::int32_t>, const volatile std::int32_t&>, false));
-            expect(eq(std::constructible_from<dependency_ptr<const volatile std::int32_t>, std::int32_t&>, true)); 
+            expect(eq(std::constructible_from<dependency_ptr<const volatile std::int32_t>, std::int32_t&>, true));
             expect(eq(std::constructible_from<dependency_ptr<const volatile std::int32_t>, const std::int32_t&>, true));
-            expect(eq(std::constructible_from<dependency_ptr<const volatile std::int32_t>, volatile std::int32_t&>, true)); 
-            expect(eq(std::constructible_from<dependency_ptr<const volatile std::int32_t>, const volatile std::int32_t&>, true)); 
-            
+            expect(eq(std::constructible_from<dependency_ptr<const volatile std::int32_t>, volatile std::int32_t&>, true));
+            expect(
+                eq(std::constructible_from<dependency_ptr<const volatile std::int32_t>, const volatile std::int32_t&>, true)
+            );
+
             //Never implicitly convertible (constructor is explicit)
             expect(eq(std::convertible_to<std::int32_t&, dependency_ptr<std::int32_t>>, false));
             expect(eq(std::convertible_to<const std::int32_t&, dependency_ptr<std::int32_t>>, false));
@@ -150,17 +150,17 @@ namespace {
         "not default constructible"_test = [] mutable {
             expect(eq(std::default_initializable<dependency_ptr<std::int32_t>>, false));
         };
-    
+
         "not constructible from nullptr"_test = [] mutable {
             expect(eq(std::constructible_from<dependency_ptr<std::int32_t>, std::nullptr_t>, false));
         };
-    
+
         "not constructible from raw pointer"_test = [] mutable {
             expect(eq(std::constructible_from<dependency_ptr<std::int32_t>, std::int32_t*>, false));
             expect(eq(std::constructible_from<dependency_ptr<const std::int32_t>, std::int32_t*>, false));
             expect(eq(std::constructible_from<dependency_ptr<const std::int32_t>, const std::int32_t*>, false));
         };
-    
+
         "not constructible from rvalue"_test = [] mutable {
             expect(eq(std::constructible_from<dependency_ptr<std::int32_t>, std::int32_t>, false));
             expect(eq(std::constructible_from<dependency_ptr<const std::int32_t>, std::int32_t>, false));
@@ -188,22 +188,22 @@ namespace {
             expect(eq(std::is_assignable_v<dependency_ptr<volatile std::int32_t>&, const std::int32_t&>, false));
             expect(eq(std::is_assignable_v<dependency_ptr<volatile std::int32_t>&, volatile std::int32_t&>, true));
             expect(eq(std::is_assignable_v<dependency_ptr<volatile std::int32_t>&, const volatile std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<dependency_ptr<const volatile std::int32_t>&, std::int32_t&>, true)); 
+            expect(eq(std::is_assignable_v<dependency_ptr<const volatile std::int32_t>&, std::int32_t&>, true));
             expect(eq(std::is_assignable_v<dependency_ptr<const volatile std::int32_t>&, const std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<dependency_ptr<const volatile std::int32_t>&, volatile std::int32_t&>, true)); 
-            expect(eq(std::is_assignable_v<dependency_ptr<const volatile std::int32_t>&, const volatile std::int32_t&>, true)); 
+            expect(eq(std::is_assignable_v<dependency_ptr<const volatile std::int32_t>&, volatile std::int32_t&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<const volatile std::int32_t>&, const volatile std::int32_t&>, true));
         };
 
         "not assignable from nullptr"_test = [] mutable {
             expect(eq(std::is_assignable_v<dependency_ptr<std::int32_t>&, std::nullptr_t>, false));
         };
-    
+
         "not assignable from raw pointer"_test = [] mutable {
             expect(eq(std::is_assignable_v<dependency_ptr<std::int32_t>&, std::int32_t*>, false));
             expect(eq(std::is_assignable_v<dependency_ptr<const std::int32_t>&, std::int32_t*>, false));
             expect(eq(std::is_assignable_v<dependency_ptr<const std::int32_t>&, const std::int32_t*>, false));
         };
-    
+
         "not assignable from rvalue"_test = [] mutable {
             expect(eq(std::is_assignable_v<dependency_ptr<std::int32_t>&, std::int32_t&&>, false));
             expect(eq(std::is_assignable_v<dependency_ptr<const std::int32_t>&, std::int32_t&&>, false));
@@ -217,17 +217,17 @@ namespace {
         "operator* dereferences correctly"_test = [] mutable {
             int x = 55;
             dependency_ptr<std::int32_t> ptr{x};
-    
+
             expect(eq(*ptr, 55));
         };
 
         "operator-> provides member access"_test = [] mutable {
             Base obj{123};
             dependency_ptr<Base> ptr{obj};
-    
+
             expect(eq(ptr->value, 123));
         };
-    
+
         "implicit conversion to raw pointer"_test = [] mutable {
             expect(eq(std::convertible_to<dependency_ptr<std::int32_t>, std::int32_t*>, true));
             expect(eq(std::convertible_to<dependency_ptr<std::int32_t>, const std::int32_t*>, true));
@@ -241,34 +241,34 @@ namespace {
             expect(eq(std::convertible_to<dependency_ptr<volatile std::int32_t>, const std::int32_t*>, false));
             expect(eq(std::convertible_to<dependency_ptr<volatile std::int32_t>, volatile std::int32_t*>, true));
             expect(eq(std::convertible_to<dependency_ptr<volatile std::int32_t>, const volatile std::int32_t*>, true));
-            expect(eq(std::convertible_to<dependency_ptr<const volatile std::int32_t>, std::int32_t*>, false)); 
+            expect(eq(std::convertible_to<dependency_ptr<const volatile std::int32_t>, std::int32_t*>, false));
             expect(eq(std::convertible_to<dependency_ptr<const volatile std::int32_t>, const std::int32_t*>, false));
-            expect(eq(std::convertible_to<dependency_ptr<const volatile std::int32_t>, volatile std::int32_t*>, false)); 
-            expect(eq(std::convertible_to<dependency_ptr<const volatile std::int32_t>, const volatile std::int32_t*>, true)); 
+            expect(eq(std::convertible_to<dependency_ptr<const volatile std::int32_t>, volatile std::int32_t*>, false));
+            expect(eq(std::convertible_to<dependency_ptr<const volatile std::int32_t>, const volatile std::int32_t*>, true));
         };
 
         "conversion to raw pointer preserves address"_test = [] mutable {
             const int x{};
             dependency_ptr<const std::int32_t> ptr{x};
-    
+
             const std::int32_t* raw = ptr;
-    
+
             expect(eq(raw, std::addressof(x)));
         };
-    
+
         "get returns raw pointer"_test = [] mutable {
             const int x{};
             dependency_ptr<const std::int32_t> ptr{x};
-    
+
             expect(eq(ptr.get(), std::addressof(x)));
         };
-    
+
         "boolean conversion"_test = [] mutable {
             expect(eq(std::constructible_from<bool, dependency_ptr<std::int32_t>>, true));
-            
+
             const int x{};
             dependency_ptr<const std::int32_t> ptr{x};
-            
+
             expect(eq(static_cast<bool>(ptr), true));
             expect(eq(!ptr, false));
         };
@@ -276,14 +276,14 @@ namespace {
         //============================================================
         // Rebinding
         //============================================================
-    
+
         "rebind via assignment from reference"_test = [] mutable {
             const int a{};
             const int b = 2;
-    
+
             dependency_ptr<const std::int32_t> ptr{a};
             ptr = b;
-    
+
             expect(eq(*ptr, 2));
             expect(eq(ptr.get(), std::addressof(b)));
         };
@@ -291,74 +291,74 @@ namespace {
         //============================================================
         // Equality semantics
         //============================================================
-    
+
         "equality compares pointer identity"_test = [] mutable {
             expect(eq(std::equality_comparable<dependency_ptr<std::int32_t>>, true));
 
             const int x = 1;
             const int y = 1;
-    
+
             dependency_ptr<const std::int32_t> a{x};
             dependency_ptr<const std::int32_t> b{x};
             dependency_ptr<const std::int32_t> c{y};
-    
+
             expect(eq(a == b, true));
             expect(eq(a == c, false));
         };
-    
+
         //============================================================
         // Covariance
         //============================================================
-    
+
         "construct base from derived dependency_ptr"_test = [] mutable {
             Derived d;
             dependency_ptr<Derived> dptr{d};
-    
+
             dependency_ptr<Base> bptr{dptr};
-    
+
             expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
         };
-        
+
         "construct base from derived reference"_test = [] mutable {
             Derived d;
-    
+
             dependency_ptr<Base> bptr{d};
-    
+
             expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
         };
-    
+
         "assign base from derived dependency_ptr"_test = [] mutable {
             Derived d;
             dependency_ptr<Derived> dptr{d};
-    
+
             Base b;
             dependency_ptr<Base> bptr{b};
-    
+
             bptr = dptr;
-    
+
             expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
         };
-        
+
         "rebind base from derived reference"_test = [] mutable {
             Derived d;
 
             Base b;
             dependency_ptr<Base> bptr{b};
-    
+
             bptr = d;
-    
+
             expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
         };
-        
+
         "assign const base from derived dependency_ptr"_test = [] mutable {
             Derived d;
             dependency_ptr<Derived> dptr{d};
-    
+
             Base b;
             dependency_ptr<const Base> bptr{b};
-    
+
             bptr = dptr;
-    
+
             expect(eq(bptr.get(), static_cast<const Base*>(std::addressof(d))));
         };
 
@@ -367,9 +367,9 @@ namespace {
 
             Base b;
             dependency_ptr<const Base> bptr{b};
-    
+
             bptr = d;
-    
+
             expect(eq(bptr.get(), static_cast<const Base*>(std::addressof(d))));
         };
 
@@ -378,14 +378,14 @@ namespace {
             expect(eq(std::equality_comparable_with<dependency_ptr<Base>, Derived*>, true));
             expect(eq(std::equality_comparable_with<Base*, dependency_ptr<Derived>>, true));
         };
-    
+
         //============================================================
         // Non-iterator / non-arithmetic guarantees
         //============================================================
-    
+
         "no pointer arithmetic operations"_test = [] mutable {
             using T = dependency_ptr<std::int32_t>;
-    
+
             expect(eq(HasAddition<T>, false));
             expect(eq(HasSubtraction<T>, false));
             expect(eq(HasDifference<T>, false));
@@ -394,7 +394,7 @@ namespace {
             expect(eq(HasPreDecrement<T>, false));
             expect(eq(HasPostDecrement<T>, false));
         };
-        
+
         "no ordering comparisons"_test = [] mutable {
             expect(eq(std::three_way_comparable<dependency_ptr<std::int32_t>>, false));
             expect(eq(std::three_way_comparable_with<dependency_ptr<std::int32_t>, std::int32_t*>, false));
@@ -403,76 +403,74 @@ namespace {
             expect(eq(std::three_way_comparable_with<dependency_ptr<Base>, Derived*>, false));
             expect(eq(std::three_way_comparable_with<Base*, dependency_ptr<Derived>>, false));
         };
-    
+
         //============================================================
         // Const-correctness propagation
         //============================================================
-        
+
         "const element forbids mutation through dereference"_test = [] mutable {
             const std::int32_t x{};
             dependency_ptr<const std::int32_t> ptr{x};
-        
+
             // Compile-time: *ptr must NOT be assignable
-            constexpr bool can_assign =
-                std::is_assignable_v<decltype(*ptr), std::int32_t>;
-        
+            constexpr bool can_assign = std::is_assignable_v<decltype(*ptr), std::int32_t>;
+
             expect(eq(can_assign, false));
         };
-        
+
         "non-const element allows mutation"_test = [] mutable {
             std::int32_t x = 5;
             dependency_ptr<std::int32_t> ptr{x};
-        
+
             *ptr = 10;
-        
+
             expect(eq(x, 10));
         };
-        
+
         "`pointer` nested type preserves top-level const"_test = [] mutable {
             using T = dependency_ptr<const std::int32_t>;
-        
+
             expect(eq(std::same_as<typename T::pointer, const std::int32_t*>, true));
         };
-        
+
         "`reference` nested type preserves const"_test = [] mutable {
             using T = dependency_ptr<const std::int32_t>;
 
             expect(eq(std::same_as<typename T::reference, const std::int32_t&>, true));
         };
-        
+
         "const dependency_ptr prevents rebinding but not mutation"_test = [] mutable {
             std::int32_t x{};
-        
+
             const dependency_ptr<std::int32_t> ptr{x};
-        
-            *ptr = 10;  // allowed
-        
-            constexpr bool can_rebind =
-                std::is_assignable_v<const dependency_ptr<std::int32_t>&, std::int32_t&>;
-        
+
+            *ptr = 10; // allowed
+
+            constexpr bool can_rebind = std::is_assignable_v<const dependency_ptr<std::int32_t>&, std::int32_t&>;
+
             expect(eq(x, 10));
             expect(eq(can_rebind, false));
         };
-        
+
         //============================================================
         // Interoperability with raw pointer APIs
         //============================================================
-        
+
         "implicit conversion works with raw pointer API"_test = [] mutable {
             auto takes_ptr = [](std::int32_t* p) { return *p; };
-        
+
             std::int32_t x = 3;
             dependency_ptr<std::int32_t> ptr{x};
-        
+
             expect(eq(takes_ptr(ptr), 3));
         };
-        
+
         "get() works with raw pointer API"_test = [] mutable {
             auto takes_ptr = [](std::int32_t* p) { return *p; };
-        
+
             std::int32_t x = 4;
             dependency_ptr<std::int32_t> ptr{x};
-        
+
             expect(eq(takes_ptr(ptr.get()), 4));
         };
 
@@ -483,7 +481,7 @@ namespace {
         "deduction guide works"_test = [] mutable {
             constexpr std::int32_t x = {};
             dependency_ptr ptr{x};
-    
+
             expect(eq(ptr.get(), std::addressof(x)));
         };
     };

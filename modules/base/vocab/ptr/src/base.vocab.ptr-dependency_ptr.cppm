@@ -26,7 +26,7 @@
  * lifetime. It naturally composes as `std::optional<dependency_ptr<T>>` to represent
  * a contextually optional dependency decoupled from the pointer itself.
  *
- * By utilizing structural constraints (deleted constructors for `nullptr_t` and raw 
+ * By utilizing structural constraints (deleted constructors for `nullptr_t` and raw
  * `pointer`), it enforces validity at the point of construction. It is intended to replace:
  * - Non-static reference data members (which make a class non-assignable).
  * - Raw pointers used as dependencies (which are semantically muddy regarding optionality and ownership).
@@ -43,15 +43,15 @@ import std;
 
 namespace base::vocab::inline ptr {
     ///@todo Refactor into base.meta.traits:remove_all_indirections
-    //Internal helper trait to recursively strip all levels of indirection (including class membership) from a type to yield the core cv-qualified type. 
+    //Internal helper trait to recursively strip all levels of indirection (including class membership) from a type to yield the core cv-qualified type.
     template<typename T>
     struct remove_all_indirections {
         using type = T;
     };
-    
+
     template<typename T>
     struct remove_all_indirections<T*> : remove_all_indirections<T> {};
-    
+
     template<typename T>
     struct remove_all_indirections<T* const> : remove_all_indirections<T> {};
 
@@ -75,7 +75,7 @@ namespace base::vocab::inline ptr {
 
     template<typename T>
     struct remove_all_indirections<T&> : remove_all_indirections<T> {};
-    
+
     template<typename T>
     struct remove_all_indirections<T&&> : remove_all_indirections<T> {};
 
@@ -125,25 +125,25 @@ export namespace base::vocab::inline ptr {
          * @brief The stored element type.
          */
         using element_type = T;
-    
+
         /**
          * @typedef value_type
          * @brief The unqualified element type (`std::remove_cv_t<T>`).
          */
         using value_type = std::remove_cv_t<T>;
-    
+
         /**
          * @typedef pointer
          * @brief The underlying pointer type (`T*`).
          */
         using pointer = T*;
-    
+
         /**
          * @typedef reference
          * @brief The reference type (`T&`).
          */
         using reference = T&;
-    
+
         /**
          * @typedef rvalue_reference
          * @brief The rvalue reference type (`T&&`).
@@ -151,7 +151,7 @@ export namespace base::vocab::inline ptr {
          * @note Used only for deletion of invalid overloads to prevent binding to temporaries.
          */
         using rvalue_reference = T&&;
-    
+
         /**
          * @typedef difference_type
          * @brief Pointer difference type (`std::ptrdiff_t`).
@@ -174,8 +174,8 @@ export namespace base::vocab::inline ptr {
         ///@brief (Covariance) Implicitly converts from `dependency_ptr<U>` to `dependency_ptr<T>` when `U` is publicly derived from `T`.
         template<std::derived_from<T> U>
             requires (!std::same_as<U, T>)
-        constexpr explicit(false) dependency_ptr(const dependency_ptr<U>& source) noexcept 
-          : ptr_(source.get()) {}
+        constexpr explicit(false) dependency_ptr(const dependency_ptr<U>& source) noexcept : ptr_(source.get())
+        {}
 
         ///@brief Rebinds the `dependency_ptr` to another object.
         dependency_ptr& operator=(reference source) noexcept
@@ -198,29 +198,43 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Deleted default constructor to prevent sources of null initialization.
-        dependency_ptr() = delete/*("Default constructor deleted to prevent null initialization. Use `std::optional<dependency_ptr<T>>` for default-constructible optional dependencies.")*/;
+        dependency_ptr() =
+            delete /*("Default constructor deleted to prevent null initialization. Use `std::optional<dependency_ptr<T>>` for default-constructible optional dependencies.")*/
+            ;
 
         ///@brief Deleted constructor from `nullptr` to prevent sources of null initialization.
-        dependency_ptr(std::nullptr_t) = delete/*("Constructor from `nullptr` deleted to prevent null initialization. Use `std::optional<dependency_ptr<T>>` for optional dependencies.")*/;
+        dependency_ptr(std::nullptr_t) =
+            delete /*("Constructor from `nullptr` deleted to prevent null initialization. Use `std::optional<dependency_ptr<T>>` for optional dependencies.")*/
+            ;
 
         ///@brief Deleted constructor from `pointer` to structurally guarantee non-null initialization.
-        dependency_ptr(pointer) = delete/*("Constructor from `pointer` deleted. Dereference first to guarantee non-null initialization. Use `std::optional<dependency_ptr<T>>` for optional dependencies.")*/;
+        dependency_ptr(pointer) =
+            delete /*("Constructor from `pointer` deleted. Dereference first to guarantee non-null initialization. Use `std::optional<dependency_ptr<T>>` for optional dependencies.")*/
+            ;
 
         ///@brief Deleted assignment from `nullptr` to prevent sources of invalid null rebinding.
-        dependency_ptr& operator=(std::nullptr_t) = delete/*("Assignment from `nullptr` deleted to prevent null rebinding. Use `std::optional<dependency_ptr<T>>` for optional dependencies.")*/;
+        dependency_ptr& operator=(std::nullptr_t) =
+            delete /*("Assignment from `nullptr` deleted to prevent null rebinding. Use `std::optional<dependency_ptr<T>>` for optional dependencies.")*/
+            ;
 
         ///@brief Deleted assignment from `pointer` to structurally guarantee non-null rebinding.
-        dependency_ptr& operator=(pointer) = delete/*("Assignment from `pointer` deleted. Dereference first to guarantee non-null initialization. Use `std::optional<dependency_ptr<T>>` for optional dependencies.")*/;
+        dependency_ptr& operator=(pointer) =
+            delete /*("Assignment from `pointer` deleted. Dereference first to guarantee non-null initialization. Use `std::optional<dependency_ptr<T>>` for optional dependencies.")*/
+            ;
 
         //================================================================================
         // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
         //================================================================================
 
         ///@brief Deleted constructor from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
-        dependency_ptr(rvalue_reference) = delete/*("Constructor from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/;
+        dependency_ptr(rvalue_reference) =
+            delete /*("Constructor from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
 
         ///@brief Deleted assignment from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
-        dependency_ptr& operator=(rvalue_reference) = delete/*("Assignment from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/;
+        dependency_ptr& operator=(rvalue_reference) =
+            delete /*("Assignment from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
 
         //================================================================================
         // Comparison Operators (Equality Allowed, Others Deleted)
@@ -232,21 +246,32 @@ export namespace base::vocab::inline ptr {
         ///@brief Covariantly compares equality in terms of pointer identity.
         template<std::derived_from<T> U>
             requires (!std::same_as<U, T>)
-        [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const dependency_ptr<U>& rhs) noexcept { return (lhs.get() == rhs.get()); }
+        [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const dependency_ptr<U>& rhs) noexcept
+        {
+            return (lhs.get() == rhs.get());
+        }
 
         ///@brief Covariantly compares equality of a `dependency_ptr`-to-base with a raw pointer-to-derived in terms of pointer identity.
         template<std::derived_from<T> U>
-        [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const U* rhs) noexcept { return (lhs.get() == rhs); }
+        [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const U* rhs) noexcept
+        {
+            return (lhs.get() == rhs);
+        }
 
         ///@brief Covariantly compares equality of a raw pointer-to-base with a `dependency_ptr`-to-derived in terms of pointer identity.
         template<std::derived_from<T> U>
-        [[nodiscard]] friend bool operator==(const pointer lhs, const dependency_ptr<U>& rhs) noexcept { return (lhs == rhs.get()); }
+        [[nodiscard]] friend bool operator==(const pointer lhs, const dependency_ptr<U>& rhs) noexcept
+        {
+            return (lhs == rhs.get());
+        }
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
-        auto operator<=>(dependency_ptr) const = delete/*("Comparison operators deleted to prevent address comparisons. `dependency_ptr` is not an iterator.")*/;
-        
+        auto operator<=>(dependency_ptr) const =
+            delete /*("Comparison operators deleted to prevent address comparisons. `dependency_ptr` is not an iterator.")*/;
+
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
-        auto operator<=>(const pointer) const = delete/*("Comparison operators deleted to prevent address comparisons. `dependency_ptr` is not an iterator.")*/;
+        auto operator<=>(const pointer) const =
+            delete /*("Comparison operators deleted to prevent address comparisons. `dependency_ptr` is not an iterator.")*/;
 
         //================================================================================
         // Pointer Operations
@@ -272,35 +297,46 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Deleted prefix increment to prevent misuse as an iterator.
-        dependency_ptr& operator++() = delete/*("Prefix increment deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
+        dependency_ptr& operator++() =
+            delete /*("Prefix increment deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
 
         ///@brief Deleted prefix decrement to prevent misuse as an iterator.
-        dependency_ptr& operator--() = delete/*("Prefix decrement deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
+        dependency_ptr& operator--() =
+            delete /*("Prefix decrement deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
 
         ///@brief Deleted postfix increment to prevent misuse as an iterator.
-        dependency_ptr operator++(int) = delete/*("Postfix increment deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
+        dependency_ptr operator++(int) =
+            delete /*("Postfix increment deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
 
         ///@brief Deleted postfix decrement to prevent misuse as an iterator.
-        dependency_ptr operator--(int) = delete/*("Postfix decrement deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
+        dependency_ptr operator--(int) =
+            delete /*("Postfix decrement deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
 
         ///@brief Deleted addition assignment to prevent misuse as an iterator.
-        dependency_ptr& operator+=(difference_type) = delete/*("Addition assignment deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
+        dependency_ptr& operator+=(difference_type) =
+            delete /*("Addition assignment deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
 
         ///@brief Deleted subtraction assignment to prevent misuse as an iterator.
-        dependency_ptr& operator-=(difference_type) = delete/*("Subtraction assignment deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
+        dependency_ptr& operator-=(difference_type) =
+            delete /*("Subtraction assignment deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
 
         ///@brief Deleted pointer addition to prevent misuse as an iterator.
-        friend dependency_ptr operator+(dependency_ptr, difference_type) = delete/*("Pointer addition deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
+        friend dependency_ptr operator+(dependency_ptr, difference_type) =
+            delete /*("Pointer addition deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
 
         ///@brief Deleted pointer addition to prevent misuse as an iterator.
-        friend dependency_ptr operator+(difference_type, dependency_ptr) = delete/*("Pointer addition deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
+        friend dependency_ptr operator+(difference_type, dependency_ptr) =
+            delete /*("Pointer addition deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
 
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
-        friend difference_type operator-(dependency_ptr, dependency_ptr) = delete/*("Pointer subtraction deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
+        friend difference_type operator-(dependency_ptr, dependency_ptr) =
+            delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
 
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
-        friend dependency_ptr operator-(dependency_ptr, difference_type) = delete/*("Pointer subtraction deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
+        friend dependency_ptr operator-(dependency_ptr, difference_type) =
+            delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
     }; //class dependency_ptr
+
     /**
      * @fn explicit dependency_ptr::dependency_ptr(reference source) noexcept
      *
