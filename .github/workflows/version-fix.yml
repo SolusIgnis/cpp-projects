@@ -9,7 +9,7 @@ concurrency:
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    #branches: [main]
+    branches: [main]
 
 jobs:
   version-fix:

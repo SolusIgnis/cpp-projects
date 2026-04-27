@@ -7,8 +7,6 @@ import std;
 
 using namespace ut;
 
-suite base_vocab_ptr_cursor_ptr_unit = [] mutable {
-
-};
+suite base_vocab_ptr_cursor_ptr_unit = [] mutable {};
 
 int main() {}
