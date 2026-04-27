@@ -20,7 +20,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief Primary module interface for the pointer vocabulary module.
+ * @brief Primary module interface for the metaprogramming traits module.
  * @details Exports partitions for:
  *   - `:remove_all_indirections` = Removes all layers of indirection (pointer, pointer-to-member, lvalue reference, rvalue reference, or array) from a type to yield the core cv-qualified type.
  */

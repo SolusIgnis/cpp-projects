@@ -20,7 +20,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief Primary module interface for the pointer vocabulary module.
+ * @brief Primary module interface for the metaprogramming `concept`s module.
  * @details Exports partitions for:
  *   - `:instantiatable_with` = Determines if a template can be instantiated with a set of arguments.
  */

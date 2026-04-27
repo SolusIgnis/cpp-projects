@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
- * @file base.meta.concepts-remove_all_indirections.cppm
+ * @file base.meta.concepts-instantiatable_with.cppm
  * @version 0.2.0
  * @date April 25, 2026
  *
