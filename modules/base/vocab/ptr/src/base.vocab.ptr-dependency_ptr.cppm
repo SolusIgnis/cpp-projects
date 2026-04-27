@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-dependency_ptr.cppm
  * @version 0.2.0
- * @date April 25, 2026
+ * @date April 26, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock

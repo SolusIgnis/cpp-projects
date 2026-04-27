@@ -5,13 +5,12 @@ import base.vocab.ptr;
 import ut;
 import std;
 
+import base.meta.concepts;
+
 using namespace ut;
 using base::vocab::dependency_ptr;
 
 namespace {
-    template<template<typename...> typename Template, typename... Args>
-    concept instantiatable_with = requires { typename Template<Args...>; };
-
     template<typename T>
     concept HasAddition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
 
@@ -47,6 +46,7 @@ namespace {
         //============================================================
 
         "template instantiation checks"_test = [] mutable {
+            using base::meta::concepts::instantiatable_with;
             expect(eq(instantiatable_with<dependency_ptr, std::int32_t>, true));
             expect(eq(instantiatable_with<dependency_ptr, std::int32_t*>, true));
             expect(eq(instantiatable_with<dependency_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
