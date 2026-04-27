@@ -13,6 +13,7 @@ add_named_module(base.vocab.ptr
   LIB_TYPE STATIC
   PARTITIONS
     src/base.vocab.ptr-alias_ptr.cppm
+    src/base.vocab.ptr-cursor_ptr.cppm
     src/base.vocab.ptr-dependency_ptr.cppm
     src/base.vocab.ptr-required_ptr.cppm
 )

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
- * @file base.vocab.ptr-required_ptr.cppm
+ * @file base.vocab.ptr-cursor_ptr.cppm
  * @version 0.2.0
  * @date March 11, 2026
  *
@@ -19,13 +19,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief required_ptr
+ * @brief cursor_ptr
+ * @todo Future Development: Use `= delete("reason")` once the C++26 feature becomes available.
  */
 
 //Module partition interface unit
-export module base.vocab.ptr:required_ptr;
+export module base.vocab.ptr:cursor_ptr;
 
 export namespace base::vocab::inline ptr {
     template<typename T>
-    using required_ptr = T*;
+    using cursor_ptr = T*;
 }

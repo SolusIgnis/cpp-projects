@@ -165,6 +165,15 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Estimated Effort**: 2–3 days (1 for evaluation, 1–1.5 for implementation, 0.5 for testing).
 
 ### Future Development Milestones
+- [ ] **base.meta**:
+  - **Task**: Set up `base.meta.*`
+  - **Steps**:
+    - Move `remove_indirection_t` to `base::meta::traits::inline transformation`.
+    - Put `instantiatable_with` (from the `base.vocab.ptr:dependency_ptr` test suite in `base.meta.concepts`.
+  - **Dependencies**: None
+  - **Priority**: Medium (refactoring base components)
+  - **Estimated Effort**: 1 day
+
 - [ ] **Module Export Cleanup**:
   - **Task**: Ensure internal types (e.g., `OptionHandlerRegistry`, `ProtocolFSM`) are not exported.
   - **Steps**:

@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-alias_ptr.cppm
- * @version 0.1.0
+ * @version 0.2.0
  * @date March 11, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
@@ -20,6 +20,7 @@
  * limitations under the License. @endparblock
  *
  * @brief alias_ptr
+ * @todo Future Development: Use `= delete("reason")` once the C++26 feature becomes available.
  */
 
 //Module partition interface unit
