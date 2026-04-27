@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
- * @file base.meta.concepts-instantiatable_with.cppm
+ * @file base.meta.concepts-instantiable_with.cppm
  * @version 0.2.0
  * @date April 25, 2026
  *
@@ -19,15 +19,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief `instantiatable_with`: A `concept` that determines if a template can be instantiated with a set of arguments.
+ * @brief `instantiable_with`: A `concept` that determines if a template can be instantiated with a set of arguments.
  */
 
 //Module partition interface unit
-export module base.meta.concepts:instantiatable_with;
+export module base.meta.concepts:instantiable_with;
 
 import std;
 
 export namespace base::meta::concepts {
     template<template<typename...> typename Template, typename... Args>
-    concept instantiatable_with = requires { typename Template<Args...>; };
+    concept instantiable_with = requires { typename Template<Args...>; };
 } //namespace base::meta::concepts

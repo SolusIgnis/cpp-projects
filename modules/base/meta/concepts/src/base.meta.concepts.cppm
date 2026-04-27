@@ -22,11 +22,11 @@
  *
  * @brief Primary module interface for the metaprogramming `concept`s module.
  * @details Exports partitions for:
- *   - `:instantiatable_with` = Determines if a template can be instantiated with a set of arguments.
+ *   - `:instantiable_with` = Determines if a template can be instantiated with a set of arguments.
  */
 
 //Primary module interface unit
 export module base.meta.concepts;
 
 //Export all partition interfaces
-export import :instantiatable_with; ///< @see "base.meta.concepts-instantiatable_with.cppm"
+export import :instantiable_with; ///< @see "base.meta.concepts-instantiable_with.cppm"

@@ -46,19 +46,19 @@ namespace {
         //============================================================
 
         "template instantiation checks"_test = [] mutable {
-            using base::meta::concepts::instantiatable_with;
-            expect(eq(instantiatable_with<dependency_ptr, std::int32_t>, true));
-            expect(eq(instantiatable_with<dependency_ptr, std::int32_t*>, true));
-            expect(eq(instantiatable_with<dependency_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
+            using base::meta::concepts::instantiable_with;
+            expect(eq(instantiable_with<dependency_ptr, std::int32_t>, true));
+            expect(eq(instantiable_with<dependency_ptr, std::int32_t*>, true));
+            expect(eq(instantiable_with<dependency_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
 
-            expect(eq(instantiatable_with<dependency_ptr, void>, false));
-            expect(eq(instantiatable_with<dependency_ptr, std::int32_t&>, false));
-            expect(eq(instantiatable_with<dependency_ptr, std::int32_t&&>, false));
-            expect(eq(instantiatable_with<dependency_ptr, void(int)>, false));
-            expect(eq(instantiatable_with<dependency_ptr, void (&)(int)>, false));
-            expect(eq(instantiatable_with<dependency_ptr, void (*)(int, float)>, false));
-            expect(eq(instantiatable_with<dependency_ptr, void (**)(std::string, int)>, false));
-            expect(eq(instantiatable_with<dependency_ptr, void (*******)(int)>, false));
+            expect(eq(instantiable_with<dependency_ptr, void>, false));
+            expect(eq(instantiable_with<dependency_ptr, std::int32_t&>, false));
+            expect(eq(instantiable_with<dependency_ptr, std::int32_t&&>, false));
+            expect(eq(instantiable_with<dependency_ptr, void(int)>, false));
+            expect(eq(instantiable_with<dependency_ptr, void (&)(int)>, false));
+            expect(eq(instantiable_with<dependency_ptr, void (*)(int, float)>, false));
+            expect(eq(instantiable_with<dependency_ptr, void (**)(std::string, int)>, false));
+            expect(eq(instantiable_with<dependency_ptr, void (*******)(int)>, false));
         };
 
         //============================================================
