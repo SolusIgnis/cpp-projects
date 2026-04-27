@@ -29,4 +29,4 @@
 export module base.meta.traits;
 
 //Export all partition interfaces
-export import :remove_all_indirections;      ///< @see "base.meta.traits-remove_all_indirections.cppm"
+export import :remove_all_indirections; ///< @see "base.meta.traits-remove_all_indirections.cppm"

@@ -71,7 +71,10 @@ export namespace base::vocab::inline ptr {
      * @see `alias_ptr` for nullable aliasing, `required_ptr` for non-null aliasing, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */
     template<typename T>
-        requires (!std::is_reference_v<T> && !std::is_void_v<T> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>)
+        requires (
+            !std::is_reference_v<T> && !std::is_void_v<T>
+            && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>
+        )
     class [[nodiscard]] dependency_ptr {
     public:
         /**
