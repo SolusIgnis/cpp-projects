@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-alias_ptr.cppm
  * @version 0.3.0
- * @date March 11, 2026
+ * @date April 28, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -19,7 +19,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief alias_ptr
+ * @brief `alias_ptr`: non-owning, nullable, non-arithmetic, void-permitting
  * @todo Future Development: Use `= delete("reason")` once the C++26 feature becomes available.
  */
 
@@ -28,5 +28,9 @@ export module base.vocab.ptr:alias_ptr;
 
 export namespace base::vocab::inline ptr {
     template<typename T>
+        requires (
+            !std::is_reference_v<T>
+            && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>
+        )
     using alias_ptr = T*;
 }

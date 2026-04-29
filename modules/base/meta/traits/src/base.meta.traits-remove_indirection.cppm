@@ -89,9 +89,7 @@ namespace base::meta::traits::inline transformation {
 }
 
 export namespace base::meta::traits::inline transformation {
-    /**
-     * @brief Alias for `remove_indirection<T>::type`.
-     */
+    ///@brief Alias for `remove_indirection<T>::type`.
     template<typename T>
     using remove_indirection_t = typename remove_indirection<T>::type;
 } //namespace base::meta::traits::inline transformation

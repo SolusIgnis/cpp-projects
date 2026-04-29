@@ -19,7 +19,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief `dependency_ptr`: A non-owning, never-null, non-arithmetic pointer type for a required dependency.
+ * @brief `dependency_ptr`: A non-owning, non-nullable, non-arithmetic, non-void-permitting pointer type for a required dependency.
  *
  * @details `dependency_ptr` acts like a rebindable reference with pointer syntax. It
  * expresses a mandatory dependency that must exist for the duration of the consumer's
@@ -49,11 +49,12 @@ export namespace base::vocab::inline ptr {
      *
      * @tparam T The pointed-to type (must not be a reference type per "C++ standard [dcl.ptr]", `void`, nor a function pointer).
      *
-     * @details `dependency_ptr` models a non-owning, never-null, non-arithmetic pointer abstraction.
-     * It is designed for dependency injection scenarios, where a dependency is required to exist and
-     * outlive the consumer. It serves as a replacement for references as nonstatic data members and in
-     * other cases where rebinding, pointer semantics, or interoperability with pointer-based APIs is
-     * desirable. Optional dependencies naturally compose as `std::optional<dependency_ptr<T>>`.
+     * @details `dependency_ptr` models a non-owning, non-nullable, non-arithmetic, non-void-permitting
+     * pointer abstraction. It is designed for dependency injection scenarios, where a dependency is
+     * required to exist and outlive the consumer. It serves as a replacement for references as nonstatic
+     * data members and in other cases where rebinding, pointer semantics, or interoperability with
+     * pointer-based APIs is desirable. Optional dependencies naturally compose with `dependency_ptr` as
+     * `std::optional<dependency_ptr<T>>`.
      *
      * @note Semantically equivalent to a rebindable reference with a pointer interface.
      * @note Standard Layout type with size and alignment of a raw pointer.

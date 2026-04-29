@@ -3,7 +3,7 @@
 /**
  * @module base.meta.traits
  * @file base.meta.traits.cppm
- * @version 0.0.1
+ * @version 0.0.3
  * @date April 26, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
@@ -23,8 +23,8 @@
  * @brief Primary module interface for the metaprogramming traits module.
  * @details Exports partitions for:
  *   - `:remove_indirection`      = Removes one layer of indirection  (pointer, pointer-to-member, lvalue reference, rvalue reference, or array) from a type.
- *   - `:remove_all_indirections` = Removes all layers of indirection from a type to yield the core cv-qualified type.
- *   - `:is_indirection_v`        = Detect if a type as at least one layer of indirection.
+ *   - `:remove_all_indirections` = Removes all layers of indirection from a type to yield the "core" cv-qualified type.
+ *   - `:is_indirection_v`        = Determine if a type as at least one layer of indirection.
  */
 
 //Primary module interface unit

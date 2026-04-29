@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.meta.traits-remove_all_indirections.cppm
- * @version 0.0.1
+ * @version 0.0.3
  * @date April 27, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
@@ -29,19 +29,25 @@
  *   - array extents (`T[]` and `T[N]`).
  *   - pointers-to-member (`T C::*`) with any cv-qualification.
  *
- * This yields the "core" type reachable through any chain of indirection with
- * any object-level cv-qualification in tact.
+ * This yields the "core" type: the type remaining after all indirection
+ * layers have been removed, with any object-level cv-qualification preserved
+ * intact.
  *
- * @invariant The resulting type contains no:
- * - pointer types
- * - reference types
- * - array extents
- * - pointer-to-member types
+ * The resulting type contains none of the following:
+ *   - pointer types
+ *   - pointer-to-member types
+ *   - reference types
+ *   - array extents
+ *
+ * The `remove_indirection_t` transformation is applied repeatedly until its fixed
+ * point is reached--i.e., a type for which applying `remove_indirection_t`
+ * produces no further change.
  *
  * Conceptually, this transformation is equivalent to repeatedly applying
  * `std::remove_pointer`, `std::remove_reference`, and `std::remove_extent`
- * until none are applicable, with the additional rule that pointers-to-member
- * (`T C::*`) are treated analogously to pointers and removed in the same manner.
+ * until the result reaches that same fixed point with the additional rule that
+ * pointers-to-member (`T C::*`) are treated analogously to pointers and
+ * removed in the same manner.
  *
  * Unlike the standard transformations, which operate on a single level of
  * indirection, this trait applies the transformation recursively until the
