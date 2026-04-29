@@ -26,6 +26,10 @@
 //Module partition interface unit
 export module base.vocab.ptr:cursor_ptr;
 
+import std;
+
+import base.meta.traits;
+
 export namespace base::vocab::inline ptr {
     template<typename T>
         requires (
