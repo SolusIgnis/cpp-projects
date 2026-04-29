@@ -21,7 +21,7 @@
  *
  * @brief `required_ptr`: A non-owning, non-nullable, non-arithmetic, void-permitting pointer type.
  *
- * @details 
+ * @details
  *
  * @todo Future Development: Use `= delete("reason")` instead of the C-style comments once the C++26 feature becomes available.
  */
@@ -35,9 +35,6 @@ import base.meta.traits;
 
 export namespace base::vocab::inline ptr {
     template<typename T>
-        requires (
-            !std::is_reference_v<T>
-            && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>
-        )
+        requires (!std::is_reference_v<T> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>)
     using required_ptr = T*;
 }

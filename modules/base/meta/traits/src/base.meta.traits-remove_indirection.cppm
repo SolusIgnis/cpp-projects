@@ -49,44 +49,68 @@ namespace base::meta::traits::inline transformation {
 
     ///@internal Pointer Specializations
     template<typename T>
-    struct remove_indirection<T*> { using type = T; };
+    struct remove_indirection<T*> {
+        using type = T;
+    };
 
     template<typename T>
-    struct remove_indirection<T* const> { using type = T; };
+    struct remove_indirection<T* const> {
+        using type = T;
+    };
 
     template<typename T>
-    struct remove_indirection<T* volatile> { using type = T; };
+    struct remove_indirection<T* volatile> {
+        using type = T;
+    };
 
     template<typename T>
-    struct remove_indirection<T* const volatile> { using type = T; };
+    struct remove_indirection<T* const volatile> {
+        using type = T;
+    };
 
     ///@internal Pointer-to-Member Specializations
     template<typename T, typename C>
-    struct remove_indirection<T C::*> { using type = T; };
+    struct remove_indirection<T C::*> {
+        using type = T;
+    };
 
     template<typename T, typename C>
-    struct remove_indirection<T C::* const> { using type = T; };
+    struct remove_indirection<T C::* const> {
+        using type = T;
+    };
 
     template<typename T, typename C>
-    struct remove_indirection<T C::* volatile> { using type = T; };
+    struct remove_indirection<T C::* volatile> {
+        using type = T;
+    };
 
     template<typename T, typename C>
-    struct remove_indirection<T C::* const volatile> { using type = T; };
+    struct remove_indirection<T C::* const volatile> {
+        using type = T;
+    };
 
     ///@internal Reference Specializations
     template<typename T>
-    struct remove_indirection<T&> { using type = T; };
+    struct remove_indirection<T&> {
+        using type = T;
+    };
 
     template<typename T>
-    struct remove_indirection<T&&> { using type = T; };
+    struct remove_indirection<T&&> {
+        using type = T;
+    };
 
     ///@internal Array Specializations
     template<typename T, std::size_t N>
-    struct remove_indirection<T[N]> { using type = T; };
+    struct remove_indirection<T[N]> {
+        using type = T;
+    };
 
     template<typename T>
-    struct remove_indirection<T[]> { using type = T; };
-}
+    struct remove_indirection<T[]> {
+        using type = T;
+    };
+} //namespace base::meta::traits::inline transformation
 
 export namespace base::meta::traits::inline transformation {
     ///@brief Alias for `remove_indirection<T>::type`.

@@ -75,7 +75,6 @@ namespace base::meta::traits::inline transformation {
     };
 } //namespace base::meta::traits::inline transformation
 
-
 export namespace base::meta::traits::inline transformation {
     /**
      * @brief Alias for `remove_all_indirections<T>::type`.

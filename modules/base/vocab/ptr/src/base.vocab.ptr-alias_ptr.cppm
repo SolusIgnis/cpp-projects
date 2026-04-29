@@ -32,9 +32,6 @@ import base.meta.traits;
 
 export namespace base::vocab::inline ptr {
     template<typename T>
-        requires (
-            !std::is_reference_v<T>
-            && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>
-        )
+        requires (!std::is_reference_v<T> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>)
     using alias_ptr = T*;
 }
