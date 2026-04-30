@@ -30,9 +30,11 @@ import std;
 
 import base.meta.traits;
 
+import :forward_declarations;
+
 export namespace base::vocab::inline ptr {
     template<typename T>
         requires (!std::is_reference_v<T> && !std::is_void_v<T>
                   && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>)
     using cursor_ptr = T*;
-}
+} //namespace base::vocab::inline ptr
