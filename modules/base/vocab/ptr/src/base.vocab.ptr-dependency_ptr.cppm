@@ -131,23 +131,23 @@ export namespace base::vocab::inline ptr {
         ///@brief Constructs a `dependency_ptr` bound to an existing object.
         constexpr explicit dependency_ptr(reference source) noexcept : address_(std::addressof(source)) {}
 
-        ///@brief (Covariance) Implicitly converts from `dependency_ptr<U>` to `dependency_ptr<T>` when `U` is publicly derived from `T`.
-        template<std::derived_from<T> U>
-            requires (!std::same_as<U, T>)
-        constexpr explicit(false) dependency_ptr(const dependency_ptr<U>& source) noexcept : address_(source.get())
+        ///@brief (Covariance) Implicitly converts from `dependency_ptr<DerivedT>` to `dependency_ptr<T>` when `DerivedT` is publicly derived from `T`.
+        template<std::derived_from<T> DerivedT>
+            requires (!std::same_as<DerivedT, T>)
+        constexpr explicit(false) dependency_ptr(const dependency_ptr<DerivedT>& source) noexcept : address_(source.get())
         {}
 
         ///@brief Rebinds the `dependency_ptr` to another object.
-        dependency_ptr& operator=(reference source) noexcept
+        constexpr dependency_ptr& operator=(reference source) noexcept
         {
             address_ = std::addressof(source);
             return *this;
         }
 
-        ///@brief (Covariance) Assigns from `dependency_ptr<U>` to `dependency_ptr<T>` when `U` is publicly derived from `T`.
-        template<std::derived_from<T> U>
-            requires (!std::same_as<U, T>)
-        dependency_ptr& operator=(const dependency_ptr<U>& source) noexcept
+        ///@brief (Covariance) Assigns from `dependency_ptr<DerivedT>` to `dependency_ptr<T>` when `DerivedT` is publicly derived from `T`.
+        template<std::derived_from<T> DerivedT>
+            requires (!std::same_as<DerivedT, T>)
+        constexpr dependency_ptr& operator=(const dependency_ptr<DerivedT>& source) noexcept
         {
             address_ = source.get();
             return *this;
@@ -201,26 +201,26 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Compares equality in terms of pointer identity.
-        [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const dependency_ptr& rhs) noexcept = default;
+        [[nodiscard]] friend constexpr bool operator==(const dependency_ptr& lhs, const dependency_ptr& rhs) noexcept = default;
 
         ///@brief Covariantly compares equality in terms of pointer identity.
         template<std::derived_from<T> U>
             requires (!std::same_as<U, T>)
-        [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const dependency_ptr<U>& rhs) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const dependency_ptr& lhs, const dependency_ptr<U>& rhs) noexcept
         {
             return (lhs.get() == rhs.get());
         }
 
         ///@brief Covariantly compares equality of a `dependency_ptr`-to-base with a raw pointer-to-derived in terms of pointer identity.
         template<std::derived_from<T> U>
-        [[nodiscard]] friend bool operator==(const dependency_ptr& lhs, const U* rhs) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const dependency_ptr& lhs, const U* rhs) noexcept
         {
             return (lhs.get() == rhs);
         }
 
         ///@brief Covariantly compares equality of a raw pointer-to-base with a `dependency_ptr`-to-derived in terms of pointer identity.
         template<std::derived_from<T> U>
-        [[nodiscard]] friend bool operator==(const pointer lhs, const dependency_ptr<U>& rhs) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const dependency_ptr<U>& rhs) noexcept
         {
             return (lhs == rhs.get());
         }
@@ -308,9 +308,9 @@ export namespace base::vocab::inline ptr {
      * @remark Prevents binding to temporaries via deleted rvalue overload.
      */
     /**
-     * @fn dependency_ptr::dependency_ptr(const dependency_ptr<U>& source) noexcept
+     * @overload dependency_ptr::dependency_ptr(const dependency_ptr<DerivedT>& source) noexcept
      *
-     * @tparam U The element type, derived from T, of the source `dependency_ptr`.
+     * @tparam DerivedT The element type, derived from `T`, of the source `dependency_ptr`.
      *
      * @param source The pointer-to-derived being converted.
      *
@@ -319,7 +319,7 @@ export namespace base::vocab::inline ptr {
      * @remark Preserves covariance. Converts from dependency_ptr-to-derived to dependency_ptr-to-base implicitly.
      */
     /**
-     * @fn dependency_ptr& dependency_ptr::operator=(reference source) noexcept
+     * @fn constexpr dependency_ptr& dependency_ptr::operator=(reference source) noexcept
      *
      * @param source The object to reference.
      * @return Reference to `*this`.
@@ -329,7 +329,7 @@ export namespace base::vocab::inline ptr {
      * @remark Rebinds the dependency without affecting ownership or lifetime.
      */
     /**
-     * @fn dependency_ptr& dependency_ptr::operator=(const dependency_ptr<U>& source) noexcept
+     * @overload constexpr dependency_ptr& dependency_ptr::operator=(const dependency_ptr<U>& source) noexcept
      *
      * @tparam U The element type, derived from T, of the source `dependency_ptr`.
      *
@@ -341,7 +341,7 @@ export namespace base::vocab::inline ptr {
      * @remark Preserves covariance. Converts from dependency_ptr-to-derived to dependency_ptr-to-base implicitly.
      */
     /**
-     * @fn bool operator==(const dependency_ptr& lhs, const dependency_ptr& rhs) noexcept
+     * @fn constexpr bool operator==(const dependency_ptr& lhs, const dependency_ptr& rhs) noexcept
      *
      * @param lhs The left-hand side `dependency_ptr`.
      * @param rhs The right-hand side `dependency_ptr`.
@@ -351,7 +351,7 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload bool operator==(const dependency_ptr& lhs, const dependency_ptr<U>& rhs) noexcept
+     * @overload constexpr bool operator==(const dependency_ptr& lhs, const dependency_ptr<U>& rhs) noexcept
      *
      * @tparam U The element type, derived from `T`, of the right-hand side `dependency_ptr`.
      *
@@ -364,7 +364,7 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload bool operator==(const dependency_ptr& lhs, const U* rhs) noexcept
+     * @overload constexpr bool operator==(const dependency_ptr& lhs, const U* rhs) noexcept
      *
      * @tparam U The element type, derived from `T`, of the raw pointer.
      *
@@ -377,7 +377,7 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload bool operator==(const pointer lhs, const dependency_ptr<U>& rhs) noexcept
+     * @overload constexpr bool operator==(const pointer lhs, const dependency_ptr<U>& rhs) noexcept
      *
      * @tparam U The element type, derived from `T`, of the right-hand side `dependency_ptr`.
      *

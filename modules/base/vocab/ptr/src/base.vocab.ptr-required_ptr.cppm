@@ -126,7 +126,7 @@ export namespace base::vocab::inline ptr {
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, required_ptr>)
                   && requires(Pointer<Element, Args...> ptr) {
-                         { ptr.get() } -> std::convertible_to<pointer>;
+                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
         constexpr explicit required_ptr(const Pointer<Element, Args...>& source) : address_(check_for_null(source.get()))
         {}
@@ -168,7 +168,7 @@ export namespace base::vocab::inline ptr {
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, required_ptr>)
                   && requires(Pointer<Element, Args...> ptr) {
-                         { ptr.get() } -> std::convertible_to<pointer>;
+                         { std::as_const(ptr.get()) } -> std::convertible_to<pointer>;
                      }
         constexpr required_ptr& operator=(const Pointer<Element, Args...>& source)
         {
@@ -337,7 +337,7 @@ export namespace base::vocab::inline ptr {
      * @remark Prevents binding to temporaries via deleted rvalue overload.
      */
     /**
-     * @fn required_ptr::required_ptr(const required_ptr<DerivedT>& source) noexcept
+     * @overload required_ptr::required_ptr(const required_ptr<DerivedT>& source) noexcept
      *
      * @tparam DerivedT The element type, derived from T, of the source `required_ptr`.
      *
@@ -348,7 +348,7 @@ export namespace base::vocab::inline ptr {
      * @remark Preserves covariance. Converts from required_ptr-to-derived to required_ptr-to-base implicitly.
      */
     /**
-     * @fn required_ptr::required_ptr(const required_ptr<ErasedT>& source) noexcept
+     * @overload required_ptr::required_ptr(const required_ptr<ErasedT>& source) noexcept
      *
      * @tparam ErasedT The element type of the source `required_ptr`.
      *
@@ -362,7 +362,7 @@ export namespace base::vocab::inline ptr {
      * @remark Preserves the non-null invariant.
      */
     /**
-     * @fn explicit required_ptr::required_ptr(pointer source)
+     * @overload explicit required_ptr::required_ptr(pointer source)
      *
      * @param source The raw pointer to bind.
      *
@@ -376,7 +376,7 @@ export namespace base::vocab::inline ptr {
      * @remark Explicit when `T` is `void` to prevent unintended implicit erasure chains.
      */
     /**
-     * @fn explicit required_ptr::required_ptr(const Pointer<Element, Args...>& source)
+     * @overload explicit required_ptr::required_ptr(const Pointer<Element, Args...>& source)
      *
      * @tparam Pointer A class template modeling a pointer-like type.
      * @tparam Element The element type of the source pointer.
@@ -406,7 +406,7 @@ export namespace base::vocab::inline ptr {
      * @remark Rebinds the dependency without affecting ownership or lifetime.
      */
     /**
-     * @fn required_ptr& required_ptr::operator=(const required_ptr<DerivedT>& source) noexcept
+     * @overload required_ptr& required_ptr::operator=(const required_ptr<DerivedT>& source) noexcept
      *
      * @tparam DerivedT The element type, derived from T, of the source `required_ptr`.
      *
@@ -418,7 +418,7 @@ export namespace base::vocab::inline ptr {
      * @remark Preserves covariance. Converts from required_ptr-to-derived to required_ptr-to-base implicitly.
      */
     /**
-     * @fn required_ptr& required_ptr::operator=(const required_ptr<ErasedT>& source) noexcept
+     * @overload required_ptr& required_ptr::operator=(const required_ptr<ErasedT>& source) noexcept
      *
      * @tparam ErasedT The element type of the source `required_ptr`.
      *
@@ -433,7 +433,7 @@ export namespace base::vocab::inline ptr {
      * @remark Preserves the non-null invariant.
      */
     /**
-     * @fn required_ptr& required_ptr::operator=(pointer source)
+     * @overload required_ptr& required_ptr::operator=(pointer source)
      *
      * @param source The raw pointer to rebind to.
      * @return Reference to `*this`.
@@ -448,7 +448,7 @@ export namespace base::vocab::inline ptr {
      * @remark Does not affect the lifetime of the referenced object.
      */
     /**
-     * @fn required_ptr& required_ptr::operator=(const Pointer<Element, Args...>& source)
+     * @overload required_ptr& required_ptr::operator=(const Pointer<Element, Args...>& source)
      *
      * @tparam Pointer A class template modeling a pointer-like type.
      * @tparam Element The element type of the source pointer.
