@@ -29,7 +29,7 @@ import std;
 
 import base.meta.traits;
 
-namespace base::vocab::inline ptr {
+export namespace base::vocab::inline ptr {
     template<typename T>
         requires (
             !std::is_reference_v<T> && !std::is_void_v<T>
