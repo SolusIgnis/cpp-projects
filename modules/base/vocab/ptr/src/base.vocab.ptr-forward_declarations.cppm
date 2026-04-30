@@ -25,6 +25,10 @@
 //Module partition interface unit
 export module base.vocab.ptr:forward_declarations;
 
+import std; 
+
+import base.meta.traits;
+
 namespace base::vocab::inline ptr {
     template<typename T>
         requires (
