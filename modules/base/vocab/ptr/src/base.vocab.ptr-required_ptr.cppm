@@ -141,7 +141,7 @@ export namespace base::vocab::inline ptr {
         ///@brief (Covariance) Assigns from `required_ptr<DerivedT>` to `required_ptr<T>` when `DerivedT` is publicly derived from `T`.
         template<std::derived_from<T> DerivedT>
             requires (!std::same_as<DerivedT, T>)
-        required_ptr& operator=(const required_ptr<DerivedT>& source) noexcept
+        constexpr required_ptr& operator=(const required_ptr<DerivedT>& source) noexcept
         {
             address_ = source.get();
             return *this;
@@ -150,7 +150,7 @@ export namespace base::vocab::inline ptr {
         ///@brief (Erasure) Assigns from `required_ptr<ErasedT>` to `required_ptr<void>`.
         template<typename ErasedT>
             requires (!std::same_as<ErasedT, T>)
-        required_ptr& operator=(const required_ptr<ErasedT>& source) noexcept
+        constexpr required_ptr& operator=(const required_ptr<ErasedT>& source) noexcept
             requires std::is_void_v<T>
         {
             address_ = source.get();
@@ -158,7 +158,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Assigns from a raw `pointer`.
-        required_ptr& operator=(pointer source)
+        constexpr required_ptr& operator=(pointer source)
         {
             address_ = check_for_null(source);
             return *this;
@@ -170,7 +170,7 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { ptr.get() } -> std::convertible_to<pointer>;
                      }
-        required_ptr& operator=(const Pointer<Element, Args...>& source)
+        constexpr required_ptr& operator=(const Pointer<Element, Args...>& source)
         {
             address_ = check_for_null(source.get());
             return *this;
@@ -468,7 +468,7 @@ export namespace base::vocab::inline ptr {
      * @remark Does not transfer ownership and does not affect the lifetime of the underlying object.
      */
     /**
-     * @fn bool operator==(const required_ptr& lhs, const required_ptr& rhs) noexcept
+     * @fn constexpr bool operator==(const required_ptr& lhs, const required_ptr& rhs) noexcept
      *
      * @param lhs The left-hand side `required_ptr`.
      * @param rhs The right-hand side `required_ptr`.
@@ -478,7 +478,7 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload bool operator==(const required_ptr& lhs, const required_ptr<U>& rhs) noexcept
+     * @overload constexpr bool operator==(const required_ptr& lhs, const required_ptr<U>& rhs) noexcept
      *
      * @tparam U The element type, derived from `T`, of the right-hand side `required_ptr`.
      *
@@ -491,7 +491,7 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload bool operator==(const required_ptr& lhs, const U* rhs) noexcept
+     * @overload constexpr bool operator==(const required_ptr& lhs, const U* rhs) noexcept
      *
      * @tparam U The element type, derived from `T`, of the raw pointer.
      *
@@ -504,7 +504,7 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload bool operator==(const pointer lhs, const required_ptr<U>& rhs) noexcept
+     * @overload constexpr bool operator==(const pointer lhs, const required_ptr<U>& rhs) noexcept
      *
      * @tparam U The element type, derived from `T`, of the right-hand side `required_ptr`.
      *
@@ -545,7 +545,7 @@ export namespace base::vocab::inline ptr {
      * @remark Provided for interoperability with pointer-based APIs.
      */
     /**
-     * @fn required_ptr::operator pointer() const noexcept
+     * @fn constexpr required_ptr::operator pointer() const noexcept
      *
      * @return The underlying raw pointer.
      *
@@ -555,7 +555,7 @@ export namespace base::vocab::inline ptr {
      * @warning Implicit conversion may obscure the non-owning, non-null semantics; prefer `get()` when clarity is important.
      */
     /**
-     * @fn required_ptr::operator bool() const noexcept
+     * @fn constexpr required_ptr::operator bool() const noexcept
      *
      * @return `true` (The pointer is structurally guaranteed to always be engaged.)
      *
@@ -567,7 +567,7 @@ export namespace base::vocab::inline ptr {
      * @note This does not indicate engagement/optionality as `required_ptr` has no disengaged state.
      */
     /**
-     * @fn static pointer required_ptr::check_for_null(pointer source)
+     * @fn constexpr static pointer required_ptr::check_for_null(pointer source)
      *
      * @param source The raw pointer to validate.
      *
