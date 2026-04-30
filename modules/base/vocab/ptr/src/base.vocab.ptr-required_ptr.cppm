@@ -303,7 +303,7 @@ export namespace base::vocab::inline ptr {
         friend required_ptr operator-(required_ptr, difference_type) =
             delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `required_ptr` is not an iterator.")*/;
     private:
-        static [[nodiscard]] pointer check_for_null(pointer source)
+        [[nodiscard]] static pointer check_for_null(pointer source)
         {
             if (source == nullptr) [[unlikely]]
                 throw std::invalid_argument("`required_ptr` cannot be constructed or assigned from a null pointer.");
