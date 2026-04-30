@@ -105,16 +105,16 @@ export namespace base::vocab::inline ptr {
         ///@brief Constructs a `required_ptr` bound to an existing object.
         constexpr explicit required_ptr(reference source) noexcept : address_(std::addressof(source)) {}
 
-        ///@brief (Covariance) Implicitly converts from `required_ptr<U>` to `required_ptr<T>` when `U` is publicly derived from `T`.
-        template<std::derived_from<T> U>
-            requires (!std::same_as<U, T>)
-        constexpr explicit(false) required_ptr(const required_ptr<U>& source) noexcept : address_(source.get())
+        ///@brief (Covariance) Implicitly converts from `required_ptr<DerivedT>` to `required_ptr<T>` when `DerivedT` is publicly derived from `T`.
+        template<std::derived_from<T> DerivedT>
+            requires (!std::same_as<DerivedT, T>)
+        constexpr explicit(false) required_ptr(const required_ptr<DerivedT>& source) noexcept : address_(source.get())
         {}
 
-        ///@brief (Erasure) Implicitly converts from `required_ptr<U>` to `required_ptr<void>`.
-        template<typename U>
-            requires (!std::same_as<U, T>)
-        constexpr explicit(false) required_ptr(const required_ptr<U>& source) noexcept
+        ///@brief (Erasure) Implicitly converts from `required_ptr<ErasedT>` to `required_ptr<void>`.
+        template<typename ErasedT>
+            requires (!std::same_as<ErasedT, T>)
+        constexpr explicit(false) required_ptr(const required_ptr<ErasedT>& source) noexcept
             requires std::is_void_v<T>
             : address_(source.get())
         {}
@@ -138,19 +138,19 @@ export namespace base::vocab::inline ptr {
             return *this;
         }
 
-        ///@brief (Covariance) Assigns from `required_ptr<U>` to `required_ptr<T>` when `U` is publicly derived from `T`.
-        template<std::derived_from<T> U>
-            requires (!std::same_as<U, T>)
-        required_ptr& operator=(const required_ptr<U>& source) noexcept
+        ///@brief (Covariance) Assigns from `required_ptr<DerivedT>` to `required_ptr<T>` when `DerivedT` is publicly derived from `T`.
+        template<std::derived_from<T> DerivedT>
+            requires (!std::same_as<DerivedT, T>)
+        required_ptr& operator=(const required_ptr<DerivedT>& source) noexcept
         {
             address_ = source.get();
             return *this;
         }
 
-        ///@brief (Erasure) Assigns from `required_ptr<U>` to `required_ptr<void>`.
-        template<typename U>
-            requires (!std::same_as<U, T>)
-        required_ptr& operator=(const required_ptr<U>& source) noexcept
+        ///@brief (Erasure) Assigns from `required_ptr<ErasedT>` to `required_ptr<void>`.
+        template<typename ErasedT>
+            requires (!std::same_as<ErasedT, T>)
+        required_ptr& operator=(const required_ptr<ErasedT>& source) noexcept
             requires std::is_void_v<T>
         {
             address_ = source.get();
@@ -214,26 +214,26 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Compares equality in terms of pointer identity.
-        [[nodiscard]] friend bool operator==(const required_ptr& lhs, const required_ptr& rhs) noexcept = default;
+        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const required_ptr& rhs) noexcept = default;
 
         ///@brief Covariantly compares equality in terms of pointer identity.
         template<std::derived_from<T> U>
             requires (!std::same_as<U, T>)
-        [[nodiscard]] friend bool operator==(const required_ptr& lhs, const required_ptr<U>& rhs) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const required_ptr<U>& rhs) noexcept
         {
             return (lhs.get() == rhs.get());
         }
 
         ///@brief Covariantly compares equality of a `required_ptr`-to-base with a raw pointer-to-derived in terms of pointer identity.
         template<std::derived_from<T> U>
-        [[nodiscard]] friend bool operator==(const required_ptr& lhs, const U* rhs) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const U* rhs) noexcept
         {
             return (lhs.get() == rhs);
         }
 
         ///@brief Covariantly compares equality of a raw pointer-to-base with a `required_ptr`-to-derived in terms of pointer identity.
         template<std::derived_from<T> U>
-        [[nodiscard]] friend bool operator==(const pointer lhs, const required_ptr<U>& rhs) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const required_ptr<U>& rhs) noexcept
         {
             return (lhs == rhs.get());
         }
@@ -318,7 +318,7 @@ export namespace base::vocab::inline ptr {
             delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `required_ptr` is not an iterator.")*/;
 
     private:
-        [[nodiscard]] static pointer check_for_null(pointer source)
+        [[nodiscard]] constexpr static pointer check_for_null(pointer source)
         {
             if (source == nullptr) [[unlikely]]
                 throw std::invalid_argument("`required_ptr` cannot be constructed or assigned from a null pointer.");
@@ -337,9 +337,9 @@ export namespace base::vocab::inline ptr {
      * @remark Prevents binding to temporaries via deleted rvalue overload.
      */
     /**
-     * @fn required_ptr::required_ptr(const required_ptr<U>& source) noexcept
+     * @fn required_ptr::required_ptr(const required_ptr<DerivedT>& source) noexcept
      *
-     * @tparam U The element type, derived from T, of the source `required_ptr`.
+     * @tparam DerivedT The element type, derived from T, of the source `required_ptr`.
      *
      * @param source The pointer-to-derived being converted.
      *
@@ -348,9 +348,9 @@ export namespace base::vocab::inline ptr {
      * @remark Preserves covariance. Converts from required_ptr-to-derived to required_ptr-to-base implicitly.
      */
     /**
-     * @fn required_ptr::required_ptr(const required_ptr<U>& source) noexcept
+     * @fn required_ptr::required_ptr(const required_ptr<ErasedT>& source) noexcept
      *
-     * @tparam U The element type of the source `required_ptr`.
+     * @tparam ErasedT The element type of the source `required_ptr`.
      *
      * @param source The `required_ptr` being converted.
      *
@@ -376,6 +376,26 @@ export namespace base::vocab::inline ptr {
      * @remark Explicit when `T` is `void` to prevent unintended implicit erasure chains.
      */
     /**
+     * @fn explicit required_ptr::required_ptr(const Pointer<Element, Args...>& source)
+     *
+     * @tparam Pointer A class template modeling a pointer-like type.
+     * @tparam Element The element type of the source pointer.
+     * @tparam Args Additional template parameters of the pointer type.
+     *
+     * @param source The pointer-like object providing access to a raw pointer via `get()`.
+     *
+     * @pre `source.get()` must be a valid expression convertible to `pointer`.
+     * @pre `source.get()` must be non-null and must point to an object whose lifetime strictly exceeds that of the constructed `required_ptr`.
+     *
+     * @post `get() == static_cast<pointer>(source.get())`.
+     *
+     * @throws std::invalid_argument if `source.get() == nullptr`.
+     *
+     * @remark Enables interoperation with pointer-like types (e.g., smart pointers) that expose a `get()` member.
+     * @remark The source type must not be a specialization of `required_ptr` (to avoid ambiguity with existing overloads).
+     * @remark This constructor does not transfer ownership and does not affect the lifetime of the underlying object.
+     */
+    /**
      * @fn required_ptr& required_ptr::operator=(reference source) noexcept
      *
      * @param source The object to reference.
@@ -386,9 +406,9 @@ export namespace base::vocab::inline ptr {
      * @remark Rebinds the dependency without affecting ownership or lifetime.
      */
     /**
-     * @fn required_ptr& required_ptr::operator=(const required_ptr<U>& source) noexcept
+     * @fn required_ptr& required_ptr::operator=(const required_ptr<DerivedT>& source) noexcept
      *
-     * @tparam U The element type, derived from T, of the source `required_ptr`.
+     * @tparam DerivedT The element type, derived from T, of the source `required_ptr`.
      *
      * @param source The pointer-to-derived being converted.
      * @return Reference to `*this`.
@@ -398,9 +418,9 @@ export namespace base::vocab::inline ptr {
      * @remark Preserves covariance. Converts from required_ptr-to-derived to required_ptr-to-base implicitly.
      */
     /**
-     * @fn required_ptr& required_ptr::operator=(const required_ptr<U>& source) noexcept
+     * @fn required_ptr& required_ptr::operator=(const required_ptr<ErasedT>& source) noexcept
      *
-     * @tparam U The element type of the source `required_ptr`.
+     * @tparam ErasedT The element type of the source `required_ptr`.
      *
      * @param source The `required_ptr` being assigned from.
      * @return Reference to `*this`.
@@ -426,6 +446,26 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Rebinds the pointer while preserving the non-null invariant.
      * @remark Does not affect the lifetime of the referenced object.
+     */
+    /**
+     * @fn required_ptr& required_ptr::operator=(const Pointer<Element, Args...>& source)
+     *
+     * @tparam Pointer A class template modeling a pointer-like type.
+     * @tparam Element The element type of the source pointer.
+     * @tparam Args Additional template parameters of the pointer type.
+     *
+     * @param source The pointer-like object providing access to a raw pointer via `get()`.
+     * @return Reference to `*this`.
+     *
+     * @pre `source.get()` must be a valid expression convertible to `pointer`.
+     * @pre `source.get()` must be non-null and must point to an object whose lifetime strictly exceeds that of the `required_ptr`.
+     *
+     * @post `get() == static_cast<pointer>(source.get())`.
+     *
+     * @throws std::invalid_argument if `source.get() == nullptr`.
+     *
+     * @remark Rebinds the `required_ptr` from a pointer-like source while preserving the non-null invariant.
+     * @remark Does not transfer ownership and does not affect the lifetime of the underlying object.
      */
     /**
      * @fn bool operator==(const required_ptr& lhs, const required_ptr& rhs) noexcept
@@ -525,6 +565,22 @@ export namespace base::vocab::inline ptr {
      * @remark Models pointer interface by providing contextual conversion to `bool` albeit redundantly.
      * @note Because this always returns `true`, the compiler can elide checks in generic code when `required_ptr` is the concrete type.
      * @note This does not indicate engagement/optionality as `required_ptr` has no disengaged state.
+     */
+    /**
+     * @fn static pointer required_ptr::check_for_null(pointer source)
+     *
+     * @param source The raw pointer to validate.
+     *
+     * @return The same pointer value if non-null.
+     *
+     * @post The returned pointer is guaranteed to be non-null.
+     *
+     * @throws std::invalid_argument if `source == nullptr`.
+     *
+     * @remark Centralizes enforcement of the non-null invariant for all constructors and assignment operators accepting raw or pointer-like inputs.
+     * @remark Marked `[[nodiscard]]` to discourage accidental ignoring of the validated result.
+     * @remark Defined as a private static helper to avoid duplication and ensure consistent exception semantics.
+     * @note This function does not perform lifetime validation; it assumes the caller ensures the pointee remains valid.
      */
 
     /**
