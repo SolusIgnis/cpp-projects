@@ -50,8 +50,8 @@ namespace {
             expect(eq(instantiable_with<required_ptr, std::int32_t>, true));
             expect(eq(instantiable_with<required_ptr, std::int32_t*>, true));
             expect(eq(instantiable_with<required_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
+            expect(eq(instantiable_with<required_ptr, void>, true));
 
-            expect(eq(instantiable_with<required_ptr, void>, false));
             expect(eq(instantiable_with<required_ptr, std::int32_t&>, false));
             expect(eq(instantiable_with<required_ptr, std::int32_t&&>, false));
             expect(eq(instantiable_with<required_ptr, void(int)>, false));
@@ -155,10 +155,10 @@ namespace {
             expect(eq(std::constructible_from<required_ptr<std::int32_t>, std::nullptr_t>, false));
         };
 
-        "not constructible from raw pointer"_test = [] mutable {
-            expect(eq(std::constructible_from<required_ptr<std::int32_t>, std::int32_t*>, false));
-            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, std::int32_t*>, false));
-            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, const std::int32_t*>, false));
+        "constructible from raw pointer"_test = [] mutable {
+            expect(eq(std::constructible_from<required_ptr<std::int32_t>, std::int32_t*>, true));
+            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, std::int32_t*>, true));
+            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, const std::int32_t*>, true));
         };
 
         "not constructible from rvalue"_test = [] mutable {
@@ -198,10 +198,10 @@ namespace {
             expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, std::nullptr_t>, false));
         };
 
-        "not assignable from raw pointer"_test = [] mutable {
-            expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, std::int32_t*>, false));
-            expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, std::int32_t*>, false));
-            expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, const std::int32_t*>, false));
+        "assignable from raw pointer"_test = [] mutable {
+            expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, std::int32_t*>, true));
+            expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, std::int32_t*>, true));
+            expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, const std::int32_t*>, true));
         };
 
         "not assignable from rvalue"_test = [] mutable {
