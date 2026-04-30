@@ -123,7 +123,7 @@ export namespace base::vocab::inline ptr {
         
         ///@brief Constructs from another wrapped/smart pointer type.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!std::same_as<Pointer<Element, Args...>, required_ptr<Element>>)
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, required_ptr>)
                      && requires(Pointer<Element, Args...> ptr){ { ptr.get() } -> std::convertible_to<pointer>; }
         constexpr explicit required_ptr(const Pointer<Element, Args...>& source) : address_(check_for_null(source.get()))
         {}
@@ -162,7 +162,8 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Assigns from another wrapped/smart pointer type.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!std::same_as<Pointer<Element, Args...>, required_ptr<Element>>)
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, required_ptr>)
+                     && requires(Pointer<Element, Args...> ptr){ { ptr.get() } -> std::convertible_to<pointer>; }
         required_ptr& operator=(const Pointer<Element, Args...>& source)
         {
             address_ = check_for_null(source.get());
