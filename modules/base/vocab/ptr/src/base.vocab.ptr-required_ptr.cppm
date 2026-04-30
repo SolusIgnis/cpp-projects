@@ -118,20 +118,15 @@ export namespace base::vocab::inline ptr {
         {}
 
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
-        constexpr explicit(std::is_void_v<T>) required_ptr(pointer source) : address_(source)
-        {
-            if (source == nullptr) [[unlikely]]
-                throw std::invalid_argument("required_ptr cannot be constructed from a null pointer.");
-        }
+        constexpr explicit(std::is_void_v<T>) required_ptr(pointer source) : address_(check_for_null(source))
+        {}
         
         ///@brief Constructs from another wrapped/smart pointer type.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!std::same_as<Pointer<Element, Args...>, required_ptr<Element>>)
-        constexpr explicit required_ptr(const Pointer<Element, Args...>& source) : address_(source.get())
-        {
-            if (source == nullptr) [[unlikely]]
-                throw std::invalid_argument("required_ptr cannot be constructed from a null pointer.");
-        }
+                     && requires(Pointer<Element, Args...> ptr){ { ptr.get() } -> std::convertible_to<pointer>; }
+        constexpr explicit required_ptr(const Pointer<Element, Args...>& source) : address_(check_for_null(source.get()))
+        {}
 
         ///@brief Rebinds the `required_ptr` to another object.
         required_ptr& operator=(reference source) noexcept
@@ -161,9 +156,16 @@ export namespace base::vocab::inline ptr {
         ///@brief Assigns from a raw `pointer`.
         required_ptr& operator=(pointer source)
         {
-            if (source == nullptr) [[unlikely]]
-                throw std::invalid_argument("required_ptr cannot be assigned from a null pointer.");
-            address_ = source;
+            address_ = check_for_null(source);
+            return *this;
+        }
+
+        ///@brief Assigns from another wrapped/smart pointer type.
+        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
+            requires (!std::same_as<Pointer<Element, Args...>, required_ptr<Element>>)
+        required_ptr& operator=(const Pointer<Element, Args...>& source)
+        {
+            address_ = check_for_null(source.get());
             return *this;
         }
 
@@ -299,6 +301,13 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
         friend required_ptr operator-(required_ptr, difference_type) =
             delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `required_ptr` is not an iterator.")*/;
+    private:
+        static [[nodiscard]] pointer check_for_null(pointer source)
+        {
+            if (source == nullptr) [[unlikely]]
+                throw std::invalid_argument("`required_ptr` cannot be constructed or assigned from a null pointer.");
+            return source;
+        }
     }; //class required_ptr
     /**
      * @fn explicit required_ptr::required_ptr(reference source) noexcept
