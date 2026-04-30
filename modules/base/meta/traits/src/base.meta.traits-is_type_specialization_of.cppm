@@ -40,5 +40,5 @@ export namespace base::meta::traits::inline predicates {
     inline constexpr bool is_type_specialization_of_v = false;
     
     template<template<typename...> typename TT, typename... Args>
-    inline constexpr bool is_specialization_of_v<TT<Args...>, TT> = true;
+    inline constexpr bool is_type_specialization_of_v<TT<Args...>, TT> = true;
 } //namespace base::meta::traits::inline predicates
