@@ -123,6 +123,15 @@ export namespace base::vocab::inline ptr {
             if (source == nullptr) [[unlikely]]
                 throw std::invalid_argument("required_ptr cannot be constructed from a null pointer.");
         }
+        
+        ///@brief Constructs from another wrapped/smart pointer type.
+        template<template<typename, typename...> Pointer, typename Element, typename... Args>
+            requires (!std::same_as<Pointer<Element, Args...>, required_ptr<Element>>)
+        constexpr explicit required_ptr(const Pointer<Element, Args...>& source) : address_(source.get())
+        {
+            if (source == nullptr) [[unlikely]]
+                throw std::invalid_argument("required_ptr cannot be constructed from a null pointer.");
+        }
 
         ///@brief Rebinds the `required_ptr` to another object.
         required_ptr& operator=(reference source) noexcept
@@ -233,10 +242,10 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Provides pointer-like member access to the referenced object.
-        [[nodiscard]] constexpr pointer operator->() const noexcept requires (!is_void_v<T>) { return address_; }
+        [[nodiscard]] constexpr pointer operator->() const noexcept requires (!std::is_void_v<T>) { return address_; }
 
         ///@brief Dereferences the pointer to access the referenced object.
-        [[nodiscard]] constexpr reference operator*() const noexcept requires (!is_void_v<T>) { return *address_; }
+        [[nodiscard]] constexpr reference operator*() const noexcept requires (!std::is_void_v<T>) { return *address_; }
 
         ///@brief Returns the underlying raw pointer.
         [[nodiscard]] constexpr pointer get() const noexcept { return address_; }
