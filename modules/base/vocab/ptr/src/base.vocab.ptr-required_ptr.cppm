@@ -54,6 +54,7 @@ export namespace base::vocab::inline ptr {
     template<typename T>
         requires (!std::is_reference_v<T> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>)
     class required_ptr {
+    public:
         /**
          * @typedef element_type
          * @brief The stored element type.

@@ -5,6 +5,8 @@ import base.vocab.ptr;
 import ut;
 import std;
 
+import base.meta.concepts;
+
 using namespace ut;
 using base::vocab::required_ptr;
 
