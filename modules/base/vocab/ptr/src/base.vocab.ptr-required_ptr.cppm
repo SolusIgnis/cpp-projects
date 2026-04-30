@@ -125,7 +125,7 @@ export namespace base::vocab::inline ptr {
         }
         
         ///@brief Constructs from another wrapped/smart pointer type.
-        template<template<typename, typename...> Pointer, typename Element, typename... Args>
+        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!std::same_as<Pointer<Element, Args...>, required_ptr<Element>>)
         constexpr explicit required_ptr(const Pointer<Element, Args...>& source) : address_(source.get())
         {
