@@ -25,7 +25,7 @@
 //Module partition interface unit
 export module base.vocab.ptr:forward_declarations;
 
-import std; 
+import std;
 
 import base.meta.traits;
 
@@ -36,7 +36,7 @@ export namespace base::vocab::inline ptr {
             && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>
         )
     class [[nodiscard]] dependency_ptr;
-    
+
     template<typename T>
         requires (!std::is_reference_v<T> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>)
     class required_ptr;

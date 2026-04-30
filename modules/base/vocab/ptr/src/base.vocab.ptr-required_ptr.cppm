@@ -114,17 +114,20 @@ export namespace base::vocab::inline ptr {
         ///@brief (Erasure) Implicitly converts from `required_ptr<U>` to `required_ptr<void>`.
         template<typename U>
             requires (!std::same_as<U, T>)
-        constexpr explicit(false) required_ptr(const required_ptr<U>& source) noexcept requires std::is_void_v<T> : address_(source.get())
+        constexpr explicit(false) required_ptr(const required_ptr<U>& source) noexcept
+            requires std::is_void_v<T>
+            : address_(source.get())
         {}
 
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
-        constexpr explicit(std::is_void_v<T>) required_ptr(pointer source) : address_(check_for_null(source))
-        {}
-        
+        constexpr explicit(std::is_void_v<T>) required_ptr(pointer source) : address_(check_for_null(source)) {}
+
         ///@brief Constructs from another wrapped/smart pointer type.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, required_ptr>)
-                     && requires(Pointer<Element, Args...> ptr){ { ptr.get() } -> std::convertible_to<pointer>; }
+                  && requires(Pointer<Element, Args...> ptr) {
+                         { ptr.get() } -> std::convertible_to<pointer>;
+                     }
         constexpr explicit required_ptr(const Pointer<Element, Args...>& source) : address_(check_for_null(source.get()))
         {}
 
@@ -147,7 +150,8 @@ export namespace base::vocab::inline ptr {
         ///@brief (Erasure) Assigns from `required_ptr<U>` to `required_ptr<void>`.
         template<typename U>
             requires (!std::same_as<U, T>)
-        required_ptr& operator=(const required_ptr<U>& source) noexcept requires std::is_void_v<T>
+        required_ptr& operator=(const required_ptr<U>& source) noexcept
+            requires std::is_void_v<T>
         {
             address_ = source.get();
             return *this;
@@ -163,7 +167,9 @@ export namespace base::vocab::inline ptr {
         ///@brief Assigns from another wrapped/smart pointer type.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, required_ptr>)
-                     && requires(Pointer<Element, Args...> ptr){ { ptr.get() } -> std::convertible_to<pointer>; }
+                  && requires(Pointer<Element, Args...> ptr) {
+                         { ptr.get() } -> std::convertible_to<pointer>;
+                     }
         required_ptr& operator=(const Pointer<Element, Args...>& source)
         {
             address_ = check_for_null(source.get());
@@ -245,10 +251,18 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Provides pointer-like member access to the referenced object.
-        [[nodiscard]] constexpr pointer operator->() const noexcept requires (!std::is_void_v<T>) { return address_; }
+        [[nodiscard]] constexpr pointer operator->() const noexcept
+            requires (!std::is_void_v<T>)
+        {
+            return address_;
+        }
 
         ///@brief Dereferences the pointer to access the referenced object.
-        [[nodiscard]] constexpr reference operator*() const noexcept requires (!std::is_void_v<T>) { return *address_; }
+        [[nodiscard]] constexpr reference operator*() const noexcept
+            requires (!std::is_void_v<T>)
+        {
+            return *address_;
+        }
 
         ///@brief Returns the underlying raw pointer.
         [[nodiscard]] constexpr pointer get() const noexcept { return address_; }
@@ -302,6 +316,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
         friend required_ptr operator-(required_ptr, difference_type) =
             delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `required_ptr` is not an iterator.")*/;
+
     private:
         [[nodiscard]] static pointer check_for_null(pointer source)
         {
@@ -310,6 +325,7 @@ export namespace base::vocab::inline ptr {
             return source;
         }
     }; //class required_ptr
+
     /**
      * @fn explicit required_ptr::required_ptr(reference source) noexcept
      *
@@ -520,7 +536,7 @@ export namespace base::vocab::inline ptr {
      */
     template<typename T>
     required_ptr(T&) -> required_ptr<T>;
-    
+
     /**
      * @brief Deduction guide for `required_ptr`.
      *

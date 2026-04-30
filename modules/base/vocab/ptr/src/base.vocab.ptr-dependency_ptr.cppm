@@ -296,6 +296,7 @@ export namespace base::vocab::inline ptr {
         friend dependency_ptr operator-(dependency_ptr, difference_type) =
             delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
     }; //class dependency_ptr
+
     /**
      * @fn explicit dependency_ptr::dependency_ptr(reference source) noexcept
      *
