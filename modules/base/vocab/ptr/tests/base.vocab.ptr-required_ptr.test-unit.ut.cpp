@@ -744,8 +744,8 @@ namespace {
         };
 
         "void smart pointer construction is explicit"_test = [] mutable {
-            expect(eq(std::convertible_to<trivial_smart_ptr<void>, required_ptr<void>>, false));
-            expect(eq(std::constructible_from<required_ptr<void>, trivial_smart_ptr<void>>, true));
+            expect(eq(std::convertible_to<trivial_smart_ptr<void>&, required_ptr<void>>, false));
+            expect(eq(std::constructible_from<required_ptr<void>, trivial_smart_ptr<void>&>, true));
         };
 
         //============================================================
