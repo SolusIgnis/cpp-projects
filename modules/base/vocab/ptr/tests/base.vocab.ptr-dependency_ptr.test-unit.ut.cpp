@@ -263,14 +263,18 @@ namespace {
             expect(eq(ptr.get(), std::addressof(x)));
         };
 
-        "boolean conversion"_test = [] mutable {
-            expect(eq(std::constructible_from<bool, dependency_ptr<std::int32_t>>, true));
+        "contextual boolean conversion is supported"_test = [] mutable {
+            expect(eq(std::constructible_from<bool, required_ptr<std::int32_t>>, true));
 
             const int x{};
-            dependency_ptr<const std::int32_t> ptr{x};
+            required_ptr<const std::int32_t> ptr{x};
+            
+            bool converted{false};
+            if (ptr) converted = true;
 
             expect(eq(static_cast<bool>(ptr), true));
             expect(eq(!ptr, false));
+            expect(eq(converted, true));
         };
 
         //============================================================

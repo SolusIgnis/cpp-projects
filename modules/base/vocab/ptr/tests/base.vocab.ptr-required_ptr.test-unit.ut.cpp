@@ -32,12 +32,25 @@ namespace {
     template<typename T>
     concept HasPostDecrement = requires(T t) { t--; };
 
-    struct Base {
+    template<typename T>
+    concept Dereferenceable = requires(T t) { *t; };
+    
+    template<typename T>
+    concept ArrowAccessible = requires(T t) { t.operator->(); };
+
+    struct base_type {
         int value{0};
     };
 
-    struct Derived : Base {
+    struct derived_type : base_type {
         int extra{42};
+    };
+
+    template<typename T>
+    struct smart_ptr {
+        T* address{};
+        
+        T* get() const { return address; }
     };
 
     suite base_vocab_ptr_required_ptr_unit = [] mutable {
@@ -160,6 +173,44 @@ namespace {
             expect(eq(std::constructible_from<required_ptr<const std::int32_t>, std::int32_t*>, true));
             expect(eq(std::constructible_from<required_ptr<const std::int32_t>, const std::int32_t*>, true));
         };
+        
+        "constructing from null raw pointer throws"_test = [] mutable {
+            std::int32_t* raw = nullptr;
+        
+            bool threw = false;
+        
+            try {
+                [[maybe_unused]] required_ptr<std::int32_t> ptr{raw};
+            } catch (const std::invalid_argument&) {
+                threw = true;
+            }
+        
+            expect(eq(threw, true));
+        };
+
+        "constructible from smart pointer"_test = [] mutable {
+            std::int32_t value{42};
+            smart_ptr<std::int32_t> source{std::addressof(value)};
+            
+            required_ptr<std::int32_t> ptr{source};
+        
+            expect(eq(*ptr, value));
+            expect(eq(ptr.get(), source.get()));
+        };
+
+        "constructing from null smart pointer throws"_test = [] mutable {
+            smart_ptr<std::int32_t> source{};
+        
+            bool threw = false;
+        
+            try {
+                [[maybe_unused]] required_ptr<std::int32_t> ptr{source};
+            } catch  (const std::invalid_argument&) {
+                threw = true;
+            }
+
+            expect(eq(threw, true));
+        };
 
         "not constructible from rvalue"_test = [] mutable {
             expect(eq(std::constructible_from<required_ptr<std::int32_t>, std::int32_t>, false));
@@ -204,6 +255,61 @@ namespace {
             expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, const std::int32_t*>, true));
         };
 
+        "assigning null raw pointer throws"_test = [] mutable {
+            const std::int32_t value = 42;
+            required_ptr<const std::int32_t> ptr{value};
+        
+            std::int32_t* raw = nullptr;
+        
+            bool threw = false;
+        
+            try {
+                ptr = raw;
+            } catch (const std::invalid_argument&) {
+                threw = true;
+            }
+        
+            expect(eq(threw, true));
+        
+            // Invariant preserved after failed assignment
+            expect(eq(ptr.get(), std::addressof(value)));
+            expect(eq(*ptr, value));
+        };
+
+        "assignable from smart pointer"_test = [] mutable {
+            const std::int32_t value{55};
+            smart_ptr<const std::int32_t> source{std::addressof(value)};
+        
+            const std::int32_t other{};
+            required_ptr<const std::int32_t> ptr{other};
+        
+            ptr = source;
+        
+            expect(eq(*ptr, value));
+            expect(eq(ptr.get(), source.get()));
+        };
+
+        "assigning null smart pointer throws"_test = [] mutable {
+            const std::int32_t value = 42;
+            required_ptr<const std::int32_t> ptr{value};
+        
+            smart_ptr<std::int32_t> smart = nullptr;
+        
+            bool threw = false;
+        
+            try {
+                ptr = smart;
+            } catch (const std::invalid_argument&) {
+                threw = true;
+            }
+        
+            expect(eq(threw, true));
+        
+            // Invariant preserved after failed assignment
+            expect(eq(ptr.get(), std::addressof(value)));
+            expect(eq(*ptr, value));
+        };
+
         "not assignable from rvalue"_test = [] mutable {
             expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, std::int32_t&&>, false));
             expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, std::int32_t&&>, false));
@@ -222,8 +328,8 @@ namespace {
         };
 
         "operator-> provides member access"_test = [] mutable {
-            Base obj{123};
-            required_ptr<Base> ptr{obj};
+            base_type obj{123};
+            required_ptr<base_type> ptr{obj};
 
             expect(eq(ptr->value, 123));
         };
@@ -263,14 +369,18 @@ namespace {
             expect(eq(ptr.get(), std::addressof(x)));
         };
 
-        "boolean conversion"_test = [] mutable {
+        "contextual boolean conversion is supported"_test = [] mutable {
             expect(eq(std::constructible_from<bool, required_ptr<std::int32_t>>, true));
 
             const int x{};
             required_ptr<const std::int32_t> ptr{x};
+            
+            bool converted{false};
+            if (ptr) converted = true;
 
             expect(eq(static_cast<bool>(ptr), true));
             expect(eq(!ptr, false));
+            expect(eq(converted, true));
         };
 
         //============================================================
@@ -311,72 +421,72 @@ namespace {
         //============================================================
 
         "construct base from derived required_ptr"_test = [] mutable {
-            Derived d;
-            required_ptr<Derived> dptr{d};
+            derived_type d;
+            required_ptr<derived_type> dptr{d};
 
-            required_ptr<Base> bptr{dptr};
+            required_ptr<base_type> bptr{dptr};
 
-            expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
+            expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
         };
 
         "construct base from derived reference"_test = [] mutable {
-            Derived d;
+            derived_type d;
 
-            required_ptr<Base> bptr{d};
+            required_ptr<base_type> bptr{d};
 
-            expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
+            expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
         };
 
         "assign base from derived required_ptr"_test = [] mutable {
-            Derived d;
-            required_ptr<Derived> dptr{d};
+            derived_type d;
+            required_ptr<derived_type> dptr{d};
 
-            Base b;
-            required_ptr<Base> bptr{b};
+            base_type b;
+            required_ptr<base_type> bptr{b};
 
             bptr = dptr;
 
-            expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
+            expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
         };
 
         "rebind base from derived reference"_test = [] mutable {
-            Derived d;
+            derived_type d;
 
-            Base b;
-            required_ptr<Base> bptr{b};
+            base_type b;
+            required_ptr<base_type> bptr{b};
 
             bptr = d;
 
-            expect(eq(bptr.get(), static_cast<Base*>(std::addressof(d))));
+            expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
         };
 
         "assign const base from derived required_ptr"_test = [] mutable {
-            Derived d;
-            required_ptr<Derived> dptr{d};
+            derived_type d;
+            required_ptr<derived_type> dptr{d};
 
-            Base b;
-            required_ptr<const Base> bptr{b};
+            base_type b;
+            required_ptr<const base_type> bptr{b};
 
             bptr = dptr;
 
-            expect(eq(bptr.get(), static_cast<const Base*>(std::addressof(d))));
+            expect(eq(bptr.get(), static_cast<const base_type*>(std::addressof(d))));
         };
 
         "rebind const base from derived reference"_test = [] mutable {
-            Derived d;
+            derived_type d;
 
-            Base b;
-            required_ptr<const Base> bptr{b};
+            base_type b;
+            required_ptr<const base_type> bptr{b};
 
             bptr = d;
 
-            expect(eq(bptr.get(), static_cast<const Base*>(std::addressof(d))));
+            expect(eq(bptr.get(), static_cast<const base_type*>(std::addressof(d))));
         };
 
         "covariant equality comparison"_test = [] mutable {
-            expect(eq(std::equality_comparable_with<required_ptr<Base>, required_ptr<Derived>>, true));
-            expect(eq(std::equality_comparable_with<required_ptr<Base>, Derived*>, true));
-            expect(eq(std::equality_comparable_with<Base*, required_ptr<Derived>>, true));
+            expect(eq(std::equality_comparable_with<required_ptr<base_type>, required_ptr<derived_type>>, true));
+            expect(eq(std::equality_comparable_with<required_ptr<base_type>, derived_type*>, true));
+            expect(eq(std::equality_comparable_with<base_type*, required_ptr<derived_type>>, true));
         };
 
         //============================================================
@@ -398,10 +508,10 @@ namespace {
         "no ordering comparisons"_test = [] mutable {
             expect(eq(std::three_way_comparable<required_ptr<std::int32_t>>, false));
             expect(eq(std::three_way_comparable_with<required_ptr<std::int32_t>, std::int32_t*>, false));
-            expect(eq(std::three_way_comparable<required_ptr<Base>>, false));
-            expect(eq(std::three_way_comparable_with<required_ptr<Base>, required_ptr<Derived>>, false));
-            expect(eq(std::three_way_comparable_with<required_ptr<Base>, Derived*>, false));
-            expect(eq(std::three_way_comparable_with<Base*, required_ptr<Derived>>, false));
+            expect(eq(std::three_way_comparable<required_ptr<base_type>>, false));
+            expect(eq(std::three_way_comparable_with<required_ptr<base_type>, required_ptr<derived_type>>, false));
+            expect(eq(std::three_way_comparable_with<required_ptr<base_type>, derived_type*>, false));
+            expect(eq(std::three_way_comparable_with<base_type*, required_ptr<derived_type>>, false));
         };
 
         //============================================================
@@ -472,6 +582,32 @@ namespace {
             required_ptr<std::int32_t> ptr{x};
 
             expect(eq(takes_ptr(ptr.get()), 4));
+        };
+
+        //============================================================
+        // void support
+        //============================================================
+
+        "void specialization supports type erasure"_test = [] mutable {
+            std::int32_t x{};
+        
+            required_ptr<std::int32_t> typed{x};
+            required_ptr<void> erased{typed};
+        
+            expect(eq(erased.get(), static_cast<void*>(std::addressof(x))));
+        };
+        
+        "void specialization disables dereference operators"_test = [] mutable {
+            expect(eq(Dereferenceable<required_ptr<std::int32_t>>, true));
+            expect(eq(ArrowAccessible<required_ptr<std::int32_t>>, true));
+        
+            expect(eq(Dereferenceable<required_ptr<void>>, false));
+            expect(eq(ArrowAccessible<required_ptr<void>>, false));
+        };
+        
+        "void raw pointer construction is explicit"_test = [] mutable {
+            expect(eq(std::convertible_to<void*, required_ptr<void>>, false));
+            expect(eq(std::constructible_from<required_ptr<void>, void*>, true));
         };
 
         //============================================================

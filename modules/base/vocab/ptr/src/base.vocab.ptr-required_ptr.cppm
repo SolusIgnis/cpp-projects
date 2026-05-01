@@ -169,7 +169,7 @@ export namespace base::vocab::inline ptr {
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, required_ptr>)
                   && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr.get()) } -> std::convertible_to<pointer>;
+                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
         constexpr required_ptr& operator=(const Pointer<Element, Args...>& source)
         {
