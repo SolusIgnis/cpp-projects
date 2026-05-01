@@ -374,22 +374,24 @@ namespace {
         };
 
         "implicit conversion to raw pointer"_test = [] mutable {
-            expect(eq(std::convertible_to<required_ptr<std::int32_t>, std::int32_t*>, true));
-            expect(eq(std::convertible_to<required_ptr<std::int32_t>, const std::int32_t*>, true));
-            expect(eq(std::convertible_to<required_ptr<std::int32_t>, volatile std::int32_t*>, true));
-            expect(eq(std::convertible_to<required_ptr<std::int32_t>, const volatile std::int32_t*>, true));
-            expect(eq(std::convertible_to<required_ptr<const std::int32_t>, std::int32_t*>, false));
-            expect(eq(std::convertible_to<required_ptr<const std::int32_t>, const std::int32_t*>, true));
-            expect(eq(std::convertible_to<required_ptr<const std::int32_t>, volatile std::int32_t*>, false));
-            expect(eq(std::convertible_to<required_ptr<const std::int32_t>, const volatile std::int32_t*>, true));
-            expect(eq(std::convertible_to<required_ptr<volatile std::int32_t>, std::int32_t*>, false));
-            expect(eq(std::convertible_to<required_ptr<volatile std::int32_t>, const std::int32_t*>, false));
-            expect(eq(std::convertible_to<required_ptr<volatile std::int32_t>, volatile std::int32_t*>, true));
-            expect(eq(std::convertible_to<required_ptr<volatile std::int32_t>, const volatile std::int32_t*>, true));
-            expect(eq(std::convertible_to<required_ptr<const volatile std::int32_t>, std::int32_t*>, false));
-            expect(eq(std::convertible_to<required_ptr<const volatile std::int32_t>, const std::int32_t*>, false));
-            expect(eq(std::convertible_to<required_ptr<const volatile std::int32_t>, volatile std::int32_t*>, false));
-            expect(eq(std::convertible_to<required_ptr<const volatile std::int32_t>, const volatile std::int32_t*>, true));
+            using test_type = std::int32_t;
+
+            expect(eq(std::convertible_to<required_ptr<test_type>, test_type*>, true));
+            expect(eq(std::convertible_to<required_ptr<test_type>, const test_type*>, true));
+            expect(eq(std::convertible_to<required_ptr<test_type>, volatile test_type*>, true));
+            expect(eq(std::convertible_to<required_ptr<test_type>, const volatile test_type*>, true));
+            expect(eq(std::convertible_to<required_ptr<const test_type>, test_type*>, false));
+            expect(eq(std::convertible_to<required_ptr<const test_type>, const test_type*>, true));
+            expect(eq(std::convertible_to<required_ptr<const test_type>, volatile test_type*>, false));
+            expect(eq(std::convertible_to<required_ptr<const test_type>, const volatile test_type*>, true));
+            expect(eq(std::convertible_to<required_ptr<volatile test_type>, test_type*>, false));
+            expect(eq(std::convertible_to<required_ptr<volatile test_type>, const test_type*>, false));
+            expect(eq(std::convertible_to<required_ptr<volatile test_type>, volatile test_type*>, true));
+            expect(eq(std::convertible_to<required_ptr<volatile test_type>, const volatile test_type*>, true));
+            expect(eq(std::convertible_to<required_ptr<const volatile test_type>, test_type*>, false));
+            expect(eq(std::convertible_to<required_ptr<const volatile test_type>, const test_type*>, false));
+            expect(eq(std::convertible_to<required_ptr<const volatile test_type>, volatile test_type*>, false));
+            expect(eq(std::convertible_to<required_ptr<const volatile test_type>, const volatile test_type*>, true));
         };
 
         "conversion to raw pointer preserves address"_test = [] mutable {
@@ -739,6 +741,11 @@ namespace {
         "void raw pointer construction is explicit"_test = [] mutable {
             expect(eq(std::convertible_to<void*, required_ptr<void>>, false));
             expect(eq(std::constructible_from<required_ptr<void>, void*>, true));
+        };
+
+        "void smart pointer construction is explicit"_test = [] mutable {
+            expect(eq(std::convertible_to<trivial_smart_ptr<void>, required_ptr<void>>, false));
+            expect(eq(std::constructible_from<required_ptr<void>, trivial_smart_ptr<void>>, true));
         };
 
         //============================================================

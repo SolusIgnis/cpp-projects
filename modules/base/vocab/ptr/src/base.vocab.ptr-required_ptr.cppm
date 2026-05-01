@@ -125,13 +125,13 @@ export namespace base::vocab::inline ptr {
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
         constexpr explicit(std::is_void_v<T>) required_ptr(pointer source) : address_(check_for_null(source)) {}
 
-        ///@brief Constructs from another wrapped/smart pointer type.
+        ///@brief Implicitly converts from another wrapped/smart pointer type. Explicit when `T` is void to avoid implicit conversion chaining.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, required_ptr>)
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-        constexpr explicit required_ptr(const Pointer<Element, Args...>& source) : address_(check_for_null(source.get()))
+        constexpr explicit(std::is_void_v<T>) required_ptr(const Pointer<Element, Args...>& source) : address_(check_for_null(source.get()))
         {}
 
         ///@brief Rebinds the `required_ptr` to another object.
@@ -207,10 +207,31 @@ export namespace base::vocab::inline ptr {
             delete /*("Constructor from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
+        ///@brief Deleted constructor from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
+        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, required_ptr>)
+                  && requires(Pointer<Element, Args...> ptr) {
+                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
+                     }
+        required_ptr(const Pointer<Element, Args...>&&) =
+            delete /*("Constructor from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
+
         ///@brief Deleted assignment from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
         required_ptr& operator=(rvalue_reference) =
             delete /*("Assignment from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
+
+        ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
+        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, required_ptr>)
+                  && requires(Pointer<Element, Args...> ptr) {
+                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
+                     }
+        required_ptr& operator=(const Pointer<Element, Args...>&&) =
+            delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
+
 
         //================================================================================
         // Comparison Operators (Equality Allowed, Others Deleted)
