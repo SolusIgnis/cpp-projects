@@ -60,18 +60,18 @@ namespace {
 
         "template instantiation checks"_test = [] mutable {
             using base::meta::concepts::instantiable_with;
-            expect(eq(instantiable_with<required_ptr, std::int32_t>, true));
-            expect(eq(instantiable_with<required_ptr, std::int32_t*>, true));
-            expect(eq(instantiable_with<required_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
-            expect(eq(instantiable_with<required_ptr, void>, true));
+            expect(eq(instantiable_with<base::vocab::required_ptr, std::int32_t>, true));
+            expect(eq(instantiable_with<base::vocab::required_ptr, std::int32_t*>, true));
+            expect(eq(instantiable_with<base::vocab::required_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
+            expect(eq(instantiable_with<base::vocab::required_ptr, void>, true));
 
-            expect(eq(instantiable_with<required_ptr, std::int32_t&>, false));
-            expect(eq(instantiable_with<required_ptr, std::int32_t&&>, false));
-            expect(eq(instantiable_with<required_ptr, void(int)>, false));
-            expect(eq(instantiable_with<required_ptr, void (&)(int)>, false));
-            expect(eq(instantiable_with<required_ptr, void (*)(int, float)>, false));
-            expect(eq(instantiable_with<required_ptr, void (**)(std::string, int)>, false));
-            expect(eq(instantiable_with<required_ptr, void (*******)(int)>, false));
+            expect(eq(instantiable_with<base::vocab::required_ptr, std::int32_t&>, false));
+            expect(eq(instantiable_with<base::vocab::required_ptr, std::int32_t&&>, false));
+            expect(eq(instantiable_with<base::vocab::required_ptr, void(int)>, false));
+            expect(eq(instantiable_with<base::vocab::required_ptr, void (&)(int)>, false));
+            expect(eq(instantiable_with<base::vocab::required_ptr, void (*)(int, float)>, false));
+            expect(eq(instantiable_with<base::vocab::required_ptr, void (**)(std::string, int)>, false));
+            expect(eq(instantiable_with<base::vocab::required_ptr, void (*******)(int)>, false));
         };
 
         //============================================================
@@ -81,29 +81,29 @@ namespace {
         "triviality"_test = [] mutable {
             using simple_t = std::int32_t;
 
-            expect(eq(std::is_standard_layout_v<required_ptr<simple_t>>, true));
-            expect(eq(std::is_trivially_copyable_v<required_ptr<simple_t>>, true));
-            expect(eq(std::is_trivially_destructible_v<required_ptr<simple_t>>, true));
-            expect(eq(std::is_nothrow_constructible_v<required_ptr<simple_t>, simple_t&>, true));
+            expect(eq(std::is_standard_layout_v<base::vocab::required_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_copyable_v<base::vocab::required_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_destructible_v<base::vocab::required_ptr<simple_t>>, true));
+            expect(eq(std::is_nothrow_constructible_v<base::vocab::required_ptr<simple_t>, simple_t&>, true));
 
             using complex_t = std::map<std::string, std::vector<std::int32_t>>;
 
-            expect(eq(std::is_standard_layout_v<required_ptr<complex_t>>, true));
-            expect(eq(std::is_trivially_copyable_v<required_ptr<complex_t>>, true));
-            expect(eq(std::is_trivially_destructible_v<required_ptr<complex_t>>, true));
-            expect(eq(std::is_nothrow_constructible_v<required_ptr<complex_t>, complex_t&>, true));
+            expect(eq(std::is_standard_layout_v<base::vocab::required_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_copyable_v<base::vocab::required_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_destructible_v<base::vocab::required_ptr<complex_t>>, true));
+            expect(eq(std::is_nothrow_constructible_v<base::vocab::required_ptr<complex_t>, complex_t&>, true));
         };
 
         "size and alignment match raw pointers"_test = [] mutable {
             using simple_t = std::int32_t;
 
-            expect(eq(sizeof(required_ptr<simple_t>) == sizeof(simple_t*), true));
-            expect(eq(alignof(required_ptr<simple_t>) == alignof(simple_t*), true));
+            expect(eq(sizeof(base::vocab::required_ptr<simple_t>) == sizeof(simple_t*), true));
+            expect(eq(alignof(base::vocab::required_ptr<simple_t>) == alignof(simple_t*), true));
 
             using complex_t = std::map<std::string, std::vector<std::int32_t>>;
 
-            expect(eq(sizeof(required_ptr<complex_t>) == sizeof(complex_t*), true));
-            expect(eq(alignof(required_ptr<complex_t>) == alignof(complex_t*), true));
+            expect(eq(sizeof(base::vocab::required_ptr<complex_t>) == sizeof(complex_t*), true));
+            expect(eq(alignof(base::vocab::required_ptr<complex_t>) == alignof(complex_t*), true));
         };
 
         //============================================================
@@ -111,7 +111,7 @@ namespace {
         //============================================================
 
         "type aliases are correct"_test = [] mutable {
-            using T = required_ptr<const std::int32_t>;
+            using T = base::vocab::required_ptr<const std::int32_t>;
 
             constexpr bool element = std::same_as<T::element_type, const std::int32_t>;
             constexpr bool value   = std::same_as<T::value_type, std::int32_t>;
@@ -134,44 +134,44 @@ namespace {
 
         "constructible explicitly from lvalue reference"_test = [] mutable {
             //Explicitly constructible unless removing qualifier
-            expect(eq(std::constructible_from<required_ptr<std::int32_t>, std::int32_t&>, true));
-            expect(eq(std::constructible_from<required_ptr<std::int32_t>, const std::int32_t&>, false));
-            expect(eq(std::constructible_from<required_ptr<std::int32_t>, volatile std::int32_t&>, false));
-            expect(eq(std::constructible_from<required_ptr<std::int32_t>, const volatile std::int32_t&>, false));
-            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, std::int32_t&>, true));
-            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, const std::int32_t&>, true));
-            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, volatile std::int32_t&>, false));
-            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, const volatile std::int32_t&>, false));
-            expect(eq(std::constructible_from<required_ptr<volatile std::int32_t>, std::int32_t&>, true));
-            expect(eq(std::constructible_from<required_ptr<volatile std::int32_t>, const std::int32_t&>, false));
-            expect(eq(std::constructible_from<required_ptr<volatile std::int32_t>, volatile std::int32_t&>, true));
-            expect(eq(std::constructible_from<required_ptr<volatile std::int32_t>, const volatile std::int32_t&>, false));
-            expect(eq(std::constructible_from<required_ptr<const volatile std::int32_t>, std::int32_t&>, true));
-            expect(eq(std::constructible_from<required_ptr<const volatile std::int32_t>, const std::int32_t&>, true));
-            expect(eq(std::constructible_from<required_ptr<const volatile std::int32_t>, volatile std::int32_t&>, true));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<std::int32_t>, std::int32_t&>, true));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<std::int32_t>, const std::int32_t&>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<std::int32_t>, volatile std::int32_t&>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<std::int32_t>, const volatile std::int32_t&>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const std::int32_t>, std::int32_t&>, true));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const std::int32_t>, const std::int32_t&>, true));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const std::int32_t>, volatile std::int32_t&>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const std::int32_t>, const volatile std::int32_t&>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<volatile std::int32_t>, std::int32_t&>, true));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<volatile std::int32_t>, const std::int32_t&>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<volatile std::int32_t>, volatile std::int32_t&>, true));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<volatile std::int32_t>, const volatile std::int32_t&>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const volatile std::int32_t>, std::int32_t&>, true));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const volatile std::int32_t>, const std::int32_t&>, true));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const volatile std::int32_t>, volatile std::int32_t&>, true));
             expect(
-                eq(std::constructible_from<required_ptr<const volatile std::int32_t>, const volatile std::int32_t&>, true)
+                eq(std::constructible_from<base::vocab::required_ptr<const volatile std::int32_t>, const volatile std::int32_t&>, true)
             );
 
             //Never implicitly convertible (constructor is explicit)
-            expect(eq(std::convertible_to<std::int32_t&, required_ptr<std::int32_t>>, false));
-            expect(eq(std::convertible_to<const std::int32_t&, required_ptr<std::int32_t>>, false));
-            expect(eq(std::convertible_to<std::int32_t&, required_ptr<const std::int32_t>>, false));
-            expect(eq(std::convertible_to<const std::int32_t&, required_ptr<const std::int32_t>>, false));
+            expect(eq(std::convertible_to<std::int32_t&, base::vocab::required_ptr<std::int32_t>>, false));
+            expect(eq(std::convertible_to<const std::int32_t&, base::vocab::required_ptr<std::int32_t>>, false));
+            expect(eq(std::convertible_to<std::int32_t&, base::vocab::required_ptr<const std::int32_t>>, false));
+            expect(eq(std::convertible_to<const std::int32_t&, base::vocab::required_ptr<const std::int32_t>>, false));
         };
 
         "not default constructible"_test = [] mutable {
-            expect(eq(std::default_initializable<required_ptr<std::int32_t>>, false));
+            expect(eq(std::default_initializable<base::vocab::required_ptr<std::int32_t>>, false));
         };
 
         "not constructible from nullptr"_test = [] mutable {
-            expect(eq(std::constructible_from<required_ptr<std::int32_t>, std::nullptr_t>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<std::int32_t>, std::nullptr_t>, false));
         };
 
         "constructible from raw pointer"_test = [] mutable {
-            expect(eq(std::constructible_from<required_ptr<std::int32_t>, std::int32_t*>, true));
-            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, std::int32_t*>, true));
-            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, const std::int32_t*>, true));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<std::int32_t>, std::int32_t*>, true));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const std::int32_t>, std::int32_t*>, true));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const std::int32_t>, const std::int32_t*>, true));
         };
         
         "constructing from null raw pointer throws"_test = [] mutable {
@@ -180,7 +180,7 @@ namespace {
             bool threw = false;
         
             try {
-                [[maybe_unused]] required_ptr<std::int32_t> ptr{raw};
+                [[maybe_unused]] base::vocab::required_ptr<std::int32_t> ptr{raw};
             } catch (const std::invalid_argument&) {
                 threw = true;
             }
@@ -192,7 +192,7 @@ namespace {
             std::int32_t value{42};
             smart_ptr<std::int32_t> source{std::addressof(value)};
             
-            required_ptr<std::int32_t> ptr{source};
+            base::vocab::required_ptr<std::int32_t> ptr{source};
         
             expect(eq(*ptr, value));
             expect(eq(ptr.get(), source.get()));
@@ -204,7 +204,7 @@ namespace {
             bool threw = false;
         
             try {
-                [[maybe_unused]] required_ptr<std::int32_t> ptr{source};
+                [[maybe_unused]] base::vocab::required_ptr<std::int32_t> ptr{source};
             } catch  (const std::invalid_argument&) {
                 threw = true;
             }
@@ -213,13 +213,13 @@ namespace {
         };
 
         "not constructible from rvalue"_test = [] mutable {
-            expect(eq(std::constructible_from<required_ptr<std::int32_t>, std::int32_t>, false));
-            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, std::int32_t>, false));
-            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, const std::int32_t>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<std::int32_t>, std::int32_t>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const std::int32_t>, std::int32_t>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const std::int32_t>, const std::int32_t>, false));
 
-            expect(eq(std::constructible_from<required_ptr<std::int32_t>, std::int32_t&&>, false));
-            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, std::int32_t&&>, false));
-            expect(eq(std::constructible_from<required_ptr<const std::int32_t>, const std::int32_t&&>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<std::int32_t>, std::int32_t&&>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const std::int32_t>, std::int32_t&&>, false));
+            expect(eq(std::constructible_from<base::vocab::required_ptr<const std::int32_t>, const std::int32_t&&>, false));
         };
 
         //============================================================
@@ -227,37 +227,37 @@ namespace {
         //============================================================
 
         "assignable from lvalue reference"_test = [] mutable {
-            expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, const std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, volatile std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, const volatile std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, const std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, volatile std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, const volatile std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<required_ptr<volatile std::int32_t>&, std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<required_ptr<volatile std::int32_t>&, const std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<required_ptr<volatile std::int32_t>&, volatile std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<required_ptr<volatile std::int32_t>&, const volatile std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<required_ptr<const volatile std::int32_t>&, std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<required_ptr<const volatile std::int32_t>&, const std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<required_ptr<const volatile std::int32_t>&, volatile std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<required_ptr<const volatile std::int32_t>&, const volatile std::int32_t&>, true));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<std::int32_t>&, std::int32_t&>, true));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<std::int32_t>&, const std::int32_t&>, false));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<std::int32_t>&, volatile std::int32_t&>, false));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<std::int32_t>&, const volatile std::int32_t&>, false));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<const std::int32_t>&, std::int32_t&>, true));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<const std::int32_t>&, const std::int32_t&>, true));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<const std::int32_t>&, volatile std::int32_t&>, false));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<const std::int32_t>&, const volatile std::int32_t&>, false));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<volatile std::int32_t>&, std::int32_t&>, true));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<volatile std::int32_t>&, const std::int32_t&>, false));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<volatile std::int32_t>&, volatile std::int32_t&>, true));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<volatile std::int32_t>&, const volatile std::int32_t&>, false));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<const volatile std::int32_t>&, std::int32_t&>, true));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<const volatile std::int32_t>&, const std::int32_t&>, true));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<const volatile std::int32_t>&, volatile std::int32_t&>, true));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<const volatile std::int32_t>&, const volatile std::int32_t&>, true));
         };
 
         "not assignable from nullptr"_test = [] mutable {
-            expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, std::nullptr_t>, false));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<std::int32_t>&, std::nullptr_t>, false));
         };
 
         "assignable from raw pointer"_test = [] mutable {
-            expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, std::int32_t*>, true));
-            expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, std::int32_t*>, true));
-            expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, const std::int32_t*>, true));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<std::int32_t>&, std::int32_t*>, true));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<const std::int32_t>&, std::int32_t*>, true));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<const std::int32_t>&, const std::int32_t*>, true));
         };
 
         "assigning null raw pointer throws"_test = [] mutable {
             const std::int32_t value = 42;
-            required_ptr<const std::int32_t> ptr{value};
+            base::vocab::required_ptr<const std::int32_t> ptr{value};
         
             std::int32_t* raw = nullptr;
         
@@ -281,7 +281,7 @@ namespace {
             smart_ptr<const std::int32_t> source{std::addressof(value)};
         
             const std::int32_t other{};
-            required_ptr<const std::int32_t> ptr{other};
+            base::vocab::required_ptr<const std::int32_t> ptr{other};
         
             ptr = source;
         
@@ -291,7 +291,7 @@ namespace {
 
         "assigning null smart pointer throws"_test = [] mutable {
             const std::int32_t value = 42;
-            required_ptr<const std::int32_t> ptr{value};
+            base::vocab::required_ptr<const std::int32_t> ptr{value};
         
             smart_ptr<std::int32_t> smart{};
         
@@ -311,9 +311,9 @@ namespace {
         };
 
         "not assignable from rvalue"_test = [] mutable {
-            expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, std::int32_t&&>, false));
-            expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, std::int32_t&&>, false));
-            expect(eq(std::is_assignable_v<required_ptr<const std::int32_t>&, const std::int32_t&&>, false));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<std::int32_t>&, std::int32_t&&>, false));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<const std::int32_t>&, std::int32_t&&>, false));
+            expect(eq(std::is_assignable_v<base::vocab::required_ptr<const std::int32_t>&, const std::int32_t&&>, false));
         };
 
         //============================================================
@@ -322,14 +322,14 @@ namespace {
 
         "operator* dereferences correctly"_test = [] mutable {
             int x = 55;
-            required_ptr<std::int32_t> ptr{x};
+            base::vocab::required_ptr<std::int32_t> ptr{x};
 
             expect(eq(*ptr, 55));
         };
 
         "operator-> provides member access"_test = [] mutable {
             base_type obj{123};
-            required_ptr<base_type> ptr{obj};
+            base::vocab::required_ptr<base_type> ptr{obj};
 
             expect(eq(ptr->value, 123));
         };
