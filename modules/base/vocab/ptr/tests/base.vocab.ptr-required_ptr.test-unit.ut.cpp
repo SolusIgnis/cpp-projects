@@ -47,7 +47,7 @@ namespace {
     };
 
     template<typename T>
-    struct smart_ptr {
+    struct trivial_smart_ptr {
         T* address{};
         
         T* get() const { return address; }
@@ -190,7 +190,7 @@ namespace {
 
         "constructible from smart pointer"_test = [] mutable {
             std::int32_t value{42};
-            smart_ptr<std::int32_t> source{std::addressof(value)};
+            trivial_smart_ptr<std::int32_t> source{std::addressof(value)};
             
             required_ptr<std::int32_t> ptr{source};
         
@@ -199,7 +199,7 @@ namespace {
         };
 
         "constructing from null smart pointer throws"_test = [] mutable {
-            smart_ptr<std::int32_t> source{};
+            trivial_smart_ptr<std::int32_t> source{};
         
             bool threw = false;
         
@@ -278,7 +278,7 @@ namespace {
 
         "assignable from smart pointer"_test = [] mutable {
             const std::int32_t value{55};
-            smart_ptr<const std::int32_t> source{std::addressof(value)};
+            trivial_smart_ptr<const std::int32_t> source{std::addressof(value)};
         
             const std::int32_t other{};
             required_ptr<const std::int32_t> ptr{other};
@@ -293,7 +293,7 @@ namespace {
             const std::int32_t value = 42;
             required_ptr<const std::int32_t> ptr{value};
         
-            smart_ptr<std::int32_t> smart{};
+            trivial_smart_ptr<std::int32_t> smart{};
         
             bool threw = false;
         
