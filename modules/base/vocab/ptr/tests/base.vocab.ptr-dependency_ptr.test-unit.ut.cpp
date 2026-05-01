@@ -264,10 +264,10 @@ namespace {
         };
 
         "contextual boolean conversion is supported"_test = [] mutable {
-            expect(eq(std::constructible_from<bool, required_ptr<std::int32_t>>, true));
+            expect(eq(std::constructible_from<bool, dependency_ptr<std::int32_t>>, true));
 
             const int x{};
-            required_ptr<const std::int32_t> ptr{x};
+            dependency_ptr<const std::int32_t> ptr{x};
             
             bool converted{false};
             if (ptr) converted = true;
