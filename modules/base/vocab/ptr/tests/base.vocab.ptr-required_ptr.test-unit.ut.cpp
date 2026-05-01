@@ -293,7 +293,7 @@ namespace {
             const std::int32_t value = 42;
             required_ptr<const std::int32_t> ptr{value};
         
-            smart_ptr<std::int32_t> smart = nullptr;
+            smart_ptr<std::int32_t> smart{};
         
             bool threw = false;
         

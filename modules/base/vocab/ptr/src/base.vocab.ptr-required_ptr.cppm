@@ -104,7 +104,7 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Constructs a `required_ptr` bound to an existing object.
-        constexpr explicit required_ptr(reference source) noexcept : address_(std::addressof(source)) {}
+        constexpr explicit required_ptr(reference source) noexcept requires (!is_void_v<T>) : address_(std::addressof(source)) {}
 
         ///@brief (Covariance) Implicitly converts from `required_ptr<DerivedT>` to `required_ptr<T>` when `DerivedT` is publicly derived from `T`.
         template<std::derived_from<T> DerivedT>
@@ -133,7 +133,7 @@ export namespace base::vocab::inline ptr {
         {}
 
         ///@brief Rebinds the `required_ptr` to another object.
-        required_ptr& operator=(reference source) noexcept
+        required_ptr& operator=(reference source) noexcept requires (!is_void_v<T>)
         {
             address_ = std::addressof(source);
             return *this;
