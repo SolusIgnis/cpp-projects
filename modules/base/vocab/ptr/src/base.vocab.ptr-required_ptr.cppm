@@ -76,6 +76,7 @@ export namespace base::vocab::inline ptr {
         /**
          * @typedef reference
          * @brief The reference type (`T&`).
+         * @remark When `T` is `void`, uses `std::monostate&` because `void` as a function parameter is ill-formed.
          */
         using reference = std::conditional_t<std::is_void_v<T>, std::add_lvalue_reference_t<std::monostate>, std::add_lvalue_reference_t<T>>;
 
@@ -83,6 +84,7 @@ export namespace base::vocab::inline ptr {
          * @typedef rvalue_reference
          * @brief The rvalue reference type (`T&&`).
          *
+         * @remark When `T` is `void`, uses `std::monostate&&` because `void` as a function parameter is ill-formed.
          * @note Used only for deletion of invalid overloads to prevent binding to temporaries.
          */
         using rvalue_reference = std::conditional_t<std::is_void_v<T>, std::add_rvalue_reference_t<std::monostate>, std::add_rvalue_reference_t<T>>;

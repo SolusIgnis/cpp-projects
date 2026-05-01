@@ -52,6 +52,7 @@ namespace {
             expect(eq(instantiable_with<dependency_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
 
             expect(eq(instantiable_with<dependency_ptr, void>, false));
+
             expect(eq(instantiable_with<dependency_ptr, std::int32_t&>, false));
             expect(eq(instantiable_with<dependency_ptr, std::int32_t&&>, false));
             expect(eq(instantiable_with<dependency_ptr, void(int)>, false));
