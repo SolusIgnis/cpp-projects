@@ -77,7 +77,7 @@ export namespace base::vocab::inline ptr {
          * @typedef reference
          * @brief The reference type (`T&`).
          */
-        using reference = std::add_lvalue_reference_t<T>;
+        using reference = std::conditional_t<std::is_void_v<T>, std::add_lvalue_reference_t<std::monostate>, std::add_lvalue_reference_t<T>>;
 
         /**
          * @typedef rvalue_reference
@@ -85,7 +85,7 @@ export namespace base::vocab::inline ptr {
          *
          * @note Used only for deletion of invalid overloads to prevent binding to temporaries.
          */
-        using rvalue_reference = std::add_rvalue_reference_t<T>;
+        using rvalue_reference = std::conditional_t<std::is_void_v<T>, std::add_rvalue_reference_t<std::monostate>, std::add_rvalue_reference_t<T>>;
 
         /**
          * @typedef difference_type
