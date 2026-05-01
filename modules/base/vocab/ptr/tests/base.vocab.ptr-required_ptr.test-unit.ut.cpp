@@ -8,9 +8,10 @@ import std;
 import base.meta.concepts;
 
 using namespace ut;
-using base::vocab::required_ptr;
 
 namespace {
+    using base::vocab::required_ptr;
+    
     template<typename T>
     concept HasAddition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
 
