@@ -8,7 +8,7 @@ import std;
 import base.meta.concepts;
 
 using namespace ut;
-using base::vocab::ptr::required_ptr;
+using base::vocab::required_ptr;
 
 namespace {
     template<typename T>
