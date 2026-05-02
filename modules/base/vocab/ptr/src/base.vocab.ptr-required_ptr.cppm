@@ -115,14 +115,6 @@ export namespace base::vocab::inline ptr {
         constexpr explicit(false) required_ptr(const required_ptr<OtherT>& source) noexcept : address_(source.get())
         {}
 
-        ///@brief (Erasure) Implicitly converts from `required_ptr<ErasedT>` to `required_ptr<void>`.
-     /*   template<typename ErasedT>
-            requires (!std::same_as<ErasedT, T>)
-        constexpr explicit(false) required_ptr(const required_ptr<ErasedT>& source) noexcept
-            requires std::is_void_v<T>
-            : address_(source.get())
-        {}*/
-
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
         template<typename P>
             requires (!std::is_array_v<std::remove_cvref_t<P>>)
@@ -155,18 +147,11 @@ export namespace base::vocab::inline ptr {
             return *this;
         }
 
-        ///@brief (Erasure) Assigns from `required_ptr<ErasedT>` to `required_ptr<void>`.
-   /*     template<typename ErasedT>
-            requires (!std::same_as<ErasedT, T>)
-        constexpr required_ptr& operator=(const required_ptr<ErasedT>& source) noexcept
-            requires std::is_void_v<T>
-        {
-            address_ = source.get();
-            return *this;
-        }*/
-
         ///@brief Assigns from a raw `pointer`.
-        constexpr required_ptr& operator=(pointer source)
+        template<typename P>
+            requires (!std::is_array_v<std::remove_cvref_t<P>>)
+                  && std::convertible_to<std::decay_t<P>, pointer>
+        constexpr required_ptr& operator=(P&& source)
         {
             address_ = check_for_null(source);
             return *this;
