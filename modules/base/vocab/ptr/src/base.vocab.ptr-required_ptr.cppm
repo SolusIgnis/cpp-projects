@@ -237,16 +237,16 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Deleted constructor from C-array to prevent array-to-pointer decay.
-        template<typename Element, std::size_t N>
-            requires std::convertible_to<Element(*)[N], T(*)[N]>
-        required_ptr(Element (&)[N]) =
+        template<typename AnyCArray>
+            requires std::is_array_v<AnyCArray>
+        required_ptr(AnyCArray) =
             delete /*("Constructor from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
         ///@brief Deleted assignment from C-array to prevent array-to-pointer decay.
-        template<typename Element, std::size_t N>
-            requires std::convertible_to<Element(*)[N], T(*)[N]>
-        required_ptr& operator=(Element (&)[N]) =
+        template<typename AnyCArray>
+            requires std::is_array_v<AnyCArray>
+        required_ptr& operator=(AnyCArray) =
             delete /*("Assignment from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
