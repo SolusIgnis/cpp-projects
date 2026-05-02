@@ -125,7 +125,6 @@ export namespace base::vocab::inline ptr {
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
         template<std::same_as<T> U = T>
             requires (!std::is_array_v<U>)
-                 // && std::same_as<U, T>
         constexpr explicit(std::is_void_v<T>) required_ptr(std::add_pointer_t<U> source) : address_(check_for_null(source)) {}
 
         ///@brief Implicitly converts from another wrapped/smart pointer type. Explicit when `T` is void to avoid implicit conversion chaining.
@@ -240,7 +239,9 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Deleted constructor from C-array to prevent array-to-pointer decay.
-        required_ptr(std::remove_reference_t<reference> (&)[]) =
+        template<typename AnyCArray>
+            requires std::is_array_v<AnyCArray>
+        required_ptr(AnyCArray&) =
             delete /*("Constructor from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
