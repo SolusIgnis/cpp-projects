@@ -247,14 +247,6 @@ namespace {
             expect(eq(std::convertible_to<trivial_smart_ptr<const test_type>&, required_ptr<const volatile test_type>>, true));
             expect(eq(std::convertible_to<trivial_smart_ptr<volatile test_type>&, required_ptr<const volatile test_type>>, true));
             expect(eq(std::convertible_to<trivial_smart_ptr<const volatile test_type>&, required_ptr<const volatile test_type>>, true));
-            
-            std::int32_t value{42};
-            trivial_smart_ptr<std::int32_t> source{std::addressof(value)};
-            
-            required_ptr<std::int32_t> ptr{source};
-        
-            expect(eq(*ptr, value));
-            expect(eq(ptr.get(), source.get()));
         };
 
         "not constructible from rvalue"_test = [] mutable {
@@ -336,17 +328,6 @@ namespace {
             expect(eq(std::is_assignable_v<required_ptr<const volatile test_type>&, trivial_smart_ptr<const test_type>&>, true));
             expect(eq(std::is_assignable_v<required_ptr<const volatile test_type>&, trivial_smart_ptr<volatile test_type>&>, true));
             expect(eq(std::is_assignable_v<required_ptr<const volatile test_type>&, trivial_smart_ptr<const volatile test_type>&>, true));
-            
-            const std::int32_t value{55};
-            trivial_smart_ptr<const std::int32_t> source{std::addressof(value)};
-        
-            const std::int32_t other{};
-            required_ptr<const std::int32_t> ptr{other};
-        
-            ptr = source;
-        
-            expect(eq(*ptr, value));
-            expect(eq(ptr.get(), source.get()));
         };
 
         "not assignable from rvalue"_test = [] mutable {
@@ -444,73 +425,125 @@ namespace {
         //============================================================
 
         "constructing from null raw pointer throws"_test = [] mutable {
-            std::int32_t* raw = nullptr;
-        
-            bool threw = false;
-        
+            const std::int32_t value{42};
+            const std::int32_t* const bound_source{std::addressof(value)};
+            const std::int32_t* const null_source{};
+            
+            bool threw_when_bound = false;
             try {
-                [[maybe_unused]] required_ptr<std::int32_t> ptr{raw};
-            } catch (const std::invalid_argument&) {
-                threw = true;
-            }
+                const required_ptr<const std::int32_t> ptr{bound_source};
         
-            expect(eq(threw, true));
+                expect(eq(*ptr, value));
+                expect(eq(ptr.get(), bound_source.get()));
+            } catch (...) {
+                threw_when_bound = true;
+            }
+
+            expect(eq(threw_when_bound, false));
+            
+            bool threw_when_null = false;
+            try {
+                [[maybe_unused]] required_ptr<const std::int32_t> dummy_ptr{null_source};
+            } catch  (const std::invalid_argument&) {
+                threw_when_null = true;
+            }
+
+            expect(eq(threw_when_null, true));
         };
 
         "constructing from null smart pointer throws"_test = [] mutable {
-            trivial_smart_ptr<std::int32_t> source{};
-        
-            bool threw = false;
-        
+            const std::int32_t value{42};
+            const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
+            const trivial_smart_ptr<const std::int32_t> null_source{};
+            
+            bool threw_when_bound = false;
             try {
-                [[maybe_unused]] required_ptr<std::int32_t> ptr{source};
+                const required_ptr<const std::int32_t> ptr{bound_source};
+        
+                expect(eq(*ptr, value));
+                expect(eq(ptr.get(), bound_source.get()));
+            } catch (...) {
+                threw_when_bound = true;
+            }
+
+            expect(eq(threw_when_bound, false));
+            
+            bool threw_when_null = false;
+            try {
+                [[maybe_unused]] required_ptr<const std::int32_t> dummy_ptr{null_source};
             } catch  (const std::invalid_argument&) {
-                threw = true;
+                threw_when_null = true;
             }
 
-            expect(eq(threw, true));
+            expect(eq(threw_when_null, true));
         };
 
-        "assigning null raw pointer throws"_test = [] mutable {
-            const std::int32_t value = 42;
-            required_ptr<const std::int32_t> ptr{value};
+        "assigning from null raw pointer throws"_test = [] mutable {
+            const std::int32_t value{42};
+            const std::int32_t other{};
+
+            const std::int32_t* const bound_source{std::addressof(value)};
+            const std::int32_t* const null_source{nullptr}; 
         
-            std::int32_t* raw = nullptr;
-        
-            bool threw = false;
-        
+            required_ptr<const std::int32_t> ptr{other};
+
+            bool threw_when_bound = false;
             try {
-                ptr = raw;
+                ptr = bound_source;
+            } catch (...) {
+                threw_when_bound = true;
+            }
+
+            expect(eq(threw_when_bound, false));
+            expect(eq(*ptr, *bound_source));
+            expect(eq(ptr.get(), bound_source));
+
+            bool threw_when_null = false;
+            try {
+                ptr = null_source;
             } catch (const std::invalid_argument&) {
-                threw = true;
+                threw_when_null = true;
             }
         
-            expect(eq(threw, true));
+            expect(eq(threw_when_null, true));
         
-            // Invariant preserved after failed assignment
-            expect(eq(ptr.get(), std::addressof(value)));
-            expect(eq(*ptr, value));
+            //Invariant preserved after failed assignment
+            expect(eq(*ptr, *bound_source));
+            expect(eq(ptr.get(), bound_source));
         };
 
-        "assigning null smart pointer throws"_test = [] mutable {
-            const std::int32_t value = 42;
-            required_ptr<const std::int32_t> ptr{value};
-        
-            trivial_smart_ptr<std::int32_t> smart{};
-        
-            bool threw = false;
-        
+        "assigning from null smart pointer throws"_test = [] mutable {
+            const std::int32_t value{42};
+            const std::int32_t other{};
+
+            const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
+            const trivial_smart_ptr<std::int32_t> null_source{}; 
+
+            required_ptr<const std::int32_t> ptr{other};
+
+            bool threw_when_bound = false;
             try {
-                ptr = smart;
+                ptr = bound_source;
+            } catch (...) {
+                threw_when_bound = true;
+            }
+
+            expect(eq(threw_when_bound, false));
+            expect(eq(*ptr, *bound_source));
+            expect(eq(ptr.get(), bound_source.get()));
+
+            bool threw_when_null = false;
+            try {
+                ptr = null_source;
             } catch (const std::invalid_argument&) {
-                threw = true;
+                threw_when_null = true;
             }
         
-            expect(eq(threw, true));
+            expect(eq(threw_when_null, true));
         
-            // Invariant preserved after failed assignment
-            expect(eq(ptr.get(), std::addressof(value)));
-            expect(eq(*ptr, value));
+            //Invariant preserved after failed assignment
+            expect(eq(*ptr, *bound_source));
+            expect(eq(ptr.get(), bound_source.get()));
         };
 
         //============================================================
@@ -677,6 +710,21 @@ namespace {
             expect(eq(can_rebind, false));
         };
 
+        "qualification climbing construction and assignment"_test = [] mutable {
+            std::int32_t value{42};
+            std::int32_t other{};
+            required_ptr<std::int32_t> mutable_ptr{value};
+            required_ptr<const std::int32_t> const_ptr{other};
+        
+            //Qualification climbing (Assignment)
+            const_ptr = mutable_ptr;
+            expect(eq(const_ptr.get(), mutable_ptr.get()));
+            
+            //Qualification climbing (Construction)
+            required_ptr<const std::int32_t> const_copy{mutable_ptr};
+            expect(eq(const_copy.get(), mutable_ptr.get()));
+        };
+
         //============================================================
         // Interoperability with raw pointer APIs
         //============================================================
@@ -746,6 +794,17 @@ namespace {
         "void smart pointer construction is explicit"_test = [] mutable {
             expect(eq(std::convertible_to<trivial_smart_ptr<void>&, required_ptr<void>>, false));
             expect(eq(std::constructible_from<required_ptr<void>, trivial_smart_ptr<void>&>, true));
+        };
+        
+        "void `required_ptr` constructs implicitly from typed `required_ptr`"_test = [] mutable {
+            expect(eq(std::convertible_to<required_ptr<std::int32_t>, required_ptr<void>>, true));
+
+            const std::int32_t value{42};
+            required_ptr<const std::int32_t> typed_ptr{value};
+            
+            // Should be implicit (convertible)
+            auto takes_void = [](required_ptr<void> ptr) { return ptr.get(); };
+            expect(eq(takes_void(typed_ptr), static_cast<void*>(std::addressof(value))));
         };
 
         //============================================================
