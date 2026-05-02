@@ -123,8 +123,9 @@ export namespace base::vocab::inline ptr {
         {}
 
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
-        template<std::same_as<pointer> P = pointer>
+        template<P = pointer>
             requires (!std::is_array_v<std::remove_cvref_t<P>>)
+                  && std::same_as<std::remove_reference_t<P>, pointer>
         constexpr explicit(std::is_void_v<T>) required_ptr(P&& source) : address_(check_for_null(source)) {}
 
         ///@brief Implicitly converts from another wrapped/smart pointer type. Explicit when `T` is void to avoid implicit conversion chaining.
