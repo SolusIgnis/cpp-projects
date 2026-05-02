@@ -663,7 +663,7 @@ namespace {
         };
 
         //============================================================
-        // Const-correctness propagation
+        // CV-correctness propagation
         //============================================================
 
         "const element forbids mutation through dereference"_test = [] mutable {
@@ -725,6 +725,23 @@ namespace {
             expect(eq(const_copy.get() == mutable_ptr.get(), true));
         };
 
+        "volatile qualifier preservation"_test = [] mutable {
+            volatile std::int32_t hardware_register = 0xAA;
+            required_ptr<volatile std::int32_t> ptr{hardware_register};
+        
+            //Ensure the raw pointer retrieved is also volatile
+            expect(eq(std::same_as<decltype(ptr.get()), volatile std::int32_t*>, true));
+            
+            //Ensure conversion to raw pointer preserves volatile
+            volatile int* raw = ptr;
+            expect(eq(raw, std::addressof(hardware_register)));
+            
+            //Ensure dereference preserves volatile
+            decltype(auto) dereferenced = *ptr;
+            expect(eq(std::is_volatile_v<std::remove_reference_t<decltype(dereferenced)>>, true));
+            expect(eq(dereferenced, hardware_register));
+        };
+
         //============================================================
         // Interoperability with raw pointer APIs
         //============================================================
@@ -745,6 +762,14 @@ namespace {
             required_ptr<std::int32_t> ptr{x};
 
             expect(eq(takes_ptr(ptr.get()), 4));
+        };
+
+        "not constructible, convertible, nor assignable from C-array decay"_test = [] mutable {
+            std::int32_t array[3] = {0, 1, 2};
+        
+            expect(eq(std::convertible_to<decltype(arr), required_ptr<std::int32_t>>, false));
+            expect(eq(std::constructible_from<required_ptr<std::int32_t>, decltype(arr)>, false));
+            expect(eq(std::assignable_from<required_ptr<std::int32_t>, decltype(arr)>, false));
         };
 
         //============================================================

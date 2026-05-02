@@ -232,6 +232,23 @@ export namespace base::vocab::inline ptr {
             delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
+        //================================================================================
+        // Deleted Constructors and Assignment Operators: No Array-to-Pointer Decay
+        //================================================================================
+
+        ///@brief Deleted constructor from C-array to prevent array-to-pointer decay.
+        template<typename Element, std::size_t N>
+            requires std::convertible_to<Element(*)[N], T(*)[N]>
+        required_ptr(Element (&)[N]) =
+            delete /*("Constructor from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
+            ;
+
+        ///@brief Deleted assignment from C-array to prevent array-to-pointer decay.
+        template<typename Element, std::size_t N>
+            requires std::convertible_to<Element(*)[N], T(*)[N]>
+        required_ptr& operator=(Element (&)[N]) =
+            delete /*("Assignment from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
+            ;
 
         //================================================================================
         // Comparison Operators (Equality Allowed, Others Deleted)
