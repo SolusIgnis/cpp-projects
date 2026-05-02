@@ -791,7 +791,7 @@ namespace {
         "not constructible, convertible, nor assignable from C-array decay"_test = [] mutable {
             std::int32_t array[3] = {0, 1, 2};
             
-            required_ptr<std::int32_t> should_fail{array};
+            //required_ptr<std::int32_t> should_fail{array};
         
             expect(eq(std::convertible_to<decltype(array), required_ptr<std::int32_t>>, false));
             expect(eq(std::constructible_from<required_ptr<std::int32_t>, decltype(array)>, false));
