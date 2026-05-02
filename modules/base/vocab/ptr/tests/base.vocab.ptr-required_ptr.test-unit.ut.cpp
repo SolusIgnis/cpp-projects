@@ -803,8 +803,8 @@ namespace {
             required_ptr<const std::int32_t> typed_ptr{value};
             
             // Should be implicit (convertible)
-            auto takes_void = [](required_ptr<void> ptr) { return ptr.get(); };
-            expect(eq(takes_void(typed_ptr), static_cast<void*>(std::addressof(value))));
+            auto takes_void = [](required_ptr<const void> ptr) { return ptr.get(); };
+            expect(eq(takes_void(typed_ptr), static_cast<const void*>(std::addressof(value))));
         };
 
         //============================================================
