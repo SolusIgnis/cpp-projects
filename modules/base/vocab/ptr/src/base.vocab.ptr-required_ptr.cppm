@@ -123,7 +123,8 @@ export namespace base::vocab::inline ptr {
         {}
 
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
-        constexpr explicit(std::is_void_v<T>) required_ptr(pointer source) : address_(check_for_null(source)) {}
+        template<std::same_as<pointer> P>
+        constexpr explicit(std::is_void_v<T>) required_ptr(P source) : address_(check_for_null(source)) {}
 
         ///@brief Implicitly converts from another wrapped/smart pointer type. Explicit when `T` is void to avoid implicit conversion chaining.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
@@ -239,14 +240,14 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted constructor from C-array to prevent array-to-pointer decay.
         template<typename AnyCArray>
             requires std::is_array_v<AnyCArray>
-        required_ptr(AnyCArray) =
+        required_ptr(AnyCArray&) =
             delete /*("Constructor from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
         ///@brief Deleted assignment from C-array to prevent array-to-pointer decay.
         template<typename AnyCArray>
             requires std::is_array_v<AnyCArray>
-        required_ptr& operator=(AnyCArray) =
+        required_ptr& operator=(AnyCArray&) =
             delete /*("Assignment from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
