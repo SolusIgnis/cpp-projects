@@ -237,7 +237,7 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Deleted constructor from C-array to prevent array-to-pointer decay.
-        required_ptr(element_type (&)[]) =
+        required_ptr(std::remove_reference_t<reference> (&)[]) =
             delete /*("Constructor from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
