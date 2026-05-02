@@ -125,9 +125,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
         template<typename P>
             requires (!std::is_array_v<std::remove_cvref_t<P>>)
-                  && std::same_as<std::decay_t<P>, pointer>
-                  //&& std::convertible_to<P, pointer>
-                     // || std::convertible_to<U, T>)
+                  && std::convertible_to<std::decay_t<P>, pointer>
         constexpr explicit(std::is_void_v<T>) required_ptr(P&& source) : address_(check_for_null(source)) {}
 
         ///@brief Implicitly converts from another wrapped/smart pointer type. Explicit when `T` is void to avoid implicit conversion chaining.
