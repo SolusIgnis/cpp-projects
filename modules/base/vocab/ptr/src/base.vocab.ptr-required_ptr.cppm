@@ -249,7 +249,9 @@ export namespace base::vocab::inline ptr {
             ;
 
         ///@brief Deleted assignment from C-array to prevent array-to-pointer decay.
-        required_ptr& operator=(std::remove_reference_t<reference> (&)[]) =
+        template<typename AnyCArray>
+            requires std::is_array_v<AnyCArray>
+        required_ptr& operator=(AnyCArray) =
             delete /*("Assignment from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
