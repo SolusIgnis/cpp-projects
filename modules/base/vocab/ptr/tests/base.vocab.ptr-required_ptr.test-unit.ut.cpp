@@ -434,7 +434,7 @@ namespace {
                 const required_ptr<const std::int32_t> ptr{bound_source};
         
                 expect(eq(*ptr, value));
-                expect(eq(ptr.get(), bound_source.get()));
+                expect(eq(ptr.get(), bound_source));
             } catch (...) {
                 threw_when_bound = true;
             }
@@ -529,7 +529,7 @@ namespace {
             }
 
             expect(eq(threw_when_bound, false));
-            expect(eq(*ptr, *bound_source));
+            expect(eq(*ptr, value));
             expect(eq(ptr.get(), bound_source.get()));
 
             bool threw_when_null = false;
@@ -542,7 +542,7 @@ namespace {
             expect(eq(threw_when_null, true));
         
             //Invariant preserved after failed assignment
-            expect(eq(*ptr, *bound_source));
+            expect(eq(*ptr, value));
             expect(eq(ptr.get(), bound_source.get()));
         };
 
@@ -718,11 +718,11 @@ namespace {
         
             //Qualification climbing (Assignment)
             const_ptr = mutable_ptr;
-            expect(eq(const_ptr.get(), mutable_ptr.get()));
+            expect(eq(const_ptr.get() == mutable_ptr.get(), true));
             
             //Qualification climbing (Construction)
             required_ptr<const std::int32_t> const_copy{mutable_ptr};
-            expect(eq(const_copy.get(), mutable_ptr.get()));
+            expect(eq(const_copy.get() == mutable_ptr.get(), true));
         };
 
         //============================================================
