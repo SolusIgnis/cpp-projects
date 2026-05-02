@@ -72,6 +72,10 @@ namespace {
             expect(eq(std::is_standard_layout_v<dependency_ptr<simple_t>>, true));
             expect(eq(std::is_trivially_copyable_v<dependency_ptr<simple_t>>, true));
             expect(eq(std::is_trivially_destructible_v<dependency_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_copy_constructible_v<dependency_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_move_constructible_v<dependency_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_copy_assignable_v<dependency_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_move_assignable_v<dependency_ptr<simple_t>>, true));
             expect(eq(std::is_nothrow_constructible_v<dependency_ptr<simple_t>, simple_t&>, true));
 
             using complex_t = std::map<std::string, std::vector<std::int32_t>>;
@@ -79,6 +83,10 @@ namespace {
             expect(eq(std::is_standard_layout_v<dependency_ptr<complex_t>>, true));
             expect(eq(std::is_trivially_copyable_v<dependency_ptr<complex_t>>, true));
             expect(eq(std::is_trivially_destructible_v<dependency_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_copy_constructible_v<dependency_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_move_constructible_v<dependency_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_copy_assignable_v<dependency_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_move_assignable_v<dependency_ptr<complex_t>>, true));
             expect(eq(std::is_nothrow_constructible_v<dependency_ptr<complex_t>, complex_t&>, true));
         };
 

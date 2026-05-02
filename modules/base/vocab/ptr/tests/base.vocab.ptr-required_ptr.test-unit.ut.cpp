@@ -85,6 +85,10 @@ namespace {
             expect(eq(std::is_standard_layout_v<required_ptr<simple_t>>, true));
             expect(eq(std::is_trivially_copyable_v<required_ptr<simple_t>>, true));
             expect(eq(std::is_trivially_destructible_v<required_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_copy_constructible_v<required_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_move_constructible_v<required_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_copy_assignable_v<required_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_move_assignable_v<required_ptr<simple_t>>, true));
             expect(eq(std::is_nothrow_constructible_v<required_ptr<simple_t>, simple_t&>, true));
 
             using complex_t = std::map<std::string, std::vector<std::int32_t>>;
@@ -92,6 +96,10 @@ namespace {
             expect(eq(std::is_standard_layout_v<required_ptr<complex_t>>, true));
             expect(eq(std::is_trivially_copyable_v<required_ptr<complex_t>>, true));
             expect(eq(std::is_trivially_destructible_v<required_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_copy_constructible_v<required_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_move_constructible_v<required_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_copy_assignable_v<required_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_move_assignable_v<required_ptr<complex_t>>, true));
             expect(eq(std::is_nothrow_constructible_v<required_ptr<complex_t>, complex_t&>, true));
         };
 
@@ -442,13 +450,17 @@ namespace {
             expect(eq(threw_when_bound, false));
             
             bool threw_when_null = false;
+            bool wrong_exception = false;
             try {
                 [[maybe_unused]] required_ptr<const std::int32_t> dummy_ptr{null_source};
-            } catch  (const std::invalid_argument&) {
+            } catch (const std::invalid_argument&) {
                 threw_when_null = true;
+            } catch (...) {
+                wrong_exception = true;
             }
 
             expect(eq(threw_when_null, true));
+            expect(eq(wrong_exception, false));
         };
 
         "constructing from null smart pointer throws"_test = [] mutable {
@@ -469,13 +481,17 @@ namespace {
             expect(eq(threw_when_bound, false));
             
             bool threw_when_null = false;
+            bool wrong_exception = false;
             try {
                 [[maybe_unused]] required_ptr<const std::int32_t> dummy_ptr{null_source};
             } catch  (const std::invalid_argument&) {
                 threw_when_null = true;
+            } catch (...) {
+                wrong_exception = true;
             }
 
             expect(eq(threw_when_null, true));
+            expect(eq(wrong_exception, false));
         };
 
         "assigning from null raw pointer throws"_test = [] mutable {
@@ -499,13 +515,17 @@ namespace {
             expect(eq(ptr.get(), bound_source));
 
             bool threw_when_null = false;
+            bool wrong_exception = false;
             try {
                 ptr = null_source;
             } catch (const std::invalid_argument&) {
                 threw_when_null = true;
+            } catch (...) {
+                wrong_exception = true;
             }
         
             expect(eq(threw_when_null, true));
+            expect(eq(wrong_exception, false));
         
             //Invariant preserved after failed assignment
             expect(eq(*ptr, *bound_source));
@@ -533,13 +553,17 @@ namespace {
             expect(eq(ptr.get(), bound_source.get()));
 
             bool threw_when_null = false;
+            bool wrong_exception = false;
             try {
                 ptr = null_source;
             } catch (const std::invalid_argument&) {
                 threw_when_null = true;
+            } catch (...) {
+                wrong_exception = true;
             }
         
             expect(eq(threw_when_null, true));
+            expect(eq(wrong_exception, false));
         
             //Invariant preserved after failed assignment
             expect(eq(*ptr, value));
@@ -767,9 +791,17 @@ namespace {
         "not constructible, convertible, nor assignable from C-array decay"_test = [] mutable {
             std::int32_t array[3] = {0, 1, 2};
         
-            expect(eq(std::convertible_to<decltype(arr), required_ptr<std::int32_t>>, false));
-            expect(eq(std::constructible_from<required_ptr<std::int32_t>, decltype(arr)>, false));
-            expect(eq(std::assignable_from<required_ptr<std::int32_t>, decltype(arr)>, false));
+            expect(eq(std::convertible_to<decltype(array), required_ptr<std::int32_t>>, false));
+            expect(eq(std::constructible_from<required_ptr<std::int32_t>, decltype(array)>, false));
+            expect(eq(std::assignable_from<required_ptr<std::int32_t>, decltype(array)>, false));
+            
+            expect(eq(std::constructible_from<required_ptr<std::int32_t>, decltype((array[0]))>, true));
+            expect(eq(std::assignable_from<required_ptr<std::int32_t>&, decltype((array[0]))>, true));
+            
+            required_ptr<std::int32_t> ptr{array[1]};
+            
+            //Ensure binding to the element is equivalent to expected array-to-pointer decay with pointer offset arithmetic
+            expect(eq(ptr.get(), array + 1));
         };
 
         //============================================================
