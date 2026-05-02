@@ -149,7 +149,7 @@ export namespace base::vocab::inline ptr {
         template<typename OtherT>
             requires (!std::same_as<OtherT, T>)
                   && std::convertible_to<OtherT*, T*>
-        constexpr required_ptr& operator=(const required_ptr<DerivedT>& source) noexcept
+        constexpr required_ptr& operator=(const required_ptr<OtherT>& source) noexcept
         {
             address_ = source.get();
             return *this;
