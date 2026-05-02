@@ -109,18 +109,19 @@ export namespace base::vocab::inline ptr {
         constexpr explicit required_ptr(reference source) noexcept requires (!std::is_void_v<T>) : address_(std::addressof(source)) {}
 
         ///@brief (Covariance) Implicitly converts from `required_ptr<DerivedT>` to `required_ptr<T>` when `DerivedT` is publicly derived from `T`.
-        template<std::derived_from<T> DerivedT>
-            requires (!std::same_as<DerivedT, T>)
-        constexpr explicit(false) required_ptr(const required_ptr<DerivedT>& source) noexcept : address_(source.get())
+        template<typename OtherT>
+            requires (!std::same_as<OtherT, T>)
+                  && std::convertible_to<OtherT*, T*>
+        constexpr explicit(false) required_ptr(const required_ptr<OtherT>& source) noexcept : address_(source.get())
         {}
 
         ///@brief (Erasure) Implicitly converts from `required_ptr<ErasedT>` to `required_ptr<void>`.
-        template<typename ErasedT>
+     /*   template<typename ErasedT>
             requires (!std::same_as<ErasedT, T>)
         constexpr explicit(false) required_ptr(const required_ptr<ErasedT>& source) noexcept
             requires std::is_void_v<T>
             : address_(source.get())
-        {}
+        {}*/
 
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
         template<typename P>
@@ -145,8 +146,9 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief (Covariance) Assigns from `required_ptr<DerivedT>` to `required_ptr<T>` when `DerivedT` is publicly derived from `T`.
-        template<std::derived_from<T> DerivedT>
-            requires (!std::same_as<DerivedT, T>)
+        template<typename OtherT>
+            requires (!std::same_as<OtherT, T>)
+                  && std::convertible_to<OtherT*, T*>
         constexpr required_ptr& operator=(const required_ptr<DerivedT>& source) noexcept
         {
             address_ = source.get();
@@ -154,14 +156,14 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief (Erasure) Assigns from `required_ptr<ErasedT>` to `required_ptr<void>`.
-        template<typename ErasedT>
+   /*     template<typename ErasedT>
             requires (!std::same_as<ErasedT, T>)
         constexpr required_ptr& operator=(const required_ptr<ErasedT>& source) noexcept
             requires std::is_void_v<T>
         {
             address_ = source.get();
             return *this;
-        }
+        }*/
 
         ///@brief Assigns from a raw `pointer`.
         constexpr required_ptr& operator=(pointer source)
