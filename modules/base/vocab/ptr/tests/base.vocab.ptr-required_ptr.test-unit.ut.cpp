@@ -34,7 +34,7 @@ namespace {
 
     template<typename T>
     concept Dereferenceable = requires(T t) { *t; };
-    
+
     template<typename T>
     concept ArrowAccessible = requires(T t) { t.operator->(); };
 
@@ -49,7 +49,7 @@ namespace {
     template<typename T>
     struct trivial_smart_ptr {
         T* address{};
-        
+
         T* get() const { return address; }
     };
 
@@ -143,7 +143,7 @@ namespace {
 
         "constructible explicitly from lvalue reference"_test = [] mutable {
             using test_type = std::int32_t;
-            
+
             //Explicitly constructible unless removing qualifier
             expect(eq(std::constructible_from<required_ptr<test_type>, test_type&>, true));
             expect(eq(std::constructible_from<required_ptr<test_type>, const test_type&>, false));
@@ -179,7 +179,7 @@ namespace {
 
         "constructible from raw pointer"_test = [] mutable {
             using test_type = std::int32_t;
-            
+
             //Explicitly constructible unless removing qualifier
             expect(eq(std::constructible_from<required_ptr<test_type>, test_type*>, true));
             expect(eq(std::constructible_from<required_ptr<test_type>, const test_type*>, false));
@@ -216,10 +216,10 @@ namespace {
             expect(eq(std::convertible_to<volatile test_type*, required_ptr<const volatile test_type>>, true));
             expect(eq(std::convertible_to<const volatile test_type*, required_ptr<const volatile test_type>>, true));
         };
-        
+
         "constructible from smart pointer"_test = [] mutable {
             using test_type = std::int32_t;
-            
+
             //Explicitly constructible unless removing qualifier
             expect(eq(std::constructible_from<required_ptr<test_type>, trivial_smart_ptr<test_type>&>, true));
             expect(eq(std::constructible_from<required_ptr<test_type>, trivial_smart_ptr<const test_type>&>, false));
@@ -228,15 +228,28 @@ namespace {
             expect(eq(std::constructible_from<required_ptr<const test_type>, trivial_smart_ptr<test_type>&>, true));
             expect(eq(std::constructible_from<required_ptr<const test_type>, trivial_smart_ptr<const test_type>&>, true));
             expect(eq(std::constructible_from<required_ptr<const test_type>, trivial_smart_ptr<volatile test_type>&>, false));
-            expect(eq(std::constructible_from<required_ptr<const test_type>, trivial_smart_ptr<const volatile test_type>&>, false));
+            expect(
+                eq(std::constructible_from<required_ptr<const test_type>, trivial_smart_ptr<const volatile test_type>&>, false)
+            );
             expect(eq(std::constructible_from<required_ptr<volatile test_type>, trivial_smart_ptr<test_type>&>, true));
             expect(eq(std::constructible_from<required_ptr<volatile test_type>, trivial_smart_ptr<const test_type>&>, false));
             expect(eq(std::constructible_from<required_ptr<volatile test_type>, trivial_smart_ptr<volatile test_type>&>, true));
-            expect(eq(std::constructible_from<required_ptr<volatile test_type>, trivial_smart_ptr<const volatile test_type>&>, false));
+            expect(
+                eq(std::constructible_from<required_ptr<volatile test_type>, trivial_smart_ptr<const volatile test_type>&>,
+                   false)
+            );
             expect(eq(std::constructible_from<required_ptr<const volatile test_type>, trivial_smart_ptr<test_type>&>, true));
-            expect(eq(std::constructible_from<required_ptr<const volatile test_type>, trivial_smart_ptr<const test_type>&>, true));
-            expect(eq(std::constructible_from<required_ptr<const volatile test_type>, trivial_smart_ptr<volatile test_type>&>, true));
-            expect(eq(std::constructible_from<required_ptr<const volatile test_type>, trivial_smart_ptr<const volatile test_type>&>, true));
+            expect(
+                eq(std::constructible_from<required_ptr<const volatile test_type>, trivial_smart_ptr<const test_type>&>, true)
+            );
+            expect(
+                eq(std::constructible_from<required_ptr<const volatile test_type>, trivial_smart_ptr<volatile test_type>&>,
+                   true)
+            );
+            expect(eq(
+                std::constructible_from<required_ptr<const volatile test_type>, trivial_smart_ptr<const volatile test_type>&>,
+                true
+            ));
 
             //Implicitly convertible unless removing qualifier
             expect(eq(std::convertible_to<trivial_smart_ptr<test_type>&, required_ptr<test_type>>, true));
@@ -250,11 +263,18 @@ namespace {
             expect(eq(std::convertible_to<trivial_smart_ptr<test_type>&, required_ptr<volatile test_type>>, true));
             expect(eq(std::convertible_to<trivial_smart_ptr<const test_type>&, required_ptr<volatile test_type>>, false));
             expect(eq(std::convertible_to<trivial_smart_ptr<volatile test_type>&, required_ptr<volatile test_type>>, true));
-            expect(eq(std::convertible_to<trivial_smart_ptr<const volatile test_type>&, required_ptr<volatile test_type>>, false));
+            expect(
+                eq(std::convertible_to<trivial_smart_ptr<const volatile test_type>&, required_ptr<volatile test_type>>, false)
+            );
             expect(eq(std::convertible_to<trivial_smart_ptr<test_type>&, required_ptr<const volatile test_type>>, true));
             expect(eq(std::convertible_to<trivial_smart_ptr<const test_type>&, required_ptr<const volatile test_type>>, true));
-            expect(eq(std::convertible_to<trivial_smart_ptr<volatile test_type>&, required_ptr<const volatile test_type>>, true));
-            expect(eq(std::convertible_to<trivial_smart_ptr<const volatile test_type>&, required_ptr<const volatile test_type>>, true));
+            expect(
+                eq(std::convertible_to<trivial_smart_ptr<volatile test_type>&, required_ptr<const volatile test_type>>, true)
+            );
+            expect(
+                eq(std::convertible_to<trivial_smart_ptr<const volatile test_type>&, required_ptr<const volatile test_type>>,
+                   true)
+            );
         };
 
         "not constructible from rvalue"_test = [] mutable {
@@ -273,7 +293,7 @@ namespace {
 
         "assignable from lvalue reference"_test = [] mutable {
             using test_type = std::int32_t;
-            
+
             expect(eq(std::is_assignable_v<required_ptr<test_type>&, test_type&>, true));
             expect(eq(std::is_assignable_v<required_ptr<test_type>&, const test_type&>, false));
             expect(eq(std::is_assignable_v<required_ptr<test_type>&, volatile test_type&>, false));
@@ -298,7 +318,7 @@ namespace {
 
         "assignable from raw pointer"_test = [] mutable {
             using test_type = std::int32_t;
-            
+
             expect(eq(std::is_assignable_v<required_ptr<test_type>&, test_type*>, true));
             expect(eq(std::is_assignable_v<required_ptr<test_type>&, const test_type*>, false));
             expect(eq(std::is_assignable_v<required_ptr<test_type>&, volatile test_type*>, false));
@@ -319,7 +339,7 @@ namespace {
 
         "assignable from smart pointer"_test = [] mutable {
             using test_type = std::int32_t;
-            
+
             expect(eq(std::is_assignable_v<required_ptr<test_type>&, trivial_smart_ptr<test_type>&>, true));
             expect(eq(std::is_assignable_v<required_ptr<test_type>&, trivial_smart_ptr<const test_type>&>, false));
             expect(eq(std::is_assignable_v<required_ptr<test_type>&, trivial_smart_ptr<volatile test_type>&>, false));
@@ -327,15 +347,26 @@ namespace {
             expect(eq(std::is_assignable_v<required_ptr<const test_type>&, trivial_smart_ptr<test_type>&>, true));
             expect(eq(std::is_assignable_v<required_ptr<const test_type>&, trivial_smart_ptr<const test_type>&>, true));
             expect(eq(std::is_assignable_v<required_ptr<const test_type>&, trivial_smart_ptr<volatile test_type>&>, false));
-            expect(eq(std::is_assignable_v<required_ptr<const test_type>&, trivial_smart_ptr<const volatile test_type>&>, false));
+            expect(
+                eq(std::is_assignable_v<required_ptr<const test_type>&, trivial_smart_ptr<const volatile test_type>&>, false)
+            );
             expect(eq(std::is_assignable_v<required_ptr<volatile test_type>&, trivial_smart_ptr<test_type>&>, true));
             expect(eq(std::is_assignable_v<required_ptr<volatile test_type>&, trivial_smart_ptr<const test_type>&>, false));
             expect(eq(std::is_assignable_v<required_ptr<volatile test_type>&, trivial_smart_ptr<volatile test_type>&>, true));
-            expect(eq(std::is_assignable_v<required_ptr<volatile test_type>&, trivial_smart_ptr<const volatile test_type>&>, false));
+            expect(
+                eq(std::is_assignable_v<required_ptr<volatile test_type>&, trivial_smart_ptr<const volatile test_type>&>, false)
+            );
             expect(eq(std::is_assignable_v<required_ptr<const volatile test_type>&, trivial_smart_ptr<test_type>&>, true));
-            expect(eq(std::is_assignable_v<required_ptr<const volatile test_type>&, trivial_smart_ptr<const test_type>&>, true));
-            expect(eq(std::is_assignable_v<required_ptr<const volatile test_type>&, trivial_smart_ptr<volatile test_type>&>, true));
-            expect(eq(std::is_assignable_v<required_ptr<const volatile test_type>&, trivial_smart_ptr<const volatile test_type>&>, true));
+            expect(
+                eq(std::is_assignable_v<required_ptr<const volatile test_type>&, trivial_smart_ptr<const test_type>&>, true)
+            );
+            expect(
+                eq(std::is_assignable_v<required_ptr<const volatile test_type>&, trivial_smart_ptr<volatile test_type>&>, true)
+            );
+            expect(
+                eq(std::is_assignable_v<required_ptr<const volatile test_type>&, trivial_smart_ptr<const volatile test_type>&>,
+                   true)
+            );
         };
 
         "not assignable from rvalue"_test = [] mutable {
@@ -404,9 +435,10 @@ namespace {
 
             const int x{};
             required_ptr<const std::int32_t> ptr{x};
-            
+
             bool converted{false};
-            if (ptr) converted = true;
+            if (ptr)
+                converted = true;
 
             expect(eq(static_cast<bool>(ptr), true));
             expect(eq(!ptr, false));
@@ -436,11 +468,11 @@ namespace {
             const std::int32_t value{42};
             const std::int32_t* const bound_source{std::addressof(value)};
             const std::int32_t* const null_source{};
-            
+
             bool threw_when_bound = false;
             try {
                 const required_ptr<const std::int32_t> ptr{bound_source};
-        
+
                 expect(eq(*ptr, value));
                 expect(eq(ptr.get(), bound_source));
             } catch (...) {
@@ -448,7 +480,7 @@ namespace {
             }
 
             expect(eq(threw_when_bound, false));
-            
+
             bool threw_when_null = false;
             bool wrong_exception = false;
             try {
@@ -467,11 +499,11 @@ namespace {
             const std::int32_t value{42};
             const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
             const trivial_smart_ptr<const std::int32_t> null_source{};
-            
+
             bool threw_when_bound = false;
             try {
                 const required_ptr<const std::int32_t> ptr{bound_source};
-        
+
                 expect(eq(*ptr, value));
                 expect(eq(ptr.get(), bound_source.get()));
             } catch (...) {
@@ -479,12 +511,12 @@ namespace {
             }
 
             expect(eq(threw_when_bound, false));
-            
+
             bool threw_when_null = false;
             bool wrong_exception = false;
             try {
                 [[maybe_unused]] required_ptr<const std::int32_t> dummy_ptr{null_source};
-            } catch  (const std::invalid_argument&) {
+            } catch (const std::invalid_argument&) {
                 threw_when_null = true;
             } catch (...) {
                 wrong_exception = true;
@@ -499,8 +531,8 @@ namespace {
             const std::int32_t other{};
 
             const std::int32_t* const bound_source{std::addressof(value)};
-            const std::int32_t* const null_source{nullptr}; 
-        
+            const std::int32_t* const null_source{nullptr};
+
             required_ptr<const std::int32_t> ptr{other};
 
             bool threw_when_bound = false;
@@ -523,10 +555,10 @@ namespace {
             } catch (...) {
                 wrong_exception = true;
             }
-        
+
             expect(eq(threw_when_null, true));
             expect(eq(wrong_exception, false));
-        
+
             //Invariant preserved after failed assignment
             expect(eq(*ptr, *bound_source));
             expect(eq(ptr.get(), bound_source));
@@ -537,7 +569,7 @@ namespace {
             const std::int32_t other{};
 
             const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
-            const trivial_smart_ptr<std::int32_t> null_source{}; 
+            const trivial_smart_ptr<std::int32_t> null_source{};
 
             required_ptr<const std::int32_t> ptr{other};
 
@@ -561,10 +593,10 @@ namespace {
             } catch (...) {
                 wrong_exception = true;
             }
-        
+
             expect(eq(threw_when_null, true));
             expect(eq(wrong_exception, false));
-        
+
             //Invariant preserved after failed assignment
             expect(eq(*ptr, value));
             expect(eq(ptr.get(), bound_source.get()));
@@ -740,11 +772,11 @@ namespace {
             std::int32_t other{};
             required_ptr<std::int32_t> mutable_ptr{value};
             required_ptr<const std::int32_t> const_ptr{other};
-        
+
             //Qualification climbing (Assignment)
             const_ptr = mutable_ptr;
             expect(eq(const_ptr.get() == mutable_ptr.get(), true));
-            
+
             //Qualification climbing (Construction)
             required_ptr<const std::int32_t> const_copy{mutable_ptr};
             expect(eq(const_copy.get() == mutable_ptr.get(), true));
@@ -753,14 +785,14 @@ namespace {
         "volatile qualifier preservation"_test = [] mutable {
             volatile std::int32_t hardware_register = 0xAA;
             required_ptr<volatile std::int32_t> ptr{hardware_register};
-        
+
             //Ensure the raw pointer retrieved is also volatile
             expect(eq(std::same_as<decltype(ptr.get()), volatile std::int32_t*>, true));
-            
+
             //Ensure conversion to raw pointer preserves volatile
             volatile int* raw = ptr;
             expect(eq(raw, std::addressof(hardware_register)));
-            
+
             //Ensure dereference preserves volatile
             decltype(auto) dereferenced = *ptr;
             expect(eq(std::is_volatile_v<std::remove_reference_t<decltype(dereferenced)>>, true));
@@ -791,18 +823,18 @@ namespace {
 
         "not constructible, convertible, nor assignable from C-array decay"_test = [] mutable {
             std::int32_t array[3] = {0, 1, 2};
-            
+
             //required_ptr<std::int32_t> should_fail{array};
-        
+
             expect(eq(std::convertible_to<decltype(array), required_ptr<std::int32_t>>, false));
             expect(eq(std::constructible_from<required_ptr<std::int32_t>, decltype(array)>, false));
             expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, decltype(array)>, false));
-            
+
             expect(eq(std::constructible_from<required_ptr<std::int32_t>, decltype(array[0])>, true));
             expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, decltype(array[0])>, true));
-            
+
             required_ptr<std::int32_t> ptr{array[1]};
-            
+
             //Ensure binding to the element is equivalent to expected array-to-pointer decay with pointer offset arithmetic
             expect(eq(ptr.get(), array + 1));
         };
@@ -831,21 +863,21 @@ namespace {
 
         "void specialization supports type erasure"_test = [] mutable {
             std::int32_t x{};
-        
+
             required_ptr<std::int32_t> typed{x};
             required_ptr<void> erased{typed};
-        
+
             expect(eq(erased.get(), static_cast<void*>(std::addressof(x))));
         };
-        
+
         "void specialization disables dereference operators"_test = [] mutable {
             expect(eq(Dereferenceable<required_ptr<std::int32_t>>, true));
             expect(eq(ArrowAccessible<required_ptr<std::int32_t>>, true));
-        
+
             expect(eq(Dereferenceable<required_ptr<void>>, false));
             expect(eq(ArrowAccessible<required_ptr<void>>, false));
         };
-        
+
         "void raw pointer construction is explicit"_test = [] mutable {
             expect(eq(std::convertible_to<void*, required_ptr<void>>, false));
             expect(eq(std::constructible_from<required_ptr<void>, void*>, true));
@@ -862,7 +894,7 @@ namespace {
 
             const std::int32_t value{42};
             required_ptr<const std::int32_t> typed_ptr{value};
-            
+
             // Should be implicit (convertible)
             auto takes_void = [](required_ptr<const void> ptr) { return ptr.get(); };
             expect(eq(takes_void(typed_ptr), static_cast<const void*>(std::addressof(value))));
@@ -872,13 +904,13 @@ namespace {
             const std::int32_t value{42};
             required_ptr<const std::int32_t> typed_ptr{value};
             const std::int32_t* typed_raw = std::addressof(value);
-            const void* erased_raw = std::addressof(value);
-            
+            const void* erased_raw        = std::addressof(value);
+
             required_ptr<const void> erased_ptr1{typed_raw};
             required_ptr<const void> erased_ptr2{typed_ptr};
-            
+
             expect(eq(erased_ptr1 == erased_ptr2, true));
-            expect(eq(erased_ptr1 == typed_ptr,  true));
+            expect(eq(erased_ptr1 == typed_ptr, true));
             expect(eq(erased_ptr1 == erased_raw, true));
             expect(eq(erased_ptr1 == typed_raw, true));
         };
@@ -890,7 +922,7 @@ namespace {
         "deduction guides work"_test = [] mutable {
             constexpr std::int32_t x = {};
             required_ptr ptr1{x};
-            required_ptr ptr2{std::addressof(x)};            
+            required_ptr ptr2{std::addressof(x)};
 
             expect(eq(ptr1.get(), std::addressof(x)));
             expect(eq(ptr2.get(), std::addressof(x)));
@@ -902,7 +934,7 @@ namespace {
 
         "constexpr construction and dereference"_test = [] {
             static constexpr int x = 42;
-        
+
             constexpr required_ptr<const int> ptr{x};
 
             expect(eq(*ptr, 42));

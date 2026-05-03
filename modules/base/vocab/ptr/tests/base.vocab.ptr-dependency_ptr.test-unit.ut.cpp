@@ -129,7 +129,7 @@ namespace {
         //============================================================
 
         "constructible explicitly from lvalue reference"_test = [] mutable {
-            using test_type = std::int32_t; 
+            using test_type = std::int32_t;
 
             //Explicitly constructible unless removing qualifier
             expect(eq(std::constructible_from<dependency_ptr<test_type>, test_type&>, true));
@@ -281,9 +281,10 @@ namespace {
 
             const int x{};
             dependency_ptr<const std::int32_t> ptr{x};
-            
+
             bool converted{false};
-            if (ptr) converted = true;
+            if (ptr)
+                converted = true;
 
             expect(eq(static_cast<bool>(ptr), true));
             expect(eq(!ptr, false));

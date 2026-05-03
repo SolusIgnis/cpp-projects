@@ -156,7 +156,8 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Swaps addresses.
-        friend constexpr void swap(dependency_ptr& lhs, dependency_ptr& rhs) noexcept {
+        friend constexpr void swap(dependency_ptr& lhs, dependency_ptr& rhs) noexcept
+        {
             using std::swap;
             swap(lhs.address_, rhs.address_);
         }
@@ -221,7 +222,8 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Covariantly compares equality of a `dependency_ptr`-to-base with a raw pointer-to-derived in terms of pointer identity.
         template<std::derived_from<T> DerivedT>
-        [[nodiscard]] friend constexpr bool operator==(const dependency_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+        [[nodiscard]] friend constexpr bool
+            operator==(const dependency_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
         {
             return (lhs.get() == rhs);
         }

@@ -114,7 +114,8 @@ export namespace base::vocab::inline ptr {
          * @brief The reference type (`T&`).
          * @remark When `T` is `void`, uses `std::monostate&` because `void` as a function parameter is ill-formed.
          */
-        using reference = std::conditional_t<std::is_void_v<T>, std::add_lvalue_reference_t<std::monostate>, std::add_lvalue_reference_t<T>>;
+        using reference =
+            std::conditional_t<std::is_void_v<T>, std::add_lvalue_reference_t<std::monostate>, std::add_lvalue_reference_t<T>>;
 
         /**
          * @typedef rvalue_reference
@@ -123,7 +124,8 @@ export namespace base::vocab::inline ptr {
          * @remark When `T` is `void`, uses `std::monostate&&` because `void` as a function parameter is ill-formed.
          * @note Used only for deletion of invalid overloads to prevent binding to temporaries.
          */
-        using rvalue_reference = std::conditional_t<std::is_void_v<T>, std::add_rvalue_reference_t<std::monostate>, std::add_rvalue_reference_t<T>>;
+        using rvalue_reference =
+            std::conditional_t<std::is_void_v<T>, std::add_rvalue_reference_t<std::monostate>, std::add_rvalue_reference_t<T>>;
 
         /**
          * @typedef difference_type
@@ -142,7 +144,10 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Constructs a `required_ptr` bound to an existing object.
-        constexpr explicit required_ptr(reference source) noexcept requires (!std::is_void_v<T>) : address_(std::addressof(source)) {}
+        constexpr explicit required_ptr(reference source) noexcept
+            requires (!std::is_void_v<T>)
+            : address_(std::addressof(source))
+        {}
 
         ///@brief (Conversion) Implicitly converts from another `required_ptr` according to underlying pointer conversions.
         template<typename U>
@@ -153,7 +158,8 @@ export namespace base::vocab::inline ptr {
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
         template<typename P>
             requires (!std::is_array_v<std::remove_cvref_t<P>>) && std::convertible_to<std::decay_t<P>, pointer>
-        constexpr explicit(std::is_void_v<T>) required_ptr(P&& source) : address_(check_for_null(source)) {}
+        constexpr explicit(std::is_void_v<T>) required_ptr(P&& source) : address_(check_for_null(source))
+        {}
 
         ///@brief Implicitly converts from another wrapped/smart pointer type. Explicit when `T` is void to avoid implicit conversion chaining.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
@@ -161,11 +167,13 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-        constexpr explicit(std::is_void_v<T>) required_ptr(const Pointer<Element, Args...>& source) : address_(check_for_null(source.get()))
+        constexpr explicit(std::is_void_v<T>) required_ptr(const Pointer<Element, Args...>& source)
+            : address_(check_for_null(source.get()))
         {}
 
         ///@brief Rebinds the `required_ptr` to another object.
-        required_ptr& operator=(reference source) noexcept requires (!std::is_void_v<T>)
+        required_ptr& operator=(reference source) noexcept
+            requires (!std::is_void_v<T>)
         {
             address_ = std::addressof(source);
             return *this;
@@ -202,7 +210,8 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Swaps addresses.
-        friend constexpr void swap(required_ptr& lhs, required_ptr& rhs) noexcept {
+        friend constexpr void swap(required_ptr& lhs, required_ptr& rhs) noexcept
+        {
             using std::swap;
             swap(lhs.address_, rhs.address_);
         }
@@ -238,9 +247,9 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted constructor from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, required_ptr>)
-                  && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
-                     }
+                      && requires(Pointer<Element, Args...> ptr) {
+                             { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
+                         }
         required_ptr(const Pointer<Element, Args...>&&) =
             delete /*("Constructor from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
@@ -253,9 +262,9 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, required_ptr>)
-                  && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
-                     }
+                      && requires(Pointer<Element, Args...> ptr) {
+                             { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
+                         }
         required_ptr& operator=(const Pointer<Element, Args...>&&) =
             delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
@@ -306,7 +315,7 @@ export namespace base::vocab::inline ptr {
         {
             return (lhs == rhs.get());
         }
-        
+
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         auto operator<=>(required_ptr) const =
             delete /*("Comparison operators deleted to prevent address comparisons. `required_ptr` is not an iterator.")*/;
@@ -441,7 +450,7 @@ export namespace base::vocab::inline ptr {
      * C-array arguments can be diagnosed explicitly instead of silently
      * converting to element pointers.
      *
-     * @note This constructor is the primary entry point for raw pointers and is 
+     * @note This constructor is the primary entry point for raw pointers and is
      * constrained to prevent hijacking copy/move operations or accepting arrays.
      * @remark Establishes the non-null invariant at runtime when constructed from raw pointers.
      * @remark Explicit when `T` is `void` to prevent unintended implicit erasure chains.
@@ -511,7 +520,7 @@ export namespace base::vocab::inline ptr {
      * C-array arguments can be diagnosed explicitly instead of silently
      * converting to element pointers.
      *
-     * @note This constructor is the primary entry point for raw pointers and is 
+     * @note This constructor is the primary entry point for raw pointers and is
      * constrained to prevent hijacking copy/move operations or accepting arrays.
      * @remark Rebinds the pointer while preserving the non-null invariant.
      * @remark Does not affect the lifetime of the referenced object.
