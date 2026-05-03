@@ -795,10 +795,10 @@ namespace {
         
             expect(eq(std::convertible_to<decltype(array), required_ptr<std::int32_t>>, false));
             expect(eq(std::constructible_from<required_ptr<std::int32_t>, decltype(array)>, false));
-            expect(eq(std::assignable_from<required_ptr<std::int32_t>&, decltype(array)>, false));
+            expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, decltype(array)>, false));
             
             expect(eq(std::constructible_from<required_ptr<std::int32_t>, decltype(array[0])>, true));
-            expect(eq(std::assignable_from<required_ptr<std::int32_t>&, decltype(array[0])>, true));
+            expect(eq(std::is_assignable_v<required_ptr<std::int32_t>&, decltype(array[0])>, true));
             
             required_ptr<std::int32_t> ptr{array[1]};
             
