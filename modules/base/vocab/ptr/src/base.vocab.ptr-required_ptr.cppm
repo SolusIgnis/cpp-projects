@@ -52,6 +52,9 @@ export namespace base::vocab::inline ptr {
      * @note Construction or assignment from raw pointer values performs runtime validation and throws `std::invalid_argument` on null.
      * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator.
      * @note `required_ptr<void>` reuses the primary template rather than introducing a specialization. Placeholder reference aliases based on `std::monostate` are used solely to keep deleted overload declarations well-formed.
+     * @remark Explicit equality comparison overloads are provided only where built-in pointer comparison cannot be reached through the implicit raw-pointer conversion operator alone.
+     *
+     * @warning The referenced object MUST outlive the `dependency_ptr`. Violating this results in undefined behavior.
      *
      * @see `alias_ptr` for nullable aliasing, `dependency_ptr` for dependency injection structural non-nullability, `cursor_ptr` for non-null iteration/traversal, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */

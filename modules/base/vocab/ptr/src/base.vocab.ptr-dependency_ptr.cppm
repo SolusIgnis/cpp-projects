@@ -69,6 +69,7 @@ export namespace base::vocab::inline ptr {
      * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator.
      * @remark Implicit conversion to raw pointer is provided for interoperability with legacy or low-level APIs.
      * @note All operations provide the no-throw guarantee; operations consist exclusively of non-throwing pointer manipulation.
+     * @remark Explicit equality comparison overloads are provided only where built-in pointer comparison cannot be reached through the implicit raw-pointer conversion operator alone.
      *
      * @warning The referenced object MUST outlive the `dependency_ptr`. Violating this results in undefined behavior.
      *

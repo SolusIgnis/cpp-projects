@@ -577,15 +577,16 @@ namespace {
         "equality compares pointer identity"_test = [] mutable {
             expect(eq(std::equality_comparable<required_ptr<std::int32_t>>, true));
 
-            const int x = 1;
-            const int y = 1;
+            std::int32_t x = 1;
+            std::int32_t y = 1;
 
             required_ptr<const std::int32_t> a{x};
-            required_ptr<const std::int32_t> b{x};
-            required_ptr<const std::int32_t> c{y};
+            required_ptr<std::int32_t> b{x};
+            required_ptr<std::int32_t> c{y};
 
             expect(eq(a == b, true));
             expect(eq(a == c, false));
+            expect(eq(b == c  false));
         };
 
         //============================================================
