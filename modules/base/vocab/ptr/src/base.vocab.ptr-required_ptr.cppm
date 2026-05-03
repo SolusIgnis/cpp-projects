@@ -634,8 +634,14 @@ export namespace base::vocab::inline ptr {
     required_ptr(T*) -> required_ptr<T>;
 } //namespace base::vocab::inline ptr
 
+/**
+ * @brief Partial specialization of `std::hash` for `required_ptr`.
+ *
+ * @tparam T The element type of the `required_ptr`.
+ */
 template<class T>
 struct std::hash<required_ptr<T>> {
+    ///@brief Hashes the `required_ptr` based on the underlying address.
     [[nodiscard]] constexpr std::size_t operator()(const required_ptr<T>& ptr) const noexcept
     {
         return std::hash<T*>{}(ptr.get());
