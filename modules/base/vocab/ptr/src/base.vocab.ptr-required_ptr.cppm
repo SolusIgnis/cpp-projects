@@ -253,44 +253,24 @@ export namespace base::vocab::inline ptr {
         ///@brief Compares equality in terms of pointer identity.
         [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const required_ptr& rhs) noexcept = default;
 
-        ///@brief Compares equality in terms of pointer identity between interoperable `required_ptr` specializations.
-        template<typename U>
-            requires (
-                !std::same_as<U, T> &&
-                (
-                    std::convertible_to<std::add_pointer_t<U>, pointer> ||
-                    std::convertible_to<pointer, std::add_pointer_t<U>>
-                )
-            )
-        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const required_ptr<U>& rhs) noexcept
+        ///@brief Covariantly compares equality in terms of pointer identity.
+        template<std::derived_from<T> DerivedT>
+            requires (!std::same_as<DerivedT, T>)
+        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const required_ptr<DerivedT>& rhs) noexcept
         {
             return (lhs.get() == rhs.get());
         }
 
-        ///@brief Compares equality between a `required_ptr` and an interoperable raw pointer in terms of pointer identity.
-        template<typename U>
-            requires (
-                !std::same_as<U, T> &&
-                (
-                    std::convertible_to<std::add_pointer_t<U>, pointer> ||
-                    std::convertible_to<pointer, std::add_pointer_t<U>>
-                )
-            )
-        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const std::add_pointer_t<U> rhs) noexcept
+        ///@brief Covariantly compares equality of a `required_ptr`-to-base with a raw pointer-to-derived in terms of pointer identity.
+        template<std::derived_from<T> DerivedT>
+        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
         {
             return (lhs.get() == rhs);
         }
 
         ///@brief Covariantly compares equality of a raw pointer-to-base with a `required_ptr`-to-derived in terms of pointer identity.
-        template<typename U>
-            requires (
-                !std::same_as<U, T> &&
-                (
-                    std::convertible_to<std::add_pointer_t<U>, pointer> ||
-                    std::convertible_to<pointer, std::add_pointer_t<U>>
-                )
-            )
-        [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const required_ptr<U>& rhs) noexcept
+        template<std::derived_from<T> DerivedT>
+        [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const required_ptr<DerivedT>& rhs) noexcept
         {
             return (lhs == rhs.get());
         }
@@ -547,37 +527,29 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload constexpr bool operator==(const required_ptr& lhs, const required_ptr<U>& rhs) noexcept
+     * @overload constexpr bool operator==(const required_ptr& lhs, const required_ptr<DerivedT>& rhs) noexcept
      *
-     * @tparam U The element type of the right-hand side `required_ptr`.
+     * @tparam DerivedT The element type, derived from `T`, of the right-hand side `required_ptr`.
      *
      * @param lhs The left-hand side `required_ptr`.
      * @param rhs The right-hand side `required_ptr` to compare.
      *
      * @return `true` if both pointers refer to the same object; otherwise `false`.
      *
-     * @details Supports equality comparison between `required_ptr` specializations
-     * of interoperable pointer types, including qualification conversion,
-     * derived/base relationships, and type-erased forms such as `required_ptr<void>`.
-     *
-     * @remark Requires interoperability such that either `T*` is convertible to `U*` or vice versa.
+     * @remark Enables equality comparison between `required_ptr` instances of related types.
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload constexpr bool operator==(const required_ptr& lhs, const std::add_pointer_t<U> rhs) noexcept
+     * @overload constexpr bool operator==(const required_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
      *
-     * @tparam U The pointee type of the raw pointer.
+     * @tparam DerivedT The element type, derived from `T`, of the raw pointer.
      *
      * @param lhs The `required_ptr` being compared.
      * @param rhs The raw pointer to compare against.
      *
-     * @return `true` if the stored pointer equals `rhs`; otherwise `false`.
+     * @return `true` if the wrapped pointer in `lhs` equals `rhs`; otherwise `false`.
      *
-     * @details Supports equality comparison between `required_ptr` and raw pointers
-     * of interoperable pointer types, including qualification conversion,
-     * derived/base relationships, and type-erased forms such as `required_ptr<void>`.
-     *
-     * @remark Requires interoperability such that either `T*` is convertible to `U*` or vice versa.
+     * @remark Enables comparison with raw pointers-to-derived for interoperability with legacy APIs.
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
@@ -592,16 +564,6 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Enables comparison with raw pointers-to-base for interoperability with legacy APIs.
      * @remark Comparison is performed on the underlying addresses.
-     */
-    /**
-     * @fn constexpr pointer required_ptr::operator->() const noexcept
-     *
-     * @return Pointer to the referenced object.
-     *
-     * @pre The stored pointer must remain valid (non-dangling).
-     * @post The returned pointer is non-null.
-     *
-     * @remark Operator syntax equivalent to `get()->`. Function syntax equivalent to calling `get()`.
      */
     /**
      * @fn constexpr reference required_ptr::operator*() const noexcept

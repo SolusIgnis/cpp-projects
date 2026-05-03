@@ -854,9 +854,10 @@ namespace {
             expect(eq(std::convertible_to<trivial_smart_ptr<void>&, required_ptr<void>>, false));
             expect(eq(std::constructible_from<required_ptr<void>, trivial_smart_ptr<void>&>, true));
         };
-        
+
         "void `required_ptr` constructs implicitly from typed `required_ptr`"_test = [] mutable {
             expect(eq(std::convertible_to<required_ptr<std::int32_t>, required_ptr<void>>, true));
+            expect(eq(std::convertible_to<required_ptr<void>, required_ptr<std::int32_t>>, false));
 
             const std::int32_t value{42};
             required_ptr<const std::int32_t> typed_ptr{value};
@@ -864,6 +865,17 @@ namespace {
             // Should be implicit (convertible)
             auto takes_void = [](required_ptr<const void> ptr) { return ptr.get(); };
             expect(eq(takes_void(typed_ptr), static_cast<const void*>(std::addressof(value))));
+        };
+
+        "void `required_ptr` is equality comparable"_test = [] mutable {
+            const std::int32_t value{42};
+            required_ptr<const std::int32_t> typed_ptr{value};
+            
+            required_ptr<void> erased_ptr1{std::addressof(value)};
+            required_ptr<void> erased_ptr2{typed_ptr};
+            
+            expect(eq(erased_ptr1 == erased_ptr2, true));
+            expect(eq(erased_ptr1 == typed_ptr,  true));
         };
 
         //============================================================
