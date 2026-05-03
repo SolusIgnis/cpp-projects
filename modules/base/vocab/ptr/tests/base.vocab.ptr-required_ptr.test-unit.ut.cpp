@@ -870,11 +870,25 @@ namespace {
         // CTAD Guide
         //============================================================
 
-        "deduction guide works"_test = [] mutable {
+        "deduction guides work"_test = [] mutable {
             constexpr std::int32_t x = {};
-            required_ptr ptr{x};
+            required_ptr ptr1{x};
+            required_ptr ptr2{std::addressof(x)};            
 
-            expect(eq(ptr.get(), std::addressof(x)));
+            expect(eq(ptr1.get(), std::addressof(x)));
+            expect(eq(ptr2.get(), std::addressof(x)));
+        };
+
+        //============================================================
+        // Constant Expression Usage
+        //============================================================
+
+        "constexpr construction and dereference"_test = [] {
+            static constexpr int x = 42;
+        
+            constexpr required_ptr<const int> ptr{x};
+
+            expect(eq(*ptr, 42));
         };
     };
 } //namespace
