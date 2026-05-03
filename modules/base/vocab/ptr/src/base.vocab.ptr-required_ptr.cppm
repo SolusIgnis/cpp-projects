@@ -238,7 +238,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted assignment from C-array to prevent array-to-pointer decay.
         template<typename AnyCArray>
             requires std::is_array_v<AnyCArray>
-        required_ptr& operator=(AnyCArray) =
+        required_ptr& operator=(AnyCArray&) =
             delete /*("Assignment from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
@@ -250,23 +250,23 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const required_ptr& rhs) noexcept = default;
 
         ///@brief Covariantly compares equality in terms of pointer identity.
-        template<std::derived_from<T> U>
-            requires (!std::same_as<U, T>)
-        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const required_ptr<U>& rhs) noexcept
+        template<std::derived_from<T> DerivedT>
+            requires (!std::same_as<DerivedT, T>)
+        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const required_ptr<DerivedT>& rhs) noexcept
         {
             return (lhs.get() == rhs.get());
         }
 
         ///@brief Covariantly compares equality of a `required_ptr`-to-base with a raw pointer-to-derived in terms of pointer identity.
-        template<std::derived_from<T> U>
-        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const U* rhs) noexcept
+        template<std::derived_from<T> DerivedT>
+        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
         {
             return (lhs.get() == rhs);
         }
 
         ///@brief Covariantly compares equality of a raw pointer-to-base with a `required_ptr`-to-derived in terms of pointer identity.
-        template<std::derived_from<T> U>
-        [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const required_ptr<U>& rhs) noexcept
+        template<std::derived_from<T> DerivedT>
+        [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const required_ptr<DerivedT>& rhs) noexcept
         {
             return (lhs == rhs.get());
         }
@@ -377,7 +377,7 @@ export namespace base::vocab::inline ptr {
      *
      * @param source The `required_ptr` being converted.
      *
-     * @pre `*source` must refer to a valid object that outlives the resulting `required_ptr`.
+     * @pre `source` must point to a valid object that outlives the resulting `required_ptr`.
      * @post `get() == source.get()`.
      *
      * @details This single constructor handles:
@@ -396,7 +396,7 @@ export namespace base::vocab::inline ptr {
      *
      * @param source The raw pointer to bind.
      *
-     * @pre `source` must be non-null and must point to a valid object that outlives the constructed `required_ptr`.
+     * @pre `source` must point to a valid object that outlives the constructed `required_ptr`.
      * @post `get() == source`.
      *
      * @throws std::invalid_argument if `source == nullptr`.
@@ -419,7 +419,7 @@ export namespace base::vocab::inline ptr {
      * @param source The pointer-like object providing access to a raw pointer via `get()`.
      *
      * @pre `source.get()` must be a valid expression convertible to `pointer`.
-     * @pre `source.get()` must be non-null and must point to an object whose lifetime strictly exceeds that of the constructed `required_ptr`.
+     * @pre `source.get()` must point to an object whose lifetime strictly exceeds that of the constructed `required_ptr`.
      * @post `get() == static_cast<pointer>(source.get())`.
      *
      * @throws std::invalid_argument if `source.get() == nullptr`.
@@ -446,7 +446,7 @@ export namespace base::vocab::inline ptr {
      * @param source The `required_ptr` being converted.
      * @return Reference to `*this`.
      *
-     * @pre `*source` must refer to a valid object that outlives the resulting `required_ptr`.
+     * @pre `source` must point to a valid object that outlives the resulting `required_ptr`.
      *
      * @details This single assignment operator handles:
      * 1. Derived-to-Base conversion (e.g., `ptr<Derived>` to `ptr<Base>`).
@@ -465,7 +465,7 @@ export namespace base::vocab::inline ptr {
      * @param source The raw pointer to rebind to.
      * @return Reference to `*this`.
      *
-     * @pre `source` must be non-null and must point to a valid object that outlives the `required_ptr`.
+     * @pre `source` must point to a valid object that outlives the `required_ptr`.
      * @post `get() == source`.
      *
      * @throws std::invalid_argument if `source == nullptr`.
@@ -489,7 +489,7 @@ export namespace base::vocab::inline ptr {
      * @return Reference to `*this`.
      *
      * @pre `source.get()` must be a valid expression convertible to `pointer`.
-     * @pre `source.get()` must be non-null and must point to an object whose lifetime strictly exceeds that of the `required_ptr`.
+     * @pre `source.get()` must point to an object whose lifetime strictly exceeds that of the `required_ptr`.
      * @post `get() == static_cast<pointer>(source.get())`.
      *
      * @throws std::invalid_argument if `source.get() == nullptr`.
@@ -508,9 +508,9 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload constexpr bool operator==(const required_ptr& lhs, const required_ptr<U>& rhs) noexcept
+     * @overload constexpr bool operator==(const required_ptr& lhs, const required_ptr<DerivedT>& rhs) noexcept
      *
-     * @tparam U The element type, derived from `T`, of the right-hand side `required_ptr`.
+     * @tparam DerivedT The element type, derived from `T`, of the right-hand side `required_ptr`.
      *
      * @param lhs The left-hand side `required_ptr`.
      * @param rhs The right-hand side `required_ptr` to compare.
@@ -521,9 +521,9 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload constexpr bool operator==(const required_ptr& lhs, const U* rhs) noexcept
+     * @overload constexpr bool operator==(const required_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
      *
-     * @tparam U The element type, derived from `T`, of the raw pointer.
+     * @tparam DerivedT The element type, derived from `T`, of the raw pointer.
      *
      * @param lhs The `required_ptr` being compared.
      * @param rhs The raw pointer to compare against.
@@ -534,9 +534,9 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload constexpr bool operator==(const pointer lhs, const required_ptr<U>& rhs) noexcept
+     * @overload constexpr bool operator==(const pointer lhs, const required_ptr<DerivedT>& rhs) noexcept
      *
-     * @tparam U The element type, derived from `T`, of the right-hand side `required_ptr`.
+     * @tparam DerivedT The element type, derived from `T`, of the right-hand side `required_ptr`.
      *
      * @param lhs The raw pointer to compare.
      * @param rhs The `required_ptr` being compared.

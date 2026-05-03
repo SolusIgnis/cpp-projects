@@ -204,23 +204,23 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] friend constexpr bool operator==(const dependency_ptr& lhs, const dependency_ptr& rhs) noexcept = default;
 
         ///@brief Covariantly compares equality in terms of pointer identity.
-        template<std::derived_from<T> U>
-            requires (!std::same_as<U, T>)
-        [[nodiscard]] friend constexpr bool operator==(const dependency_ptr& lhs, const dependency_ptr<U>& rhs) noexcept
+        template<std::derived_from<T> DerivedT>
+            requires (!std::same_as<DerivedT, T>)
+        [[nodiscard]] friend constexpr bool operator==(const dependency_ptr& lhs, const dependency_ptr<DerivedT>& rhs) noexcept
         {
             return (lhs.get() == rhs.get());
         }
 
         ///@brief Covariantly compares equality of a `dependency_ptr`-to-base with a raw pointer-to-derived in terms of pointer identity.
-        template<std::derived_from<T> U>
-        [[nodiscard]] friend constexpr bool operator==(const dependency_ptr& lhs, const U* rhs) noexcept
+        template<std::derived_from<T> DerivedT>
+        [[nodiscard]] friend constexpr bool operator==(const dependency_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
         {
             return (lhs.get() == rhs);
         }
 
         ///@brief Covariantly compares equality of a raw pointer-to-base with a `dependency_ptr`-to-derived in terms of pointer identity.
-        template<std::derived_from<T> U>
-        [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const dependency_ptr<U>& rhs) noexcept
+        template<std::derived_from<T> DerivedT>
+        [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const dependency_ptr<DerivedT>& rhs) noexcept
         {
             return (lhs == rhs.get());
         }
@@ -337,7 +337,7 @@ export namespace base::vocab::inline ptr {
     /**
      * @overload constexpr dependency_ptr& dependency_ptr::operator=(const dependency_ptr<U>& source) noexcept
      *
-          * @tparam U The element type, with its pointer convertible to `pointer`, of the source `dependency_ptr`.
+     * @tparam U The element type, with its pointer convertible to `pointer`, of the source `dependency_ptr`.
      *
      * @param source The `dependency_ptr` being converted.
      * @return Reference to `*this`.
@@ -362,9 +362,9 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload constexpr bool operator==(const dependency_ptr& lhs, const dependency_ptr<U>& rhs) noexcept
+     * @overload constexpr bool operator==(const dependency_ptr& lhs, const dependency_ptr<DerivedT>& rhs) noexcept
      *
-     * @tparam U The element type, derived from `T`, of the right-hand side `dependency_ptr`.
+     * @tparam DerivedT The element type, derived from `T`, of the right-hand side `dependency_ptr`.
      *
      * @param lhs The left-hand side `dependency_ptr`.
      * @param rhs The right-hand side `dependency_ptr` to compare.
@@ -375,9 +375,9 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload constexpr bool operator==(const dependency_ptr& lhs, const U* rhs) noexcept
+     * @overload constexpr bool operator==(const dependency_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
      *
-     * @tparam U The element type, derived from `T`, of the raw pointer.
+     * @tparam DerivedT The element type, derived from `T`, of the raw pointer.
      *
      * @param lhs The `dependency_ptr` being compared.
      * @param rhs The raw pointer to compare against.
@@ -388,9 +388,9 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload constexpr bool operator==(const pointer lhs, const dependency_ptr<U>& rhs) noexcept
+     * @overload constexpr bool operator==(const pointer lhs, const dependency_ptr<DerivedT>& rhs) noexcept
      *
-     * @tparam U The element type, derived from `T`, of the right-hand side `dependency_ptr`.
+     * @tparam DerivedT The element type, derived from `T`, of the right-hand side `dependency_ptr`.
      *
      * @param lhs The raw pointer to compare.
      * @param rhs The `dependency_ptr` being compared.
