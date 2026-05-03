@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
- * @file base.vocab.ptr-alias_ptr.cppm
+ * @file base.vocab.ptr-forward_declarations.cppm
  * @version 0.3.0
- * @date April 28, 2026
+ * @date April 27, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -19,21 +19,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief `alias_ptr`: non-owning, nullable, non-arithmetic, void-permitting
- * @todo Future Development: Use `= delete("reason")` once the C++26 feature becomes available.
+ * @brief Forward declarations for the pointer types to break dependency cycles.
  */
 
 //Module partition interface unit
-export module base.vocab.ptr:alias_ptr;
+export module base.vocab.ptr:forward_declarations;
 
 import std;
 
 import base.meta.traits;
 
-import :forward_declarations;
-
 export namespace base::vocab::inline ptr {
     template<typename T>
+        requires (
+            !std::is_reference_v<T> && !std::is_void_v<T>
+            && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>
+        )
+    class [[nodiscard]] dependency_ptr;
+
+    template<typename T>
         requires (!std::is_reference_v<T> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>)
-    using alias_ptr = T*;
+    class required_ptr;
 } //namespace base::vocab::inline ptr

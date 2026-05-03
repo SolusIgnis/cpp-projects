@@ -52,6 +52,7 @@ namespace {
             expect(eq(instantiable_with<dependency_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
 
             expect(eq(instantiable_with<dependency_ptr, void>, false));
+
             expect(eq(instantiable_with<dependency_ptr, std::int32_t&>, false));
             expect(eq(instantiable_with<dependency_ptr, std::int32_t&&>, false));
             expect(eq(instantiable_with<dependency_ptr, void(int)>, false));
@@ -71,6 +72,10 @@ namespace {
             expect(eq(std::is_standard_layout_v<dependency_ptr<simple_t>>, true));
             expect(eq(std::is_trivially_copyable_v<dependency_ptr<simple_t>>, true));
             expect(eq(std::is_trivially_destructible_v<dependency_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_copy_constructible_v<dependency_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_move_constructible_v<dependency_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_copy_assignable_v<dependency_ptr<simple_t>>, true));
+            expect(eq(std::is_trivially_move_assignable_v<dependency_ptr<simple_t>>, true));
             expect(eq(std::is_nothrow_constructible_v<dependency_ptr<simple_t>, simple_t&>, true));
 
             using complex_t = std::map<std::string, std::vector<std::int32_t>>;
@@ -78,6 +83,10 @@ namespace {
             expect(eq(std::is_standard_layout_v<dependency_ptr<complex_t>>, true));
             expect(eq(std::is_trivially_copyable_v<dependency_ptr<complex_t>>, true));
             expect(eq(std::is_trivially_destructible_v<dependency_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_copy_constructible_v<dependency_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_move_constructible_v<dependency_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_copy_assignable_v<dependency_ptr<complex_t>>, true));
+            expect(eq(std::is_trivially_move_assignable_v<dependency_ptr<complex_t>>, true));
             expect(eq(std::is_nothrow_constructible_v<dependency_ptr<complex_t>, complex_t&>, true));
         };
 
@@ -120,31 +129,31 @@ namespace {
         //============================================================
 
         "constructible explicitly from lvalue reference"_test = [] mutable {
+            using test_type = std::int32_t;
+
             //Explicitly constructible unless removing qualifier
-            expect(eq(std::constructible_from<dependency_ptr<std::int32_t>, std::int32_t&>, true));
-            expect(eq(std::constructible_from<dependency_ptr<std::int32_t>, const std::int32_t&>, false));
-            expect(eq(std::constructible_from<dependency_ptr<std::int32_t>, volatile std::int32_t&>, false));
-            expect(eq(std::constructible_from<dependency_ptr<std::int32_t>, const volatile std::int32_t&>, false));
-            expect(eq(std::constructible_from<dependency_ptr<const std::int32_t>, std::int32_t&>, true));
-            expect(eq(std::constructible_from<dependency_ptr<const std::int32_t>, const std::int32_t&>, true));
-            expect(eq(std::constructible_from<dependency_ptr<const std::int32_t>, volatile std::int32_t&>, false));
-            expect(eq(std::constructible_from<dependency_ptr<const std::int32_t>, const volatile std::int32_t&>, false));
-            expect(eq(std::constructible_from<dependency_ptr<volatile std::int32_t>, std::int32_t&>, true));
-            expect(eq(std::constructible_from<dependency_ptr<volatile std::int32_t>, const std::int32_t&>, false));
-            expect(eq(std::constructible_from<dependency_ptr<volatile std::int32_t>, volatile std::int32_t&>, true));
-            expect(eq(std::constructible_from<dependency_ptr<volatile std::int32_t>, const volatile std::int32_t&>, false));
-            expect(eq(std::constructible_from<dependency_ptr<const volatile std::int32_t>, std::int32_t&>, true));
-            expect(eq(std::constructible_from<dependency_ptr<const volatile std::int32_t>, const std::int32_t&>, true));
-            expect(eq(std::constructible_from<dependency_ptr<const volatile std::int32_t>, volatile std::int32_t&>, true));
-            expect(
-                eq(std::constructible_from<dependency_ptr<const volatile std::int32_t>, const volatile std::int32_t&>, true)
-            );
+            expect(eq(std::constructible_from<dependency_ptr<test_type>, test_type&>, true));
+            expect(eq(std::constructible_from<dependency_ptr<test_type>, const test_type&>, false));
+            expect(eq(std::constructible_from<dependency_ptr<test_type>, volatile test_type&>, false));
+            expect(eq(std::constructible_from<dependency_ptr<test_type>, const volatile test_type&>, false));
+            expect(eq(std::constructible_from<dependency_ptr<const test_type>, test_type&>, true));
+            expect(eq(std::constructible_from<dependency_ptr<const test_type>, const test_type&>, true));
+            expect(eq(std::constructible_from<dependency_ptr<const test_type>, volatile test_type&>, false));
+            expect(eq(std::constructible_from<dependency_ptr<const test_type>, const volatile test_type&>, false));
+            expect(eq(std::constructible_from<dependency_ptr<volatile test_type>, test_type&>, true));
+            expect(eq(std::constructible_from<dependency_ptr<volatile test_type>, const test_type&>, false));
+            expect(eq(std::constructible_from<dependency_ptr<volatile test_type>, volatile test_type&>, true));
+            expect(eq(std::constructible_from<dependency_ptr<volatile test_type>, const volatile test_type&>, false));
+            expect(eq(std::constructible_from<dependency_ptr<const volatile test_type>, test_type&>, true));
+            expect(eq(std::constructible_from<dependency_ptr<const volatile test_type>, const test_type&>, true));
+            expect(eq(std::constructible_from<dependency_ptr<const volatile test_type>, volatile test_type&>, true));
+            expect(eq(std::constructible_from<dependency_ptr<const volatile test_type>, const volatile test_type&>, true));
 
             //Never implicitly convertible (constructor is explicit)
-            expect(eq(std::convertible_to<std::int32_t&, dependency_ptr<std::int32_t>>, false));
-            expect(eq(std::convertible_to<const std::int32_t&, dependency_ptr<std::int32_t>>, false));
-            expect(eq(std::convertible_to<std::int32_t&, dependency_ptr<const std::int32_t>>, false));
-            expect(eq(std::convertible_to<const std::int32_t&, dependency_ptr<const std::int32_t>>, false));
+            expect(eq(std::convertible_to<test_type&, dependency_ptr<test_type>>, false));
+            expect(eq(std::convertible_to<const test_type&, dependency_ptr<test_type>>, false));
+            expect(eq(std::convertible_to<test_type&, dependency_ptr<const test_type>>, false));
+            expect(eq(std::convertible_to<const test_type&, dependency_ptr<const test_type>>, false));
         };
 
         "not default constructible"_test = [] mutable {
@@ -176,22 +185,24 @@ namespace {
         //============================================================
 
         "assignable from lvalue reference"_test = [] mutable {
-            expect(eq(std::is_assignable_v<dependency_ptr<std::int32_t>&, std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<dependency_ptr<std::int32_t>&, const std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<dependency_ptr<std::int32_t>&, volatile std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<dependency_ptr<std::int32_t>&, const volatile std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<dependency_ptr<const std::int32_t>&, std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<dependency_ptr<const std::int32_t>&, const std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<dependency_ptr<const std::int32_t>&, volatile std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<dependency_ptr<const std::int32_t>&, const volatile std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<dependency_ptr<volatile std::int32_t>&, std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<dependency_ptr<volatile std::int32_t>&, const std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<dependency_ptr<volatile std::int32_t>&, volatile std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<dependency_ptr<volatile std::int32_t>&, const volatile std::int32_t&>, false));
-            expect(eq(std::is_assignable_v<dependency_ptr<const volatile std::int32_t>&, std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<dependency_ptr<const volatile std::int32_t>&, const std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<dependency_ptr<const volatile std::int32_t>&, volatile std::int32_t&>, true));
-            expect(eq(std::is_assignable_v<dependency_ptr<const volatile std::int32_t>&, const volatile std::int32_t&>, true));
+            using test_type = std::int32_t;
+
+            expect(eq(std::is_assignable_v<dependency_ptr<test_type>&, test_type&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<test_type>&, const test_type&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<test_type>&, volatile test_type&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<test_type>&, const volatile test_type&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<const test_type>&, test_type&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<const test_type>&, const test_type&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<const test_type>&, volatile test_type&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<const test_type>&, const volatile test_type&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<volatile test_type>&, test_type&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<volatile test_type>&, const test_type&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<volatile test_type>&, volatile test_type&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<volatile test_type>&, const volatile test_type&>, false));
+            expect(eq(std::is_assignable_v<dependency_ptr<const volatile test_type>&, test_type&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<const volatile test_type>&, const test_type&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<const volatile test_type>&, volatile test_type&>, true));
+            expect(eq(std::is_assignable_v<dependency_ptr<const volatile test_type>&, const volatile test_type&>, true));
         };
 
         "not assignable from nullptr"_test = [] mutable {
@@ -229,22 +240,24 @@ namespace {
         };
 
         "implicit conversion to raw pointer"_test = [] mutable {
-            expect(eq(std::convertible_to<dependency_ptr<std::int32_t>, std::int32_t*>, true));
-            expect(eq(std::convertible_to<dependency_ptr<std::int32_t>, const std::int32_t*>, true));
-            expect(eq(std::convertible_to<dependency_ptr<std::int32_t>, volatile std::int32_t*>, true));
-            expect(eq(std::convertible_to<dependency_ptr<std::int32_t>, const volatile std::int32_t*>, true));
-            expect(eq(std::convertible_to<dependency_ptr<const std::int32_t>, std::int32_t*>, false));
-            expect(eq(std::convertible_to<dependency_ptr<const std::int32_t>, const std::int32_t*>, true));
-            expect(eq(std::convertible_to<dependency_ptr<const std::int32_t>, volatile std::int32_t*>, false));
-            expect(eq(std::convertible_to<dependency_ptr<const std::int32_t>, const volatile std::int32_t*>, true));
-            expect(eq(std::convertible_to<dependency_ptr<volatile std::int32_t>, std::int32_t*>, false));
-            expect(eq(std::convertible_to<dependency_ptr<volatile std::int32_t>, const std::int32_t*>, false));
-            expect(eq(std::convertible_to<dependency_ptr<volatile std::int32_t>, volatile std::int32_t*>, true));
-            expect(eq(std::convertible_to<dependency_ptr<volatile std::int32_t>, const volatile std::int32_t*>, true));
-            expect(eq(std::convertible_to<dependency_ptr<const volatile std::int32_t>, std::int32_t*>, false));
-            expect(eq(std::convertible_to<dependency_ptr<const volatile std::int32_t>, const std::int32_t*>, false));
-            expect(eq(std::convertible_to<dependency_ptr<const volatile std::int32_t>, volatile std::int32_t*>, false));
-            expect(eq(std::convertible_to<dependency_ptr<const volatile std::int32_t>, const volatile std::int32_t*>, true));
+            using test_type = std::int32_t;
+
+            expect(eq(std::convertible_to<dependency_ptr<test_type>, test_type*>, true));
+            expect(eq(std::convertible_to<dependency_ptr<test_type>, const test_type*>, true));
+            expect(eq(std::convertible_to<dependency_ptr<test_type>, volatile test_type*>, true));
+            expect(eq(std::convertible_to<dependency_ptr<test_type>, const volatile test_type*>, true));
+            expect(eq(std::convertible_to<dependency_ptr<const test_type>, test_type*>, false));
+            expect(eq(std::convertible_to<dependency_ptr<const test_type>, const test_type*>, true));
+            expect(eq(std::convertible_to<dependency_ptr<const test_type>, volatile test_type*>, false));
+            expect(eq(std::convertible_to<dependency_ptr<const test_type>, const volatile test_type*>, true));
+            expect(eq(std::convertible_to<dependency_ptr<volatile test_type>, test_type*>, false));
+            expect(eq(std::convertible_to<dependency_ptr<volatile test_type>, const test_type*>, false));
+            expect(eq(std::convertible_to<dependency_ptr<volatile test_type>, volatile test_type*>, true));
+            expect(eq(std::convertible_to<dependency_ptr<volatile test_type>, const volatile test_type*>, true));
+            expect(eq(std::convertible_to<dependency_ptr<const volatile test_type>, test_type*>, false));
+            expect(eq(std::convertible_to<dependency_ptr<const volatile test_type>, const test_type*>, false));
+            expect(eq(std::convertible_to<dependency_ptr<const volatile test_type>, volatile test_type*>, false));
+            expect(eq(std::convertible_to<dependency_ptr<const volatile test_type>, const volatile test_type*>, true));
         };
 
         "conversion to raw pointer preserves address"_test = [] mutable {
@@ -263,14 +276,19 @@ namespace {
             expect(eq(ptr.get(), std::addressof(x)));
         };
 
-        "boolean conversion"_test = [] mutable {
+        "contextual boolean conversion is supported"_test = [] mutable {
             expect(eq(std::constructible_from<bool, dependency_ptr<std::int32_t>>, true));
 
             const int x{};
             dependency_ptr<const std::int32_t> ptr{x};
 
+            bool converted{false};
+            if (ptr)
+                converted = true;
+
             expect(eq(static_cast<bool>(ptr), true));
             expect(eq(!ptr, false));
+            expect(eq(converted, true));
         };
 
         //============================================================

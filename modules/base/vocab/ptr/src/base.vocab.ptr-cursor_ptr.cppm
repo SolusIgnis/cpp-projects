@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-cursor_ptr.cppm
- * @version 0.2.0
- * @date March 11, 2026
+ * @version 0.3.0
+ * @date April 28, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -19,14 +19,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief cursor_ptr
+ * @brief `cursor_ptr`: non-owning, non-nullable, arithmetic, non-void-permitting
  * @todo Future Development: Use `= delete("reason")` once the C++26 feature becomes available.
  */
 
 //Module partition interface unit
 export module base.vocab.ptr:cursor_ptr;
 
+import std;
+
+import base.meta.traits;
+
+import :forward_declarations;
+
 export namespace base::vocab::inline ptr {
     template<typename T>
+        requires (!std::is_reference_v<T> && !std::is_void_v<T>
+                  && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>)
     using cursor_ptr = T*;
-}
+} //namespace base::vocab::inline ptr
