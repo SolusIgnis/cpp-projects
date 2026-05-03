@@ -63,6 +63,7 @@ export namespace base::vocab::inline ptr {
      * @invariant Always engaged: a `dependency_ptr` always refers to a valid object; there is no null/disengaged representation. The wrapped pointer is guaranteed to be non-null by construction.
      * @remark This type does not own the referenced object and does not participate in lifetime management.
      * @remark Copying and assignment rebind the pointer without affecting the lifetime of the underlying object.
+     * @note Construction or assignment from `nullptr` is ill-formed.
      * @remark Marked `[[nodiscard]]` to prevent accidental construction of unused dependency objects. Intentional discards should use `[[maybe_unused]]` to document intent.
      * @remark Construction requires an lvalue reference, preventing null initialization and discouraging dangling by rejecting direct binding to temporaries.
      * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator.
@@ -151,6 +152,12 @@ export namespace base::vocab::inline ptr {
         {
             address_ = source.get();
             return *this;
+        }
+
+        ///@brief Swaps addresses.
+        friend constexpr void swap(dependency_ptr& lhs, dependency_ptr& rhs) noexcept {
+            using std::swap;
+            swap(lhs.address_, rhs.address_);
         }
 
         //================================================================================
@@ -352,6 +359,19 @@ export namespace base::vocab::inline ptr {
      * @remark Preserves the non-null invariant.
      */
     /**
+     * @fn constexpr void swap(dependency_ptr& lhs, dependency_ptr& rhs) noexcept
+     *
+     * @param lhs The first pointer wrapper.
+     * @param rhs The second pointer wrapper.
+     *
+     * @post `lhs` refers to the object previously referenced by `rhs`.
+     * @post `rhs` refers to the object previously referenced by `lhs`.
+     *
+     * @remark Swaps only the stored addresses.
+     * @remark Does not affect ownership or pointee lifetime.
+     * @remark Provided as a hidden friend for ADL interoperability.
+     */
+    /**
      * @fn constexpr bool operator==(const dependency_ptr& lhs, const dependency_ptr& rhs) noexcept
      *
      * @param lhs The left-hand side `dependency_ptr`.
@@ -447,7 +467,7 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Satisfies boolean-testable requirements in generic templates and logical contexts.
      * @remark Models pointer interface by providing contextual conversion to `bool` albeit redundantly.
-     * @note Because this always returns `true`, the compiler can elide checks in generic code when `dependency_ptr` is the concrete type.
+     * @note Because this always returns `true`, the compiler may elide checks in generic code when `dependency_ptr` is the concrete type.
      * @note This does not indicate engagement/optionality as `dependency_ptr` has no disengaged state.
      */
 

@@ -41,13 +41,17 @@ export namespace base::vocab::inline ptr {
      *
      * @tparam T The pointed-to type (must not be a reference type per "C++ standard [dcl.ptr]" nor a function pointer).
      *
-     * @details `required_ptr` models a non-owning, non-nullable, non-arithmetic, non-void-permitting
+     * @details `required_ptr` models a non-owning, non-nullable, non-arithmetic, void-permitting
      * pointer abstraction.
      *
      * @note Standard Layout type with size and alignment of a raw pointer.
      * @invariant Always engaged: a `required_ptr` always refers to a valid object; there is no null/disengaged representation. Attempts to construct/assign from another pointer throw on null.
      * @remark This type does not own the referenced object and does not participate in lifetime management.
      * @remark Copying and assignment rebind the pointer without affecting the lifetime of the underlying object.
+     * @note Construction or assignment from `nullptr` is ill-formed.
+     * @note Construction or assignment from raw pointer values performs runtime validation and throws `std::invalid_argument` on null.
+     * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator.
+     * @note `required_ptr<void>` reuses the primary template rather than introducing a specialization. Placeholder reference aliases based on `std::monostate` are used solely to keep deleted overload declarations well-formed.
      *
      * @see `alias_ptr` for nullable aliasing, `dependency_ptr` for dependency injection structural non-nullability, `cursor_ptr` for non-null iteration/traversal, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */
@@ -249,27 +253,47 @@ export namespace base::vocab::inline ptr {
         ///@brief Compares equality in terms of pointer identity.
         [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const required_ptr& rhs) noexcept = default;
 
-        ///@brief Covariantly compares equality in terms of pointer identity.
-        template<std::derived_from<T> DerivedT>
-            requires (!std::same_as<DerivedT, T>)
-        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const required_ptr<DerivedT>& rhs) noexcept
+        ///@brief Compares equality in terms of pointer identity between interoperable `required_ptr` specializations.
+        template<typename U>
+            requires (
+                !std::same_as<U, T> &&
+                (
+                    std::convertible_to<std::add_pointer_t<U>, pointer> ||
+                    std::convertible_to<pointer, std::add_pointer_t<U>>
+                )
+            )
+        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const required_ptr<U>& rhs) noexcept
         {
             return (lhs.get() == rhs.get());
         }
 
-        ///@brief Covariantly compares equality of a `required_ptr`-to-base with a raw pointer-to-derived in terms of pointer identity.
-        template<std::derived_from<T> DerivedT>
-        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+        ///@brief Compares equality between a `required_ptr` and an interoperable raw pointer in terms of pointer identity.
+        template<typename U>
+            requires (
+                !std::same_as<U, T> &&
+                (
+                    std::convertible_to<std::add_pointer_t<U>, pointer> ||
+                    std::convertible_to<pointer, std::add_pointer_t<U>>
+                )
+            )
+        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, const std::add_pointer_t<U> rhs) noexcept
         {
             return (lhs.get() == rhs);
         }
 
         ///@brief Covariantly compares equality of a raw pointer-to-base with a `required_ptr`-to-derived in terms of pointer identity.
-        template<std::derived_from<T> DerivedT>
-        [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const required_ptr<DerivedT>& rhs) noexcept
+        /*template<typename U>
+            requires (
+                !std::same_as<U, T> &&
+                (
+                    std::convertible_to<std::add_pointer_t<U>, pointer> ||
+                    std::convertible_to<pointer, std::add_pointer_t<U>>
+                )
+            )
+        [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const required_ptr<U>& rhs) noexcept
         {
             return (lhs == rhs.get());
-        }
+        }*/
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         auto operator<=>(required_ptr) const =
@@ -401,8 +425,9 @@ export namespace base::vocab::inline ptr {
      *
      * @throws std::invalid_argument if `source == nullptr`.
      *
-     * @details Captures the input type via forwarding reference to intercept C-arrays 
-     * before they can decay into raw pointers.
+     * @details Captures the original argument type prior to decay so that
+     * C-array arguments can be diagnosed explicitly instead of silently
+     * converting to element pointers.
      *
      * @note This constructor is the primary entry point for raw pointers and is 
      * constrained to prevent hijacking copy/move operations or accepting arrays.
@@ -416,7 +441,7 @@ export namespace base::vocab::inline ptr {
      * @tparam Element The element type of the source pointer.
      * @tparam Args Additional template parameters of the pointer type.
      *
-     * @param source The pointer-like object providing access to a raw pointer via `get()`.
+     * @param source The pointer-like object providing access to a pointer-compatible value via `get()`.
      *
      * @pre `source.get()` must be a valid expression convertible to `pointer`.
      * @pre `source.get()` must point to an object whose lifetime strictly exceeds that of the constructed `required_ptr`.
@@ -470,8 +495,9 @@ export namespace base::vocab::inline ptr {
      *
      * @throws std::invalid_argument if `source == nullptr`.
      *
-     * @details Captures the input type via forwarding reference to intercept C-arrays 
-     * before they can decay into raw pointers.
+     * @details Captures the original argument type prior to decay so that
+     * C-array arguments can be diagnosed explicitly instead of silently
+     * converting to element pointers.
      *
      * @note This constructor is the primary entry point for raw pointers and is 
      * constrained to prevent hijacking copy/move operations or accepting arrays.
@@ -498,6 +524,19 @@ export namespace base::vocab::inline ptr {
      * @remark Does not transfer ownership and does not affect the lifetime of the underlying object.
      */
     /**
+     * @fn constexpr void swap(required_ptr& lhs, required_ptr& rhs) noexcept
+     *
+     * @param lhs The first pointer wrapper.
+     * @param rhs The second pointer wrapper.
+     *
+     * @post `lhs` refers to the object previously referenced by `rhs`.
+     * @post `rhs` refers to the object previously referenced by `lhs`.
+     *
+     * @remark Swaps only the stored addresses.
+     * @remark Does not affect ownership or pointee lifetime.
+     * @remark Provided as a hidden friend for ADL interoperability.
+     */
+    /**
      * @fn constexpr bool operator==(const required_ptr& lhs, const required_ptr& rhs) noexcept
      *
      * @param lhs The left-hand side `required_ptr`.
@@ -508,29 +547,37 @@ export namespace base::vocab::inline ptr {
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload constexpr bool operator==(const required_ptr& lhs, const required_ptr<DerivedT>& rhs) noexcept
+     * @overload constexpr bool operator==(const required_ptr& lhs, const required_ptr<U>& rhs) noexcept
      *
-     * @tparam DerivedT The element type, derived from `T`, of the right-hand side `required_ptr`.
+     * @tparam U The element type of the right-hand side `required_ptr`.
      *
      * @param lhs The left-hand side `required_ptr`.
      * @param rhs The right-hand side `required_ptr` to compare.
      *
      * @return `true` if both pointers refer to the same object; otherwise `false`.
      *
-     * @remark Enables equality comparison between `required_ptr` instances of related types.
+     * @details Supports equality comparison between `required_ptr` specializations
+     * of interoperable pointer types, including qualification conversion,
+     * derived/base relationships, and type-erased forms such as `required_ptr<void>`.
+     *
+     * @remark Requires interoperability such that either `T*` is convertible to `U*` or vice versa.
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
-     * @overload constexpr bool operator==(const required_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+     * @overload constexpr bool operator==(const required_ptr& lhs, const std::add_pointer_t<U> rhs) noexcept
      *
-     * @tparam DerivedT The element type, derived from `T`, of the raw pointer.
+     * @tparam U The pointee type of the raw pointer.
      *
      * @param lhs The `required_ptr` being compared.
      * @param rhs The raw pointer to compare against.
      *
-     * @return `true` if the wrapped pointer in `lhs` equals `rhs`; otherwise `false`.
+     * @return `true` if the stored pointer equals `rhs`; otherwise `false`.
      *
-     * @remark Enables comparison with raw pointers-to-derived for interoperability with legacy APIs.
+     * @details Supports equality comparison between `required_ptr` and raw pointers
+     * of interoperable pointer types, including qualification conversion,
+     * derived/base relationships, and type-erased forms such as `required_ptr<void>`.
+     *
+     * @remark Requires interoperability such that either `T*` is convertible to `U*` or vice versa.
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
@@ -593,7 +640,7 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Satisfies boolean-testable requirements in generic templates and logical contexts.
      * @remark Models pointer interface by providing contextual conversion to `bool` albeit redundantly.
-     * @note Because this always returns `true`, the compiler can elide checks in generic code when `required_ptr` is the concrete type.
+     * @note Because this always returns `true`, the compiler may elide checks in generic code when `required_ptr` is the concrete type.
      * @note This does not indicate engagement/optionality as `required_ptr` has no disengaged state.
      */
     /**
@@ -638,6 +685,9 @@ export namespace base::vocab::inline ptr {
  * @brief Partial specialization of `std::hash` for `required_ptr`.
  *
  * @tparam T The element type of the `required_ptr`.
+ *
+ * @remark Hashes the underlying stored address rather than pointee object state or values.
+ * @remark Consistent with `required_ptr` equality semantics.
  */
 template<class T>
 struct std::hash<base::vocab::required_ptr<T>> {
