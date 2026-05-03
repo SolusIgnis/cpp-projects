@@ -282,7 +282,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Covariantly compares equality of a raw pointer-to-base with a `required_ptr`-to-derived in terms of pointer identity.
-        /*template<typename U>
+        template<typename U>
             requires (
                 !std::same_as<U, T> &&
                 (
@@ -293,7 +293,7 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const required_ptr<U>& rhs) noexcept
         {
             return (lhs == rhs.get());
-        }*/
+        }
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         auto operator<=>(required_ptr) const =
