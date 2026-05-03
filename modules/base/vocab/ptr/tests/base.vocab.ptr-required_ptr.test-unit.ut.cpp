@@ -872,7 +872,7 @@ namespace {
             required_ptr<std::int32_t> typed_ptr{value};
             
             required_ptr<const void> erased_ptr1{std::addressof(value)};
-            required_ptr<void> erased_ptr2{typed_ptr};
+            required_ptr<const void> erased_ptr2{typed_ptr};
             
             expect(eq(erased_ptr1 == erased_ptr2, true));
             expect(eq(erased_ptr1 == typed_ptr,  true));
