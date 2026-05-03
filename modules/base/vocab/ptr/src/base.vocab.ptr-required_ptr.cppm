@@ -108,11 +108,11 @@ export namespace base::vocab::inline ptr {
         ///@brief Constructs a `required_ptr` bound to an existing object.
         constexpr explicit required_ptr(reference source) noexcept requires (!std::is_void_v<T>) : address_(std::addressof(source)) {}
 
-        ///@brief (Covariance) Implicitly converts from `required_ptr<DerivedT>` to `required_ptr<T>` when `DerivedT` is publicly derived from `T`.
-        template<typename OtherT>
-            requires (!std::same_as<OtherT, T>)
-                  && std::convertible_to<OtherT*, T*>
-        constexpr explicit(false) required_ptr(const required_ptr<OtherT>& source) noexcept : address_(source.get())
+        ///@brief (Conversion) Implicitly converts from another `required_ptr` according to underlying pointer conversions.
+        template<typename U>
+            requires (!std::same_as<U, T>)
+                  && std::convertible_to<std::add_pointer_t<U>, pointer>
+        constexpr explicit(false) required_ptr(const required_ptr<U>& source) noexcept : address_(source.get())
         {}
 
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
@@ -137,11 +137,11 @@ export namespace base::vocab::inline ptr {
             return *this;
         }
 
-        ///@brief (Covariance) Assigns from `required_ptr<DerivedT>` to `required_ptr<T>` when `DerivedT` is publicly derived from `T`.
-        template<typename OtherT>
-            requires (!std::same_as<OtherT, T>)
-                  && std::convertible_to<OtherT*, T*>
-        constexpr required_ptr& operator=(const required_ptr<OtherT>& source) noexcept
+        ///@brief (Conversion) Assigns from another `required_ptr` according to underlying pointer conversions.
+        template<typename U>
+            requires (!std::same_as<U, T>)
+                  && std::convertible_to<std::add_pointer_t<U>, pointer>
+        constexpr required_ptr& operator=(const required_ptr<U>& source) noexcept
         {
             address_ = source.get();
             return *this;
@@ -167,6 +167,12 @@ export namespace base::vocab::inline ptr {
         {
             address_ = check_for_null(source.get());
             return *this;
+        }
+
+        ///@brief Swaps addresses.
+        friend constexpr void swap(required_ptr& lhs, required_ptr& rhs) noexcept {
+            using std::swap;
+            swap(lhs.address_, rhs.address_);
         }
 
         //================================================================================
@@ -363,46 +369,47 @@ export namespace base::vocab::inline ptr {
      * @param source The object to reference.
      *
      * @pre `source` must refer to a valid object that outlives the constructed `required_ptr`.
+     * @post `get() == std::addressof(source)`.
      *
      * @remark Establishes the non-null invariant at construction.
      * @remark Prevents binding to temporaries via deleted rvalue overload.
      */
     /**
-     * @overload required_ptr::required_ptr(const required_ptr<DerivedT>& source) noexcept
+     * @overload required_ptr::required_ptr(const required_ptr<U>& source) noexcept
      *
-     * @tparam DerivedT The element type, derived from T, of the source `required_ptr`.
-     *
-     * @param source The pointer-to-derived being converted.
-     *
-     * @pre `*source` must refer to a valid object that outlives the resulting `required_ptr`.
-     *
-     * @remark Preserves covariance. Converts from required_ptr-to-derived to required_ptr-to-base implicitly.
-     */
-    /**
-     * @overload required_ptr::required_ptr(const required_ptr<ErasedT>& source) noexcept
-     *
-     * @tparam ErasedT The element type of the source `required_ptr`.
+     * @tparam U The element type, with its pointer convertible to `pointer`, of the source `required_ptr`.
      *
      * @param source The `required_ptr` being converted.
      *
      * @pre `*source` must refer to a valid object that outlives the resulting `required_ptr`.
-     *
      * @post `get() == source.get()`.
      *
-     * @remark Enables type erasure by converting `required_ptr<U>` to `required_ptr<void>`.
+     * @details This single constructor handles:
+     * 1. Derived-to-Base conversion (e.g., `ptr<Derived>` to `ptr<Base>`).
+     * 2. Qualification conversion (e.g., `ptr<T>` to `ptr<const T>`).
+     * 3. Type erasure (e.g., `ptr<T>` to `ptr<void>`).
+     *
+     * @remark Preserves covariance. Converts from required_ptr-to-derived to required_ptr-to-base implicitly.
+     * @remark Enables type erasure by converting `required_ptr<U>` to `required_ptr<void>` when applicable.
      * @remark Preserves the non-null invariant.
      */
     /**
-     * @overload explicit required_ptr::required_ptr(pointer source)
+     * @overload explicit required_ptr::required_ptr(P&& source)
+     *
+     * @tparam P The raw pointer type which must decay to a type convertible to `pointer`.
      *
      * @param source The raw pointer to bind.
      *
      * @pre `source` must be non-null and must point to a valid object that outlives the constructed `required_ptr`.
-     *
      * @post `get() == source`.
      *
      * @throws std::invalid_argument if `source == nullptr`.
      *
+     * @details Captures the input type via forwarding reference to intercept C-arrays 
+     * before they can decay into raw pointers.
+     *
+     * @note This constructor is the primary entry point for raw pointers and is 
+     * constrained to prevent hijacking copy/move operations or accepting arrays.
      * @remark Establishes the non-null invariant at runtime when constructed from raw pointers.
      * @remark Explicit when `T` is `void` to prevent unintended implicit erasure chains.
      */
@@ -417,7 +424,6 @@ export namespace base::vocab::inline ptr {
      *
      * @pre `source.get()` must be a valid expression convertible to `pointer`.
      * @pre `source.get()` must be non-null and must point to an object whose lifetime strictly exceeds that of the constructed `required_ptr`.
-     *
      * @post `get() == static_cast<pointer>(source.get())`.
      *
      * @throws std::invalid_argument if `source.get() == nullptr`.
@@ -437,44 +443,42 @@ export namespace base::vocab::inline ptr {
      * @remark Rebinds the dependency without affecting ownership or lifetime.
      */
     /**
-     * @overload required_ptr& required_ptr::operator=(const required_ptr<DerivedT>& source) noexcept
+     * @overload required_ptr& required_ptr::operator=(const required_ptr<U>& source) noexcept
      *
-     * @tparam DerivedT The element type, derived from T, of the source `required_ptr`.
+     * @tparam U The element type, with its pointer convertible to `pointer`, of the source `required_ptr`.
      *
-     * @param source The pointer-to-derived being converted.
+     * @param source The `required_ptr` being converted.
      * @return Reference to `*this`.
      *
      * @pre `*source` must refer to a valid object that outlives the resulting `required_ptr`.
+     *
+     * @details This single assignment operator handles:
+     * 1. Derived-to-Base conversion (e.g., `ptr<Derived>` to `ptr<Base>`).
+     * 2. Qualification conversion (e.g., `ptr<T>` to `ptr<const T>`).
+     * 3. Type erasure (e.g., `ptr<T>` to `ptr<void>`).
      *
      * @remark Preserves covariance. Converts from required_ptr-to-derived to required_ptr-to-base implicitly.
-     */
-    /**
-     * @overload required_ptr& required_ptr::operator=(const required_ptr<ErasedT>& source) noexcept
-     *
-     * @tparam ErasedT The element type of the source `required_ptr`.
-     *
-     * @param source The `required_ptr` being assigned from.
-     * @return Reference to `*this`.
-     *
-     * @pre `*source` must refer to a valid object that outlives the resulting `required_ptr`.
-     *
-     * @post `get() == source.get()`.
-     *
-     * @remark Enables type erasure assignment to `required_ptr<void>`.
+     * @remark Enables type erasure by converting `required_ptr<U>` to `required_ptr<void>` when applicable.
      * @remark Preserves the non-null invariant.
      */
     /**
-     * @overload required_ptr& required_ptr::operator=(pointer source)
+     * @overload required_ptr& required_ptr::operator=(P&& source)
+     *
+     * @tparam P The raw pointer type which must decay to a type convertible to `pointer`.
      *
      * @param source The raw pointer to rebind to.
      * @return Reference to `*this`.
      *
      * @pre `source` must be non-null and must point to a valid object that outlives the `required_ptr`.
-     *
      * @post `get() == source`.
      *
      * @throws std::invalid_argument if `source == nullptr`.
      *
+     * @details Captures the input type via forwarding reference to intercept C-arrays 
+     * before they can decay into raw pointers.
+     *
+     * @note This constructor is the primary entry point for raw pointers and is 
+     * constrained to prevent hijacking copy/move operations or accepting arrays.
      * @remark Rebinds the pointer while preserving the non-null invariant.
      * @remark Does not affect the lifetime of the referenced object.
      */
@@ -490,7 +494,6 @@ export namespace base::vocab::inline ptr {
      *
      * @pre `source.get()` must be a valid expression convertible to `pointer`.
      * @pre `source.get()` must be non-null and must point to an object whose lifetime strictly exceeds that of the `required_ptr`.
-     *
      * @post `get() == static_cast<pointer>(source.get())`.
      *
      * @throws std::invalid_argument if `source.get() == nullptr`.
