@@ -633,3 +633,11 @@ export namespace base::vocab::inline ptr {
     template<typename T>
     required_ptr(T*) -> required_ptr<T>;
 } //namespace base::vocab::inline ptr
+
+template<class T>
+struct std::hash<required_ptr<T>> {
+    [[nodiscard]] constexpr std::size_t operator()(const required_ptr<T>& ptr) const noexcept
+    {
+        return std::hash<T*>{}(ptr.get());
+    }
+};
