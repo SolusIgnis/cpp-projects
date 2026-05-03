@@ -134,7 +134,7 @@ export namespace base::vocab::inline ptr {
         ///@brief (Conversion) Implicitly converts from another `dependency_ptr` according to underlying pointer conversions.
         template<typename U>
             requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
-        constexpr explicit(false) dependency_ptr(const dependency_ptr<DerivedT>& source) noexcept : address_(source.get())
+        constexpr explicit(false) dependency_ptr(const dependency_ptr<U>& source) noexcept : address_(source.get())
         {}
 
         ///@brief Rebinds the `dependency_ptr` to another object.
@@ -147,7 +147,7 @@ export namespace base::vocab::inline ptr {
         ///@brief (Conversion) Assigns from another `dependency_ptr` according to underlying pointer conversions.
         template<typename U>
             requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
-        constexpr dependency_ptr& operator=(const dependency_ptr<DerivedT>& source) noexcept
+        constexpr dependency_ptr& operator=(const dependency_ptr<U>& source) noexcept
         {
             address_ = source.get();
             return *this;
