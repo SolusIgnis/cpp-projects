@@ -539,7 +539,7 @@ export namespace base::vocab::inline ptr {
      *
      * @return `true` if both pointers refer to the same object; otherwise `false`.
      *
-     * @remark Enables equality comparison between `required_ptr` instances of related types.
+     * @remark Enables equality comparison between `required_ptr` instances of related types when that can't be synthesized by implicit conversion to raw pointers.
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
@@ -552,7 +552,7 @@ export namespace base::vocab::inline ptr {
      *
      * @return `true` if the wrapped pointer in `lhs` equals `rhs`; otherwise `false`.
      *
-     * @remark Enables comparison with raw pointers-to-derived for interoperability with legacy APIs.
+     * @remark Enables comparison with raw pointers-to-derived for when that can't be synthesized by implicit conversion to raw pointers.
      * @remark Compares the pointed-to addresses (aliasing), not object values.
      */
     /**
@@ -565,7 +565,7 @@ export namespace base::vocab::inline ptr {
      *
      * @return `true` if `lhs` equals the wrapped pointer in `rhs`; otherwise `false`.
      *
-     * @remark Enables comparison with raw pointers-to-base for interoperability with legacy APIs.
+     * @remark Enables comparison with raw pointers-to-base when that can't be synthesized by implicit conversion to raw pointers.
      * @remark Comparison is performed on the underlying addresses.
      */
     /**

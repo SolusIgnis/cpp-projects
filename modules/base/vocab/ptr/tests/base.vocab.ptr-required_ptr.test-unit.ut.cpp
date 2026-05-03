@@ -586,7 +586,7 @@ namespace {
 
             expect(eq(a == b, true));
             expect(eq(a == c, false));
-            expect(eq(b == c  false));
+            expect(eq(b == c, false));
         };
 
         //============================================================
