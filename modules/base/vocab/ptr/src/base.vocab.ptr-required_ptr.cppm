@@ -157,7 +157,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
         template<typename P>
-            requires (std::is_pointer_v<std::remove_cvref_t<P>>) && std::convertible_to<std::decay_t<P>, pointer>
+            requires std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, pointer>
         constexpr explicit(std::is_void_v<T>) required_ptr(P&& source) : address_(check_for_null(source))
         {}
 
@@ -190,7 +190,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Assigns from a raw `pointer`.
         template<typename P>
-            requires (std::is_pointer_v<std::remove_cvref_t<P>>) && std::convertible_to<std::decay_t<P>, pointer>
+            requires std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, pointer>
         constexpr required_ptr& operator=(P&& source)
         {
             address_ = check_for_null(source);
@@ -446,12 +446,11 @@ export namespace base::vocab::inline ptr {
      *
      * @throws std::invalid_argument if `source == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
-     * @details Captures the original argument type prior to decay so that
-     * C-array arguments can be diagnosed explicitly instead of silently
-     * converting to element pointers.
+     * @details Captures the original argument type prior to decay via
+     * forwarding reference so that C-array arguments can be diagnosed
+     * explicitly instead of silently decaying to element pointers.
      *
-     * @note This constructor is the primary entry point for raw pointers and is
-     * constrained to prevent hijacking copy/move operations or accepting arrays.
+     * @note This constructor is constrained to raw pointers to prevent hijacking copy/move operations or accepting arrays.
      * @remark Establishes the non-null invariant at runtime when constructed from raw pointers.
      * @remark Explicit when `T` is `void` to prevent unintended implicit erasure chains.
      */
@@ -516,12 +515,11 @@ export namespace base::vocab::inline ptr {
      *
      * @throws std::invalid_argument if `source == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
-     * @details Captures the original argument type prior to decay so that
-     * C-array arguments can be diagnosed explicitly instead of silently
-     * converting to element pointers.
+     * @details Captures the original argument type prior to decay via
+     * forwarding reference so that C-array arguments can be diagnosed
+     * explicitly instead of silently decaying to element pointers.
      *
-     * @note This constructor is the primary entry point for raw pointers and is
-     * constrained to prevent hijacking copy/move operations or accepting arrays.
+     * @note This assignment operator is constrained to raw pointers to prevent hijacking copy/move operations or accepting arrays.
      * @remark Rebinds the pointer while preserving the non-null invariant.
      * @remark Does not affect the lifetime of the referenced object.
      */
