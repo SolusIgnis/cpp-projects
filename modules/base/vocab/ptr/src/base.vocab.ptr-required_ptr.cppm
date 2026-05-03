@@ -275,13 +275,6 @@ export namespace base::vocab::inline ptr {
             return (lhs == rhs.get());
         }
         
-        ///@brief Compares a `required_ptr<void>` with a raw `void*` in terms of pointer identity.
-        [[nodiscard]] friend constexpr bool operator==(const required_ptr& lhs, pointer rhs) noexcept
-            requires std::is_void_v<T>
-        {
-            return (lhs.get() == rhs);
-        }
-
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         auto operator<=>(required_ptr) const =
             delete /*("Comparison operators deleted to prevent address comparisons. `required_ptr` is not an iterator.")*/;
