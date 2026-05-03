@@ -131,9 +131,9 @@ export namespace base::vocab::inline ptr {
         ///@brief Constructs a `dependency_ptr` bound to an existing object.
         constexpr explicit dependency_ptr(reference source) noexcept : address_(std::addressof(source)) {}
 
-        ///@brief (Covariance) Implicitly converts from `dependency_ptr<DerivedT>` to `dependency_ptr<T>` when `DerivedT` is publicly derived from `T`.
-        template<std::derived_from<T> DerivedT>
-            requires (!std::same_as<DerivedT, T>)
+        ///@brief (Conversion) Implicitly converts from another `dependency_ptr` according to underlying pointer conversions.
+        template<typename U>
+            requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
         constexpr explicit(false) dependency_ptr(const dependency_ptr<DerivedT>& source) noexcept : address_(source.get())
         {}
 
@@ -144,9 +144,9 @@ export namespace base::vocab::inline ptr {
             return *this;
         }
 
-        ///@brief (Covariance) Assigns from `dependency_ptr<DerivedT>` to `dependency_ptr<T>` when `DerivedT` is publicly derived from `T`.
-        template<std::derived_from<T> DerivedT>
-            requires (!std::same_as<DerivedT, T>)
+        ///@brief (Conversion) Assigns from another `dependency_ptr` according to underlying pointer conversions.
+        template<typename U>
+            requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
         constexpr dependency_ptr& operator=(const dependency_ptr<DerivedT>& source) noexcept
         {
             address_ = source.get();
@@ -308,15 +308,21 @@ export namespace base::vocab::inline ptr {
      * @remark Prevents binding to temporaries via deleted rvalue overload.
      */
     /**
-     * @overload dependency_ptr::dependency_ptr(const dependency_ptr<DerivedT>& source) noexcept
+     * @overload dependency_ptr::dependency_ptr(const dependency_ptr<U>& source) noexcept
      *
-     * @tparam DerivedT The element type, derived from `T`, of the source `dependency_ptr`.
+     * @tparam U The element type, with its pointer convertible to `pointer`, of the source `dependency_ptr`.
      *
-     * @param source The pointer-to-derived being converted.
+     * @param source The `dependency_ptr` being converted.
      *
      * @pre `*source` must refer to a valid object that outlives the resulting `dependency_ptr`.
+     * @post `get() == source.get()`.
+     *
+     * @details This single constructor handles:
+     * 1. Derived-to-Base conversion (e.g., `ptr<Derived>` to `ptr<Base>`).
+     * 2. Qualification conversion (e.g., `ptr<T>` to `ptr<const T>`).
      *
      * @remark Preserves covariance. Converts from dependency_ptr-to-derived to dependency_ptr-to-base implicitly.
+     * @remark Preserves the non-null invariant.
      */
     /**
      * @fn constexpr dependency_ptr& dependency_ptr::operator=(reference source) noexcept
@@ -331,14 +337,19 @@ export namespace base::vocab::inline ptr {
     /**
      * @overload constexpr dependency_ptr& dependency_ptr::operator=(const dependency_ptr<U>& source) noexcept
      *
-     * @tparam U The element type, derived from T, of the source `dependency_ptr`.
+          * @tparam U The element type, with its pointer convertible to `pointer`, of the source `dependency_ptr`.
      *
-     * @param source The pointer-to-derived being converted.
+     * @param source The `dependency_ptr` being converted.
      * @return Reference to `*this`.
      *
      * @pre `*source` must refer to a valid object that outlives the resulting `dependency_ptr`.
      *
+     * @details This single assignment operator handles:
+     * 1. Derived-to-Base conversion (e.g., `ptr<Derived>` to `ptr<Base>`).
+     * 2. Qualification conversion (e.g., `ptr<T>` to `ptr<const T>`).
+     *
      * @remark Preserves covariance. Converts from dependency_ptr-to-derived to dependency_ptr-to-base implicitly.
+     * @remark Preserves the non-null invariant.
      */
     /**
      * @fn constexpr bool operator==(const dependency_ptr& lhs, const dependency_ptr& rhs) noexcept

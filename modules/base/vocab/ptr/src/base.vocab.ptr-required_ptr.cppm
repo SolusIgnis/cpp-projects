@@ -110,15 +110,13 @@ export namespace base::vocab::inline ptr {
 
         ///@brief (Conversion) Implicitly converts from another `required_ptr` according to underlying pointer conversions.
         template<typename U>
-            requires (!std::same_as<U, T>)
-                  && std::convertible_to<std::add_pointer_t<U>, pointer>
+            requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
         constexpr explicit(false) required_ptr(const required_ptr<U>& source) noexcept : address_(source.get())
         {}
 
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `T` is void to avoid implicit conversion chaining.
         template<typename P>
-            requires (!std::is_array_v<std::remove_cvref_t<P>>)
-                  && std::convertible_to<std::decay_t<P>, pointer>
+            requires (!std::is_array_v<std::remove_cvref_t<P>>) && std::convertible_to<std::decay_t<P>, pointer>
         constexpr explicit(std::is_void_v<T>) required_ptr(P&& source) : address_(check_for_null(source)) {}
 
         ///@brief Implicitly converts from another wrapped/smart pointer type. Explicit when `T` is void to avoid implicit conversion chaining.
@@ -139,8 +137,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief (Conversion) Assigns from another `required_ptr` according to underlying pointer conversions.
         template<typename U>
-            requires (!std::same_as<U, T>)
-                  && std::convertible_to<std::add_pointer_t<U>, pointer>
+            requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
         constexpr required_ptr& operator=(const required_ptr<U>& source) noexcept
         {
             address_ = source.get();
@@ -149,8 +146,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Assigns from a raw `pointer`.
         template<typename P>
-            requires (!std::is_array_v<std::remove_cvref_t<P>>)
-                  && std::convertible_to<std::decay_t<P>, pointer>
+            requires (!std::is_array_v<std::remove_cvref_t<P>>) && std::convertible_to<std::decay_t<P>, pointer>
         constexpr required_ptr& operator=(P&& source)
         {
             address_ = check_for_null(source);
