@@ -468,9 +468,9 @@ export namespace base::vocab::inline ptr {
  * @tparam T The element type of the `dependency_ptr`.
  */
 template<class T>
-struct std::hash<dependency_ptr<T>> {
+struct std::hash<base::vocab::dependency_ptr<T>> {
     ///@brief Hashes the `dependency_ptr` based on the underlying address.
-    [[nodiscard]] constexpr std::size_t operator()(const dependency_ptr<T>& ptr) const noexcept
+    [[nodiscard]] constexpr std::size_t operator()(const base::vocab::dependency_ptr<T>& ptr) const noexcept
     {
         return std::hash<T*>{}(ptr.get());
     }
