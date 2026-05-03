@@ -21,7 +21,36 @@
  *
  * @brief `required_ptr`: A non-owning, non-nullable, non-arithmetic, void-permitting pointer type.
  *
- * @details
+ * @details `required_ptr` is a vocabulary pointer type representing
+ * a non-owning, structurally non-null object alias. It is intended to
+ * replace raw pointers as non-owning object aliases and should be
+ * preferred over `alias_ptr` in contexts where the alias is required
+ * to be non-null as a precondition or invariant.
+ *
+ * Unlike raw pointers, `required_ptr` cannot be default-constructed,
+ * assigned `nullptr`, or participate in pointer arithmetic. These
+ * restrictions intentionally model "required object alias" semantics
+ * rather than general-purpose address manipulation.
+ *
+ * The type preserves pointer-like ergonomics through dereference,
+ * member access, raw-pointer interoperability, and covariant conversion
+ * between compatible pointee types while enforcing a permanent engaged
+ * invariant.
+ *
+ * Construction and rebinding from raw or pointer-like sources perform
+ * runtime null validation and throw `std::invalid_argument` when a null
+ * value is supplied.
+ *
+ * `required_ptr` does not own the referenced object and performs no
+ * lifetime management. Users are responsible for ensuring the referenced
+ * object outlives all aliases.
+ *
+ * Ordering comparisons and pointer arithmetic are intentionally deleted
+ * to discourage misuse as an iterator or contiguous traversal type.
+ *
+ * `required_ptr<void>` is supported through the primary template to
+ * enable type-erased non-null aliasing without introducing a dedicated
+ * specialization.
  *
  * @todo Future Development: Use `= delete("reason")` instead of the C-style comments once the C++26 feature becomes available.
  */
@@ -49,12 +78,12 @@ export namespace base::vocab::inline ptr {
      * @remark This type does not own the referenced object and does not participate in lifetime management.
      * @remark Copying and assignment rebind the pointer without affecting the lifetime of the underlying object.
      * @note Construction or assignment from `nullptr` is ill-formed.
-     * @note Construction or assignment from raw pointer values performs runtime validation and throws `std::invalid_argument` on null.
+     * @note Construction or assignment from raw pointer values performs runtime validation and throws `std::invalid_argument` on null. All operations provide the Strong Exception Safety Guarantee.
      * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator.
      * @note `required_ptr<void>` reuses the primary template rather than introducing a specialization. Placeholder reference aliases based on `std::monostate` are used solely to keep deleted overload declarations well-formed.
      * @remark Explicit equality comparison overloads are provided only where built-in pointer comparison cannot be reached through the implicit raw-pointer conversion operator alone.
      *
-     * @warning The referenced object MUST outlive the `dependency_ptr`. Violating this results in undefined behavior.
+     * @warning The referenced object MUST outlive the `required_ptr`. Violating this results in undefined behavior.
      *
      * @see `alias_ptr` for nullable aliasing, `dependency_ptr` for dependency injection structural non-nullability, `cursor_ptr` for non-null iteration/traversal, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */
@@ -406,7 +435,7 @@ export namespace base::vocab::inline ptr {
      * @pre `source` must point to a valid object that outlives the constructed `required_ptr`.
      * @post `get() == source`.
      *
-     * @throws std::invalid_argument if `source == nullptr`.
+     * @throws std::invalid_argument if `source == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
      * @details Captures the original argument type prior to decay so that
      * C-array arguments can be diagnosed explicitly instead of silently
@@ -430,7 +459,7 @@ export namespace base::vocab::inline ptr {
      * @pre `source.get()` must point to an object whose lifetime strictly exceeds that of the constructed `required_ptr`.
      * @post `get() == static_cast<pointer>(source.get())`.
      *
-     * @throws std::invalid_argument if `source.get() == nullptr`.
+     * @throws std::invalid_argument if `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
      * @remark Enables interoperation with pointer-like types (e.g., smart pointers) that expose a `get()` member.
      * @remark The source type must not be a specialization of `required_ptr` (to avoid ambiguity with existing overloads).
@@ -476,7 +505,7 @@ export namespace base::vocab::inline ptr {
      * @pre `source` must point to a valid object that outlives the `required_ptr`.
      * @post `get() == source`.
      *
-     * @throws std::invalid_argument if `source == nullptr`.
+     * @throws std::invalid_argument if `source == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
      * @details Captures the original argument type prior to decay so that
      * C-array arguments can be diagnosed explicitly instead of silently
@@ -501,7 +530,7 @@ export namespace base::vocab::inline ptr {
      * @pre `source.get()` must point to an object whose lifetime strictly exceeds that of the `required_ptr`.
      * @post `get() == static_cast<pointer>(source.get())`.
      *
-     * @throws std::invalid_argument if `source.get() == nullptr`.
+     * @throws std::invalid_argument if `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
      * @remark Rebinds the `required_ptr` from a pointer-like source while preserving the non-null invariant.
      * @remark Does not transfer ownership and does not affect the lifetime of the underlying object.
@@ -617,7 +646,7 @@ export namespace base::vocab::inline ptr {
      *
      * @post The returned pointer is guaranteed to be non-null.
      *
-     * @throws std::invalid_argument if `source == nullptr`.
+     * @throws std::invalid_argument if `source == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
      * @remark Centralizes enforcement of the non-null invariant for all constructors and assignment operators accepting raw or pointer-like inputs.
      * @remark Marked `[[nodiscard]]` to discourage accidental ignoring of the validated result.
