@@ -471,10 +471,10 @@ namespace {
 
             bool threw_when_bound = false;
             try {
-                const alias_ptr<const std::int32_t> ptr{bound_source};
+                const alias_ptr<const std::int32_t> ptr1{bound_source};
 
-                expect(eq(*ptr, value));
-                expect(eq(ptr.get(), bound_source));
+                expect(eq(*ptr1, value));
+                expect(eq(ptr1.get(), bound_source));
             } catch (...) {
                 threw_when_bound = true;
             }
@@ -483,13 +483,13 @@ namespace {
 
             bool threw_when_null = false;
             try {
-                alias_ptr<const std::int32_t> ptr{null_source};
+                alias_ptr<const std::int32_t> ptr2{null_source};
             } catch (...) {
                 threw_when_null = true;
             }
 
             expect(eq(threw_when_null, false));
-            expect(eq(ptr.get(), null_source));
+            expect(eq(ptr2.get(), null_source));
         };
 
         "constructing from null smart pointer does not throw"_test = [] mutable {
@@ -499,10 +499,10 @@ namespace {
 
             bool threw_when_bound = false;
             try {
-                const alias_ptr<const std::int32_t> ptr{bound_source};
+                const alias_ptr<const std::int32_t> ptr1{bound_source};
 
-                expect(eq(*ptr, value));
-                expect(eq(ptr.get(), bound_source.get()));
+                expect(eq(*ptr1, value));
+                expect(eq(ptr1.get(), bound_source.get()));
             } catch (...) {
                 threw_when_bound = true;
             }
@@ -511,13 +511,13 @@ namespace {
 
             bool threw_when_null = false;
             try {
-                alias_ptr<const std::int32_t> ptr{null_source};
+                alias_ptr<const std::int32_t> ptr2{null_source};
             } catch (...) {
                 threw_when_null = true;
             }
 
             expect(eq(threw_when_null, false));
-            expect(eq(ptr.get(), null_source.get()));
+            expect(eq(ptr2.get(), null_source.get()));
         };
 
         "assigning from null raw pointer does not throw"_test = [] mutable {
