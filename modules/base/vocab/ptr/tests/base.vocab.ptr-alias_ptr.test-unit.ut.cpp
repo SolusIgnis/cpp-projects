@@ -484,12 +484,12 @@ namespace {
             bool threw_when_null = false;
             try {
                 alias_ptr<const std::int32_t> ptr2{null_source};
+                expect(eq(ptr2.get(), null_source));
             } catch (...) {
                 threw_when_null = true;
             }
 
             expect(eq(threw_when_null, false));
-            expect(eq(ptr2.get(), null_source));
         };
 
         "constructing from null smart pointer does not throw"_test = [] mutable {
@@ -512,12 +512,12 @@ namespace {
             bool threw_when_null = false;
             try {
                 alias_ptr<const std::int32_t> ptr2{null_source};
+                expect(eq(ptr2.get(), null_source.get()));
             } catch (...) {
                 threw_when_null = true;
             }
 
             expect(eq(threw_when_null, false));
-            expect(eq(ptr2.get(), null_source.get()));
         };
 
         "assigning from null raw pointer does not throw"_test = [] mutable {
