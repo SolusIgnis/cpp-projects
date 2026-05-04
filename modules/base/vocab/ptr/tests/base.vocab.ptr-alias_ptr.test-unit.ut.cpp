@@ -169,12 +169,12 @@ namespace {
             expect(eq(std::convertible_to<const test_type&, alias_ptr<const test_type>>, false));
         };
 
-        "not default constructible"_test = [] mutable {
-            expect(eq(std::default_initializable<alias_ptr<std::int32_t>>, false));
+        "default constructible"_test = [] mutable {
+            expect(eq(std::default_initializable<alias_ptr<std::int32_t>>, true));
         };
 
-        "not constructible from nullptr"_test = [] mutable {
-            expect(eq(std::constructible_from<alias_ptr<std::int32_t>, std::nullptr_t>, false));
+        "constructible from nullptr"_test = [] mutable {
+            expect(eq(std::constructible_from<alias_ptr<std::int32_t>, std::nullptr_t>, true));
         };
 
         "constructible from raw pointer"_test = [] mutable {
@@ -312,8 +312,8 @@ namespace {
             expect(eq(std::is_assignable_v<alias_ptr<const volatile test_type>&, const volatile test_type&>, true));
         };
 
-        "not assignable from nullptr"_test = [] mutable {
-            expect(eq(std::is_assignable_v<alias_ptr<std::int32_t>&, std::nullptr_t>, false));
+        "assignable from nullptr"_test = [] mutable {
+            expect(eq(std::is_assignable_v<alias_ptr<std::int32_t>&, std::nullptr_t>, true));
         };
 
         "assignable from raw pointer"_test = [] mutable {
@@ -461,10 +461,10 @@ namespace {
         };
 
         //============================================================
-        // Non-nullable exception throwing
+        // Nullable, so no exception throwing on null
         //============================================================
 
-        "constructing from null raw pointer throws"_test = [] mutable {
+        "constructing from null raw pointer does not throw"_test = [] mutable {
             const std::int32_t value{42};
             const std::int32_t* const bound_source{std::addressof(value)};
             const std::int32_t* const null_source{};
@@ -482,20 +482,17 @@ namespace {
             expect(eq(threw_when_bound, false));
 
             bool threw_when_null = false;
-            bool wrong_exception = false;
             try {
-                [[maybe_unused]] alias_ptr<const std::int32_t> dummy_ptr{null_source};
-            } catch (const std::invalid_argument&) {
-                threw_when_null = true;
+                alias_ptr<const std::int32_t> ptr{null_source};
             } catch (...) {
-                wrong_exception = true;
+                threw_when_null = true;
             }
 
-            expect(eq(threw_when_null, true));
-            expect(eq(wrong_exception, false));
+            expect(eq(threw_when_null, false));
+            expect(eq(ptr.get(), null_source));
         };
 
-        "constructing from null smart pointer throws"_test = [] mutable {
+        "constructing from null smart pointer does not throw"_test = [] mutable {
             const std::int32_t value{42};
             const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
             const trivial_smart_ptr<const std::int32_t> null_source{};
@@ -513,20 +510,17 @@ namespace {
             expect(eq(threw_when_bound, false));
 
             bool threw_when_null = false;
-            bool wrong_exception = false;
             try {
-                [[maybe_unused]] alias_ptr<const std::int32_t> dummy_ptr{null_source};
-            } catch (const std::invalid_argument&) {
-                threw_when_null = true;
+                alias_ptr<const std::int32_t> ptr{null_source};
             } catch (...) {
-                wrong_exception = true;
+                threw_when_null = true;
             }
 
-            expect(eq(threw_when_null, true));
-            expect(eq(wrong_exception, false));
+            expect(eq(threw_when_null, false));
+            expect(eq(ptr.get(), null_source.get()));
         };
 
-        "assigning from null raw pointer throws"_test = [] mutable {
+        "assigning from null raw pointer does not throw"_test = [] mutable {
             const std::int32_t value{42};
             const std::int32_t other{};
 
@@ -547,24 +541,17 @@ namespace {
             expect(eq(ptr.get(), bound_source));
 
             bool threw_when_null = false;
-            bool wrong_exception = false;
             try {
                 ptr = null_source;
-            } catch (const std::invalid_argument&) {
-                threw_when_null = true;
             } catch (...) {
-                wrong_exception = true;
+                threw_when_null = true;
             }
 
-            expect(eq(threw_when_null, true));
-            expect(eq(wrong_exception, false));
-
-            //Invariant preserved after failed assignment
-            expect(eq(*ptr, *bound_source));
-            expect(eq(ptr.get(), bound_source));
+            expect(eq(threw_when_null, false));
+            expect(eq(ptr.get(), null_source));
         };
 
-        "assigning from null smart pointer throws"_test = [] mutable {
+        "assigning from null smart pointer does not throw"_test = [] mutable {
             const std::int32_t value{42};
             const std::int32_t other{};
 
@@ -585,21 +572,14 @@ namespace {
             expect(eq(ptr.get(), bound_source.get()));
 
             bool threw_when_null = false;
-            bool wrong_exception = false;
             try {
                 ptr = null_source;
-            } catch (const std::invalid_argument&) {
-                threw_when_null = true;
             } catch (...) {
-                wrong_exception = true;
+                threw_when_null = true;
             }
 
-            expect(eq(threw_when_null, true));
-            expect(eq(wrong_exception, false));
-
-            //Invariant preserved after failed assignment
-            expect(eq(*ptr, value));
-            expect(eq(ptr.get(), bound_source.get()));
+            expect(eq(threw_when_null, false));
+            expect(eq(ptr.get(), null_source.get()));
         };
 
         //============================================================
