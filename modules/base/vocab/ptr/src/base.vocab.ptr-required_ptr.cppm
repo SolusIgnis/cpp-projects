@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-required_ptr.cppm
- * @version 0.3.0
- * @date April 27, 2026
+ * @version 0.4.0
+ * @date May 3, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -395,6 +395,19 @@ export namespace base::vocab::inline ptr {
         friend required_ptr operator-(required_ptr, difference_type) =
             delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `required_ptr` is not an iterator.")*/;
 
+        //================================================================================
+        // Pointer Operations
+        //================================================================================
+
+        ///@brief Output a `required_ptr` address to a `std::basic_ostream`.
+        template <typename CharT, typename Traits, typename T>
+        friend std::basic_ostream<CharT, Traits>& operator<<(
+            std::basic_ostream<CharT, Traits>& stream, 
+            const base::vocab::ptr::required_ptr<T>& ptr) 
+        {
+            return stream << ptr.get();
+        }
+
     private:
         [[nodiscard]] constexpr static pointer check_for_null(pointer source)
         {
@@ -691,10 +704,28 @@ export namespace base::vocab::inline ptr {
  * @remark Consistent with `required_ptr` equality semantics.
  */
 template<class T>
-struct std::hash<base::vocab::required_ptr<T>> {
+struct std::hash<base::vocab::ptr::required_ptr<T>> {
     ///@brief Hashes the `required_ptr` based on the underlying address.
-    [[nodiscard]] constexpr std::size_t operator()(const base::vocab::required_ptr<T>& ptr) const noexcept
+    [[nodiscard]] constexpr std::size_t operator()(const base::vocab::ptr::required_ptr<T>& ptr) const noexcept
     {
         return std::hash<T*>{}(ptr.get());
+    }
+};
+
+/**
+ * @brief Partial specialization of `std::formatter` for `required_ptr`.
+ *
+ * @tparam T The element type of the `required_ptr`.
+ * @tparam CharT The character type used by the format string.
+ *
+ * @remark Formats a `required_ptr` as its underlying raw pointer representation.
+ */
+template<typename T, typename CharT>
+struct std::formatter<base::vocab::ptr::required_ptr<T>, CharT> 
+    : std::formatter<typename base::vocab::ptr::required_ptr<T>::pointer, CharT> {
+    
+    ///@brief Format as the underlying raw pointer address.
+    auto format(const base::vocab::ptr::required_ptr<T>& ptr, auto& ctx) const {
+        return std::formatter<typename base::vocab::ptr::required_ptr<T>::pointer, CharT>::format(ptr.get(), ctx);
     }
 };
