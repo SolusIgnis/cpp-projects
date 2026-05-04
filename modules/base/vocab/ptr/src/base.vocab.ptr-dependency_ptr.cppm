@@ -307,14 +307,14 @@ export namespace base::vocab::inline ptr {
             delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
 
         //================================================================================
-        // Pointer Operations
+        // Stream Output
         //================================================================================
 
         ///@brief Output a `dependency_ptr` address to a `std::basic_ostream`.
-        template <typename CharT, typename Traits, typename T>
+        template <typename CharT, typename Traits>
         friend std::basic_ostream<CharT, Traits>& operator<<(
             std::basic_ostream<CharT, Traits>& stream, 
-            const base::vocab::ptr::dependency_ptr<T>& ptr) 
+            const dependency_ptr& ptr) 
         {
             return stream << ptr.get();
         }

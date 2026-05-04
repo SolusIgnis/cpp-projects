@@ -195,7 +195,7 @@ export namespace base::vocab::inline ptr {
         alias_ptr(std::nullptr_t ptr) :  address_(ptr) {}
 
         ///@brief Assignment from `nullptr` rebinds to null.
-        alias_ptr& operator=(std::nullptr_t ptr) { address_ = ptr; return *this; }            delete /*("Assignment from `nullptr` deleted to prevent null rebinding. Use `std::optional<alias_ptr<T>>` for optional dependencies.")*/
+        alias_ptr& operator=(std::nullptr_t ptr) { address_ = ptr; return *this; }
 
         //================================================================================
         // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
@@ -358,14 +358,14 @@ export namespace base::vocab::inline ptr {
             delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `alias_ptr` is not an iterator.")*/;
 
         //================================================================================
-        // Pointer Operations
+        // Stream Output
         //================================================================================
 
         ///@brief Output a `alias_ptr` address to a `std::basic_ostream`.
-        template <typename CharT, typename Traits, typename T>
+        template <typename CharT, typename Traits>
         friend std::basic_ostream<CharT, Traits>& operator<<(
             std::basic_ostream<CharT, Traits>& stream, 
-            const base::vocab::ptr::alias_ptr<T>& ptr) 
+            const alias_ptr& ptr) 
         {
             return stream << ptr.get();
         }
