@@ -579,7 +579,7 @@ namespace {
             }
 
             expect(eq(threw_when_null, false));
-            expect(eq(ptr.get(), null_source.get()));
+            expect(eq(ptr.get() == null_source.get(), true));
         };
 
         //============================================================
