@@ -1060,7 +1060,7 @@ namespace {
                 std::format("{}", ptr);
 
             const auto formatted_raw =
-                std::format("{}", std::addressof(value));
+                std::format<void*>("{}", std::addressof(value));
 
             expect(eq(formatted_ptr, formatted_raw));
         };
