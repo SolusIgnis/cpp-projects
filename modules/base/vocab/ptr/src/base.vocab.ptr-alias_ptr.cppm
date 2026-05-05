@@ -325,12 +325,12 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] constexpr pointer release() noexcept { return std::exchange(address_, nullptr); }
 
         ///@brief Reset the pointer to `nullptr`.
-        constexpr void reset(std::nullptr_t null = nullptr) noexcept { [[maybe_unused]] rebind(null); }
+        constexpr void reset(std::nullptr_t null = nullptr) noexcept { (void) rebind(null); }
 
         ///@brief Reset the pointer to a new address.
         template<typename P>
             requires (!std::same_as<P, std::nullptr_t>)
-        constexpr void reset(P&& source) { [[maybe_unused]] rebind(std::forward<P>(source)); }
+        constexpr void reset(P&& source) { (void) rebind(std::forward<P>(source)); }
 
         //================================================================================
         // Deleted Pointer Arithmetic Operators: Not an Iterator
