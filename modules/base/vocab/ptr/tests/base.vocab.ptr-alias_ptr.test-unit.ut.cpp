@@ -90,6 +90,7 @@ namespace {
             expect(eq(std::is_trivially_copy_assignable_v<alias_ptr<simple_t>>, true));
             expect(eq(std::is_trivially_move_assignable_v<alias_ptr<simple_t>>, true));
             expect(eq(std::is_nothrow_constructible_v<alias_ptr<simple_t>, simple_t&>, true));
+            expect(eq(std::is_nothrow_swappable_v<alias_ptr<simple_t>>, true));
 
             using complex_t = std::map<std::string, std::vector<std::int32_t>>;
 
@@ -101,6 +102,7 @@ namespace {
             expect(eq(std::is_trivially_copy_assignable_v<alias_ptr<complex_t>>, true));
             expect(eq(std::is_trivially_move_assignable_v<alias_ptr<complex_t>>, true));
             expect(eq(std::is_nothrow_constructible_v<alias_ptr<complex_t>, complex_t&>, true));
+            expect(eq(std::is_nothrow_swappable_v<alias_ptr<complex_t>>, true));
         };
 
         "size and alignment match raw pointers"_test = [] mutable {
@@ -919,6 +921,163 @@ namespace {
 
             expect(eq(*ptr, 42));
         };
+//--------------------------------------------------------------------------------
+        //============================================================
+        // Swap
+        //============================================================
+
+        "swap exchanges bindings"_test = [] mutable {
+            const std::int32_t a = 1;
+            const std::int32_t b = 2;
+
+            alias_ptr<const std::int32_t> lhs{a};
+            alias_ptr<const std::int32_t> rhs{b};
+
+            using std::swap;
+            swap(lhs, rhs);
+
+            expect(eq(lhs.get(), std::addressof(b)));
+            expect(eq(rhs.get(), std::addressof(a)));
+
+            expect(eq(*lhs, b));
+            expect(eq(*rhs, a));
+        };
+
+        //============================================================
+        // Hash Support
+        //============================================================
+
+        "hash matches raw pointer hash"_test = [] mutable {
+            std::int32_t value{};
+
+            alias_ptr<std::int32_t> ptr{value};
+
+            const auto ptr_hash = std::hash<alias_ptr<std::int32_t>>{}(ptr);
+            const auto raw_hash = std::hash<std::int32_t*>{}(std::addressof(value));
+
+            expect(eq(ptr_hash, raw_hash));
+        };
+
+        "equal pointers produce equal hashes"_test = [] mutable {
+            std::int32_t value{};
+
+            alias_ptr<std::int32_t> lhs{value};
+            alias_ptr<const std::int32_t> rhs{value};
+
+            const auto lhs_hash = std::hash<alias_ptr<std::int32_t>>{}(lhs);
+            const auto rhs_hash = std::hash<alias_ptr<const std::int32_t>>{}(rhs);
+
+            expect(eq(lhs == rhs, true));
+            expect(eq(lhs_hash == rhs_hash, true));
+        };
+
+        //============================================================
+        // Nullable Comparisons
+        //============================================================
+
+        "nullable comparisons with nullptr"_test = [] mutable {
+            std::int32_t value{};
+
+            alias_ptr<std::int32_t> bound{value};
+            alias_ptr<std::int32_t> null{nullptr};
+
+            expect(eq(bound == nullptr, false));
+            expect(eq(nullptr == bound, false));
+
+            expect(eq(bound != nullptr, true));
+            expect(eq(nullptr != bound, true));
+
+            expect(eq(null == nullptr, true));
+            expect(eq(nullptr == null, true));
+
+            expect(eq(null != nullptr, false));
+            expect(eq(nullptr != null, false));
+        };
+
+        "null alias_ptr compares equal to null alias_ptr"_test = [] mutable {
+            alias_ptr<std::int32_t> lhs{nullptr};
+            alias_ptr<const std::int32_t> rhs{nullptr};
+
+            expect(eq(lhs == rhs, true));
+            expect(eq(lhs != rhs, false));
+        };
+
+        //============================================================
+        // Common Reference / Common Type
+        //============================================================
+
+        "common_type works covariantly"_test = [] mutable {
+            using common_t =
+                std::common_type_t<
+                    alias_ptr<derived_type>,
+                    alias_ptr<base_type>
+                >;
+
+            expect(eq(std::same_as<common_t, alias_ptr<base_type>>, true));
+        };
+
+        "common_type preserves const qualification"_test = [] mutable {
+            using common_t =
+                std::common_type_t<
+                    alias_ptr<std::int32_t>,
+                    alias_ptr<const std::int32_t>
+                >;
+
+            expect(eq(std::same_as<common_t, alias_ptr<const std::int32_t>>, true));
+        };
+
+        "common_reference works covariantly"_test = [] mutable {
+            using common_ref =
+                std::common_reference_t<
+                    alias_ptr<derived_type>,
+                    alias_ptr<base_type>
+                >;
+
+            expect(eq(std::same_as<common_ref, alias_ptr<base_type>>, true));
+        };
+
+        "common_reference preserves const qualification"_test = [] mutable {
+            using common_ref =
+                std::common_reference_t<
+                    alias_ptr<std::int32_t>,
+                    alias_ptr<const std::int32_t>
+                >;
+
+            expect(eq(std::same_as<common_ref, alias_ptr<const std::int32_t>>, true));
+        };
+
+        //============================================================
+        // Iterator Concept Exclusion
+        //============================================================
+
+        "not indirectly readable"_test = [] mutable {
+            expect(eq(std::indirectly_readable<alias_ptr<std::int32_t>>, false));
+        };
+
+        "not weakly incrementable"_test = [] mutable {
+            expect(eq(std::weakly_incrementable<alias_ptr<std::int32_t>>, false));
+        };
+
+        "not input iterator"_test = [] mutable {
+            expect(eq(std::input_iterator<alias_ptr<std::int32_t>>, false));
+        };
+
+        "not forward iterator"_test = [] mutable {
+            expect(eq(std::forward_iterator<alias_ptr<std::int32_t>>, false));
+        };
+
+        "not bidirectional iterator"_test = [] mutable {
+            expect(eq(std::bidirectional_iterator<alias_ptr<std::int32_t>>, false));
+        };
+
+        "not random access iterator"_test = [] mutable {
+            expect(eq(std::random_access_iterator<alias_ptr<std::int32_t>>, false));
+        };
+
+        "not contiguous iterator"_test = [] mutable {
+            expect(eq(std::contiguous_iterator<alias_ptr<std::int32_t>>, false));
+        };
+
     };
 } //namespace
 
