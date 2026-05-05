@@ -463,6 +463,27 @@ namespace {
         };
 
         //============================================================
+        // Swap
+        //============================================================
+
+        "swap exchanges bindings"_test = [] mutable {
+            const std::int32_t a = 1;
+            const std::int32_t b = 2;
+
+            alias_ptr<const std::int32_t> lhs{a};
+            alias_ptr<const std::int32_t> rhs{b};
+
+            using std::swap;
+            swap(lhs, rhs);
+
+            expect(eq(lhs.get(), std::addressof(b)));
+            expect(eq(rhs.get(), std::addressof(a)));
+
+            expect(eq(*lhs, b));
+            expect(eq(*rhs, a));
+        };
+
+        //============================================================
         // Nullable, so no exception throwing on null
         //============================================================
 
@@ -922,26 +943,6 @@ namespace {
             expect(eq(*ptr, 42));
         };
 //--------------------------------------------------------------------------------
-        //============================================================
-        // Swap
-        //============================================================
-
-        "swap exchanges bindings"_test = [] mutable {
-            const std::int32_t a = 1;
-            const std::int32_t b = 2;
-
-            alias_ptr<const std::int32_t> lhs{a};
-            alias_ptr<const std::int32_t> rhs{b};
-
-            using std::swap;
-            swap(lhs, rhs);
-
-            expect(eq(lhs.get(), std::addressof(b)));
-            expect(eq(rhs.get(), std::addressof(a)));
-
-            expect(eq(*lhs, b));
-            expect(eq(*rhs, a));
-        };
 
         //============================================================
         // Hash Support

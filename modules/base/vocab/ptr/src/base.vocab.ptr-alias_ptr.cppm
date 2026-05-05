@@ -192,10 +192,10 @@ export namespace base::vocab::inline ptr {
         alias_ptr() = default;
 
         ///@brief Constructor from `nullptr` initializes to null.
-        alias_ptr(std::nullptr_t ptr) :  address_(ptr) {}
+        alias_ptr(std::nullptr_t null) :  address_(null) {}
 
         ///@brief Assignment from `nullptr` rebinds to null.
-        alias_ptr& operator=(std::nullptr_t ptr) { address_ = ptr; return *this; }
+        alias_ptr& operator=(std::nullptr_t null) { address_ = null; return *this; }
 
         //================================================================================
         // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
@@ -277,6 +277,9 @@ export namespace base::vocab::inline ptr {
         {
             return (lhs == rhs.get());
         }
+        
+        ///@brief Compares equality against `nullptr`.
+        [[nodiscard]] friend constexpr bool operator==(const alias_ptr& ptr, std::nullptr_t null) noexcept { return (ptr.get() == null); }
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         auto operator<=>(alias_ptr) const =
@@ -560,6 +563,14 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Enables comparison with raw pointers-to-base when that can't be synthesized by implicit conversion to raw pointers.
      * @remark Comparison is performed on the underlying addresses.
+     */
+    /**
+     * @overload constexpr bool operator==(const alias_ptr& ptr, std::nullptr_t null) noexcept
+     *
+     * @param ptr The pointer being compared.
+     * @param null The `nullptr_t` parameter.
+     *
+     * @return `true` if `ptr` is disengaged; otherwise `false`.
      */
     /**
      * @fn constexpr reference alias_ptr::operator*() const noexcept
