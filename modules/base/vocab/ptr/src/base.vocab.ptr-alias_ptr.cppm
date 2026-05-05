@@ -657,6 +657,6 @@ struct std::formatter<base::vocab::ptr::alias_ptr<T>, CharT>
         // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
         // 2. `const_cast` to `const void*` to satisfy the formatter's interface which lacks `volatile void*` specializations.
         // This is safe because formatting is a read-only numerical operation on the address.
-        return std::formatter<typename base::vocab::ptr::alias_ptr<T>::pointer, CharT>::format(const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx);
+        return std::formatter<const void*, CharT>::format(const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx);
     }
 };
