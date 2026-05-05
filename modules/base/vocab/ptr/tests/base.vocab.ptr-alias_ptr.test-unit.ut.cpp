@@ -628,6 +628,33 @@ namespace {
             expect(eq(b == c, false));
         };
 
+        "nullable comparisons with nullptr"_test = [] mutable {
+            std::int32_t value{};
+
+            alias_ptr<std::int32_t> bound{value};
+            alias_ptr<std::int32_t> null{nullptr};
+
+            expect(eq(bound == nullptr, false));
+            expect(eq(nullptr == bound, false));
+
+            expect(eq(bound != nullptr, true));
+            expect(eq(nullptr != bound, true));
+
+            expect(eq(null == nullptr, true));
+            expect(eq(nullptr == null, true));
+
+            expect(eq(null != nullptr, false));
+            expect(eq(nullptr != null, false));
+        };
+
+        "null alias_ptr compares equal to null alias_ptr"_test = [] mutable {
+            alias_ptr<std::int32_t> lhs{nullptr};
+            alias_ptr<const std::int32_t> rhs{nullptr};
+
+            expect(eq(lhs == rhs, true));
+            expect(eq(lhs != rhs, false));
+        };
+
         //============================================================
         // Covariance
         //============================================================
@@ -699,6 +726,26 @@ namespace {
             expect(eq(std::equality_comparable_with<alias_ptr<base_type>, alias_ptr<derived_type>>, true));
             expect(eq(std::equality_comparable_with<alias_ptr<base_type>, derived_type*>, true));
             expect(eq(std::equality_comparable_with<base_type*, alias_ptr<derived_type>>, true));
+        };
+
+        "common_type works covariantly"_test = [] mutable {
+            using common_t =
+                std::common_type_t<
+                    alias_ptr<derived_type>,
+                    alias_ptr<base_type>
+                >;
+
+            expect(eq(std::same_as<common_t, alias_ptr<base_type>>, true));
+        };
+
+        "common_reference works covariantly"_test = [] mutable {
+            using common_ref =
+                std::common_reference_t<
+                    alias_ptr<derived_type>,
+                    alias_ptr<base_type>
+                >;
+
+            expect(eq(std::same_as<common_ref, alias_ptr<base_type>>, true));
         };
 
         //============================================================
@@ -809,6 +856,26 @@ namespace {
             decltype(auto) dereferenced = *ptr;
             expect(eq(std::is_volatile_v<std::remove_reference_t<decltype(dereferenced)>>, true));
             expect(eq(dereferenced, hardware_register));
+        };
+
+        "common_type preserves const qualification"_test = [] mutable {
+            using common_t =
+                std::common_type_t<
+                    alias_ptr<std::int32_t>,
+                    alias_ptr<const std::int32_t>
+                >;
+
+            expect(eq(std::same_as<common_t, alias_ptr<const std::int32_t>>, true));
+        };
+
+        "common_reference preserves const qualification"_test = [] mutable {
+            using common_ref =
+                std::common_reference_t<
+                    alias_ptr<std::int32_t>,
+                    alias_ptr<const std::int32_t>
+                >;
+
+            expect(eq(std::same_as<common_ref, alias_ptr<const std::int32_t>>, true));
         };
 
         //============================================================
@@ -951,7 +1018,6 @@ namespace {
 
             expect(eq(*ptr, 42));
         };
-//--------------------------------------------------------------------------------
 
         //============================================================
         // Hash Support
@@ -980,80 +1046,89 @@ namespace {
             expect(eq(lhs == rhs, true));
             expect(eq(lhs_hash == rhs_hash, true));
         };
-
+        
         //============================================================
-        // Nullable Comparisons
+        // Formatting and output stream support
         //============================================================
 
-        "nullable comparisons with nullptr"_test = [] mutable {
+        "std::formatter formats as raw pointer"_test = [] mutable {
             std::int32_t value{};
 
-            alias_ptr<std::int32_t> bound{value};
-            alias_ptr<std::int32_t> null{nullptr};
+            alias_ptr<std::int32_t> ptr{value};
 
-            expect(eq(bound == nullptr, false));
-            expect(eq(nullptr == bound, false));
+            const auto formatted_ptr =
+                std::format("{}", ptr);
 
-            expect(eq(bound != nullptr, true));
-            expect(eq(nullptr != bound, true));
+            const auto formatted_raw =
+                std::format("{}", std::addressof(value));
 
-            expect(eq(null == nullptr, true));
-            expect(eq(nullptr == null, true));
-
-            expect(eq(null != nullptr, false));
-            expect(eq(nullptr != null, false));
+            expect(eq(formatted_ptr, formatted_raw));
         };
 
-        "null alias_ptr compares equal to null alias_ptr"_test = [] mutable {
-            alias_ptr<std::int32_t> lhs{nullptr};
-            alias_ptr<const std::int32_t> rhs{nullptr};
+        "std::formatter formats null equivalently to raw pointer"_test = [] mutable {
+            alias_ptr<std::int32_t> ptr{nullptr};
 
-            expect(eq(lhs == rhs, true));
-            expect(eq(lhs != rhs, false));
+            const auto formatted_ptr =
+                std::format("{}", ptr);
+
+            const auto formatted_raw =
+                std::format("{}", static_cast<std::int32_t*>(nullptr));
+
+            expect(eq(formatted_ptr, formatted_raw));
         };
 
-        //============================================================
-        // Common Reference / Common Type
-        //============================================================
+        "std::formatter supports cv-qualified element types"_test = [] mutable {
+            const std::int32_t value{};
 
-        "common_type works covariantly"_test = [] mutable {
-            using common_t =
-                std::common_type_t<
-                    alias_ptr<derived_type>,
-                    alias_ptr<base_type>
-                >;
+            alias_ptr<const std::int32_t> ptr{value};
 
-            expect(eq(std::same_as<common_t, alias_ptr<base_type>>, true));
+            const auto formatted_ptr =
+                std::format("{}", ptr);
+
+            const auto formatted_raw =
+                std::format("{}", std::addressof(value));
+
+            expect(eq(formatted_ptr, formatted_raw));
         };
 
-        "common_type preserves const qualification"_test = [] mutable {
-            using common_t =
-                std::common_type_t<
-                    alias_ptr<std::int32_t>,
-                    alias_ptr<const std::int32_t>
-                >;
+        "ostream insertion outputs raw pointer representation"_test = [] mutable {
+            std::int32_t value{};
 
-            expect(eq(std::same_as<common_t, alias_ptr<const std::int32_t>>, true));
+            alias_ptr<std::int32_t> ptr{value};
+
+            std::ostringstream ptr_stream;
+            std::ostringstream raw_stream;
+
+            ptr_stream << ptr;
+            raw_stream << std::addressof(value);
+
+            expect(eq(ptr_stream.str(), raw_stream.str()));
         };
 
-        "common_reference works covariantly"_test = [] mutable {
-            using common_ref =
-                std::common_reference_t<
-                    alias_ptr<derived_type>,
-                    alias_ptr<base_type>
-                >;
+        "ostream insertion outputs null equivalently to raw pointer"_test = [] mutable {
+            alias_ptr<std::int32_t> ptr{nullptr};
 
-            expect(eq(std::same_as<common_ref, alias_ptr<base_type>>, true));
+            std::ostringstream ptr_stream;
+            std::ostringstream raw_stream;
+
+            ptr_stream << ptr;
+            raw_stream << static_cast<std::int32_t*>(nullptr);
+
+            expect(eq(ptr_stream.str(), raw_stream.str()));
         };
 
-        "common_reference preserves const qualification"_test = [] mutable {
-            using common_ref =
-                std::common_reference_t<
-                    alias_ptr<std::int32_t>,
-                    alias_ptr<const std::int32_t>
-                >;
+        "ostream insertion supports cv-qualified element types"_test = [] mutable {
+            volatile std::int32_t value{};
 
-            expect(eq(std::same_as<common_ref, alias_ptr<const std::int32_t>>, true));
+            alias_ptr<volatile std::int32_t> ptr{value};
+
+            std::ostringstream ptr_stream;
+            std::ostringstream raw_stream;
+
+            ptr_stream << ptr;
+            raw_stream << std::addressof(value);
+
+            expect(eq(ptr_stream.str(), raw_stream.str()));
         };
     };
 } //namespace
