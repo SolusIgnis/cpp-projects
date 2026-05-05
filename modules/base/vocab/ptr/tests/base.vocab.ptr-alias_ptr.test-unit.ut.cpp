@@ -138,6 +138,10 @@ namespace {
             expect(eq(rref, true));
             expect(eq(ptrdiff, true));
         };
+        
+        "indirectly readable"_test = [] mutable {
+            expect(eq(std::indirectly_readable<alias_ptr<std::int32_t>>, true));
+        };
 
         //============================================================
         // Construction
@@ -721,6 +725,11 @@ namespace {
             expect(eq(std::three_way_comparable_with<alias_ptr<base_type>, derived_type*>, false));
             expect(eq(std::three_way_comparable_with<base_type*, alias_ptr<derived_type>>, false));
         };
+        
+        "not input or output iterator"_test = [] mutable {
+            //note: all other iterator concepts subsume this one and thus are implicitly false when it is false
+            expect(eq(std::input_or_output_iterator<alias_ptr<std::int32_t>>, false));
+        };
 
         //============================================================
         // CV-correctness propagation
@@ -1046,39 +1055,6 @@ namespace {
 
             expect(eq(std::same_as<common_ref, alias_ptr<const std::int32_t>>, true));
         };
-
-        //============================================================
-        // Iterator Concept Exclusion
-        //============================================================
-
-        "not indirectly readable"_test = [] mutable {
-            expect(eq(std::indirectly_readable<alias_ptr<std::int32_t>>, false));
-        };
-
-        "not weakly incrementable"_test = [] mutable {
-            expect(eq(std::weakly_incrementable<alias_ptr<std::int32_t>>, false));
-        };
-
-        "not input iterator"_test = [] mutable {
-            expect(eq(std::input_iterator<alias_ptr<std::int32_t>>, false));
-        };
-
-        "not forward iterator"_test = [] mutable {
-            expect(eq(std::forward_iterator<alias_ptr<std::int32_t>>, false));
-        };
-
-        "not bidirectional iterator"_test = [] mutable {
-            expect(eq(std::bidirectional_iterator<alias_ptr<std::int32_t>>, false));
-        };
-
-        "not random access iterator"_test = [] mutable {
-            expect(eq(std::random_access_iterator<alias_ptr<std::int32_t>>, false));
-        };
-
-        "not contiguous iterator"_test = [] mutable {
-            expect(eq(std::contiguous_iterator<alias_ptr<std::int32_t>>, false));
-        };
-
     };
 } //namespace
 
