@@ -141,7 +141,7 @@ export namespace base::vocab::inline ptr {
         
         ///@brief Assignment passes through to rebinding.
         template<typename P>
-            requires (!std::same_as<P, alias_ptr>)
+            requires (!std::same_as<std::remove_cvref_t<P>, alias_ptr>)
         alias_ptr& operator=(P&& source) { return rebind(std::forward<P>(source)); }
 
         ///@brief Rebinds the `alias_ptr` to another object.
