@@ -139,13 +139,8 @@ export namespace base::vocab::inline ptr {
             : address_(source.get())
         {}
         
-        ///@brief Assignment passes through to rebinding.
-        template<typename P>
-            requires (!std::same_as<std::remove_cvref_t<P>, alias_ptr>)
-        alias_ptr& operator=(P&& source) { return rebind(std::forward<P>(source)); }
-
         ///@brief Rebinds the `alias_ptr` to another object.
-        alias_ptr& rebind(reference source) noexcept
+        alias_ptr& operator=(reference source) noexcept
             requires (!std::is_void_v<T>)
         {
             address_ = std::addressof(source);
@@ -155,7 +150,7 @@ export namespace base::vocab::inline ptr {
         ///@brief (Conversion) Assigns from another `alias_ptr` according to underlying pointer conversions.
         template<typename U>
             requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
-        constexpr alias_ptr& rebind(const alias_ptr<U>& source) noexcept
+        constexpr alias_ptr& operator=(const alias_ptr<U>& source) noexcept
         {
             address_ = source.get();
             return *this;
@@ -164,7 +159,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Assigns from a raw `pointer`.
         template<typename P>
             requires std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, pointer>
-        constexpr alias_ptr& rebind(P&& source)
+        constexpr alias_ptr& operator=(P&& source)
         {
             address_ = source;
             return *this;
@@ -176,7 +171,7 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-        constexpr alias_ptr& rebind(const Pointer<Element, Args...>& source)
+        constexpr alias_ptr& operator=(const Pointer<Element, Args...>& source)
         {
             address_ = source.get();
             return *this;
@@ -200,7 +195,7 @@ export namespace base::vocab::inline ptr {
         alias_ptr(std::nullptr_t null) :  address_(null) {}
 
         ///@brief Assignment from `nullptr` rebinds to null.
-        alias_ptr& rebind(std::nullptr_t null) { address_ = null; return *this; }
+        alias_ptr& operator=(std::nullptr_t null) { address_ = null; return *this; }
 
         //================================================================================
         // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
@@ -222,7 +217,7 @@ export namespace base::vocab::inline ptr {
             ;
 
         ///@brief Deleted assignment from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
-        alias_ptr& rebind(rvalue_reference) =
+        alias_ptr& operator=(rvalue_reference) =
             delete /*("Assignment from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
@@ -232,7 +227,7 @@ export namespace base::vocab::inline ptr {
                       && requires(Pointer<Element, Args...> ptr) {
                              { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                          }
-        alias_ptr& rebind(const Pointer<Element, Args...>&&) =
+        alias_ptr& operator=(const Pointer<Element, Args...>&&) =
             delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
@@ -250,7 +245,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted assignment from C-array to prevent array-to-pointer decay.
         template<typename AnyCArray>
             requires std::is_array_v<AnyCArray>
-        alias_ptr& rebind(AnyCArray&) =
+        alias_ptr& operator=(AnyCArray&) =
             delete /*("Assignment from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
@@ -323,6 +318,13 @@ export namespace base::vocab::inline ptr {
         
         ///@brief Returns the underlying raw pointer while resetting to `nullptr`.
         [[nodiscard]] constexpr pointer release() noexcept { return std::exchange(address_, nullptr); }
+
+        ///@brief Rebinding passes through to assignment.
+        template<typename P>
+        alias_ptr& rebind(P&& source) noexcept(noexcept(std::declval<alias_ptr&>() = std::forward<P>(source)))
+        {
+            return *this = std::forward<P>(source);
+        }
 
         ///@brief Reset the pointer to `nullptr`.
         constexpr void reset(std::nullptr_t null = nullptr) noexcept { (void) rebind(null); }
@@ -457,7 +459,7 @@ export namespace base::vocab::inline ptr {
      * @remark This constructor does not transfer ownership and does not affect the lifetime of the underlying object.
      */
     /**
-     * @fn alias_ptr& alias_ptr::rebind(reference source) noexcept
+     * @fn alias_ptr& alias_ptr::operator=(reference source) noexcept
      *
      * @param source The object to reference.
      * @return Reference to `*this`.
@@ -467,7 +469,7 @@ export namespace base::vocab::inline ptr {
      * @remark Rebinds the pointer without affecting ownership or lifetime.
      */
     /**
-     * @overload alias_ptr& alias_ptr::rebind(const alias_ptr<U>& source) noexcept
+     * @overload alias_ptr& alias_ptr::operator=(const alias_ptr<U>& source) noexcept
      *
      * @tparam U The element type, with its pointer convertible to `pointer`, of the source `alias_ptr`.
      *
@@ -485,7 +487,7 @@ export namespace base::vocab::inline ptr {
      * @remark Enables type erasure by converting `alias_ptr<U>` to `alias_ptr<void>` when applicable.
      */
     /**
-     * @overload alias_ptr& alias_ptr::rebind(P&& source)
+     * @overload alias_ptr& alias_ptr::operator=(P&& source)
      *
      * @tparam P The raw pointer type which must decay to a type convertible to `pointer`.
      *
@@ -503,7 +505,7 @@ export namespace base::vocab::inline ptr {
      * @remark Does not affect the lifetime of the referenced object.
      */
     /**
-     * @overload alias_ptr& alias_ptr::rebind(const Pointer<Element, Args...>& source)
+     * @overload alias_ptr& alias_ptr::operator=(const Pointer<Element, Args...>& source)
      *
      * @tparam Pointer A class template modeling a pointer-like type.
      * @tparam Element The element type of the source pointer.
