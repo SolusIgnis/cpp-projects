@@ -405,7 +405,11 @@ export namespace base::vocab::inline ptr {
             std::basic_ostream<CharT, Traits>& stream, 
             const required_ptr& ptr) 
         {
-            return stream << ptr.get();
+            // In order to support pointers to arbitrarily cv-qualified objects:
+            // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
+            // 2. `const_cast` to `const void*` to satisfy the inserter's interface which lacks `volatile void*` overloads.
+            // This is safe because formatting is a read-only numerical operation on the address.
+            return stream << const_cast<const void*>(static_cast<const volatile void*>(ptr.get()));
         }
 
     private:
@@ -722,10 +726,14 @@ struct std::hash<base::vocab::ptr::required_ptr<T>> {
  */
 template<typename T, typename CharT>
 struct std::formatter<base::vocab::ptr::required_ptr<T>, CharT> 
-    : std::formatter<typename base::vocab::ptr::required_ptr<T>::pointer, CharT> {
+    : std::formatter<const void*, CharT> {
     
     ///@brief Format as the underlying raw pointer address.
     auto format(const base::vocab::ptr::required_ptr<T>& ptr, auto& ctx) const {
-        return std::formatter<typename base::vocab::ptr::required_ptr<T>::pointer, CharT>::format(ptr.get(), ctx);
+        // In order to support pointers to arbitrarily cv-qualified objects:
+        // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
+        // 2. `const_cast` to `const void*` to satisfy the formatter's interface which lacks `volatile void*` specializations.
+        // This is safe because formatting is a read-only numerical operation on the address.
+        return std::formatter<const void*, CharT>::format(const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx);
     }
 };
