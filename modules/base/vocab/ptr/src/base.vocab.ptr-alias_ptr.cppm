@@ -111,7 +111,7 @@ export namespace base::vocab::inline ptr {
         // Constructors and Assignment Operators
         //================================================================================
 
-        ///@brief Constructs a `alias_ptr` bound to an existing object.
+        ///@brief Constructs an `alias_ptr` bound to an existing object.
         constexpr explicit alias_ptr(reference source) noexcept
             requires (!std::is_void_v<T>)
             : address_(std::addressof(source))
@@ -264,14 +264,14 @@ export namespace base::vocab::inline ptr {
             return (lhs.get() == rhs.get());
         }
 
-        ///@brief Covariantly compares equality of a `alias_ptr`-to-base with a raw pointer-to-derived in terms of pointer identity.
+        ///@brief Covariantly compares equality of an `alias_ptr`-to-base with a raw pointer-to-derived in terms of pointer identity.
         template<std::derived_from<T> DerivedT>
         [[nodiscard]] friend constexpr bool operator==(const alias_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
         {
             return (lhs.get() == rhs);
         }
 
-        ///@brief Covariantly compares equality of a raw pointer-to-base with a `alias_ptr`-to-derived in terms of pointer identity.
+        ///@brief Covariantly compares equality of a raw pointer-to-base with an `alias_ptr`-to-derived in terms of pointer identity.
         template<std::derived_from<T> DerivedT>
         [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const alias_ptr<DerivedT>& rhs) noexcept
         {
@@ -364,7 +364,7 @@ export namespace base::vocab::inline ptr {
         // Stream Output
         //================================================================================
 
-        ///@brief Output a `alias_ptr` address to a `std::basic_ostream`.
+        ///@brief Output an `alias_ptr` address to a `std::basic_ostream`.
         template <typename CharT, typename Traits>
         friend std::basic_ostream<CharT, Traits>& operator<<(
             std::basic_ostream<CharT, Traits>& stream, 
@@ -475,8 +475,6 @@ export namespace base::vocab::inline ptr {
      * @pre `source` must be null or point to a valid object that outlives the `alias_ptr`.
      * @post `get() == source`.
      *
-     * @throws std::invalid_argument if `source == nullptr`. Provides the Strong Exception Safety Guarantee.
-     *
      * @details Captures the original argument type prior to decay via
      * forwarding reference so that C-array arguments can be diagnosed
      * explicitly instead of silently decaying to element pointers.
@@ -497,8 +495,6 @@ export namespace base::vocab::inline ptr {
      * @pre `source.get()` must be a valid expression convertible to `pointer`.
      * @pre `source.get()` must be null or point to an object whose lifetime strictly exceeds that of the `alias_ptr`.
      * @post `get() == static_cast<pointer>(source.get())`.
-     *
-     * @throws std::invalid_argument if `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
      * @remark Does not transfer ownership and does not affect the lifetime of the underlying object.
      */
@@ -649,14 +645,18 @@ struct std::hash<base::vocab::ptr::alias_ptr<T>> {
  * @tparam T The element type of the `alias_ptr`.
  * @tparam CharT The character type used by the format string.
  *
- * @remark Formats a `alias_ptr` as its underlying raw pointer representation.
+ * @remark Formats an `alias_ptr` as its underlying raw pointer representation.
  */
 template<typename T, typename CharT>
 struct std::formatter<base::vocab::ptr::alias_ptr<T>, CharT> 
-    : std::formatter<typename base::vocab::ptr::alias_ptr<T>::pointer, CharT> {
+    : std::formatter<const void*, CharT> {
     
     ///@brief Format as the underlying raw pointer address.
     auto format(const base::vocab::ptr::alias_ptr<T>& ptr, auto& ctx) const {
-        return std::formatter<typename base::vocab::ptr::alias_ptr<T>::pointer, CharT>::format(ptr.get(), ctx);
+        // In order to support pointers to arbitrarily cv-qualified objects:
+        // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
+        // 2. `const_cast` to `const void*` to satisfy the formatter's interface which lacks `volatile void*` specializations.
+        // This is safe because formatting is a read-only numerical operation on the address.
+        return std::formatter<typename base::vocab::ptr::alias_ptr<T>::pointer, CharT>::format(const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx);
     }
 };
