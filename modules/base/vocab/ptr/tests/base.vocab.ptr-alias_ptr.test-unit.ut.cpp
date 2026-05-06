@@ -465,6 +465,37 @@ namespace {
             expect(eq(*ptr, 2));
             expect(eq(ptr.get(), std::addressof(b)));
         };
+        
+        "rebind via `rebind` call with reference argument"_test = [] mutable {
+            const int a{};
+            const int b = 2;
+
+            alias_ptr<const std::int32_t> ptr{a};
+            ptr.rebind(b);
+
+            expect(eq(*ptr, 2));
+            expect(eq(ptr.get(), std::addressof(b)));
+        };
+
+        "rebind via `reset` call with reference argument"_test = [] mutable {
+            const int a{};
+            const int b = 2;
+
+            alias_ptr<const std::int32_t> ptr{a};
+            ptr.reset(b);
+
+            expect(eq(*ptr, 2));
+            expect(eq(ptr.get(), std::addressof(b)));
+        };
+
+        "rebind via `reset()` disengages the pointer"_test = [] mutable {
+            const int a{};
+
+            alias_ptr<const std::int32_t> ptr{a};
+            ptr.reset();
+
+            expect(eq(!ptr, true));
+        };
 
         //============================================================
         // Swap
