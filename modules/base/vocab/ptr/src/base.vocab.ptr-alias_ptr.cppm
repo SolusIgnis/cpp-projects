@@ -321,7 +321,9 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Rebinding passes through to assignment.
         template<typename P>
-        alias_ptr& rebind(P&& source) noexcept(noexcept(std::declval<alias_ptr&>() = std::forward<P>(source)))
+        alias_ptr& rebind(P&& source)
+            noexcept(noexcept(std::declval<alias_ptr&>() = std::forward<P>(source)))
+            requires requires { std::declval<alias_ptr&>() = std::forward<P>(source); }
         {
             return *this = std::forward<P>(source);
         }
@@ -332,7 +334,12 @@ export namespace base::vocab::inline ptr {
         ///@brief Reset the pointer to a new address.
         template<typename P>
             requires (!std::same_as<P, std::nullptr_t>)
-        constexpr void reset(P&& source) noexcept(noexcept(rebind(std::forward<P>(source)))) { (void) rebind(std::forward<P>(source)); }
+        constexpr void reset(P&& source)
+            noexcept(noexcept(rebind(std::forward<P>(source))))
+            requires requires { rebind(std::forward<P>(source)); }
+        {
+            (void) rebind(std::forward<P>(source));
+        }
 
         //================================================================================
         // Deleted Pointer Arithmetic Operators: Not an Iterator
