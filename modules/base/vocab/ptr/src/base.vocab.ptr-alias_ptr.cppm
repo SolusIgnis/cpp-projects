@@ -322,8 +322,8 @@ export namespace base::vocab::inline ptr {
         ///@brief Rebinding passes through to assignment.
         template<typename P>
         alias_ptr& rebind(P&& source)
-            noexcept(noexcept(std::declval<alias_ptr&>() = std::forward<P>(source)))
-            requires requires { std::declval<alias_ptr&>() = std::forward<P>(source); }
+            noexcept(std::is_nothrow_assignable_v<alias_ptr&, P>)
+            requires std::is_assignable_v<alias_ptr&, P>
         {
             return *this = std::forward<P>(source);
         }
