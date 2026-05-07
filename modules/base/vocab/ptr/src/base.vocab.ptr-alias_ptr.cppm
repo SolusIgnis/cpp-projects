@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-alias_ptr.cppm
  * @version 0.4.0
- * @date May 3, 2026
+ * @date May 7, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -22,6 +22,52 @@
  * @brief `alias_ptr`: A non-owning, nullable, non-arithmetic, void-permitting pointer type.
  *
  * @details
+ *
+ * `alias_ptr` is a vocabulary pointer type representing a non-owning,
+ * nullable, object alias without traversal semantics.
+ *
+ * Unlike owning smart pointers, `alias_ptr` does not participate in
+ * object lifetime management. Unlike iterators or built-in pointers,
+ * it intentionally disables pointer arithmetic and ordering comparisons
+ * so that it models object association rather than memory traversal.
+ *
+ * The type exists to provide an explicit semantic alternative to direct
+ * use of built-in pointers in codebases where pointer intent is treated
+ * as part of the type system. In particular, `alias_ptr` communicates:
+ *
+ * - nullable engagement,
+ * - non-ownership,
+ * - stable object association,
+ * - and non-iterative usage.
+ *
+ * `alias_ptr` preserves interoperability with existing pointer-based APIs
+ * through implicit conversion to its nested `pointer` type and through
+ * `get()`, while still enabling APIs and generic code to distinguish
+ * semantic object references from ownership-bearing or traversal-oriented
+ * pointer abstractions.
+ *
+ * The interface intentionally rejects several categories of operations:
+ *
+ * - binding to temporaries,
+ * - implicit C-array decay,
+ * - pointer arithmetic,
+ * - and address ordering comparisons.
+ *
+ * These restrictions exist to reduce accidental misuse and to reinforce
+ * the intended semantic role of the type as an object alias rather than
+ * a generalized memory navigation primitive.
+ *
+ * `alias_ptr` forms the nullable foundation of the pointer vocabulary
+ * hierarchy:
+ *
+ * - `alias_ptr`        : nullable object alias
+ * - `required_ptr`     : non-null object alias
+ * - `dependency_ptr`   : structurally non-null injected dependency
+ * - `cursor_ptr`       : traversal-oriented non-null pointer
+ *
+ * This separation allows APIs to express pointer expectations directly
+ * in their type signatures while remaining lightweight, zero-overhead,
+ * and interoperable with existing pointer-based interfaces.
  *
  * @todo Future Development: Use `= delete("reason")` once the C++26 feature becomes available.
  */
@@ -46,10 +92,10 @@ export namespace base::vocab::inline ptr {
      *
      * @note Standard Layout type with size and alignment of a raw pointer.
      * @remark This type does not own the referenced object and does not participate in lifetime management.
-     * @remark Copying and assignment rebind the pointer without affecting the lifetime of the underlying object.
-     * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator.
+     * @remark Copying and assignment rebind the stored address without affecting pointee lifetime.
+     * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator. @see cursor_ptr for traversal/iteration semantics.
      * @note `alias_ptr<void>` reuses the primary template rather than introducing a specialization. Placeholder reference aliases based on `std::monostate` are used solely to keep deleted overload declarations well-formed.
-     * @remark Explicit equality comparison overloads are provided only where built-in pointer comparison cannot be reached through the implicit raw-pointer conversion operator alone.
+     * @remark Explicit equality comparison overloads are provided only where implicit conversion to the nested `pointer` type is insufficient to enable the desired comparison.
      *
      * @warning The referenced object MUST outlive the `alias_ptr`. Violating this results in undefined behavior.
      *
@@ -73,7 +119,7 @@ export namespace base::vocab::inline ptr {
 
         /**
          * @typedef pointer
-         * @brief The underlying pointer type (`T*`).
+         * @brief The raw pointer type of the stored address (`T*`).
          */
         using pointer = std::add_pointer_t<T>;
 
@@ -117,7 +163,7 @@ export namespace base::vocab::inline ptr {
             : address_(std::addressof(source))
         {}
 
-        ///@brief (Conversion) Implicitly converts from another `alias_ptr` according to underlying pointer conversions.
+        ///@brief (Conversion) Implicitly converts from another `alias_ptr` according to nested `pointer` type conversions.
         template<typename U>
             requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
         constexpr explicit(false) alias_ptr(const alias_ptr<U>& source) noexcept : address_(source.get())
@@ -129,7 +175,7 @@ export namespace base::vocab::inline ptr {
         constexpr explicit(std::is_void_v<T>) alias_ptr(P&& source) : address_(source)
         {}
 
-        ///@brief Implicitly converts from another wrapped/smart pointer type. Explicit when `T` is void to avoid implicit conversion chaining.
+        ///@brief Implicitly converts from another pointer-like type. Explicit when `T` is void to avoid implicit conversion chaining.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, alias_ptr>)
                   && requires(Pointer<Element, Args...> ptr) {
@@ -148,7 +194,7 @@ export namespace base::vocab::inline ptr {
             return self;
         }
 
-        ///@brief (Conversion) Assigns from another `alias_ptr` according to underlying pointer conversions.
+        ///@brief (Conversion) Assigns from another `alias_ptr` according to nested `pointer` type conversions.
         template<typename Self, typename U>
             requires (!std::is_const_v<Self>) && (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
         constexpr Self& operator=(this Self& self, const alias_ptr<U>& source) noexcept
@@ -167,7 +213,7 @@ export namespace base::vocab::inline ptr {
             return self;
         }
 
-        ///@brief Assigns from another wrapped/smart pointer type.
+        ///@brief Assigns from another pointer-like type.
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, alias_ptr>)
                   && (!std::is_const_v<Self>) && requires(Pointer<Element, Args...> ptr) {
@@ -306,30 +352,30 @@ export namespace base::vocab::inline ptr {
         // Pointer Operations
         //================================================================================
 
-        ///@brief Provides pointer-like member access to the referenced object.
+        ///@brief Provides member access to the pointee object.
         [[nodiscard]] constexpr pointer operator->(this auto&& self) noexcept
             requires (!std::is_void_v<T>)
         {
             return self.address_;
         }
 
-        ///@brief Dereferences the pointer to access the referenced object.
+        ///@brief Provides a reference to the pointee object.
         [[nodiscard]] constexpr reference operator*(this auto&& self) noexcept
             requires (!std::is_void_v<T>)
         {
             return *self.address_;
         }
 
-        ///@brief Returns the underlying raw pointer.
+        ///@brief Returns a raw pointer to the stored address.
         [[nodiscard]] constexpr pointer get(this auto&& self) noexcept { return self.address_; }
 
-        ///@brief Implicitly converts to the underlying raw pointer type.
+        ///@brief Implicitly converts to the nested `pointer` type.
         [[nodiscard]] constexpr explicit(false) operator pointer() const noexcept { return this->get(); }
 
         ///@brief Contextually converts to `bool` to test if the pointer is engaged.
         [[nodiscard]] constexpr explicit operator bool(this auto&& self) noexcept { return (self.address_ != nullptr); }
 
-        ///@brief Returns the underlying raw pointer while resetting to `nullptr`.
+        ///@brief Returns a raw pointer to the stored address while disengaging the pointer.
         [[nodiscard]] constexpr pointer release(this auto&& self) noexcept { return std::exchange(self.address_, nullptr); }
 
         ///@brief Rebinding passes through to assignment.
@@ -406,7 +452,7 @@ export namespace base::vocab::inline ptr {
         // Stream Output
         //================================================================================
 
-        ///@brief Output an `alias_ptr` address to a `std::basic_ostream`.
+        ///@brief Outputs an `alias_ptr` address to a `std::basic_ostream`.
         template<typename CharT, typename Traits>
         friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& stream, const alias_ptr& ptr)
         {
@@ -488,7 +534,7 @@ export namespace base::vocab::inline ptr {
      *
      * @pre `source` must refer to a valid object that outlives the `alias_ptr`.
      *
-     * @remark Rebinds the pointer without affecting ownership or lifetime.
+     * @remark Rebinds the stored address without affecting ownership or pointee lifetime.
      */
     /**
      * @overload alias_ptr& alias_ptr::operator=(const alias_ptr<U>& source) noexcept
@@ -533,7 +579,7 @@ export namespace base::vocab::inline ptr {
      * @tparam Element The element type of the source pointer.
      * @tparam Args Additional template parameters of the pointer type.
      *
-     * @param source The pointer-like object providing access to a raw pointer via `get()`.
+     * @param source The pointer-like object providing access to a pointer-compatible value via `get()`.
      * @return Reference to `*this`.
      *
      * @pre `source.get()` must be a valid expression convertible to `pointer`.
@@ -545,11 +591,11 @@ export namespace base::vocab::inline ptr {
     /**
      * @fn constexpr void swap(alias_ptr& lhs, alias_ptr& rhs) noexcept
      *
-     * @param lhs The first pointer wrapper.
-     * @param rhs The second pointer wrapper.
+     * @param lhs The first pointer object.
+     * @param rhs The second pointer object.
      *
-     * @post `lhs` refers to the object previously referenced by `rhs`.
-     * @post `rhs` refers to the object previously referenced by `lhs`.
+     * @post `lhs.get()` equals the value of `rhs.get()` prior to the call.
+     * @post `rhs.get()` equals the value of `lhs.get()` prior to the call.
      *
      * @remark Swaps only the stored addresses.
      * @remark Does not affect ownership or pointee lifetime.
@@ -586,7 +632,7 @@ export namespace base::vocab::inline ptr {
      * @param lhs The `alias_ptr` being compared.
      * @param rhs The raw pointer to compare against.
      *
-     * @return `true` if the wrapped pointer in `lhs` equals `rhs`; otherwise `false`.
+     * @return `true` if the stored address in `lhs` equals `rhs`; otherwise `false`.
      *
      * @remark Enables comparison with raw pointers-to-derived for when that can't be synthesized by implicit conversion to raw pointers.
      * @remark Compares the pointed-to addresses (aliasing), not object values.
@@ -599,7 +645,7 @@ export namespace base::vocab::inline ptr {
      * @param lhs The raw pointer to compare.
      * @param rhs The `alias_ptr` being compared.
      *
-     * @return `true` if `lhs` equals the wrapped pointer in `rhs`; otherwise `false`.
+     * @return `true` if `lhs` equals the stored address in `rhs`; otherwise `false`.
      *
      * @remark Enables comparison with raw pointers-to-base when that can't be synthesized by implicit conversion to raw pointers.
      * @remark Comparison is performed on the underlying addresses.
@@ -613,25 +659,36 @@ export namespace base::vocab::inline ptr {
      * @return `true` if `ptr` is disengaged; otherwise `false`.
      */
     /**
+     * @fn constexpr pointer alias_ptr::operator->() const noexcept
+     *
+     * @return A raw pointer to the stored address.
+     *
+     * @pre `get() != nullptr`
+     * @pre The pointee object must remain valid (non-dangling).
+     *
+     * @remark Provides pointee member access semantics.
+     */
+    /**
      * @fn constexpr reference alias_ptr::operator*() const noexcept
      *
-     * @return Reference to the referenced object.
+     * @return Reference to the pointee object.
      *
-     * @pre The stored pointer must remain valid (non-dangling).
+     * @pre `get() != nullptr`
+     * @pre The pointee object must remain valid (non-dangling).
      *
      * @remark Equivalent to dereferencing `get()`.
      */
     /**
      * @fn constexpr pointer alias_ptr::get() const noexcept
      *
-     * @return The underlying raw pointer.
+     * @return A raw pointer to the stored address.
      *
      * @remark Provided for interoperability with pointer-based APIs.
      */
     /**
      * @fn constexpr alias_ptr::operator pointer() const noexcept
      *
-     * @return The underlying raw pointer.
+     * @return A raw pointer to the stored address.
      *
      * @remark Enables seamless interoperability with legacy interfaces expecting raw pointers.
      * @warning Implicit conversion may obscure the non-owning semantics; prefer `get()` when clarity is important.
@@ -643,6 +700,47 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Satisfies boolean-testable requirements in generic templates and logical contexts.
      * @remark Models pointer interface by providing contextual conversion to `bool`.
+     */
+    /**
+     * @fn constexpr pointer alias_ptr::release() noexcept
+     *
+     * @return The previously stored address.
+     *
+     * @post `get() == nullptr`.
+     *
+     * @remark Returns the stored address and disengages the pointer without affecting ownership or pointee lifetime.
+     * @remark Provided for interoperability with generic pointer-like interfaces.
+     */
+    /**
+     * @fn constexpr Self& alias_ptr::rebind(P&& source)
+     *
+     * @tparam P A pointer-compatible source type assignable to `alias_ptr`.
+     *
+     * @param source The source used to replace the stored address.
+     *
+     * @return Reference to `*this`.
+     *
+     * @post Equivalent to assignment from `std::forward<P>(source)`.
+     *
+     * @remark Convenience wrapper over assignment for generic pointer-like interoperability.
+     */
+    /**
+     * @fn constexpr void alias_ptr::reset(std::nullptr_t) noexcept
+     *
+     * @post `get() == nullptr`.
+     *
+     * @remark Disengages the pointer by resetting the stored address to `nullptr`.
+     */
+    /**
+     * @fn constexpr void alias_ptr::reset(P&& source)
+     *
+     * @tparam P A pointer-compatible source type assignable to `alias_ptr`.
+     *
+     * @param source The source used to replace the stored address.
+     *
+     * @post Equivalent to assignment from `std::forward<P>(source)`.
+     *
+     * @remark Replaces the stored address without affecting ownership or pointee lifetime.
      */
 
     /**
@@ -689,11 +787,11 @@ struct std::hash<base::vocab::ptr::alias_ptr<T>> {
  * @tparam T The element type of the `alias_ptr`.
  * @tparam CharT The character type used by the format string.
  *
- * @remark Formats an `alias_ptr` as its underlying raw pointer representation.
+ * @remark Formats the stored address according to the rules for its nested `pointer` type.
  */
 template<typename T, typename CharT>
 struct std::formatter<base::vocab::ptr::alias_ptr<T>, CharT> : std::formatter<const void*, CharT> {
-    ///@brief Format as the underlying raw pointer address.
+    ///@brief Formats as a raw pointer to the stored address.
     auto format(const base::vocab::ptr::alias_ptr<T>& ptr, auto& ctx) const
     {
         // In order to support pointers to arbitrarily cv-qualified objects:
