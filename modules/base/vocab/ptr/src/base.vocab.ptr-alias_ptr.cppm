@@ -294,30 +294,30 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Provides pointer-like member access to the referenced object.
-        [[nodiscard]] constexpr pointer operator->() const noexcept
+        [[nodiscard]] constexpr pointer operator->(this auto && self) noexcept
             requires (!std::is_void_v<T>)
         {
-            return address_;
+            return self.address_;
         }
 
         ///@brief Dereferences the pointer to access the referenced object.
-        [[nodiscard]] constexpr reference operator*() const noexcept
+        [[nodiscard]] constexpr reference operator*(this auto && self) noexcept
             requires (!std::is_void_v<T>)
         {
-            return *address_;
+            return *self.address_;
         }
 
         ///@brief Returns the underlying raw pointer.
-        [[nodiscard]] constexpr pointer get() const noexcept { return address_; }
+        [[nodiscard]] constexpr pointer get(this auto && self) noexcept { return self.address_; }
 
         ///@brief Implicitly converts to the underlying raw pointer type.
-        [[nodiscard]] constexpr explicit(false) operator pointer() const noexcept { return this->get(); }
+        [[nodiscard]] constexpr explicit(false) operator pointer(this auto && self) noexcept { return self.get(); }
 
         ///@brief Contextually converts to `bool` to test if the pointer is engaged.
-        [[nodiscard]] constexpr explicit operator bool() const noexcept { return (address_ != nullptr); }
+        [[nodiscard]] constexpr explicit operator bool(this auto && self) noexcept { return (self.address_ != nullptr); }
         
         ///@brief Returns the underlying raw pointer while resetting to `nullptr`.
-        [[nodiscard]] constexpr pointer release() noexcept { return std::exchange(address_, nullptr); }
+        [[nodiscard]] constexpr pointer release(this auto && self) noexcept { return std::exchange(self.address_, nullptr); }
 
         ///@brief Rebinding passes through to assignment.
         template<typename Self, typename P>
@@ -332,13 +332,13 @@ export namespace base::vocab::inline ptr {
         constexpr void reset(this auto& self, std::nullptr_t null = nullptr) noexcept { self = null; }
 
         ///@brief Reset the pointer to a new address.
-        template<typename P>
+        template<typename Self, typename P>
             requires (!std::same_as<P, std::nullptr_t>)
-        constexpr void reset(P&& source)
-            noexcept(noexcept(rebind(std::forward<P>(source))))
-            requires requires { rebind(std::forward<P>(source)); }
+        constexpr void reset(this Self& self, P&& source)
+            noexcept(std::is_nothrow_assignable_v<Self&, P>)
+            requires std::is_assignable_v<Self&, P>
         {
-            (void) rebind(std::forward<P>(source));
+            self = std::forward<P>(source);
         }
 
         //================================================================================
