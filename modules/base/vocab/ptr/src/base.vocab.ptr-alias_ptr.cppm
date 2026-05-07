@@ -352,27 +352,33 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Deleted prefix increment to prevent misuse as an iterator.
-        alias_ptr& operator++() =
+        template<typename Self>
+        Self& operator++(this Self&&) =
             delete /*("Prefix increment deleted to prevent pointer arithmetic. `alias_ptr` is not an iterator.")*/;
 
         ///@brief Deleted prefix decrement to prevent misuse as an iterator.
-        alias_ptr& operator--() =
+        template<typename Self>
+        Self& operator--(this Self&&) =
             delete /*("Prefix decrement deleted to prevent pointer arithmetic. `alias_ptr` is not an iterator.")*/;
 
         ///@brief Deleted postfix increment to prevent misuse as an iterator.
-        alias_ptr operator++(int) =
+        template<typename Self>
+        Self operator++(this Self&&, int) =
             delete /*("Postfix increment deleted to prevent pointer arithmetic. `alias_ptr` is not an iterator.")*/;
 
         ///@brief Deleted postfix decrement to prevent misuse as an iterator.
-        alias_ptr operator--(int) =
+        template<typename Self>
+        Self operator--(this Self&&, int) =
             delete /*("Postfix decrement deleted to prevent pointer arithmetic. `alias_ptr` is not an iterator.")*/;
 
         ///@brief Deleted addition assignment to prevent misuse as an iterator.
-        alias_ptr& operator+=(difference_type) =
+        template<typename Self>
+        Self& operator+=(this Self&&, difference_type) =
             delete /*("Addition assignment deleted to prevent pointer arithmetic. `alias_ptr` is not an iterator.")*/;
 
         ///@brief Deleted subtraction assignment to prevent misuse as an iterator.
-        alias_ptr& operator-=(difference_type) =
+        template<typename Self>
+        Self& operator-=(this Self&&, difference_type) =
             delete /*("Subtraction assignment deleted to prevent pointer arithmetic. `alias_ptr` is not an iterator.")*/;
 
         ///@brief Deleted pointer addition to prevent misuse as an iterator.
