@@ -140,11 +140,13 @@ export namespace base::vocab::inline ptr {
         {}
         
         ///@brief Rebinds the `alias_ptr` to another object.
-        alias_ptr& operator=(reference source) noexcept
+        template<typename Self>
+            requires (!std::is_const_v<Self>)
+        constexpr Self& operator=(this Self& self, reference source) noexcept
             requires (!std::is_void_v<T>)
         {
-            address_ = std::addressof(source);
-            return *this;
+            self.address_ = std::addressof(source);
+            return self;
         }
 
         ///@brief (Conversion) Assigns from another `alias_ptr` according to underlying pointer conversions.
@@ -311,7 +313,7 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] constexpr pointer get(this auto && self) noexcept { return self.address_; }
 
         ///@brief Implicitly converts to the underlying raw pointer type.
-        [[nodiscard]] constexpr explicit(false) operator pointer(this auto && self) noexcept { return self.get(); }
+        [[nodiscard]] constexpr explicit(false) operator pointer() const noexcept { return this->.get(); }
 
         ///@brief Contextually converts to `bool` to test if the pointer is engaged.
         [[nodiscard]] constexpr explicit operator bool(this auto && self) noexcept { return (self.address_ != nullptr); }
