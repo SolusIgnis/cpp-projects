@@ -300,30 +300,30 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Provides pointer-like member access to the referenced object.
-        [[nodiscard]] constexpr pointer operator->(this auto && self) noexcept
+        [[nodiscard]] constexpr pointer operator->(this auto&& self) noexcept
             requires (!std::is_void_v<T>)
         {
             return self.address_;
         }
 
         ///@brief Dereferences the pointer to access the referenced object.
-        [[nodiscard]] constexpr reference operator*(this auto && self) noexcept
+        [[nodiscard]] constexpr reference operator*(this auto&& self) noexcept
             requires (!std::is_void_v<T>)
         {
             return *self.address_;
         }
 
         ///@brief Returns the underlying raw pointer.
-        [[nodiscard]] constexpr pointer get(this auto && self) noexcept { return self.address_; }
+        [[nodiscard]] constexpr pointer get(this auto&& self) noexcept { return self.address_; }
 
         ///@brief Implicitly converts to the underlying raw pointer type.
         [[nodiscard]] constexpr explicit(false) operator pointer() noexcept { return this->get(); }
 
         ///@brief Contextually converts to `bool` to test if the pointer is engaged.
-        [[nodiscard]] constexpr explicit operator bool(this auto && self) noexcept { return (self.address_ != nullptr); }
+        [[nodiscard]] constexpr explicit operator bool(this auto&& self) noexcept { return (self.address_ != nullptr); }
         
         ///@brief Returns the underlying raw pointer while resetting to `nullptr`.
-        [[nodiscard]] constexpr pointer release(this auto && self) noexcept { return std::exchange(self.address_, nullptr); }
+        [[nodiscard]] constexpr pointer release(this auto&& self) noexcept { return std::exchange(self.address_, nullptr); }
 
         ///@brief Rebinding passes through to assignment.
         template<typename Self, typename P>
