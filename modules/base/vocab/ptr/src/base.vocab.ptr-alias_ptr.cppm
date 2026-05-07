@@ -288,7 +288,8 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] friend constexpr bool operator==(const alias_ptr& ptr, std::nullptr_t null) noexcept { return (ptr.get() == null); }
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
-        auto operator<=>(alias_ptr) const =
+        template<typename T>
+        auto operator<=>(this Self&&, Self) const =
             delete /*("Comparison operators deleted to prevent address comparisons. `alias_ptr` is not an iterator.")*/;
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
@@ -300,30 +301,30 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Provides pointer-like member access to the referenced object.
-        [[nodiscard]] constexpr pointer operator->(this auto && self) noexcept
+        [[nodiscard]] constexpr pointer operator->(this auto&& self) noexcept
             requires (!std::is_void_v<T>)
         {
             return self.address_;
         }
 
         ///@brief Dereferences the pointer to access the referenced object.
-        [[nodiscard]] constexpr reference operator*(this auto && self) noexcept
+        [[nodiscard]] constexpr reference operator*(this auto&& self) noexcept
             requires (!std::is_void_v<T>)
         {
             return *self.address_;
         }
 
         ///@brief Returns the underlying raw pointer.
-        [[nodiscard]] constexpr pointer get(this auto && self) noexcept { return self.address_; }
+        [[nodiscard]] constexpr pointer get(this auto&& self) noexcept { return self.address_; }
 
         ///@brief Implicitly converts to the underlying raw pointer type.
         [[nodiscard]] constexpr explicit(false) operator pointer() const noexcept { return this->get(); }
 
         ///@brief Contextually converts to `bool` to test if the pointer is engaged.
-        [[nodiscard]] constexpr explicit operator bool(this auto && self) noexcept { return (self.address_ != nullptr); }
+        [[nodiscard]] constexpr explicit operator bool(this auto&& self) noexcept { return (self.address_ != nullptr); }
         
         ///@brief Returns the underlying raw pointer while resetting to `nullptr`.
-        [[nodiscard]] constexpr pointer release(this auto && self) noexcept { return std::exchange(self.address_, nullptr); }
+        [[nodiscard]] constexpr pointer release(this auto&& self) noexcept { return std::exchange(self.address_, nullptr); }
 
         ///@brief Rebinding passes through to assignment.
         template<typename Self, typename P>
