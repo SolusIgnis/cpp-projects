@@ -150,33 +150,34 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief (Conversion) Assigns from another `alias_ptr` according to underlying pointer conversions.
-        template<typename U>
-            requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
-        constexpr alias_ptr& operator=(const alias_ptr<U>& source) noexcept
+        template<typename Self, typename U>
+            requires (!std::is_const_v<Self>) && (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
+        constexpr Self& operator=(this Self& self, const alias_ptr<U>& source) noexcept
         {
-            address_ = source.get();
-            return *this;
+            self.address_ = source.get();
+            return self;
         }
 
         ///@brief Assigns from a raw `pointer`.
-        template<typename P>
-            requires std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, pointer>
-        constexpr alias_ptr& operator=(P&& source)
+        template<typename Self, typename P>
+            requires (!std::is_const_v<Self>) && std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, pointer>
+        constexpr Self& operator=(this Self& self, P&& source)
         {
-            address_ = source;
-            return *this;
+            self.address_ = source;
+            return self;
         }
 
         ///@brief Assigns from another wrapped/smart pointer type.
-        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
+        template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, alias_ptr>)
+                  && (!std::is_const_v<Self>)
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-        constexpr alias_ptr& operator=(const Pointer<Element, Args...>& source)
+        constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source)
         {
-            address_ = source.get();
-            return *this;
+            self.address_ = source.get();
+            return self;
         }
 
         ///@brief Swaps addresses.
@@ -197,7 +198,9 @@ export namespace base::vocab::inline ptr {
         alias_ptr(std::nullptr_t null) :  address_(null) {}
 
         ///@brief Assignment from `nullptr` rebinds to null.
-        alias_ptr& operator=(std::nullptr_t null) { address_ = null; return *this; }
+        template<typename Self>
+            requires (!std::is_const_v<Self>)
+        Self& operator=(this Self& self, std::nullptr_t null) { self.address_ = null; return self; }
 
         //================================================================================
         // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
@@ -219,17 +222,18 @@ export namespace base::vocab::inline ptr {
             ;
 
         ///@brief Deleted assignment from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
-        alias_ptr& operator=(rvalue_reference) =
+        template<typename Self>
+        Self& operator=(this Self&&, rvalue_reference) =
             delete /*("Assignment from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
         ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
-        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
+        template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, alias_ptr>)
                       && requires(Pointer<Element, Args...> ptr) {
                              { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                          }
-        alias_ptr& operator=(const Pointer<Element, Args...>&&) =
+        Self& operator=(this Self&&, const Pointer<Element, Args...>&&) =
             delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
@@ -245,9 +249,9 @@ export namespace base::vocab::inline ptr {
             ;
 
         ///@brief Deleted assignment from C-array to prevent array-to-pointer decay.
-        template<typename AnyCArray>
+        template<typename Self, typename AnyCArray>
             requires std::is_array_v<AnyCArray>
-        alias_ptr& operator=(AnyCArray&) =
+        Self& operator=(this Self&&, AnyCArray&) =
             delete /*("Assignment from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
@@ -313,7 +317,7 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] constexpr pointer get(this auto && self) noexcept { return self.address_; }
 
         ///@brief Implicitly converts to the underlying raw pointer type.
-        [[nodiscard]] constexpr explicit(false) operator pointer() const noexcept { return this->.get(); }
+        [[nodiscard]] constexpr explicit(false) operator pointer() const noexcept { return this->get(); }
 
         ///@brief Contextually converts to `bool` to test if the pointer is engaged.
         [[nodiscard]] constexpr explicit operator bool(this auto && self) noexcept { return (self.address_ != nullptr); }
