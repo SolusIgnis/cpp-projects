@@ -288,7 +288,7 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] friend constexpr bool operator==(const alias_ptr& ptr, std::nullptr_t null) noexcept { return (ptr.get() == null); }
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
-        template<typename T>
+        template<typename Self>
         auto operator<=>(this Self&&, Self) const =
             delete /*("Comparison operators deleted to prevent address comparisons. `alias_ptr` is not an iterator.")*/;
 
