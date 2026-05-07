@@ -317,7 +317,7 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] constexpr pointer get(this auto && self) noexcept { return self.address_; }
 
         ///@brief Implicitly converts to the underlying raw pointer type.
-        [[nodiscard]] constexpr explicit(false) operator pointer(this auto&& self) noexcept { return std::forward_like<decltype(self)>(self.get()); }
+        [[nodiscard]] constexpr explicit(false) operator pointer() noexcept { return this->get(); }
 
         ///@brief Contextually converts to `bool` to test if the pointer is engaged.
         [[nodiscard]] constexpr explicit operator bool(this auto && self) noexcept { return (self.address_ != nullptr); }
