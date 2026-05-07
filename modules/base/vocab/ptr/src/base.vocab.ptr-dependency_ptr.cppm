@@ -311,10 +311,9 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Output a `dependency_ptr` address to a `std::basic_ostream`.
-        template <typename CharT, typename Traits>
-        friend std::basic_ostream<CharT, Traits>& operator<<(
-            std::basic_ostream<CharT, Traits>& stream, 
-            const dependency_ptr& ptr) 
+        template<typename CharT, typename Traits>
+        friend std::basic_ostream<CharT, Traits>&
+            operator<<(std::basic_ostream<CharT, Traits>& stream, const dependency_ptr& ptr)
         {
             // In order to support pointers to arbitrarily cv-qualified objects:
             // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
@@ -525,15 +524,16 @@ struct std::hash<base::vocab::ptr::dependency_ptr<T>> {
  * @remark Formats a `dependency_ptr` as its underlying raw pointer representation.
  */
 template<typename T, typename CharT>
-struct std::formatter<base::vocab::ptr::dependency_ptr<T>, CharT> 
-    : std::formatter<const void*, CharT> {
-    
+struct std::formatter<base::vocab::ptr::dependency_ptr<T>, CharT> : std::formatter<const void*, CharT> {
     ///@brief Format as the underlying raw pointer address.
-    auto format(const base::vocab::ptr::dependency_ptr<T>& ptr, auto& ctx) const {
+    auto format(const base::vocab::ptr::dependency_ptr<T>& ptr, auto& ctx) const
+    {
         // In order to support pointers to arbitrarily cv-qualified objects:
         // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
         // 2. `const_cast` to `const void*` to satisfy the formatter's interface which lacks `volatile void*` specializations.
         // This is safe because formatting is a read-only numerical operation on the address.
-        return std::formatter<const void*, CharT>::format(const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx);
+        return std::formatter<const void*, CharT>::format(
+            const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx
+        );
     }
 };

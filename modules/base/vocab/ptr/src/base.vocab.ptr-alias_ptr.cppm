@@ -135,10 +135,9 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-        constexpr explicit(std::is_void_v<T>) alias_ptr(const Pointer<Element, Args...>& source)
-            : address_(source.get())
+        constexpr explicit(std::is_void_v<T>) alias_ptr(const Pointer<Element, Args...>& source) : address_(source.get())
         {}
-        
+
         ///@brief Rebinds the `alias_ptr` to another object.
         template<typename Self>
             requires (!std::is_const_v<Self>)
@@ -160,7 +159,8 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Assigns from a raw `pointer`.
         template<typename Self, typename P>
-            requires (!std::is_const_v<Self>) && std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, pointer>
+            requires (!std::is_const_v<Self>)
+                  && std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, pointer>
         constexpr Self& operator=(this Self& self, P&& source)
         {
             self.address_ = source;
@@ -170,10 +170,9 @@ export namespace base::vocab::inline ptr {
         ///@brief Assigns from another wrapped/smart pointer type.
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, alias_ptr>)
-                  && (!std::is_const_v<Self>)
-                  && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
-                     }
+                  && (!std::is_const_v<Self>) && requires(Pointer<Element, Args...> ptr) {
+                                                     { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
+                                                 }
         constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source)
         {
             self.address_ = source.get();
@@ -186,7 +185,7 @@ export namespace base::vocab::inline ptr {
             using std::swap;
             swap(lhs.address_, rhs.address_);
         }
-        
+
         //================================================================================
         // Constructors and Assignment Operators: Nullable Implementation
         //================================================================================
@@ -195,12 +194,16 @@ export namespace base::vocab::inline ptr {
         alias_ptr() = default;
 
         ///@brief Constructor from `nullptr` initializes to null.
-        alias_ptr(std::nullptr_t null) :  address_(null) {}
+        alias_ptr(std::nullptr_t null) : address_(null) {}
 
         ///@brief Assignment from `nullptr` rebinds to null.
         template<typename Self>
             requires (!std::is_const_v<Self>)
-        Self& operator=(this Self& self, std::nullptr_t null) { self.address_ = null; return self; }
+        Self& operator=(this Self& self, std::nullptr_t null)
+        {
+            self.address_ = null;
+            return self;
+        }
 
         //================================================================================
         // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
@@ -283,9 +286,12 @@ export namespace base::vocab::inline ptr {
         {
             return (lhs == rhs.get());
         }
-        
+
         ///@brief Compares equality against `nullptr`.
-        [[nodiscard]] friend constexpr bool operator==(const alias_ptr& ptr, std::nullptr_t null) noexcept { return (ptr.get() == null); }
+        [[nodiscard]] friend constexpr bool operator==(const alias_ptr& ptr, std::nullptr_t null) noexcept
+        {
+            return (ptr.get() == null);
+        }
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         template<typename Self>
@@ -322,14 +328,13 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Contextually converts to `bool` to test if the pointer is engaged.
         [[nodiscard]] constexpr explicit operator bool(this auto&& self) noexcept { return (self.address_ != nullptr); }
-        
+
         ///@brief Returns the underlying raw pointer while resetting to `nullptr`.
         [[nodiscard]] constexpr pointer release(this auto&& self) noexcept { return std::exchange(self.address_, nullptr); }
 
         ///@brief Rebinding passes through to assignment.
         template<typename Self, typename P>
-        Self& rebind(this Self& self, P&& source)
-            noexcept(std::is_nothrow_assignable_v<Self&, P>)
+        Self& rebind(this Self& self, P&& source) noexcept(std::is_nothrow_assignable_v<Self&, P>)
             requires std::is_assignable_v<Self&, P>
         {
             return self = std::forward<P>(source);
@@ -341,8 +346,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Reset the pointer to a new address.
         template<typename Self, typename P>
             requires (!std::same_as<P, std::nullptr_t>)
-        constexpr void reset(this Self& self, P&& source)
-            noexcept(std::is_nothrow_assignable_v<Self&, P>)
+        constexpr void reset(this Self& self, P&& source) noexcept(std::is_nothrow_assignable_v<Self&, P>)
             requires std::is_assignable_v<Self&, P>
         {
             self = std::forward<P>(source);
@@ -403,10 +407,8 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Output an `alias_ptr` address to a `std::basic_ostream`.
-        template <typename CharT, typename Traits>
-        friend std::basic_ostream<CharT, Traits>& operator<<(
-            std::basic_ostream<CharT, Traits>& stream, 
-            const alias_ptr& ptr) 
+        template<typename CharT, typename Traits>
+        friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& stream, const alias_ptr& ptr)
         {
             // In order to support pointers to arbitrarily cv-qualified objects:
             // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
@@ -415,7 +417,7 @@ export namespace base::vocab::inline ptr {
             return stream << const_cast<const void*>(static_cast<const volatile void*>(ptr.get()));
         }
     }; //class alias_ptr
-    
+
     /**
      * @fn explicit alias_ptr::alias_ptr(reference source) noexcept
      *
@@ -643,7 +645,7 @@ export namespace base::vocab::inline ptr {
      * @remark Models pointer interface by providing contextual conversion to `bool`.
      */
 
-     /**
+    /**
      * @brief Deduction guide for `alias_ptr`.
      *
      * @tparam T The type of the referenced object.
@@ -690,15 +692,16 @@ struct std::hash<base::vocab::ptr::alias_ptr<T>> {
  * @remark Formats an `alias_ptr` as its underlying raw pointer representation.
  */
 template<typename T, typename CharT>
-struct std::formatter<base::vocab::ptr::alias_ptr<T>, CharT> 
-    : std::formatter<const void*, CharT> {
-    
+struct std::formatter<base::vocab::ptr::alias_ptr<T>, CharT> : std::formatter<const void*, CharT> {
     ///@brief Format as the underlying raw pointer address.
-    auto format(const base::vocab::ptr::alias_ptr<T>& ptr, auto& ctx) const {
+    auto format(const base::vocab::ptr::alias_ptr<T>& ptr, auto& ctx) const
+    {
         // In order to support pointers to arbitrarily cv-qualified objects:
         // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
         // 2. `const_cast` to `const void*` to satisfy the formatter's interface which lacks `volatile void*` specializations.
         // This is safe because formatting is a read-only numerical operation on the address.
-        return std::formatter<const void*, CharT>::format(const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx);
+        return std::formatter<const void*, CharT>::format(
+            const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx
+        );
     }
 };

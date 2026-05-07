@@ -138,10 +138,8 @@ namespace {
             expect(eq(rref, true));
             expect(eq(ptrdiff, true));
         };
-        
-        "indirectly readable"_test = [] mutable {
-            expect(eq(std::indirectly_readable<alias_ptr<std::int32_t>>, true));
-        };
+
+        "indirectly readable"_test = [] mutable { expect(eq(std::indirectly_readable<alias_ptr<std::int32_t>>, true)); };
 
         //============================================================
         // Construction
@@ -175,9 +173,7 @@ namespace {
             expect(eq(std::convertible_to<const test_type&, alias_ptr<const test_type>>, false));
         };
 
-        "default constructible"_test = [] mutable {
-            expect(eq(std::default_initializable<alias_ptr<std::int32_t>>, true));
-        };
+        "default constructible"_test = [] mutable { expect(eq(std::default_initializable<alias_ptr<std::int32_t>>, true)); };
 
         "constructible from nullptr"_test = [] mutable {
             expect(eq(std::constructible_from<alias_ptr<std::int32_t>, std::nullptr_t>, true));
@@ -241,21 +237,17 @@ namespace {
             expect(eq(std::constructible_from<alias_ptr<volatile test_type>, trivial_smart_ptr<const test_type>&>, false));
             expect(eq(std::constructible_from<alias_ptr<volatile test_type>, trivial_smart_ptr<volatile test_type>&>, true));
             expect(
-                eq(std::constructible_from<alias_ptr<volatile test_type>, trivial_smart_ptr<const volatile test_type>&>,
-                   false)
+                eq(std::constructible_from<alias_ptr<volatile test_type>, trivial_smart_ptr<const volatile test_type>&>, false)
             );
             expect(eq(std::constructible_from<alias_ptr<const volatile test_type>, trivial_smart_ptr<test_type>&>, true));
+            expect(eq(std::constructible_from<alias_ptr<const volatile test_type>, trivial_smart_ptr<const test_type>&>, true));
             expect(
-                eq(std::constructible_from<alias_ptr<const volatile test_type>, trivial_smart_ptr<const test_type>&>, true)
+                eq(std::constructible_from<alias_ptr<const volatile test_type>, trivial_smart_ptr<volatile test_type>&>, true)
             );
             expect(
-                eq(std::constructible_from<alias_ptr<const volatile test_type>, trivial_smart_ptr<volatile test_type>&>,
+                eq(std::constructible_from<alias_ptr<const volatile test_type>, trivial_smart_ptr<const volatile test_type>&>,
                    true)
             );
-            expect(eq(
-                std::constructible_from<alias_ptr<const volatile test_type>, trivial_smart_ptr<const volatile test_type>&>,
-                true
-            ));
 
             //Implicitly convertible unless removing qualifier
             expect(eq(std::convertible_to<trivial_smart_ptr<test_type>&, alias_ptr<test_type>>, true));
@@ -269,17 +261,12 @@ namespace {
             expect(eq(std::convertible_to<trivial_smart_ptr<test_type>&, alias_ptr<volatile test_type>>, true));
             expect(eq(std::convertible_to<trivial_smart_ptr<const test_type>&, alias_ptr<volatile test_type>>, false));
             expect(eq(std::convertible_to<trivial_smart_ptr<volatile test_type>&, alias_ptr<volatile test_type>>, true));
-            expect(
-                eq(std::convertible_to<trivial_smart_ptr<const volatile test_type>&, alias_ptr<volatile test_type>>, false)
-            );
+            expect(eq(std::convertible_to<trivial_smart_ptr<const volatile test_type>&, alias_ptr<volatile test_type>>, false));
             expect(eq(std::convertible_to<trivial_smart_ptr<test_type>&, alias_ptr<const volatile test_type>>, true));
             expect(eq(std::convertible_to<trivial_smart_ptr<const test_type>&, alias_ptr<const volatile test_type>>, true));
+            expect(eq(std::convertible_to<trivial_smart_ptr<volatile test_type>&, alias_ptr<const volatile test_type>>, true));
             expect(
-                eq(std::convertible_to<trivial_smart_ptr<volatile test_type>&, alias_ptr<const volatile test_type>>, true)
-            );
-            expect(
-                eq(std::convertible_to<trivial_smart_ptr<const volatile test_type>&, alias_ptr<const volatile test_type>>,
-                   true)
+                eq(std::convertible_to<trivial_smart_ptr<const volatile test_type>&, alias_ptr<const volatile test_type>>, true)
             );
         };
 
@@ -353,9 +340,7 @@ namespace {
             expect(eq(std::is_assignable_v<alias_ptr<const test_type>&, trivial_smart_ptr<test_type>&>, true));
             expect(eq(std::is_assignable_v<alias_ptr<const test_type>&, trivial_smart_ptr<const test_type>&>, true));
             expect(eq(std::is_assignable_v<alias_ptr<const test_type>&, trivial_smart_ptr<volatile test_type>&>, false));
-            expect(
-                eq(std::is_assignable_v<alias_ptr<const test_type>&, trivial_smart_ptr<const volatile test_type>&>, false)
-            );
+            expect(eq(std::is_assignable_v<alias_ptr<const test_type>&, trivial_smart_ptr<const volatile test_type>&>, false));
             expect(eq(std::is_assignable_v<alias_ptr<volatile test_type>&, trivial_smart_ptr<test_type>&>, true));
             expect(eq(std::is_assignable_v<alias_ptr<volatile test_type>&, trivial_smart_ptr<const test_type>&>, false));
             expect(eq(std::is_assignable_v<alias_ptr<volatile test_type>&, trivial_smart_ptr<volatile test_type>&>, true));
@@ -363,9 +348,7 @@ namespace {
                 eq(std::is_assignable_v<alias_ptr<volatile test_type>&, trivial_smart_ptr<const volatile test_type>&>, false)
             );
             expect(eq(std::is_assignable_v<alias_ptr<const volatile test_type>&, trivial_smart_ptr<test_type>&>, true));
-            expect(
-                eq(std::is_assignable_v<alias_ptr<const volatile test_type>&, trivial_smart_ptr<const test_type>&>, true)
-            );
+            expect(eq(std::is_assignable_v<alias_ptr<const volatile test_type>&, trivial_smart_ptr<const test_type>&>, true));
             expect(
                 eq(std::is_assignable_v<alias_ptr<const volatile test_type>&, trivial_smart_ptr<volatile test_type>&>, true)
             );
@@ -465,7 +448,7 @@ namespace {
             expect(eq(*ptr, 2));
             expect(eq(ptr.get(), std::addressof(b)));
         };
-        
+
         "rebind via `rebind` call with reference argument"_test = [] mutable {
             const int a{};
             const int b = 2;
@@ -760,21 +743,13 @@ namespace {
         };
 
         "common_type works covariantly"_test = [] mutable {
-            using common_t =
-                std::common_type_t<
-                    alias_ptr<derived_type>,
-                    alias_ptr<base_type>
-                >;
+            using common_t = std::common_type_t<alias_ptr<derived_type>, alias_ptr<base_type>>;
 
             expect(eq(std::same_as<common_t, alias_ptr<base_type>>, true));
         };
 
         "common_reference works covariantly"_test = [] mutable {
-            using common_ref =
-                std::common_reference_t<
-                    alias_ptr<derived_type>,
-                    alias_ptr<base_type>
-                >;
+            using common_ref = std::common_reference_t<alias_ptr<derived_type>, alias_ptr<base_type>>;
 
             expect(eq(std::same_as<common_ref, alias_ptr<base_type>>, true));
         };
@@ -803,7 +778,7 @@ namespace {
             expect(eq(std::three_way_comparable_with<alias_ptr<base_type>, derived_type*>, false));
             expect(eq(std::three_way_comparable_with<base_type*, alias_ptr<derived_type>>, false));
         };
-        
+
         "not input or output iterator"_test = [] mutable {
             //note: all other iterator concepts subsume this one and thus are implicitly false when it is false
             expect(eq(std::input_or_output_iterator<alias_ptr<std::int32_t>>, false));
@@ -890,21 +865,13 @@ namespace {
         };
 
         "common_type preserves const qualification"_test = [] mutable {
-            using common_t =
-                std::common_type_t<
-                    alias_ptr<std::int32_t>,
-                    alias_ptr<const std::int32_t>
-                >;
+            using common_t = std::common_type_t<alias_ptr<std::int32_t>, alias_ptr<const std::int32_t>>;
 
             expect(eq(std::same_as<common_t, alias_ptr<const std::int32_t>>, true));
         };
 
         "common_reference preserves const qualification"_test = [] mutable {
-            using common_ref =
-                std::common_reference_t<
-                    alias_ptr<std::int32_t>,
-                    alias_ptr<const std::int32_t>
-                >;
+            using common_ref = std::common_reference_t<alias_ptr<std::int32_t>, alias_ptr<const std::int32_t>>;
 
             expect(eq(std::same_as<common_ref, alias_ptr<const std::int32_t>>, true));
         };
@@ -1077,7 +1044,7 @@ namespace {
             expect(eq(lhs == rhs, true));
             expect(eq(lhs_hash == rhs_hash, true));
         };
-        
+
         //============================================================
         // Formatting and output stream support
         //============================================================
@@ -1087,11 +1054,9 @@ namespace {
 
             alias_ptr<std::int32_t> ptr{value};
 
-            const auto formatted_ptr =
-                std::format("{}", ptr);
+            const auto formatted_ptr = std::format("{}", ptr);
 
-            const auto formatted_raw =
-                std::format<void*>("{}", std::addressof(value));
+            const auto formatted_raw = std::format<void*>("{}", std::addressof(value));
 
             expect(eq(formatted_ptr, formatted_raw));
         };
@@ -1099,11 +1064,9 @@ namespace {
         "std::formatter formats null equivalently to raw pointer"_test = [] mutable {
             alias_ptr<std::int32_t> ptr{nullptr};
 
-            const auto formatted_ptr =
-                std::format("{}", ptr);
+            const auto formatted_ptr = std::format("{}", ptr);
 
-            const auto formatted_raw =
-                std::format<void*>("{}", nullptr);
+            const auto formatted_raw = std::format<void*>("{}", nullptr);
 
             expect(eq(formatted_ptr, formatted_raw));
         };
@@ -1113,11 +1076,9 @@ namespace {
 
             alias_ptr<const std::int32_t> ptr{value};
 
-            const auto formatted_ptr =
-                std::format("{}", ptr);
+            const auto formatted_ptr = std::format("{}", ptr);
 
-            const auto formatted_raw =
-                std::format<const void*>("{}", std::addressof(value));
+            const auto formatted_raw = std::format<const void*>("{}", std::addressof(value));
 
             expect(eq(formatted_ptr, formatted_raw));
         };
