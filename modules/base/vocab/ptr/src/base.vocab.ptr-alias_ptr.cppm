@@ -320,16 +320,16 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] constexpr pointer release() noexcept { return std::exchange(address_, nullptr); }
 
         ///@brief Rebinding passes through to assignment.
-        template<typename P>
-        alias_ptr& rebind(P&& source)
-            noexcept(std::is_nothrow_assignable_v<alias_ptr&, P>)
-            requires std::is_assignable_v<alias_ptr&, P>
+        template<typename Self, typename P>
+        Self& rebind(this Self& self, P&& source)
+            noexcept(std::is_nothrow_assignable_v<Self&, P>)
+            requires std::is_assignable_v<Self&, P>
         {
-            return *this = std::forward<P>(source);
+            return self = std::forward<P>(source);
         }
 
         ///@brief Reset the pointer to `nullptr`.
-        constexpr void reset(std::nullptr_t null = nullptr) noexcept { (void) rebind(null); }
+        constexpr void reset(this auto& self, std::nullptr_t null = nullptr) noexcept { self = null; }
 
         ///@brief Reset the pointer to a new address.
         template<typename P>
