@@ -289,7 +289,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         template<typename Self>
-        auto operator<=>(this Self&&, Self) const =
+        auto operator<=>(this Self&&, Self) =
             delete /*("Comparison operators deleted to prevent address comparisons. `alias_ptr` is not an iterator.")*/;
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
