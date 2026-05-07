@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-dependency_ptr.cppm
- * @version 0.3.0
- * @date April 26, 2026
+ * @version 0.4.0
+ * @date May 3, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -305,6 +305,22 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
         friend dependency_ptr operator-(dependency_ptr, difference_type) =
             delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `dependency_ptr` is not an iterator.")*/;
+
+        //================================================================================
+        // Stream Output
+        //================================================================================
+
+        ///@brief Output a `dependency_ptr` address to a `std::basic_ostream`.
+        template<typename CharT, typename Traits>
+        friend std::basic_ostream<CharT, Traits>&
+            operator<<(std::basic_ostream<CharT, Traits>& stream, const dependency_ptr& ptr)
+        {
+            // In order to support pointers to arbitrarily cv-qualified objects:
+            // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
+            // 2. `const_cast` to `const void*` to satisfy the inserter's interface which lacks `volatile void*` overloads.
+            // This is safe because formatting is a read-only numerical operation on the address.
+            return stream << const_cast<const void*>(static_cast<const volatile void*>(ptr.get()));
+        }
     }; //class dependency_ptr
 
     /**
@@ -491,10 +507,33 @@ export namespace base::vocab::inline ptr {
  * @tparam T The element type of the `dependency_ptr`.
  */
 template<class T>
-struct std::hash<base::vocab::dependency_ptr<T>> {
+struct std::hash<base::vocab::ptr::dependency_ptr<T>> {
     ///@brief Hashes the `dependency_ptr` based on the underlying address.
-    [[nodiscard]] constexpr std::size_t operator()(const base::vocab::dependency_ptr<T>& ptr) const noexcept
+    [[nodiscard]] constexpr std::size_t operator()(const base::vocab::ptr::dependency_ptr<T>& ptr) const noexcept
     {
         return std::hash<T*>{}(ptr.get());
+    }
+};
+
+/**
+ * @brief Partial specialization of `std::formatter` for `dependency_ptr`.
+ *
+ * @tparam T The element type of the `dependency_ptr`.
+ * @tparam CharT The character type used by the format string.
+ *
+ * @remark Formats a `dependency_ptr` as its underlying raw pointer representation.
+ */
+template<typename T, typename CharT>
+struct std::formatter<base::vocab::ptr::dependency_ptr<T>, CharT> : std::formatter<const void*, CharT> {
+    ///@brief Format as the underlying raw pointer address.
+    auto format(const base::vocab::ptr::dependency_ptr<T>& ptr, auto& ctx) const
+    {
+        // In order to support pointers to arbitrarily cv-qualified objects:
+        // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
+        // 2. `const_cast` to `const void*` to satisfy the formatter's interface which lacks `volatile void*` specializations.
+        // This is safe because formatting is a read-only numerical operation on the address.
+        return std::formatter<const void*, CharT>::format(
+            const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx
+        );
     }
 };
