@@ -64,7 +64,7 @@ namespace {
             expect(eq(instantiable_with<cursor_ptr, std::int32_t*>, true));
             expect(eq(instantiable_with<cursor_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
 
-            expect(eq(instantiable_with<cursor_ptr, void>, true));
+            expect(eq(instantiable_with<cursor_ptr, void>, false));
 
             expect(eq(instantiable_with<cursor_ptr, std::int32_t&>, false));
             expect(eq(instantiable_with<cursor_ptr, std::int32_t&&>, false));
@@ -738,28 +738,28 @@ namespace {
         };
 
         //============================================================
-        // Non-iterator / non-arithmetic guarantees
+        // Arithmetic operations
         //============================================================
 
         "no pointer arithmetic operations"_test = [] mutable {
             using T = cursor_ptr<std::int32_t>;
 
-            expect(eq(HasAddition<T>, false));
-            expect(eq(HasSubtraction<T>, false));
-            expect(eq(HasDifference<T>, false));
-            expect(eq(HasPreIncrement<T>, false));
-            expect(eq(HasPostIncrement<T>, false));
-            expect(eq(HasPreDecrement<T>, false));
-            expect(eq(HasPostDecrement<T>, false));
+            expect(eq(HasAddition<T>, true));
+            expect(eq(HasSubtraction<T>, true));
+            expect(eq(HasDifference<T>, true));
+            expect(eq(HasPreIncrement<T>, true));
+            expect(eq(HasPostIncrement<T>, true));
+            expect(eq(HasPreDecrement<T>, true));
+            expect(eq(HasPostDecrement<T>, true));
         };
 
         "no ordering comparisons"_test = [] mutable {
-            expect(eq(std::three_way_comparable<cursor_ptr<std::int32_t>>, false));
-            expect(eq(std::three_way_comparable_with<cursor_ptr<std::int32_t>, std::int32_t*>, false));
-            expect(eq(std::three_way_comparable<cursor_ptr<base_type>>, false));
-            expect(eq(std::three_way_comparable_with<cursor_ptr<base_type>, cursor_ptr<derived_type>>, false));
-            expect(eq(std::three_way_comparable_with<cursor_ptr<base_type>, derived_type*>, false));
-            expect(eq(std::three_way_comparable_with<base_type*, cursor_ptr<derived_type>>, false));
+            expect(eq(std::three_way_comparable<cursor_ptr<std::int32_t>>, true));
+            expect(eq(std::three_way_comparable_with<cursor_ptr<std::int32_t>, std::int32_t*>, true));
+            expect(eq(std::three_way_comparable<cursor_ptr<base_type>>, true));
+            expect(eq(std::three_way_comparable_with<cursor_ptr<base_type>, cursor_ptr<derived_type>>, true));
+            expect(eq(std::three_way_comparable_with<cursor_ptr<base_type>, derived_type*>, true));
+            expect(eq(std::three_way_comparable_with<base_type*, cursor_ptr<derived_type>>, true));
         };
 
         //============================================================
