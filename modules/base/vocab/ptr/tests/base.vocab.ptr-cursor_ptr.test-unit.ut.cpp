@@ -464,7 +464,7 @@ namespace {
             const int a{};
             const int b = 2;
 
-            alias_ptr<const std::int32_t> ptr{a};
+            cursor_ptr<const std::int32_t> ptr{a};
             ptr.rebind(b);
 
             expect(eq(*ptr, 2));
@@ -475,7 +475,7 @@ namespace {
             const int a{};
             const int b = 2;
 
-            alias_ptr<const std::int32_t> ptr{a};
+            cursor_ptr<const std::int32_t> ptr{a};
             ptr.reset(b);
 
             expect(eq(*ptr, 2));
@@ -632,8 +632,8 @@ namespace {
             const std::int32_t a = 1;
             const std::int32_t b = 2;
 
-            alias_ptr<const std::int32_t> lhs{a};
-            alias_ptr<const std::int32_t> rhs{b};
+            cursor_ptr<const std::int32_t> lhs{a};
+            cursor_ptr<const std::int32_t> rhs{b};
 
             using std::swap;
             swap(lhs, rhs);
