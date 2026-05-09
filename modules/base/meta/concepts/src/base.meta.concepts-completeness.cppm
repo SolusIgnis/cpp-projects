@@ -23,7 +23,7 @@
  */
 
 //Module partition interface unit
-export module base.meta.concepts:instantiable_with;
+export module base.meta.concepts:completeness;
 
 import std;
 
