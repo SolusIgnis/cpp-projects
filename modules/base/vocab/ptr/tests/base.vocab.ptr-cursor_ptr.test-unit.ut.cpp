@@ -904,7 +904,7 @@ namespace {
         struct incomplete_type;
         
         "incomplete type support"_test = [] mutable {
-            expect(eq(instantiable_with<cursor_ptr, incomplete_type>, true));
+            expect(eq(base::meta::concepts::instantiable_with<cursor_ptr, incomplete_type>, true));
         
             incomplete_type* raw = reinterpret_cast<incomplete_type*>(0x1234);
         
