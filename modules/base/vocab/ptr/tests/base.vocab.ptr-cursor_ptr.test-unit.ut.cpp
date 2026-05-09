@@ -947,7 +947,7 @@ namespace {
             cursor_ptr<int> first{values[0]};
             cursor_ptr<int> last{values[3]};
         
-            expect(eq(last - first, 3));
+            expect(eq(last - first, 3L));
         };
         
         "increment and decrement traverse correctly"_test = [] mutable {
@@ -1013,7 +1013,7 @@ namespace {
         };
         
         "constexpr arithmetic"_test = [] {
-            constexpr int values[] = {2,4,6};
+            static constexpr int values[] = {2,4,6};
 
             constexpr cursor_ptr<const int> ptr{values[0]};
 
