@@ -380,39 +380,39 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Prefix increment: increments the stored address.
         template<typename Self>
-        Self& operator++(this Self&& self)  { ++self.address_; return self; }
+        constexpr Self& operator++(this Self&& self)  { ++self.address_; return self; }
 
         ///@brief Prefix decrement: decrements the stored address.
         template<typename Self>
-        Self& operator--(this Self&& self) { --self.address_; return self; }
+        constexpr Self& operator--(this Self&& self) { --self.address_; return self; }
 
         ///@brief Postfix increment: increments the stored address but return a pointer to the prior stored address.
         template<typename Self>
-        Self operator++(this Self&& self, int) { Self old{self}; ++self; return old; }
+        constexpr Self operator++(this Self&& self, int) { Self old{self}; ++self; return old; }
 
         ///@brief Postfix decrement: decrements the stored address but return a pointer to the prior stored address.
         template<typename Self>
-        Self operator--(this Self&& self, int) { Self old{self}; --self; return old; }
+        constexpr Self operator--(this Self&& self, int) { Self old{self}; --self; return old; }
 
         ///@brief Addition assignment: increments the stored address by a given distance.
         template<typename Self>
-        Self& operator+=(this Self&& self, difference_type diff) { self.address_ += diff; return self; }
+        constexpr Self& operator+=(this Self&& self, difference_type diff) { self.address_ += diff; return self; }
 
         ///@brief Subtraction assignment: decrements the stored address by a given distance.
         template<typename Self>
-        Self& operator-=(this Self&& self, difference_type diff)  { self.address_ -= diff; return self; }
+        constexpr Self& operator-=(this Self&& self, difference_type diff)  { self.address_ -= diff; return self; }
 
         ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
-        friend cursor_ptr operator+(cursor_ptr ptr, difference_type diff) { return ptr += diff; }
+        friend constexpr cursor_ptr operator+(cursor_ptr ptr, difference_type diff) { return ptr += diff; }
 
         ///@brief Pointer addition (commutative): gets a pointer to an address a given distance after the stored address.
-        friend cursor_ptr operator+(difference_type diff, cursor_ptr ptr) { return ptr += diff; }
+        friend constexpr cursor_ptr operator+(difference_type diff, cursor_ptr ptr) { return ptr += diff; }
 
         ///@brief Pointer subtraction: gets a pointer to an address a given distance before the stored address.
-        friend cursor_ptr operator-(cursor_ptr ptr, difference_type diff) noexcept { return ptr -= diff; }
+        friend constexpr cursor_ptr operator-(cursor_ptr ptr, difference_type diff) noexcept { return ptr -= diff; }
 
         ///@brief Pointer subtraction (difference): computes the distance between the addresses stored in two pointers.
-        friend difference_type operator-(cursor_ptr lhs, cursor_ptr rhs) noexcept { return lhs.get() - rhs.get(); }
+        friend constexpr difference_type operator-(cursor_ptr lhs, cursor_ptr rhs) noexcept { return lhs.get() - rhs.get(); }
 
         //================================================================================
         // Stream Output
