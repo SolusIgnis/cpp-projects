@@ -77,6 +77,7 @@ export module base.vocab.ptr:alias_ptr;
 import std;
 
 import base.meta.traits;
+import base.meta.concepts;
 
 import :forward_declarations;
 
@@ -353,14 +354,14 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Provides member access to the pointee object.
         [[nodiscard]] constexpr pointer operator->(this auto&& self) noexcept
-            requires (!std::is_void_v<T>)
+            requires base::meta::concepts::complete_pointee<T>
         {
             return self.address_;
         }
 
         ///@brief Provides a reference to the pointee object.
         [[nodiscard]] constexpr reference operator*(this auto&& self) noexcept
-            requires (!std::is_void_v<T>)
+            requires base::meta::concepts::complete_pointee<T>
         {
             return *self.address_;
         }

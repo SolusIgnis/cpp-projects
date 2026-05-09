@@ -42,6 +42,7 @@ export module base.vocab.ptr:dependency_ptr;
 import std;
 
 import base.meta.traits;
+import base.meta.concepts;
 
 import :forward_declarations;
 
@@ -248,10 +249,10 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Provides pointer-like member access to the referenced object.
-        [[nodiscard]] constexpr pointer operator->() const noexcept { return address_; }
+        [[nodiscard]] constexpr pointer operator->() const noexcept requires base::meta::concepts::complete_pointee<T> { return address_; }
 
         ///@brief Dereferences the pointer to access the referenced object.
-        [[nodiscard]] constexpr reference operator*() const noexcept { return *address_; }
+        [[nodiscard]] constexpr reference operator*() const noexcept requires base::meta::concepts::complete_pointee<T> { return *address_; }
 
         ///@brief Returns the underlying raw pointer.
         [[nodiscard]] constexpr pointer get() const noexcept { return address_; }

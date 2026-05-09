@@ -90,6 +90,7 @@ namespace {
             expect(eq(std::is_trivially_copy_assignable_v<cursor_ptr<simple_t>>, true));
             expect(eq(std::is_trivially_move_assignable_v<cursor_ptr<simple_t>>, true));
             expect(eq(std::is_nothrow_constructible_v<cursor_ptr<simple_t>, simple_t&>, true));
+            expect(eq(std::is_nothrow_swappable_v<cursor_ptr<int>>, true));
 
             using complex_t = std::map<std::string, std::vector<std::int32_t>>;
 
@@ -481,6 +482,20 @@ namespace {
             expect(eq(*ptr, 2));
             expect(eq(ptr.get(), std::addressof(b)));
         };
+        
+        "moved-from object may be rebound"_test = [] mutable {
+            std::int32_t a = 1;
+            std::int32_t b = 2;
+        
+            cursor_ptr<std::int32_t> source{a};
+            cursor_ptr<std::int32_t> target{std::move(source)};
+        
+            //Rebind moved-from `source` to reference `b`
+            source = b;
+        
+            expect(eq(*target, a));
+            expect(eq(*source, b));
+        };
 
         //============================================================
         // Non-nullable exception throwing
@@ -741,7 +756,7 @@ namespace {
         // Arithmetic operations
         //============================================================
 
-        "no pointer arithmetic operations"_test = [] mutable {
+        "pointer arithmetic operations"_test = [] mutable {
             using T = cursor_ptr<std::int32_t>;
 
             expect(eq(HasAddition<T>, true));
@@ -753,7 +768,7 @@ namespace {
             expect(eq(HasPostDecrement<T>, true));
         };
 
-        "no ordering comparisons"_test = [] mutable {
+        "ordering comparisons"_test = [] mutable {
             expect(eq(std::three_way_comparable<cursor_ptr<std::int32_t>>, true));
             //expect(eq(std::three_way_comparable_with<cursor_ptr<std::int32_t>, std::int32_t*>, true)); //TODO: this needs common_type or basic_common_reference work
             expect(eq(std::three_way_comparable<cursor_ptr<base_type>>, true));
@@ -883,6 +898,96 @@ namespace {
         };
 
         //============================================================
+        // Incomplete types
+        //============================================================
+        
+        struct incomplete_type;
+        
+        "incomplete type support"_test = [] mutable {
+            expect(eq(instantiable_with<cursor_ptr, incomplete_type>, true));
+        
+            incomplete_type* raw = reinterpret_cast<incomplete_type*>(0x1234);
+        
+            cursor_ptr<incomplete_type> ptr{raw};
+        
+            expect(eq(ptr.get(), raw));
+        };
+        
+        struct incomplete_type {
+            int value;
+        };
+        
+        "incomplete type becomes usable after completion"_test = [] mutable {
+            incomplete_type obj{42};
+        
+            cursor_ptr<incomplete_type> ptr{obj};
+        
+            expect(eq(ptr->value, 42));
+            expect(eq((*ptr).value, 42));
+        };
+
+        //============================================================
+        // Traversal identity
+        //============================================================
+        
+        "pointer arithmetic preserves native traversal semantics"_test = [] mutable {
+            int values[] = {10, 20, 30, 40};
+        
+            cursor_ptr<int> ptr{values[0]};
+        
+            auto advanced = ptr + 2;
+        
+            expect(eq(*advanced, 30));
+            expect(eq(advanced.get(), values + 2));
+        };
+        
+        "difference matches raw pointer semantics"_test = [] mutable {
+            int values[] = {10, 20, 30, 40};
+        
+            cursor_ptr<int> first{values[0]};
+            cursor_ptr<int> last{values[3]};
+        
+            expect(eq(last - first, 3));
+        };
+        
+        "increment and decrement traverse correctly"_test = [] mutable {
+            int values[] = {1, 2, 3};
+        
+            cursor_ptr<int> ptr{values[0]};
+        
+            ++ptr;
+            expect(eq(*ptr, 2));
+        
+            ptr++;
+            expect(eq(*ptr, 3));
+        
+            --ptr;
+            expect(eq(*ptr, 2));
+        
+            ptr--;
+            expect(eq(*ptr, 1));
+        };
+        
+        "subscript matches raw pointer indexing"_test = [] mutable {
+            int values[] = {5, 6, 7, 8};
+        
+            cursor_ptr<int> ptr{values[0]};
+        
+            expect(eq(ptr[0], 5));
+            expect(eq(ptr[1], 6));
+            expect(eq(ptr[2], 7));
+        };
+        
+        "mixed raw and cursor arithmetic produce identical addresses"_test = [] mutable {
+            int values[] = {1, 2, 3, 4};
+        
+            cursor_ptr<int> ptr{values[0]};
+        
+            expect(eq((ptr + 3).get(), values + 3));
+            expect(eq((3 + ptr).get(), values + 3));
+        };
+        
+        //============================================================
         // CTAD Guide
         //============================================================
 
@@ -905,6 +1010,65 @@ namespace {
             constexpr cursor_ptr<const int> ptr{x};
 
             expect(eq(*ptr, 42));
+        };
+        
+        "constexpr arithmetic"_test = [] {
+            constexpr int values[] = {2,4,6};
+
+            constexpr cursor_ptr<const int> ptr{values[0]};
+
+            constexpr auto next = ptr + 1;
+            expect(eq(*next, 4));
+        };
+        
+        "constexpr get and boolean conversion"_test = [] {
+            static constexpr int value = 7;
+        
+            constexpr cursor_ptr<const int> ptr{value};
+        
+            expect(eq(ptr.get(), std::addressof(value)));
+            expect(eq(static_cast<bool>(ptr), true));
+        };
+        
+        "constexpr equality"_test = [] {
+            static constexpr int value = 11;
+        
+            constexpr cursor_ptr<const int> a{value};
+            constexpr cursor_ptr<const int> b{value};
+        
+            expect(eq(a == b, true));
+        };
+        
+        "constexpr rebinding"_test = [] {
+            static constexpr int a = 1;
+            static constexpr int b = 2;
+        
+            constexpr auto rebound = std::invoke([] {
+                cursor_ptr<const int> ptr{a};
+                ptr = b;
+                return ptr;
+            });
+        
+            expect(eq(*rebound, 2));
+            expect(eq(rebound.get(), std::addressof(b)));
+        };
+        
+        "constexpr swap"_test = [] {
+            static constexpr int a = 1;
+            static constexpr int b = 2;
+        
+            constexpr auto swapped = std::invoke([] {
+                cursor_ptr<const int> lhs{a};
+                cursor_ptr<const int> rhs{b};
+        
+                using std::swap;
+                swap(lhs, rhs);
+        
+                return std::pair{lhs, rhs};
+            });
+        
+            expect(eq(*swapped.first, 2));
+            expect(eq(*swapped.second, 1));
         };
 
     };

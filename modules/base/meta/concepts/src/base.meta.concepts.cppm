@@ -3,8 +3,8 @@
 /**
  * @module base.meta.concepts
  * @file base.meta.concepts.cppm
- * @version 0.0.1
- * @date April 26, 2026
+ * @version 0.0.2
+ * @date May 8, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -23,6 +23,7 @@
  * @brief Primary module interface for the metaprogramming `concept`s module.
  * @details Exports partitions for:
  *   - `:instantiable_with` = Determines if a type template can be instantiated by substituting a given set of arguments.
+ *   - `:completeness`      = Determines completeness properties of a type.
  */
 
 //Primary module interface unit
@@ -30,3 +31,4 @@ export module base.meta.concepts;
 
 //Export all partition interfaces
 export import :instantiable_with; ///< @see "base.meta.concepts-instantiable_with.cppm"
+export import :completeness;      ///< @see "base.meta.concepts-completeness.cppm"
