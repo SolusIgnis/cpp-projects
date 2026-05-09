@@ -93,8 +93,10 @@ export namespace base::vocab::inline ptr {
      * @see `alias_ptr` for nullable aliasing, `required_ptr` for non-null aliasing, `dependency_ptr` for dependency injection structural non-nullability, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */
     template<typename T>
-        requires (!std::is_reference_v<T> && !std::is_void_v<T>
-                  && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>)
+        requires (
+            !std::is_reference_v<T> && !std::is_void_v<T>
+            && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>
+        )
     class cursor_ptr {
     public:
         /**
@@ -148,9 +150,7 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Constructs a `cursor_ptr` bound to an existing object.
-        constexpr explicit cursor_ptr(reference source) noexcept
-            : address_(std::addressof(source))
-        {}
+        constexpr explicit cursor_ptr(reference source) noexcept : address_(std::addressof(source)) {}
 
         ///@brief (Conversion) Implicitly converts from another `cursor_ptr` according to nested `pointer` type conversions.
         template<typename U>
@@ -352,7 +352,8 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] constexpr explicit operator bool() const noexcept { return true; }
 
         ///@brief Deleted `release` to prevent sources of invalid null rebinding.
-        [[nodiscard]] constexpr pointer release() = delete/*("`release` deleted to prevent null rebinding. Use `std::optional<cursor_ptr<T>>` for optionality.")*/;
+        [[nodiscard]] constexpr pointer release() =
+            delete /*("`release` deleted to prevent null rebinding. Use `std::optional<cursor_ptr<T>>` for optionality.")*/;
 
         ///@brief Rebinding passes through to assignment.
         template<typename Self, typename P>
@@ -363,7 +364,9 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Deleted `reset` from `nullptr` to prevent sources of invalid null rebinding.
-        constexpr void reset(this auto& self, std::nullptr_t null = nullptr) = delete/*("`reset` to `nullptr` deleted to prevent null rebinding. Use `std::optional<cursor_ptr<T>>` for optionality.")*/;
+        constexpr void reset(this auto& self, std::nullptr_t null = nullptr) =
+            delete /*("`reset` to `nullptr` deleted to prevent null rebinding. Use `std::optional<cursor_ptr<T>>` for optionality.")*/
+            ;
 
         ///@brief Resets the pointer to a new address.
         template<typename Self, typename P>
@@ -380,27 +383,53 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Prefix increment: increments the stored address.
         template<typename Self>
-        constexpr Self& operator++(this Self&& self)  { ++self.address_; return self; }
+        constexpr Self& operator++(this Self&& self)
+        {
+            ++self.address_;
+            return self;
+        }
 
         ///@brief Prefix decrement: decrements the stored address.
         template<typename Self>
-        constexpr Self& operator--(this Self&& self) { --self.address_; return self; }
+        constexpr Self& operator--(this Self&& self)
+        {
+            --self.address_;
+            return self;
+        }
 
         ///@brief Postfix increment: increments the stored address but return a pointer to the prior stored address.
         template<typename Self>
-        constexpr Self operator++(this Self&& self, int) { Self old{self}; ++self; return old; }
+        constexpr Self operator++(this Self&& self, int)
+        {
+            Self old{self};
+            ++self;
+            return old;
+        }
 
         ///@brief Postfix decrement: decrements the stored address but return a pointer to the prior stored address.
         template<typename Self>
-        constexpr Self operator--(this Self&& self, int) { Self old{self}; --self; return old; }
+        constexpr Self operator--(this Self&& self, int)
+        {
+            Self old{self};
+            --self;
+            return old;
+        }
 
         ///@brief Addition assignment: increments the stored address by a given distance.
         template<typename Self>
-        constexpr Self& operator+=(this Self&& self, difference_type diff) { self.address_ += diff; return self; }
+        constexpr Self& operator+=(this Self&& self, difference_type diff)
+        {
+            self.address_ += diff;
+            return self;
+        }
 
         ///@brief Subtraction assignment: decrements the stored address by a given distance.
         template<typename Self>
-        constexpr Self& operator-=(this Self&& self, difference_type diff)  { self.address_ -= diff; return self; }
+        constexpr Self& operator-=(this Self&& self, difference_type diff)
+        {
+            self.address_ -= diff;
+            return self;
+        }
 
         ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
         friend constexpr cursor_ptr operator+(cursor_ptr ptr, difference_type diff) { return ptr += diff; }
@@ -428,7 +457,7 @@ export namespace base::vocab::inline ptr {
             // This is safe because formatting is a read-only numerical operation on the address.
             return stream << const_cast<const void*>(static_cast<const volatile void*>(ptr.get()));
         }
-        
+
     private:
         [[nodiscard]] constexpr static pointer check_for_null(pointer source)
         {
@@ -437,6 +466,7 @@ export namespace base::vocab::inline ptr {
             return source;
         }
     }; //class cursor_ptr
+
     /**
      * @fn explicit cursor_ptr::cursor_ptr(reference source) noexcept
      *
@@ -880,7 +910,7 @@ export namespace base::vocab::inline ptr {
      * @remark Defined as a private static helper to avoid duplication and ensure consistent exception semantics.
      * @note This function does not perform lifetime validation; it assumes the caller ensures the pointee remains valid.
      */
-    
+
     /**
      * @brief Deduction guide for `cursor_ptr`.
      *

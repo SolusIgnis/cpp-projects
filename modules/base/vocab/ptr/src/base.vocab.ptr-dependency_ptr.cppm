@@ -249,10 +249,18 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Provides pointer-like member access to the referenced object.
-        [[nodiscard]] constexpr pointer operator->() const noexcept requires base::meta::concepts::complete_pointee<T> { return address_; }
+        [[nodiscard]] constexpr pointer operator->() const noexcept
+            requires base::meta::concepts::complete_pointee<T>
+        {
+            return address_;
+        }
 
         ///@brief Dereferences the pointer to access the referenced object.
-        [[nodiscard]] constexpr reference operator*() const noexcept requires base::meta::concepts::complete_pointee<T> { return *address_; }
+        [[nodiscard]] constexpr reference operator*() const noexcept
+            requires base::meta::concepts::complete_pointee<T>
+        {
+            return *address_;
+        }
 
         ///@brief Returns the underlying raw pointer.
         [[nodiscard]] constexpr pointer get() const noexcept { return address_; }

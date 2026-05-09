@@ -37,7 +37,7 @@ export namespace base::meta::concepts {
      */
     template<typename T>
     concept complete_type = requires { sizeof(T); };
-    
+
     /**
      * @brief `complete_pointee`: Determines whether a type is complete for the purpose of dereferencing a pointer to it.
      *
@@ -46,7 +46,5 @@ export namespace base::meta::concepts {
      * @details This concept is satisfied if the type is both an object and a complete type.
      */
     template<typename T>
-    concept complete_pointee =
-        std::is_object_v<T> &&
-        complete_type<T>;
+    concept complete_pointee = std::is_object_v<T> && complete_type<T>;
 } //namespace base::meta::concepts
