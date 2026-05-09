@@ -401,7 +401,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self>
         constexpr auto operator++(this Self&& self, int)
         {
-            std::remove_reference_t<Self> old{self};
+            std::decay_t<Self> old{self};
             ++self;
             return old;
         }
@@ -410,7 +410,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self>
         constexpr auto operator--(this Self&& self, int)
         {
-            std::remove_reference_t<Self> old{self};
+            std::decay_t<Self> old{self};
             --self;
             return old;
         }
