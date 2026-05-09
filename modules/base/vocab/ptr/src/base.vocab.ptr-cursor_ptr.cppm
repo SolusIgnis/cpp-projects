@@ -383,52 +383,52 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Prefix increment: increments the stored address.
         template<typename Self>
-        constexpr Self& operator++(this Self&& self)
+        constexpr decltype(auto) operator++(this Self&& self)
         {
             ++self.address_;
-            return self;
+            return std::forward<Self>(self);
         }
 
         ///@brief Prefix decrement: decrements the stored address.
         template<typename Self>
-        constexpr Self& operator--(this Self&& self)
+        constexpr decltype(auto) operator--(this Self&& self)
         {
             --self.address_;
-            return self;
+            return std::forward<Self>(self);
         }
 
         ///@brief Postfix increment: increments the stored address but return a pointer to the prior stored address.
         template<typename Self>
-        constexpr Self operator++(this Self&& self, int)
+        constexpr auto operator++(this Self&& self, int)
         {
-            Self old{self};
+            std::remove_reference_t<Self> old{self};
             ++self;
             return old;
         }
 
         ///@brief Postfix decrement: decrements the stored address but return a pointer to the prior stored address.
         template<typename Self>
-        constexpr Self operator--(this Self&& self, int)
+        constexpr auto operator--(this Self&& self, int)
         {
-            Self old{self};
+            std::remove_reference_t<Self> old{self};
             --self;
             return old;
         }
 
         ///@brief Addition assignment: increments the stored address by a given distance.
         template<typename Self>
-        constexpr Self& operator+=(this Self&& self, difference_type diff)
+        constexpr decltype(auto) operator+=(this Self&& self, difference_type diff)
         {
             self.address_ += diff;
-            return self;
+            return std::forward<Self>(self);
         }
 
         ///@brief Subtraction assignment: decrements the stored address by a given distance.
         template<typename Self>
-        constexpr Self& operator-=(this Self&& self, difference_type diff)
+        constexpr decltype(auto) operator-=(this Self&& self, difference_type diff)
         {
             self.address_ -= diff;
-            return self;
+            return std::forward<Self>(self);
         }
 
         ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
