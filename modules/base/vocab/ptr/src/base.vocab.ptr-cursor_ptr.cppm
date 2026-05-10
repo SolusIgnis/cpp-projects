@@ -382,8 +382,13 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Subscript operator provided solely to comply with random-access iterator requirements.
-        [[nodiscard]][[deprecated("Subscript operator conflates pointers with arrays. Use `*(ptr + offset)` for explicit traversal or consider subscripting the container instead.")]]
-        constexpr element_type& operator[](this auto self, difference_type offset) noexcept { return *(self + offset); }
+        [[nodiscard]] [[deprecated(
+            "Subscript operator conflates pointers with arrays. Use `*(ptr + offset)` for explicit traversal or consider subscripting the container instead."
+        )]]
+        constexpr element_type& operator[](this auto self, difference_type offset) noexcept
+        {
+            return *(self + offset);
+        }
 
         ///@brief Prefix increment: increments the stored address.
         template<typename Self>
