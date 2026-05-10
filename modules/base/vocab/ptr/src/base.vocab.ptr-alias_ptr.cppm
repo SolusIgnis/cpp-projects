@@ -47,7 +47,6 @@
  * pointer abstractions.
  *
  * The interface intentionally rejects several categories of operations:
- *
  * - binding to temporaries,
  * - implicit C-array decay,
  * - pointer arithmetic,
@@ -78,6 +77,7 @@ export module base.vocab.ptr:alias_ptr;
 import std;
 
 import base.meta.traits;
+import base.meta.concepts;
 
 import :forward_declarations;
 
@@ -354,14 +354,14 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Provides member access to the pointee object.
         [[nodiscard]] constexpr pointer operator->(this auto&& self) noexcept
-            requires (!std::is_void_v<T>)
+            requires base::meta::concepts::complete_pointee<T>
         {
             return self.address_;
         }
 
         ///@brief Provides a reference to the pointee object.
         [[nodiscard]] constexpr reference operator*(this auto&& self) noexcept
-            requires (!std::is_void_v<T>)
+            requires base::meta::concepts::complete_pointee<T>
         {
             return *self.address_;
         }
@@ -609,7 +609,7 @@ export namespace base::vocab::inline ptr {
      *
      * @return `true` if both pointers refer to the same object; otherwise `false`.
      *
-     * @remark Compares the pointed-to addresses (aliasing), not object values.
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
      */
     /**
      * @overload constexpr bool operator==(const alias_ptr& lhs, const alias_ptr<DerivedT>& rhs) noexcept
@@ -622,7 +622,7 @@ export namespace base::vocab::inline ptr {
      * @return `true` if both pointers refer to the same object; otherwise `false`.
      *
      * @remark Enables equality comparison between `alias_ptr` instances of related types when that can't be synthesized by implicit conversion to raw pointers.
-     * @remark Compares the pointed-to addresses (aliasing), not object values.
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
      */
     /**
      * @overload constexpr bool operator==(const alias_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
@@ -634,8 +634,8 @@ export namespace base::vocab::inline ptr {
      *
      * @return `true` if the stored address in `lhs` equals `rhs`; otherwise `false`.
      *
-     * @remark Enables comparison with raw pointers-to-derived for when that can't be synthesized by implicit conversion to raw pointers.
-     * @remark Compares the pointed-to addresses (aliasing), not object values.
+     * @remark Enables equality comparison with raw pointers-to-derived when that can't be synthesized by implicit conversion to raw pointers.
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
      */
     /**
      * @overload constexpr bool operator==(const pointer lhs, const alias_ptr<DerivedT>& rhs) noexcept
@@ -648,7 +648,7 @@ export namespace base::vocab::inline ptr {
      * @return `true` if `lhs` equals the stored address in `rhs`; otherwise `false`.
      *
      * @remark Enables comparison with raw pointers-to-base when that can't be synthesized by implicit conversion to raw pointers.
-     * @remark Comparison is performed on the underlying addresses.
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
      */
     /**
      * @overload constexpr bool operator==(const alias_ptr& ptr, std::nullptr_t null) noexcept

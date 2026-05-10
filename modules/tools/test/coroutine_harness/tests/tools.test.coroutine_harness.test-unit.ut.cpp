@@ -298,6 +298,9 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probe2.destroyed, true));
     };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-assign"
+#pragma GCC diagnostic ignored "-Wself-move"
     "self assignment is safe"_test = [] mutable {
         constexpr int expected = 42;
         coroutine_probe probe;
@@ -308,6 +311,7 @@ suite coroutine_harness_tests = [] mutable {
         expect(eq(probe.moved, false)); //self-assignment doesn't actually move
         expect(eq(run(task), expected));
     };
+#pragma GCC diagnostic pop
 
     "task factory"_test = [] mutable {
         constexpr int expected = 42;

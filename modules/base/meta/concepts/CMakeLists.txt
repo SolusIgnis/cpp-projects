@@ -13,4 +13,5 @@ add_named_module(base.meta.concepts
   LIB_TYPE STATIC
   PARTITIONS
     src/base.meta.concepts-instantiable_with.cppm
+    src/base.meta.concepts-completeness.cppm
 )

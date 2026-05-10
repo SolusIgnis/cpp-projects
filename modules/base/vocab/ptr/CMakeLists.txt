@@ -19,6 +19,7 @@ add_named_module(base.vocab.ptr
     src/base.vocab.ptr-required_ptr.cppm
   IMPORTS
     base.meta.traits
+    base.meta.concepts
   TEST_DEPENDENCIES
     base.meta.concepts
 )
