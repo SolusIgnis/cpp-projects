@@ -965,9 +965,12 @@ namespace {
 
             cursor_ptr<int> ptr{values[0]};
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
             expect(eq(ptr[0], 5));
             expect(eq(ptr[1], 6));
             expect(eq(ptr[2], 7));
+#pragma GCC diagnostic pop
         };
 
         "mixed raw and cursor arithmetic produce identical addresses"_test = [] mutable {
