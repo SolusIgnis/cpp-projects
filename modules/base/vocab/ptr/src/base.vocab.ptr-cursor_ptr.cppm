@@ -381,9 +381,13 @@ export namespace base::vocab::inline ptr {
         // Arithmetic Operators: Implemented for Iteration
         //================================================================================
 
+        ///@brief Subscript operator provided solely to comply with random-access iterator requirements.
+        [[nodiscard]][[deprecated("Subscript operator conflates pointers with arrays. Use `*(ptr + offset)` for explicit traversal or consider subscripting the container instead.")]]
+        constexpr element_type& operator[](this auto self, difference_type offset) noexcept { return *(self + offset); }
+
         ///@brief Prefix increment: increments the stored address.
         template<typename Self>
-        constexpr decltype(auto) operator++(this Self&& self)
+        constexpr decltype(auto) operator++(this Self&& self) noexcept
         {
             ++self.address_;
             return std::forward<Self>(self);
@@ -391,7 +395,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Prefix decrement: decrements the stored address.
         template<typename Self>
-        constexpr decltype(auto) operator--(this Self&& self)
+        constexpr decltype(auto) operator--(this Self&& self) noexcept
         {
             --self.address_;
             return std::forward<Self>(self);
@@ -399,7 +403,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Postfix increment: increments the stored address but return a pointer to the prior stored address.
         template<typename Self>
-        constexpr auto operator++(this Self&& self, int)
+        constexpr auto operator++(this Self&& self, int) noexcept
         {
             std::decay_t<Self> old{self};
             ++self;
@@ -408,7 +412,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Postfix decrement: decrements the stored address but return a pointer to the prior stored address.
         template<typename Self>
-        constexpr auto operator--(this Self&& self, int)
+        constexpr auto operator--(this Self&& self, int) noexcept
         {
             std::decay_t<Self> old{self};
             --self;
@@ -417,7 +421,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Addition assignment: increments the stored address by a given distance.
         template<typename Self>
-        constexpr decltype(auto) operator+=(this Self&& self, difference_type diff)
+        constexpr decltype(auto) operator+=(this Self&& self, difference_type diff) noexcept
         {
             self.address_ += diff;
             return std::forward<Self>(self);
@@ -425,17 +429,17 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Subtraction assignment: decrements the stored address by a given distance.
         template<typename Self>
-        constexpr decltype(auto) operator-=(this Self&& self, difference_type diff)
+        constexpr decltype(auto) operator-=(this Self&& self, difference_type diff) noexcept
         {
             self.address_ -= diff;
             return std::forward<Self>(self);
         }
 
         ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
-        friend constexpr cursor_ptr operator+(cursor_ptr ptr, difference_type diff) { return ptr += diff; }
+        friend constexpr cursor_ptr operator+(cursor_ptr ptr, difference_type diff) noexcept { return ptr += diff; }
 
         ///@brief Pointer addition (commutative): gets a pointer to an address a given distance after the stored address.
-        friend constexpr cursor_ptr operator+(difference_type diff, cursor_ptr ptr) { return ptr += diff; }
+        friend constexpr cursor_ptr operator+(difference_type diff, cursor_ptr ptr) noexcept { return ptr += diff; }
 
         ///@brief Pointer subtraction: gets a pointer to an address a given distance before the stored address.
         friend constexpr cursor_ptr operator-(cursor_ptr ptr, difference_type diff) noexcept { return ptr -= diff; }
@@ -761,7 +765,19 @@ export namespace base::vocab::inline ptr {
      * @remark Replaces the stored address without affecting ownership or pointee lifetime.
      */
     /**
-     * @fn constexpr Self& cursor_ptr::operator++(this Self&& self)
+     * @fn constexpr element_type& cursor_ptr::operator[](this auto self, difference_type offset) noexcept
+     *
+     * @param self The `cursor_ptr` whose stored address is the base of the offset address.
+     * @param offset The offset to add to the base address to compute the address to dereference.
+     *
+     * @return Reference to the pointee object located at `self.get() + offset`.
+     *
+     * @note This operator is provided solely to fulfill the requirements of `std::random_access_iterator`.
+     * @deprecated Applying the subscript operator to a pointer conflates pointers with arrays. Use `*(ptr + offset)` for explicit traversal or consider subscripting the container instead.
+     * @warning Indexing beyond the bounds of the referenced contiguous sequence results in undefined behavior.
+     */
+    /**
+     * @fn constexpr Self& cursor_ptr::operator++(this Self&& self) noexcept
      *
      * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
      *
@@ -775,7 +791,7 @@ export namespace base::vocab::inline ptr {
      * @warning Advancing beyond the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @overload constexpr Self cursor_ptr::operator++(this Self&& self, int)
+     * @overload constexpr Self cursor_ptr::operator++(this Self&& self, int) noexcept
      *
      * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
      *
@@ -789,7 +805,7 @@ export namespace base::vocab::inline ptr {
      * @warning Advancing beyond the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr Self& cursor_ptr::operator--(this Self&& self)
+     * @fn constexpr Self& cursor_ptr::operator--(this Self&& self) noexcept
      *
      * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
      *
@@ -803,7 +819,7 @@ export namespace base::vocab::inline ptr {
      * @warning Decrementing before the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @overload constexpr Self cursor_ptr::operator--(this Self&& self, int)
+     * @overload constexpr Self cursor_ptr::operator--(this Self&& self, int) noexcept
      *
      * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
      *
@@ -817,7 +833,7 @@ export namespace base::vocab::inline ptr {
      * @warning Decrementing before the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr Self& cursor_ptr::operator+=(this Self&& self, difference_type diff)
+     * @fn constexpr Self& cursor_ptr::operator+=(this Self&& self, difference_type diff) noexcept
      *
      * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
      *
@@ -832,7 +848,7 @@ export namespace base::vocab::inline ptr {
      * @warning Advancing outside the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr Self& cursor_ptr::operator-=(this Self&& self, difference_type diff)
+     * @fn constexpr Self& cursor_ptr::operator-=(this Self&& self, difference_type diff) noexcept
      *
      * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
      *
@@ -847,7 +863,7 @@ export namespace base::vocab::inline ptr {
      * @warning Retreating outside the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr cursor_ptr operator+(cursor_ptr ptr, difference_type diff)
+     * @fn constexpr cursor_ptr operator+(cursor_ptr ptr, difference_type diff) noexcept
      *
      * @param ptr The base `cursor_ptr`.
      * @param diff The signed offset, in elements, to add to the stored address.
@@ -859,7 +875,7 @@ export namespace base::vocab::inline ptr {
      * @warning Advancing outside the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @overload constexpr cursor_ptr operator+(difference_type diff, cursor_ptr ptr)
+     * @overload constexpr cursor_ptr operator+(difference_type diff, cursor_ptr ptr) noexcept
      *
      * @param diff The signed offset, in elements, to add to the stored address.
      * @param ptr The base `cursor_ptr`.
