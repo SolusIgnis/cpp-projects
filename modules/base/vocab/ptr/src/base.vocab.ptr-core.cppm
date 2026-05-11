@@ -93,10 +93,10 @@ export namespace base::vocab::inline ptr {
             : address_(std::addressof(source))
         {}
         
-        ///@brief (Conversion) Implicitly converts from another pointer according to nested `pointer` type conversions.
+        ///@brief (Conversion) Implicitly converts from another pointer of the same concrete type according to nested `pointer` type conversions.
         template<typename U>
             requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
-        constexpr explicit(false) ptr_core(const ptr_core<U>& source) noexcept : address_(source.get())
+        constexpr explicit(false) ptr_core(const ptr_core<ConcretePtr, U, Policies...>& source) noexcept : address_(source.get())
         {} //Make sure this doesn't convert between different pointers accidentally.
         
         ///@brief Rebinds the pointer to another object.
@@ -108,10 +108,10 @@ export namespace base::vocab::inline ptr {
             return self;
         }
 
-        ///@brief (Conversion) Assigns from another pointer according to nested `pointer` type conversions.
+        ///@brief (Conversion) Assigns from another pointer of the same concrete type according to nested `pointer` type conversions.
         template<typename Self, typename U>
             requires (!std::is_const_v<Self>) && (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
-        constexpr Self& operator=(this Self& self, const ptr_core<U>& source) noexcept
+        constexpr Self& operator=(this Self& self, const ptr_core<ConcretePtr, U, Policies...>& source) noexcept
         {
             self.address_ = source.get();
             return self;
