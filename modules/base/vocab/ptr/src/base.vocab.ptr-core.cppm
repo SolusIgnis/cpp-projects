@@ -111,7 +111,7 @@ export namespace base::vocab::inline ptr {
         ///@brief (Conversion) Assigns from another pointer according to nested `pointer` type conversions.
         template<typename Self, typename U>
             requires (!std::is_const_v<Self>) && (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
-        constexpr Self& operator=(this Self& self, const cursor_ptr<U>& source) noexcept
+        constexpr Self& operator=(this Self& self, const ptr_core<U>& source) noexcept
         {
             self.address_ = source.get();
             return self;
@@ -135,7 +135,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Deleted constructor from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, cursor_ptr>)
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ptr_core>)
                       && requires(Pointer<Element, Args...> ptr) {
                              { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                          }
@@ -151,7 +151,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, cursor_ptr>)
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ptr_core>)
                       && requires(Pointer<Element, Args...> ptr) {
                              { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                          }
