@@ -232,5 +232,9 @@ export namespace base::vocab::inline ptr {
             // This is safe because formatting is a read-only numerical operation on the address.
             return stream << const_cast<const void*>(static_cast<const volatile void*>(ptr.get()));
         }
-
+    }; //class ptr_core
+    
+    
+    
+    
 } //namespace base::vocab::inline ptr
