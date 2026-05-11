@@ -15,6 +15,10 @@
 - Added `base.functional.overload` module to implement the overload pattern and `base.functional` metamodule.
 - Added `base.meta` metamodule with `base.meta.traits` implementing `remove_all_indirections_t` type transformation trait and `base.meta.concepts` implementing `instantiable_with` `concept`.
 - Added `dependency_ptr` to `base.vocab.ptr` module.
+- Added `required_ptr` to `base.vocab.ptr` module.
+- Added `alias_ptr` to `base.vocab.ptr` module.
+- Added `cursor_ptr` to `base.vocab.ptr` module.
+- Added `complete_type` and `complete_pointee` concepts to `base.meta.concepts` module.
 
 ## [0.5.7] - February 11, 2026
 ### Added
