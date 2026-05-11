@@ -32,6 +32,7 @@ import base.meta.concepts;
 
 export namespace base::vocab::inline ptr {
     template<typename ConcretePtr, typename T, typename... Policies>
+        requires (!std::is_reference_v<T> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>)
     class ptr_core : public Policies... {
     public:
         /**
