@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-dependency_ptr.cppm
- * @version 0.4.0
+ * @version 0.6.0
  * @date May 3, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
@@ -43,8 +43,6 @@ import std;
 
 import base.meta.traits;
 import base.meta.concepts;
-
-import :forward_declarations;
 
 export namespace base::vocab::inline ptr {
     /**
