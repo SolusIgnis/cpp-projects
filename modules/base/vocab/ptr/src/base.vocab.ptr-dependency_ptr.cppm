@@ -530,7 +530,7 @@ struct std::hash<base::vocab::ptr::dependency_ptr<T>> {
  *
  * @remark Formats a `dependency_ptr` as its underlying raw pointer representation.
  */
-template<typename T, typename CharT>
+export template<typename T, typename CharT>
 struct std::formatter<base::vocab::ptr::dependency_ptr<T>, CharT> : std::formatter<const void*, CharT> {
     ///@brief Format as the underlying raw pointer address.
     auto format(const base::vocab::ptr::dependency_ptr<T>& ptr, auto& ctx) const
