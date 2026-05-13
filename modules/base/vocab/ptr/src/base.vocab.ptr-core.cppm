@@ -93,9 +93,9 @@ export namespace base::vocab::inline ptr {
         struct derived_from_ptr_core;
 
     private:
-        using metadata = typename pointer_metadata<Pointee>;
+        using metadata = pointer_metadata<Pointee>;
 
-        typename pointer address_; ///<@brief The stored address used by all concrete pointer types.
+        metadata::pointer address_; ///<@brief The stored address used by all concrete pointer types.
 
         using Policies::resolve_address...;
         using Policies::is_constructor_explicit...;
