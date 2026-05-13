@@ -101,7 +101,15 @@ export namespace base::vocab::inline ptr {
         using Policies::is_constructor_explicit...;
 
     public:
+        //================================================================================
+        // Construction, Assignment, and Swap
+        //================================================================================
+
+        ///@brief Using constructor deletions from the policies.
         using Policies::Policies...;
+
+        ///@brief Using assignment operator deletions from the policies.
+        using Policies::operator=...;
         
         ///@brief Constructs a pointer when its new address can be resolved by its policies.
         template<typename... Args>
@@ -122,7 +130,7 @@ export namespace base::vocab::inline ptr {
             return self;
         }
 
-        ///@brief Swaps addresses.
+        ///@brief Swaps pointer addresses.
         friend constexpr void swap(ptr_core& lhs, ptr_core& rhs) noexcept
         {
             using std::swap;
@@ -134,7 +142,7 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Provides member access to the pointee object.
-        [[nodiscard]] constexpr typename metadata::pointer operator->(this auto&& self) noexcept
+        [[nodiscard]] constexpr metadata::pointer operator->(this auto&& self) noexcept
             requires base::meta::concepts::CompletePointee<Pointee>
         {
             return self.address_;
