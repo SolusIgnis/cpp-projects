@@ -30,91 +30,93 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
-export namespace base::vocab::inline ptr {
-    template<typename ConcretePtr, typename T, typename... Policies>
-        requires (!std::is_reference_v<T> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<T>>)
-    class ptr_core : public Policies... {
+namespace base::vocab::inline ptr {
+    template<typename Pointee>
+    struct pointer_metadata {
+    private:
+        struct void_reference;
     public:
         /**
          * @typedef element_type
          * @brief The stored element type.
          */
-        using element_type = T;
+        using element_type = Pointee;
 
         /**
          * @typedef value_type
-         * @brief The unqualified element type (`std::remove_cv_t<T>`).
+         * @brief The unqualified element type (`std::remove_cv_t<Pointee>`).
          */
-        using value_type = std::remove_cv_t<T>;
+        using value_type = std::remove_cv_t<Pointee>;
 
         /**
          * @typedef pointer
-         * @brief The raw pointer type of the stored address (`T*`).
+         * @brief The raw pointer type of the stored address (`Pointee*`).
          */
-        using pointer = std::add_pointer_t<T>;
+        using pointer = std::add_pointer_t<Pointee>;
 
         /**
          * @typedef reference
-         * @brief The reference type (`T&`).
-         * @remark When `T` is `void`, uses `std::monostate&` because `void` as a function parameter is ill-formed.
+         * @brief The reference type (`Pointee&`).
+         * @remark When `Pointee` is `void`, uses `void_reference&` because `void` as a function parameter is ill-formed.
          */
         using reference =
-            std::conditional_t<std::is_void_v<T>, std::add_lvalue_reference_t<std::monostate>, std::add_lvalue_reference_t<T>>;
+            std::conditional_t<std::is_void_v<Pointee>, std::add_lvalue_reference_t<void_reference>, std::add_lvalue_reference_t<Pointee>>;
 
         /**
          * @typedef rvalue_reference
-         * @brief The rvalue reference type (`T&&`).
+         * @brief The rvalue reference type (`Pointee&&`).
          *
-         * @remark When `T` is `void`, uses `std::monostate&&` because `void` as a function parameter is ill-formed.
+         * @remark When `Pointee` is `void`, uses `void_reference&&` because `void` as a function parameter is ill-formed.
          * @note Used only for deletion of invalid overloads to prevent binding to temporaries.
          */
         using rvalue_reference =
-            std::conditional_t<std::is_void_v<T>, std::add_rvalue_reference_t<std::monostate>, std::add_rvalue_reference_t<T>>;
+            std::conditional_t<std::is_void_v<Pointee>, std::add_rvalue_reference_t<void_reference>, std::add_rvalue_reference_t<Pointee>>;
 
         /**
          * @typedef difference_type
          * @brief Pointer difference type (`std::ptrdiff_t`).
          *
-         * @note Provided to model pointer interface, though arithmetic is disabled.
+         * @note Provided to model pointer interface even when arithmetic is disabled.
          */
         using difference_type = std::ptrdiff_t;
+    }; //struct pointer_metadata
+
+    template<typename T>
+    concept VocabPtr = requires { typename T::derived_from_ptr_core; }
+} //namespace base::vocab::inline ptr
+
+export namespace base::vocab::inline ptr {
+    template<typename ConcretePtr, typename Pointee, typename... Policies>
+        requires (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>)
+    class ptr_core : public pointer_metadata<Pointee>, public Policies... {
+    public:
+        struct derived_from_ptr_core;
 
     private:
-        pointer address_;
+        pointer address_; ///<@brief The stored address used by all concrete pointer types.
+
+        using Policies::resolve_address...;
+        using Policies::is_constructor_explicit...;
 
     public:
-        //================================================================================
-        // Constructors, Assignment Operators, and Swap
-        //================================================================================
-
-        ///@brief Binds the pointer to an existing object.
-        constexpr explicit ptr_core(reference source) noexcept
-            requires (!std::is_void_v<T>)
-            : address_(std::addressof(source))
+        using Policies::Policies...;
+        
+        ///@brief Constructs a pointer when its new address can be resolved by its policies.
+        template<typename... Args>
+        constexpr explicit(decltype(is_constructor_explicit(std::declval<Args>()...))::value) ptr_core(Args... args)
+            noexcept(noexcept(resolve_address(std::forward<Args>(args)...)))
+            requires requires { resolve_address(std::forward<Args>(args)...) }
+            : address_{resolve_address(std::forward<Args>(args)...)}
         {}
-        
-        ///@brief (Conversion) Implicitly converts from another pointer of the same concrete type according to nested `pointer` type conversions.
-        template<typename U>
-            requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
-        constexpr explicit(false) ptr_core(const ptr_core<ConcretePtr, U, Policies...>& source) noexcept : address_(source.get())
-        {} //Make sure this doesn't convert between different pointers accidentally.
-        
-        ///@brief Rebinds the pointer to another object.
-        template<typename Self>
-            requires (!std::is_const_v<Self>)
-        constexpr Self& operator=(this Self& self, reference source) noexcept
-        {
-            self.address_ = std::addressof(source);
-            return self;
-        }
 
-        ///@brief (Conversion) Assigns from another pointer of the same concrete type according to nested `pointer` type conversions.
-        template<typename Self, typename U>
-            requires (!std::is_const_v<Self>) && (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
-        constexpr Self& operator=(this Self& self, const ptr_core<ConcretePtr, U, Policies...>& source) noexcept
+        ///@brief Assigns to a pointer when its new address can be resolved by its policies.
+        template<typename Self, typename... Args>
+            requires (!std::is_const_v<Self>)
+        constexpr Self& operator=(this Self& self, Args... args)
+            noexcept(noexcept(resolve_address(std::forward<Args>(args)...)))
+            requires requires { resolve_address(std::forward<Args>(args)...) }
         {
-            self.address_ = source.get();
-            return self;
+            address_ = resolve_address(std::forward<Args>(args)...);
         }
 
         ///@brief Swaps addresses.
@@ -125,72 +127,19 @@ export namespace base::vocab::inline ptr {
         }
 
         //================================================================================
-        // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
-        //================================================================================
-
-        ///@brief Deleted constructor from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
-        ptr_core(rvalue_reference) =
-            delete /*("Constructor from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
-            ;
-
-        ///@brief Deleted constructor from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
-        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ptr_core>)
-                      && requires(Pointer<Element, Args...> ptr) {
-                             { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
-                         }
-        ptr_core(const Pointer<Element, Args...>&&) =
-            delete /*("Constructor from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
-            ;
-
-        ///@brief Deleted assignment from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
-        template<typename Self>
-        Self& operator=(this Self&&, rvalue_reference) =
-            delete /*("Assignment from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
-            ;
-
-        ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
-        template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ptr_core>)
-                      && requires(Pointer<Element, Args...> ptr) {
-                             { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
-                         }
-        Self& operator=(this Self&&, const Pointer<Element, Args...>&&) =
-            delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
-            ;
-
-        //================================================================================
-        // Deleted Constructors and Assignment Operators: No Array-to-Pointer Decay
-        //================================================================================
-
-        ///@brief Deleted constructor from C-array to prevent array-to-pointer decay.
-        template<typename AnyCArray>
-            requires std::is_array_v<AnyCArray>
-        ptr_core(AnyCArray&) =
-            delete /*("Constructor from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
-            ;
-
-        ///@brief Deleted assignment from C-array to prevent array-to-pointer decay.
-        template<typename Self, typename AnyCArray>
-            requires std::is_array_v<AnyCArray>
-        Self& operator=(this Self&&, AnyCArray&) =
-            delete /*("Assignment from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
-            ;
-
-        //================================================================================
         // Pointer Operations
         //================================================================================
 
         ///@brief Provides member access to the pointee object.
         [[nodiscard]] constexpr pointer operator->(this auto&& self) noexcept
-            requires base::meta::concepts::complete_pointee<T>
+            requires base::meta::concepts::CompletePointee<Pointee>
         {
             return self.address_;
         }
 
         ///@brief Provides a reference to the pointee object.
-        [[nodiscard]] constexpr reference operator*(this auto&& self) noexcept
-            requires base::meta::concepts::complete_pointee<T>
+        [[nodiscard]] constexpr auto& operator*(this auto&& self) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
         {
             return *self.address_;
         }
@@ -233,8 +182,44 @@ export namespace base::vocab::inline ptr {
             return stream << const_cast<const void*>(static_cast<const volatile void*>(ptr.get()));
         }
     }; //class ptr_core
-    
-    
-    
-    
 } //namespace base::vocab::inline ptr
+
+/**
+ * @brief Partial specialization of `std::hash` for `VocabPtr`s.
+ *
+ * @tparam T The concrete pointer type.
+ *
+ * @remark Hashes the underlying stored address rather than pointee object state or values.
+ * @remark Consistent with `cursor_ptr` equality semantics.
+ */
+export template<base::vocab::ptr::VocabPtr T>
+struct std::hash<T> {
+    ///@brief Hashes the pointer based on the underlying address.
+    [[nodiscard]] constexpr std::size_t operator()(const T& ptr) const noexcept
+    {
+        return std::hash<typename T::pointer>{}(ptr.get());
+    }
+};
+
+/**
+ * @brief Partial specialization of `std::formatter` for `VocabPtr`s.
+ *
+ * @tparam T The concrete pointer type.
+ * @tparam CharT The character type used by the format string.
+ *
+ * @remark Formats the stored address according to the rules for its nested `pointer` type.
+ */
+export template<base::vocab::ptr::VocabPtr T, typename CharT>
+struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
+    ///@brief Formats as a raw pointer to the stored address.
+    auto format(const T& ptr, auto& ctx) const
+    {
+        // In order to support pointers to arbitrarily cv-qualified objects:
+        // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
+        // 2. `const_cast` to `const void*` to satisfy the formatter's interface which lacks `volatile void*` specializations.
+        // This is safe because formatting is a read-only numerical operation on the address.
+        return std::formatter<const void*, CharT>::format(
+            const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx
+        );
+    }
+};
