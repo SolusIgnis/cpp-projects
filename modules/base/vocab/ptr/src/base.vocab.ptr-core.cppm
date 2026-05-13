@@ -82,7 +82,7 @@ namespace base::vocab::inline ptr {
     }; //struct pointer_metadata
 
     template<typename T>
-    concept VocabPtr = requires { typename T::derived_from_ptr_core; }
+    concept VocabPtr = requires { typename T::derived_from_ptr_core; };
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
@@ -105,7 +105,7 @@ export namespace base::vocab::inline ptr {
         template<typename... Args>
         constexpr explicit(decltype(is_constructor_explicit(std::declval<Args>()...))::value) ptr_core(Args... args)
             noexcept(noexcept(resolve_address(std::forward<Args>(args)...)))
-            requires requires { resolve_address(std::forward<Args>(args)...) }
+            requires requires { resolve_address(std::forward<Args>(args)...); }
             : address_{resolve_address(std::forward<Args>(args)...)}
         {}
 
@@ -114,9 +114,10 @@ export namespace base::vocab::inline ptr {
             requires (!std::is_const_v<Self>)
         constexpr Self& operator=(this Self& self, Args... args)
             noexcept(noexcept(resolve_address(std::forward<Args>(args)...)))
-            requires requires { resolve_address(std::forward<Args>(args)...) }
+            requires requires { resolve_address(std::forward<Args>(args)...); }
         {
             address_ = resolve_address(std::forward<Args>(args)...);
+            return self;
         }
 
         ///@brief Swaps addresses.
