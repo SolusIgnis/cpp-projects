@@ -93,7 +93,9 @@ export namespace base::vocab::inline ptr {
         struct derived_from_ptr_core;
 
     private:
-        pointer address_; ///<@brief The stored address used by all concrete pointer types.
+        using metadata = typename pointer_metadata<Pointee>;
+
+        typename pointer address_; ///<@brief The stored address used by all concrete pointer types.
 
         using Policies::resolve_address...;
         using Policies::is_constructor_explicit...;
@@ -116,7 +118,7 @@ export namespace base::vocab::inline ptr {
             noexcept(noexcept(resolve_address(std::forward<Args>(args)...)))
             requires requires { resolve_address(std::forward<Args>(args)...); }
         {
-            address_ = resolve_address(std::forward<Args>(args)...);
+            self.address_ = resolve_address(std::forward<Args>(args)...);
             return self;
         }
 
@@ -132,7 +134,7 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Provides member access to the pointee object.
-        [[nodiscard]] constexpr pointer operator->(this auto&& self) noexcept
+        [[nodiscard]] constexpr typename metadata::pointer operator->(this auto&& self) noexcept
             requires base::meta::concepts::CompletePointee<Pointee>
         {
             return self.address_;
@@ -146,10 +148,10 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Returns a raw pointer to the stored address.
-        [[nodiscard]] constexpr pointer get(this auto&& self) noexcept { return self.address_; }
+        [[nodiscard]] constexpr metadata::pointer get(this auto&& self) noexcept { return self.address_; }
 
         ///@brief Implicitly converts to the nested `pointer` type.
-        [[nodiscard]] constexpr explicit(false) operator pointer() const noexcept { return this->get(); }
+        [[nodiscard]] constexpr explicit(false) operator metadata::pointer() const noexcept { return this->get(); }
 
         ///@brief Rebinding passes through to assignment.
         template<typename Self, typename P>
