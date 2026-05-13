@@ -86,7 +86,7 @@ namespace base::vocab::inline ptr {
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
-    template<typename ConcretePtr, typename Pointee, typename... Policies>
+    template<template<typename> typename ConcretePtr, typename Pointee, typename... Policies>
         requires (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>)
     class ptr_core : public pointer_metadata<Pointee>, public Policies... {
     public:
@@ -113,8 +113,8 @@ export namespace base::vocab::inline ptr {
 
         ///@brief (Conversion) Implicitly converts from another `ptr_core` according to underlying pointer conversions.
         template<typename OtherPointee>
-            requires (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, metadata::pointer>
-        constexpr explicit(false) ptr_core(const ptr_core<ConcretePtr, OtherPointee, Policies...>& source) noexcept : address_(source.get())
+            requires (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
+        constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept : address_(source.get())
         {}
 
         ///@brief Constructs a pointer when its new address can be resolved by its policies.
@@ -127,8 +127,8 @@ export namespace base::vocab::inline ptr {
 
         ///@brief (Conversion) Assigns from another `ptr_core` according to nested `pointer` type conversions.
         template<typename Self, typename OtherPointee>
-            requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, metadata::pointer>
-        constexpr Self& operator=(this Self& self, const ptr_core<ConcretePtr, OtherPointee, Policies...>& source) noexcept
+            requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
+        constexpr Self& operator=(this Self& self, const ConcretePtr<OtherPointee>& source) noexcept
         {
             self.address_ = source.get();
             return self;
