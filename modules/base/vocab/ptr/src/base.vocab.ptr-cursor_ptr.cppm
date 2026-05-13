@@ -959,7 +959,7 @@ export namespace base::vocab::inline ptr {
  * @remark Hashes the underlying stored address rather than pointee object state or values.
  * @remark Consistent with `cursor_ptr` equality semantics.
  */
-template<class T>
+export template<class T>
 struct std::hash<base::vocab::ptr::cursor_ptr<T>> {
     ///@brief Hashes the `cursor_ptr` based on the underlying address.
     [[nodiscard]] constexpr std::size_t operator()(const base::vocab::ptr::cursor_ptr<T>& ptr) const noexcept
@@ -976,7 +976,7 @@ struct std::hash<base::vocab::ptr::cursor_ptr<T>> {
  *
  * @remark Formats the stored address according to the rules for its nested `pointer` type.
  */
-template<typename T, typename CharT>
+export template<typename T, typename CharT>
 struct std::formatter<base::vocab::ptr::cursor_ptr<T>, CharT> : std::formatter<const void*, CharT> {
     ///@brief Formats as a raw pointer to the stored address.
     auto format(const base::vocab::ptr::cursor_ptr<T>& ptr, auto& ctx) const
