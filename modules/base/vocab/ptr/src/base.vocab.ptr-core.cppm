@@ -151,7 +151,7 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] constexpr metadata::pointer get(this auto&& self) noexcept { return self.address_; }
 
         ///@brief Implicitly converts to the nested `pointer` type.
-        [[nodiscard]] constexpr explicit(false) operator metadata::pointer() const noexcept { return this->get(); }
+        [[nodiscard]] constexpr explicit(false) operator typename metadata::pointer() const noexcept { return this->get(); }
 
         ///@brief Rebinding passes through to assignment.
         template<typename Self, typename P>
