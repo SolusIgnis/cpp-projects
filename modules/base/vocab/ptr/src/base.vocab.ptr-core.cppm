@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
- * @file base.vocab.ptr-forward_declarations.cppm
+ * @file base.vocab.ptr-core.cppm
  * @version 0.6.0
  * @date May 10, 2026
  *
@@ -110,7 +110,13 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Using assignment operator deletions from the policies.
         using Policies::operator=...;
-        
+
+        ///@brief (Conversion) Implicitly converts from another `ptr_core` according to underlying pointer conversions.
+        template<typename OtherPointee>
+            requires (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, metadata::pointer>
+        constexpr explicit(false) ptr_core(const ptr_core<ConcretePtr, OtherPointee, Policies...>& source) noexcept : address_(source.get())
+        {}
+
         ///@brief Constructs a pointer when its new address can be resolved by its policies.
         template<typename... Args>
         constexpr explicit(decltype(is_constructor_explicit(std::declval<Args>()...))::value) ptr_core(Args... args)
@@ -118,6 +124,15 @@ export namespace base::vocab::inline ptr {
             requires requires { resolve_address(std::forward<Args>(args)...); }
             : address_{resolve_address(std::forward<Args>(args)...)}
         {}
+
+        ///@brief (Conversion) Assigns from another `ptr_core` according to nested `pointer` type conversions.
+        template<typename Self, typename OtherPointee>
+            requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, metadata::pointer>
+        constexpr Self& operator=(this Self& self, const ptr_core<ConcretePtr, OtherPointee, Policies...>& source) noexcept
+        {
+            self.address_ = source.get();
+            return self;
+        }
 
         ///@brief Assigns to a pointer when its new address can be resolved by its policies.
         template<typename Self, typename... Args>
