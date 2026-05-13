@@ -29,22 +29,22 @@ import std;
 
 export namespace base::meta::concepts {
     /**
-     * @brief `complete_type`: Determines whether a type is complete.
+     * @brief `CompleteType`: Determines whether a type is complete.
      *
      * @tparam T The type to check for completeness.
      *
      * @details This concept is satisfied if the expression `sizeof(T)` is well-formed.
      */
     template<typename T>
-    concept complete_type = requires { sizeof(T); };
+    concept CompleteType = requires { sizeof(T); };
 
     /**
-     * @brief `complete_pointee`: Determines whether a type is complete for the purpose of dereferencing a pointer to it.
+     * @brief `CompletePointee`: Determines whether a type is complete for the purpose of dereferencing a pointer to it.
      *
      * @tparam T The type to check for completeness.
      *
      * @details This concept is satisfied if the type is both an object and a complete type.
      */
     template<typename T>
-    concept complete_pointee = std::is_object_v<T> && complete_type<T>;
+    concept CompletePointee = std::is_object_v<T> && CompleteType<T>;
 } //namespace base::meta::concepts

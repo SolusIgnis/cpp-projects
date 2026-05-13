@@ -59,20 +59,20 @@ namespace {
         //============================================================
 
         "template instantiation checks"_test = [] mutable {
-            using base::meta::concepts::instantiable_with;
-            expect(eq(instantiable_with<cursor_ptr, std::int32_t>, true));
-            expect(eq(instantiable_with<cursor_ptr, std::int32_t*>, true));
-            expect(eq(instantiable_with<cursor_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
+            using base::meta::concepts::InstantiableWith;
+            expect(eq(InstantiableWith<cursor_ptr, std::int32_t>, true));
+            expect(eq(InstantiableWith<cursor_ptr, std::int32_t*>, true));
+            expect(eq(InstantiableWith<cursor_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
 
-            expect(eq(instantiable_with<cursor_ptr, void>, false));
+            expect(eq(InstantiableWith<cursor_ptr, void>, false));
 
-            expect(eq(instantiable_with<cursor_ptr, std::int32_t&>, false));
-            expect(eq(instantiable_with<cursor_ptr, std::int32_t&&>, false));
-            expect(eq(instantiable_with<cursor_ptr, void(int)>, false));
-            expect(eq(instantiable_with<cursor_ptr, void (&)(int)>, false));
-            expect(eq(instantiable_with<cursor_ptr, void (*)(int, float)>, false));
-            expect(eq(instantiable_with<cursor_ptr, void (**)(std::string, int)>, false));
-            expect(eq(instantiable_with<cursor_ptr, void (*******)(int)>, false));
+            expect(eq(InstantiableWith<cursor_ptr, std::int32_t&>, false));
+            expect(eq(InstantiableWith<cursor_ptr, std::int32_t&&>, false));
+            expect(eq(InstantiableWith<cursor_ptr, void(int)>, false));
+            expect(eq(InstantiableWith<cursor_ptr, void (&)(int)>, false));
+            expect(eq(InstantiableWith<cursor_ptr, void (*)(int, float)>, false));
+            expect(eq(InstantiableWith<cursor_ptr, void (**)(std::string, int)>, false));
+            expect(eq(InstantiableWith<cursor_ptr, void (*******)(int)>, false));
         };
 
         //============================================================
@@ -896,7 +896,7 @@ namespace {
         struct incomplete_type;
 
         "incomplete type support"_test = [] mutable {
-            expect(eq(base::meta::concepts::instantiable_with<cursor_ptr, incomplete_type>, true));
+            expect(eq(base::meta::concepts::InstantiableWith<cursor_ptr, incomplete_type>, true));
 
             incomplete_type* raw = reinterpret_cast<incomplete_type*>(0x1234);
 

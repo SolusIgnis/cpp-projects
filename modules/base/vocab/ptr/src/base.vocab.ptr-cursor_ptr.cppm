@@ -328,14 +328,14 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Provides member access to the pointee object.
         [[nodiscard]] constexpr pointer operator->(this auto&& self) noexcept
-            requires base::meta::concepts::complete_pointee<T>
+            requires base::meta::concepts::CompletePointee<T>
         {
             return self.address_;
         }
 
         ///@brief Provides a reference to the pointee object.
         [[nodiscard]] constexpr reference operator*(this auto&& self) noexcept
-            requires base::meta::concepts::complete_pointee<T>
+            requires base::meta::concepts::CompletePointee<T>
         {
             return *self.address_;
         }
