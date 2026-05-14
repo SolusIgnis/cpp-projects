@@ -30,13 +30,49 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
-namespace base::vocab::inline ptr::ptr_policies {
-    template<typename Pointee, typename Metadata>
-    struct nullable_policy;
+namespace base::vocab::inline ptr::ptr_policies::nullable {
+    struct policy_group_tag;
 
     template<typename Pointee, typename Metadata>
-    struct nonnullable_static_policy;
+    struct yes {
+        using policy_group = policy_group_tag;
+
+    protected:
+        [[nodiscard]] constexpr typename Metadata::pointer validate_by_nullability(typename Metadata::pointer source) { return source; }
+    };
 
     template<typename Pointee, typename Metadata>
-    struct nonnullable_runtime_policy;
+    struct no {
+        using policy_group = policy_group_tag;
+
+        //================================================================================
+        // Deleted Constructors and Assignment Operators: Non-Null Invariant
+        //================================================================================
+
+        ///@brief Deleted default constructor to prevent sources of null initialization.
+        no() =
+            delete /*("Default constructor deleted to prevent null initialization. Use `std::optional<ptr_type<T>>` for default-constructible optional pointers.")*/
+            ;
+
+        ///@brief Deleted constructor from `nullptr` to prevent sources of null initialization.
+        no(std::nullptr_t) =
+            delete /*("Constructor from `nullptr` deleted to prevent null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            ;
+
+        ///@brief Deleted assignment from `nullptr` to prevent sources of invalid null rebinding.
+        no& operator=(std::nullptr_t) =
+            delete /*("Assignment from `nullptr` deleted to prevent null rebinding. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            ;
+
+        //================================================================================
+        // Validation of Non-Null Invariant
+        //================================================================================
+    protected:
+        [[nodiscard]] constexpr typename Metadata::pointer validate_by_nullability(typename Metadata::pointer source)
+        {
+            if (source == nullptr) [[unlikely]]
+                throw std::invalid_argument("`non_nullable` pointers cannot be constructed or assigned from a null pointer.");
+            return source;
+        }
+    }; //struct no
 } //namespace base::vocab::inline ptr::ptr_policies

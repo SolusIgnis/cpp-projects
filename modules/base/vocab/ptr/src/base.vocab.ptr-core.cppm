@@ -91,14 +91,17 @@ export namespace base::vocab::inline ptr {
     class ptr_core : public pointer_metadata<Pointee>, public Policies... {
     public:
         struct derived_from_ptr_core;
+        friend Policies...;
 
     private:
         using metadata = pointer_metadata<Pointee>;
 
         metadata::pointer address_; ///<@brief The stored address used by all concrete pointer types.
 
+    protected:
         using Policies::resolve_address...;
         using Policies::is_constructor_explicit...;
+        using Policies::validate_by_nullability...;
 
     public:
         //================================================================================

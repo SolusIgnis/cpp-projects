@@ -31,5 +31,29 @@ import base.meta.traits;
 import base.meta.concepts;
 
 namespace base::vocab::inline ptr {
-    
+    template<typename... Ts>
+    struct type_list {};
+
+    template<typename Group, typename... Policies>
+    inline constexpr std::size_t group_count = (0u + ... + std::same_as<typename Policies::policy_group, Group>);
+
+    template<typename Group, typename... Policies>
+    inline constexpr bool exactly_one_policy_v = (group_count<Group, Policies...> == 1);
+
+    template<typename GroupList, typename... Policies>
+    struct valid_policy_pack_impl;
+
+    template<typename... Groups, typename... Policies>
+    struct valid_policy_pack_impl<
+        type_list<Groups...>,
+        Policies...
+    > : std::bool_constant<
+            (... && exactly_one_policy_v<Groups, Policies...>)
+        >
+    {};
+
+    template<typename GroupList, typename... Policies>
+    concept valid_policy_pack = valid_policy_pack_impl<GroupList, Policies...>::value;
+       // (pointer_policy<Policies> && ...) &&
+        
 } //namespace base::vocab::inline ptr
