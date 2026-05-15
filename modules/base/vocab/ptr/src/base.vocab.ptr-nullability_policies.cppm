@@ -30,19 +30,28 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
-namespace base::vocab::inline ptr::ptr_policies::nullable {
+namespace base::vocab::inline ptr::ptr_policies::nullability {
     struct policy_group_tag;
 
-    template<typename Pointee, typename Metadata>
+    template<typename ConcretePtr>
     struct yes {
+    private:
+        using pointer = typename ConcretePtr::pointer;
+
+    public:
         using policy_group = policy_group_tag;
 
     protected:
-        [[nodiscard]] constexpr typename Metadata::pointer validate_by_nullability(typename Metadata::pointer source) { return source; }
+        ///@brief Passes the pointer through unchecked because this policy accepts null pointers.
+        [[nodiscard]] constexpr pointer validate_by_nullability(pointer source) { return source; }
     };
 
-    template<typename Pointee, typename Metadata>
+    template<typename ConcretePtr>
     struct no {
+    private:
+        using pointer = typename ConcretePtr::pointer;
+
+    public:
         using policy_group = policy_group_tag;
 
         //================================================================================
@@ -68,11 +77,12 @@ namespace base::vocab::inline ptr::ptr_policies::nullable {
         // Validation of Non-Null Invariant
         //================================================================================
     protected:
-        [[nodiscard]] constexpr typename Metadata::pointer validate_by_nullability(typename Metadata::pointer source)
+        ///@brief Enforces the non-null invariant by only passing the address through when it is not null.
+        [[nodiscard]] constexpr pointer validate_by_nullability(pointer source)
         {
             if (source == nullptr) [[unlikely]]
-                throw std::invalid_argument("`non_nullable` pointers cannot be constructed or assigned from a null pointer.");
+                throw std::invalid_argument("`nullability::no` pointers cannot be constructed or assigned from a null pointer.");
             return source;
         }
     }; //struct no
-} //namespace base::vocab::inline ptr::ptr_policies
+} //namespace base::vocab::inline ptr::ptr_policies::nullability

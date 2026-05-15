@@ -77,7 +77,16 @@ export namespace base::vocab::inline ptr {
      */
     template<typename Pointee>
         requires (!std::is_void_v<Pointee>)
-    class [[nodiscard]] dependency_ptr : ptr_core<dependency_ptr, Pointee, POLICY_NAMES_HERE> {};
+    class [[nodiscard]] dependency_ptr : public ptr_core<
+        dependency_ptr,
+        Pointee,
+        ptr_policies::nullability::no,
+        ptr_policies::pointer_binding::forbidden,
+        ptr_policies::reference_binding::allowed,
+        ptr_policies::traversal::rebinding
+    > {
+        
+    };
 
     /**
      * @brief Deduction guide for `dependency_ptr`.
