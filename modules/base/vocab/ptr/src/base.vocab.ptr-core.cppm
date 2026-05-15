@@ -109,7 +109,7 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Using constructor deletions from the policies.
-        using Policies<ConcretePtr<Pointee>>::Policies<ConcretePtr<Pointee>>...;
+        using Policies<ConcretePtr<Pointee>>::Policies...;
 
         ///@brief Using assignment operator deletions from the policies.
         using Policies<ConcretePtr<Pointee>>::operator=...;
