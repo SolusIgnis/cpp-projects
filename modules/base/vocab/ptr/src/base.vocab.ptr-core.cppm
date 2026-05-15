@@ -149,7 +149,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Swaps pointer addresses.
-        friend constexpr void swap(ptr_core& lhs, ptr_core& rhs) noexcept
+        friend constexpr void swap(ConcretePtr<Pointee>& lhs, ConcretePtr<Pointee>& rhs) noexcept
         {
             using std::swap;
             swap(lhs.address_, rhs.address_);
