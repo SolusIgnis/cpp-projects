@@ -53,7 +53,7 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
         //================================================================================
 
         ///@brief Deleted constructor from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
-        cursor_ptr(rvalue_reference) =
+        allowed(rvalue_reference) =
             delete /*("Constructor from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
@@ -79,7 +79,7 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
         using policy_group = policy_group_tag;
 
         ///@brief Deleted constructor from `const reference` to forbid binding to lvalue or rvalue references.
-        cursor_ptr(const reference) =
+        forbidden(const reference) =
             delete /*("Constructor from references deleted by policy `reference_binding::forbidden`. Try constructing from the address directly.")*/
             ;
 
