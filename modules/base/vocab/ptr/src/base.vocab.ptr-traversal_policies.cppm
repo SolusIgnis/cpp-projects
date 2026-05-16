@@ -37,7 +37,8 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
 
     template<template<typename> typename ConcretePtr, typename Pointee>
         requires (!std::is_void_v<Pointee>)
-    class arithmetic : private pointer_metadata<Pointee> {
+    class arithmetic {
+        using metadata = pointer_metadata<Pointee>;
     public:
         using policy_group = policy_group_tag;
 
@@ -158,7 +159,8 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
     }; //class arithmetic
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    class rebinding : private pointer_metadata<Pointee> {
+    class rebinding {
+        using metadata = pointer_metadata<Pointee>;
     public:
         using policy_group = policy_group_tag;
 

@@ -36,19 +36,20 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
     struct policy_group_tag;
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    class yes : private pointer_metadata<Pointee> {
+    class yes {
+        using metadata = pointer_metadata<Pointee>;
     public:
         using policy_group = policy_group_tag;
 
         auto is_constructor_explicit() -> std::false_type;
 
         ///@brief Resolves address from no arguments to provide default constructor by returning `nullptr` converted to `pointer` type.
-        [[nodiscard]] constexpr pointer resolve_address() { return nullptr; }
+        [[nodiscard]] constexpr metadata::pointer resolve_address() { return nullptr; }
 
         auto is_constructor_explicit(std::nullptr_t) -> std::false_type;
 
         ///@brief Resolves address from `nullptr` by converting it to `pointer` type.
-        [[nodiscard]] constexpr pointer resolve_address(std::nullptr_t null) { return null; }
+        [[nodiscard]] constexpr metadata::pointer resolve_address(std::nullptr_t null) { return null; }
 
         ///@brief Contextually converts to `bool` to test if the pointer is engaged.
         [[nodiscard]] constexpr explicit operator bool(this auto&& self) noexcept { return (self.get() != nullptr); }
@@ -60,18 +61,19 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
         }
 
         ///@brief Returns a raw pointer to the stored address while disengaging the pointer.
-        [[nodiscard]] constexpr pointer release(this auto&& self) noexcept { return std::exchange(self.address_, nullptr); }
+        [[nodiscard]] constexpr metadata::pointer release(this auto&& self) noexcept { return std::exchange(self.address_, nullptr); }
 
         ///@brief Reset the pointer to `nullptr`.
         constexpr void reset(this auto& self, std::nullptr_t null = nullptr) noexcept { self = null; }
 
     protected:
         ///@brief Passes the pointer through unchecked because this policy accepts null pointers.
-        [[nodiscard]] constexpr pointer validate_by_nullability(pointer source) { return source; }
+        [[nodiscard]] constexpr metadata::pointer validate_by_nullability(metadata::pointer source) { return source; }
     }; //class yes
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    class no : private pointer_metadata<Pointee> {
+    class no {
+        using metadata = pointer_metadata<Pointee>;
     public:
         using policy_group = policy_group_tag;
 
@@ -84,7 +86,7 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
             ;
 
         ///@brief Deleted address resolution from no arguments to prevent indirect default construction.
-        pointer resolve_address(this auto&&) =
+        metadata::pointer resolve_address(this auto&&) =
             delete /*("No-argument address resolution deleted by policy `nullability::no` to prevent null initialization. Use `std::optional<ptr_type<T>>` for default-constructible optional pointers.")*/
             ;
 
@@ -100,13 +102,13 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
             ;
 
         ///@brief Deleted address resolution from `nullptr` to prevent sources of invalid null rebinding.
-        pointer resolve_address(this auto&&, std::nullptr_t) =
+        metadata::pointer resolve_address(this auto&&, std::nullptr_t) =
             delete /*("Address resolution from `nullptr` deleted by policy `nullability::no` to prevent null rebinding. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
     protected:
         ///@brief Enforces the non-null invariant by only passing the address through when it is not null.
-        [[nodiscard]] constexpr pointer validate_by_nullability(pointer source)
+        [[nodiscard]] constexpr pointer validate_by_nullability(metadata::pointer source)
         {
             if (source == nullptr) [[unlikely]]
                 throw std::invalid_argument("`nullability::no` pointers cannot be constructed or assigned from a null pointer.");

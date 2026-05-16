@@ -36,54 +36,56 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
     struct policy_group_tag;
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    class allowed : private pointer_metadata<Pointee> {
+    class allowed {
+        using metadata = pointer_metadata<Pointee>;
     public:
         using policy_group = policy_group_tag;
 
-        auto is_constructor_explicit(reference source) -> std::true_type requires (!std::is_void_v<Pointee>);
+        auto is_constructor_explicit(metadata::reference source) -> std::true_type requires (!std::is_void_v<Pointee>);
 
         ///@brief Resolves an address from a lvalue `reference` to another object.
-        constexpr pointer resolve_address(reference source) noexcept requires (!std::is_void_v<Pointee>) { return std::addressof(source); }
+        constexpr metadata::pointer resolve_address(metadata::reference source) noexcept requires (!std::is_void_v<Pointee>) { return std::addressof(source); }
 
         //================================================================================
         // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
         //================================================================================
 
         ///@brief Deleted constructor from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
-        allowed(rvalue_reference) =
+        allowed(metadata::rvalue_reference) =
             delete /*("Constructor from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
         ///@brief Deleted assignment from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
         template<typename Self>
-        Self& operator=(this Self&&, rvalue_reference) =
+        Self& operator=(this Self&&, metadata::rvalue_reference) =
             delete /*("Assignment from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
             
         ///@brief Deleted address resolution from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
-        constexpr pointer resolve_address(rvalue_reference) =
+        constexpr metadata::pointer resolve_address(metadata::rvalue_reference) =
             delete /*("Address resolution from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
     }; //class allowed
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    class forbidden : private pointer_metadata<Pointee> {
+    class forbidden {
+        using metadata = pointer_metadata<Pointee>;
     public:
         using policy_group = policy_group_tag;
 
         ///@brief Deleted constructor from `const reference` to forbid binding to lvalue or rvalue references.
-        forbidden(const reference) =
+        forbidden(const metadata::reference) =
             delete /*("Constructor from references deleted by policy `reference_binding::forbidden`. Try constructing from the address directly.")*/
             ;
 
         ///@brief Deleted assignment from `const references` to forbid binding to lvalue or rvalue references.
         template<typename Self>
-        Self& operator=(this Self&&, const reference) =
+        Self& operator=(this Self&&, const metadata::reference) =
             delete /*("Assignment from references deleted by policy `reference_binding::forbidden`. Try assigning from the address directly.")*/
             ;
 
         ///@brief Deleted address resolution from `const reference` to forbid binding to lvalue or rvalue references.
-        constexpr pointer resolve_address(const reference) =
+        constexpr metadata::pointer resolve_address(const metadata::reference) =
             delete /*("Address resolution from references deleted by policy `reference_binding::forbidden`. Try resolving from the address directly.")*/
             ;
     }; //class forbidden
