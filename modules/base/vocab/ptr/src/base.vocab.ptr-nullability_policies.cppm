@@ -85,7 +85,7 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
             ;
 
         ///@brief Deleted address resolution from no arguments to prevent indirect default construction.
-        pointer resolve_address(std::nullptr_t null) =
+        pointer resolve_address() =
             delete /*("No-argument address resolution deleted to prevent null initialization. Use `std::optional<ptr_type<T>>` for default-constructible optional pointers.")*/
             ;
 
