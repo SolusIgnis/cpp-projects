@@ -30,14 +30,13 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
+import :metadata;
+
 namespace base::vocab::inline ptr::ptr_policies::nullability {
     struct policy_group_tag;
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    class yes {
-    private:
-        using pointer = typename ConcretePtr<Pointee>::pointer;
-
+    class yes : private pointer_metadata<Pointee> {
     public:
         using policy_group = policy_group_tag;
 
@@ -72,10 +71,7 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
     }; //class yes
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    class no {
-    private:
-        using pointer = typename ConcretePtr<Pointee>::pointer;
-
+    class no : private pointer_metadata<Pointee> {
     public:
         using policy_group = policy_group_tag;
 

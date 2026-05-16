@@ -30,16 +30,14 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
+import :metadata;
+
 namespace base::vocab::inline ptr::ptr_policies::traversal {
     struct policy_group_tag;
 
     template<template<typename> typename ConcretePtr, typename Pointee>
         requires (!std::is_void_v<Pointee>)
-    class arithmetic {
-    private:
-        using pointer = typename ConcretePtr<Pointee>::pointer;
-        using difference_type = typename ConcretePtr<Pointee>::difference_type;
-
+    class arithmetic : private pointer_metadata<Pointee> {
     public:
         using policy_group = policy_group_tag;
 
@@ -160,11 +158,7 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
     }; //class arithmetic
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    class rebinding {
-    private:
-        using pointer = typename ConcretePtr<Pointee>::pointer;
-        using difference_type = typename ConcretePtr<Pointee>::difference_type;
-
+    class rebinding : private pointer_metadata<Pointee> {
     public:
         using policy_group = policy_group_tag;
 

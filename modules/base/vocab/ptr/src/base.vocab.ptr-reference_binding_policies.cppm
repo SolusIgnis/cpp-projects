@@ -30,16 +30,13 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
+import :metadata;
+
 namespace base::vocab::inline ptr::ptr_policies::reference_binding {
     struct policy_group_tag;
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    class allowed {
-    private:
-        using pointer = typename ConcretePtr<Pointee>::pointer;
-        using reference = typename ConcretePtr<Pointee>::reference;
-        using rvalue_reference = typename ConcretePtr<Pointee>::rvalue_reference;
-
+    class allowed : private pointer_metadata<Pointee> {
     public:
         using policy_group = policy_group_tag;
 
@@ -70,11 +67,7 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
     }; //class allowed
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    class forbidden {
-    private:
-        using pointer = typename ConcretePtr<Pointee>::pointer;
-        using reference = typename ConcretePtr<Pointee>::reference;
-
+    class forbidden : private pointer_metadata<Pointee> {
     public:
         using policy_group = policy_group_tag;
 
