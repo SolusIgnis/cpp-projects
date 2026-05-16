@@ -108,7 +108,7 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
 
     protected:
         ///@brief Enforces the non-null invariant by only passing the address through when it is not null.
-        [[nodiscard]] constexpr pointer validate_by_nullability(metadata::pointer source)
+        [[nodiscard]] constexpr metadata::pointer validate_by_nullability(metadata::pointer source)
         {
             if (source == nullptr) [[unlikely]]
                 throw std::invalid_argument("`nullability::no` pointers cannot be constructed or assigned from a null pointer.");
