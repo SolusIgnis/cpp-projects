@@ -85,12 +85,12 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
 
         ///@brief Deleted assignment from `const references` to forbid binding to lvalue or rvalue references.
         template<typename Self>
-        Self& operator=(this Self&&, rvalue_reference) =
+        Self& operator=(this Self&&, const reference) =
             delete /*("Assignment from references deleted by policy `reference_binding::forbidden`. Try assigning from the address directly.")*/
             ;
 
         ///@brief Deleted address resolution from `const reference` to forbid binding to lvalue or rvalue references.
-        constexpr pointer resolve_address(rvalue_reference) =
+        constexpr pointer resolve_address(const reference) =
             delete /*("Address resolution from references deleted by policy `reference_binding::forbidden`. Try resolving from the address directly.")*/
             ;
     }; //struct forbidden
