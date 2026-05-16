@@ -97,7 +97,7 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
             
         ///@brief Deleted address resolution from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, ConcretePtr>)
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
                       && requires(Pointer<Element, Args...> ptr) {
                              { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                          }
