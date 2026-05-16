@@ -12,6 +12,11 @@ trace_me()
 add_named_module(base.vocab.ptr
   LIB_TYPE STATIC
   PARTITIONS
+    src/base.vocab.ptr-nullability_policies.cppm
+    src/base.vocab.ptr-pointer_binding_policies.cppm
+    src/base.vocab.ptr-reference_binding_policies.cppm
+    src/base.vocab.ptr-traversal_policies.cppm
+    src/base.vocab.ptr-core_policies.cppm
     src/base.vocab.ptr-core.cppm
     src/base.vocab.ptr-alias_ptr.cppm
     src/base.vocab.ptr-cursor_ptr.cppm

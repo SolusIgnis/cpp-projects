@@ -66,6 +66,8 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
+import :core;
+
 export namespace base::vocab::inline ptr {
     /**
      * @brief Pointer type representing a non-null cursor/iterator.

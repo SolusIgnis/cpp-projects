@@ -30,6 +30,11 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
+import export :nullability_policies;
+import export :pointer_binding_policies;
+import export :reference_binding_policies;
+import export :traversal_policies;
+
 namespace base::vocab::inline ptr {
     template<typename... Ts>
     struct type_list {};

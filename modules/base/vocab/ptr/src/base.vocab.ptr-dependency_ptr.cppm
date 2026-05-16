@@ -44,6 +44,8 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
+import :core;
+
 #if 0
 export namespace base::vocab::inline ptr {
     /**
