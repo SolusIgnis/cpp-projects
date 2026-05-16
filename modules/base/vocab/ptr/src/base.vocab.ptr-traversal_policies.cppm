@@ -50,7 +50,7 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         [[nodiscard]] [[deprecated(
             "Subscript operator conflates pointers with arrays. Use `*(ptr + offset)` for explicit traversal or consider subscripting the container instead."
         )]]
-        constexpr auto& operator[](this auto self, difference_type offset) noexcept
+        constexpr auto& operator[](this auto self, metadata::difference_type offset) noexcept
             requires base::meta::concepts::CompletePointee<Pointee>
         {
             return *(self + offset);
@@ -96,7 +96,7 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
 
         ///@brief Addition assignment: increments the stored address by a given distance.
         template<typename Self>
-        constexpr decltype(auto) operator+=(this Self&& self, difference_type diff) noexcept
+        constexpr decltype(auto) operator+=(this Self&& self, metadata::difference_type diff) noexcept
             requires base::meta::concepts::CompletePointee<Pointee>
         {
             self.address_ += diff;
@@ -105,7 +105,7 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
 
         ///@brief Subtraction assignment: decrements the stored address by a given distance.
         template<typename Self>
-        constexpr decltype(auto) operator-=(this Self&& self, difference_type diff) noexcept
+        constexpr decltype(auto) operator-=(this Self&& self, metadata::difference_type diff) noexcept
             requires base::meta::concepts::CompletePointee<Pointee>
         {
             self.address_ -= diff;
@@ -113,16 +113,16 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         }
 
         ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
-        friend constexpr ConcretePtr<Pointee> operator+(ConcretePtr<Pointee> ptr, difference_type diff) noexcept requires base::meta::concepts::CompletePointee<Pointee> { return ptr += diff; }
+        friend constexpr ConcretePtr<Pointee> operator+(ConcretePtr<Pointee> ptr, metadata::difference_type diff) noexcept requires base::meta::concepts::CompletePointee<Pointee> { return ptr += diff; }
 
         ///@brief Pointer addition (commutative): gets a pointer to an address a given distance after the stored address.
-        friend constexpr ConcretePtr<Pointee> operator+(difference_type diff, ConcretePtr<Pointee> ptr) noexcept requires base::meta::concepts::CompletePointee<Pointee> { return ptr += diff; }
+        friend constexpr ConcretePtr<Pointee> operator+(metadata::difference_type diff, ConcretePtr<Pointee> ptr) noexcept requires base::meta::concepts::CompletePointee<Pointee> { return ptr += diff; }
 
         ///@brief Pointer subtraction: gets a pointer to an address a given distance before the stored address.
-        friend constexpr ConcretePtr<Pointee> operator-(ConcretePtr<Pointee> ptr, difference_type diff) noexcept requires base::meta::concepts::CompletePointee<Pointee> { return ptr -= diff; }
+        friend constexpr ConcretePtr<Pointee> operator-(ConcretePtr<Pointee> ptr, metadata::difference_type diff) noexcept requires base::meta::concepts::CompletePointee<Pointee> { return ptr -= diff; }
 
         ///@brief Pointer subtraction (difference): computes the distance between the addresses stored in two pointers.
-        friend constexpr difference_type operator-(ConcretePtr<Pointee> lhs, ConcretePtr<Pointee> rhs) noexcept requires base::meta::concepts::CompletePointee<Pointee> { return lhs.get() - rhs.get(); }
+        friend constexpr metadata::difference_type operator-(ConcretePtr<Pointee> lhs, ConcretePtr<Pointee> rhs) noexcept requires base::meta::concepts::CompletePointee<Pointee> { return lhs.get() - rhs.get(); }
 
         //================================================================================
         // Comparison Operators (Three-way)
@@ -148,7 +148,7 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
 
         ///@brief Covariantly compares a raw pointer-to-base with a `ConcretePtr`-to-derived in terms of pointer identity.
         template<std::derived_from<Pointee> DerivedT>
-        [[nodiscard]] friend constexpr auto operator<=>(const pointer lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator<=>(const metadata::pointer lhs, const ConcretePtr<DerivedT>& rhs) noexcept
         {
             return (lhs <=> rhs.get());
         }
@@ -190,28 +190,28 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
 
         ///@brief Deleted addition assignment to prevent misuse as an iterator.
         template<typename Self>
-        Self& operator+=(this Self&&, difference_type) =
+        Self& operator+=(this Self&&, metadata::difference_type) =
             delete /*("Addition assignment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted subtraction assignment to prevent misuse as an iterator.
         template<typename Self>
-        Self& operator-=(this Self&&, difference_type) =
+        Self& operator-=(this Self&&, metadata::difference_type) =
             delete /*("Subtraction assignment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted pointer addition to prevent misuse as an iterator.
-        friend ConcretePtr<Pointee> operator+(ConcretePtr<Pointee>, difference_type) =
+        friend ConcretePtr<Pointee> operator+(ConcretePtr<Pointee>, metadata::difference_type) =
             delete /*("Pointer addition deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted pointer addition to prevent misuse as an iterator.
-        friend ConcretePtr<Pointee> operator+(difference_type, ConcretePtr<Pointee>) =
+        friend ConcretePtr<Pointee> operator+(metadata::difference_type, ConcretePtr<Pointee>) =
             delete /*("Pointer addition deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
-        friend difference_type operator-(ConcretePtr<Pointee>, ConcretePtr<Pointee>) =
+        friend metadata::difference_type operator-(ConcretePtr<Pointee>, ConcretePtr<Pointee>) =
             delete /*("Pointer subtraction deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
-        friend ConcretePtr<Pointee> operator-(ConcretePtr<Pointee>, difference_type) =
+        friend ConcretePtr<Pointee> operator-(ConcretePtr<Pointee>, metadata::difference_type) =
             delete /*("Pointer subtraction deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         //================================================================================
@@ -238,7 +238,7 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
 
         ///@brief Covariantly compares equality of a raw pointer-to-base with an `ConcretePtr`-to-derived in terms of pointer identity.
         template<std::derived_from<Pointee> DerivedT>
-        [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const metadata::pointer lhs, const ConcretePtr<DerivedT>& rhs) noexcept
         {
             return (lhs == rhs.get());
         }
@@ -255,7 +255,7 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
             delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
-        auto operator<=>(const pointer) const =
+        auto operator<=>(const metadata::pointer) const =
             delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/;
 
     }; //class rebinding
