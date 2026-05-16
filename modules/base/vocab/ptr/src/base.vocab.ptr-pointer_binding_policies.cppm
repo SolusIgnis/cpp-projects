@@ -78,7 +78,7 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
         ///@brief Deleted constructor from C-array to prevent array-to-pointer decay.
         template<typename AnyCArray>
             requires std::is_array_v<AnyCArray>
-        cursor_ptr(AnyCArray&) =
+        allowed(AnyCArray&) =
             delete /*("Constructor from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
