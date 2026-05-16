@@ -34,10 +34,11 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
     struct policy_group_tag;
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-        requires (!is_void_v<typename Pointee>)
+        requires (!std::is_void_v<Pointee>)
     struct arithmetic {
     private:
-        using pointer = typename ConcretePtr::pointer;
+        using pointer = typename ConcretePtr<Pointee>::pointer;
+        using difference_type = typename ConcretePtr<Pointee>::difference_type;
 
     public:
         using policy_group = policy_group_tag;
@@ -161,7 +162,8 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
     template<template<typename> typename ConcretePtr, typename Pointee>
     struct rebinding {
     private:
-        using pointer = typename ConcretePtr::pointer;
+        using pointer = typename ConcretePtr<Pointee>::pointer;
+        using difference_type = typename ConcretePtr<Pointee>::difference_type;
 
     public:
         using policy_group = policy_group_tag;
