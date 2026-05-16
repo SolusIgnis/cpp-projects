@@ -86,7 +86,7 @@ namespace base::vocab::inline ptr {
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
-    template<template<typename> typename ConcretePtr, typename Pointee, template<template<typename>, typename> typename... Policies>
+    template<template<typename> typename ConcretePtr, typename Pointee, template<template<typename> typename, typename> typename... Policies>
         requires (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>)
     class ptr_core : public pointer_metadata<Pointee>, public Policies<ConcretePtr, Pointee>... {
     public:
