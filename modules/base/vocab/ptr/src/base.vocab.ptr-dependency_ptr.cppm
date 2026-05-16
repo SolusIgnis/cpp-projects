@@ -46,7 +46,7 @@ import base.meta.concepts;
 
 import :core;
 
-#if 0
+#if 1
 export namespace base::vocab::inline ptr {
     /**
      * @brief Pointer type representing a required dependency.
