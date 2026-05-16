@@ -135,7 +135,7 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         ///@brief Covariantly compares in terms of pointer identity.
         template<std::derived_from<Pointee> DerivedT>
             requires (!std::same_as<DerivedT, Pointee>)
-        [[nodiscard]] friend constexpr auto operator<=>(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee><DerivedT>& rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator<=>(const ConcretePtr<Pointee>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
         {
             return (lhs.get() <=> rhs.get());
         }
