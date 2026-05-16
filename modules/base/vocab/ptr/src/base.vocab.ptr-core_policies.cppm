@@ -30,10 +30,10 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
-import export :nullability_policies;
-import export :pointer_binding_policies;
-import export :reference_binding_policies;
-import export :traversal_policies;
+export import :nullability_policies;
+export import :pointer_binding_policies;
+export import :reference_binding_policies;
+export import :traversal_policies;
 
 namespace base::vocab::inline ptr {
     template<typename... Ts>

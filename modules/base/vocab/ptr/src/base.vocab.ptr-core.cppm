@@ -30,7 +30,7 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
-import export :core_policies;
+export import :core_policies;
 
 namespace base::vocab::inline ptr {
     template<typename Pointee>
