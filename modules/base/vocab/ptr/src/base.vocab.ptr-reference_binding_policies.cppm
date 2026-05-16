@@ -33,19 +33,19 @@ import base.meta.concepts;
 namespace base::vocab::inline ptr::ptr_policies::reference_binding {
     struct policy_group_tag;
 
-    template<typename ConcretePtr>
+    template<template<typename> typename ConcretePtr, typename Pointee>
     struct allowed {
     private:
-        using pointee = typename ConcretePtr::element_type;
+        using pointee = typename ConcretePtr<Pointee>::element_type;
 
     public:
         using policy_group = policy_group_tag;
     }; //struct allowed
 
-    template<typename ConcretePtr>
+    template<template<typename> typename ConcretePtr, typename Pointee>
     struct forbidden {
     private:
-        using pointee = typename ConcretePtr::element_type;
+        using pointee = typename ConcretePtr<Pointee>::element_type;
 
     public:
         using policy_group = policy_group_tag;

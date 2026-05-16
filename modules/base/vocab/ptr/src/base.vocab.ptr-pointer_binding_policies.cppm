@@ -33,13 +33,31 @@ import base.meta.concepts;
 namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
     struct policy_group_tag;
 
-    template<typename ConcretePtr>
+    template<template<typename> typename ConcretePtr, typename Pointee>
     struct allowed {
+    private:
+        using pointer = typename ConcretePtr<Pointee>::pointer;
+
+    public:
         using policy_group = policy_group_tag;
     }; //struct allowed
 
-    template<typename ConcretePtr>
+    template<template<typename> typename ConcretePtr, typename Pointee>
     struct forbidden {
+    private:
+        using pointer = typename ConcretePtr<Pointee>::pointer;
+
+    public:
         using policy_group = policy_group_tag;
+
+        ///@brief Deleted constructor from `pointer` to structurally guarantee non-null initialization.
+        forbidden(pointer) =
+            delete /*("Constructor from `pointer` deleted. Dereference first to guarantee non-null initialization. Use `std::optional<dependency_ptr<T>>` for optional dependencies.")*/
+            ;
+
+        ///@brief Deleted assignment from `pointer` to structurally guarantee non-null rebinding.
+        ConcretePtr<Pointee>& operator=(pointer) =
+            delete /*("Assignment from `pointer` deleted. Dereference first to guarantee non-null initialization. Use `std::optional<dependency_ptr<T>>` for optional dependencies.")*/
+            ;
     }; //struct forbidden
 } //namespace base::vocab::inline ptr::ptr_policies::pointer_binding

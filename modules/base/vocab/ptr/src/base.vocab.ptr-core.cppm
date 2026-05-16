@@ -86,12 +86,12 @@ namespace base::vocab::inline ptr {
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
-    template<template<typename> typename ConcretePtr, typename Pointee, template<typename> typename... Policies>
+    template<template<typename> typename ConcretePtr, typename Pointee, template<template<typename>, typename> typename... Policies>
         requires (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>)
-    class ptr_core : public pointer_metadata<Pointee>, public Policies<ConcretePtr<Pointee>>... {
+    class ptr_core : public pointer_metadata<Pointee>, public Policies<ConcretePtr, Pointee>... {
     public:
         struct derived_from_ptr_core;
-        friend Policies<ConcretePtr<Pointee>>...;
+        friend Policies<ConcretePtr, Pointee>...;
 
     private:
         using metadata = pointer_metadata<Pointee>;
@@ -99,9 +99,9 @@ export namespace base::vocab::inline ptr {
         metadata::pointer address_; ///<@brief The stored address used by all concrete pointer types.
 
     protected:
-        using Policies<ConcretePtr<Pointee>>::resolve_address...;
-        using Policies<ConcretePtr<Pointee>>::is_constructor_explicit...;
-        using Policies<ConcretePtr<Pointee>>::validate_by_nullability...;
+        using Policies<ConcretePtr, Pointee>::resolve_address...;
+        using Policies<ConcretePtr, Pointee>::is_constructor_explicit...;
+        using Policies<ConcretePtr, Pointee>::validate_by_nullability...;
 
     public:
         //================================================================================
@@ -109,10 +109,10 @@ export namespace base::vocab::inline ptr {
         //================================================================================
 
         ///@brief Using constructor deletions from the policies.
-        using Policies<ConcretePtr<Pointee>>::Policies...;
+        using Policies<ConcretePtr, Pointee>::Policies...;
 
         ///@brief Using assignment operator deletions from the policies.
-        using Policies<ConcretePtr<Pointee>>::operator=...;
+        using Policies<ConcretePtr, Pointee>::operator=...;
 
         ///@brief (Conversion) Implicitly converts from another `ptr_core` according to underlying pointer conversions.
         template<typename OtherPointee>
