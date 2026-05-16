@@ -36,18 +36,62 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
     template<template<typename> typename ConcretePtr, typename Pointee>
     struct allowed {
     private:
-        using pointee = typename ConcretePtr<Pointee>::element_type;
+        using pointer = typename ConcretePtr<Pointee>::pointer;
+        using reference = typename ConcretePtr<Pointee>::reference;
+        using rvalue_reference = typename ConcretePtr<Pointee>::rvalue_reference;
 
     public:
         using policy_group = policy_group_tag;
+
+        auto is_constructor_explicit(reference source) requires (!std::is_void_v<T>) -> std::true_type;
+
+        ///@brief Resolves an address from a lvalue `reference` to another object.
+        constexpr pointer resolve_address(reference source) noexcept requires (!std::is_void_v<T>) { return std::addressof(source); }
+
+        //================================================================================
+        // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
+        //================================================================================
+
+        ///@brief Deleted constructor from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
+        cursor_ptr(rvalue_reference) =
+            delete /*("Constructor from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
+
+        ///@brief Deleted assignment from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
+        template<typename Self>
+        Self& operator=(this Self&&, rvalue_reference) =
+            delete /*("Assignment from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
+            
+        ///@brief Deleted address resolution from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
+        constexpr pointer resolve_address(rvalue_reference) =
+            delete /*("Address resolution from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
     }; //struct allowed
 
     template<template<typename> typename ConcretePtr, typename Pointee>
     struct forbidden {
     private:
-        using pointee = typename ConcretePtr<Pointee>::element_type;
+        using pointer = typename ConcretePtr<Pointee>::pointer;
+        using reference = typename ConcretePtr<Pointee>::reference;
 
     public:
         using policy_group = policy_group_tag;
+
+        ///@brief Deleted constructor from `const reference` to forbid binding to lvalue or rvalue references.
+        cursor_ptr(const reference) =
+            delete /*("Constructor from references deleted by policy `reference_binding::forbidden`. Try constructing from the address directly.")*/
+            ;
+
+        ///@brief Deleted assignment from `const references` to forbid binding to lvalue or rvalue references.
+        template<typename Self>
+        Self& operator=(this Self&&, rvalue_reference) =
+            delete /*("Assignment from references deleted by policy `reference_binding::forbidden`. Try assigning from the address directly.")*/
+            ;
+
+        ///@brief Deleted address resolution from `const reference` to forbid binding to lvalue or rvalue references.
+        constexpr pointer resolve_address(rvalue_reference) =
+            delete /*("Address resolution from references deleted by policy `reference_binding::forbidden`. Try resolving from the address directly.")*/
+            ;
     }; //struct forbidden
 } //namespace base::vocab::inline ptr::ptr_policies::reference_binding

@@ -43,7 +43,7 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
 
         auto is_constructor_explicit() -> std::false_type;
 
-        ///@brief Resolves address from no arguments to provide default consteuctor by returning `nullptr` converted to `pointer` type.
+        ///@brief Resolves address from no arguments to provide default constructor by returning `nullptr` converted to `pointer` type.
         [[nodiscard]] constexpr pointer resolve_address() { return nullptr; }
 
         auto is_constructor_explicit(std::nullptr_t) -> std::false_type;
