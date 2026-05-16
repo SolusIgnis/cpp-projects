@@ -43,10 +43,10 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
     public:
         using policy_group = policy_group_tag;
 
-        auto is_constructor_explicit(reference source) requires (!std::is_void_v<T>) -> std::true_type;
+        auto is_constructor_explicit(reference source) requires (!std::is_void_v<Pointee>) -> std::true_type;
 
         ///@brief Resolves an address from a lvalue `reference` to another object.
-        constexpr pointer resolve_address(reference source) noexcept requires (!std::is_void_v<T>) { return std::addressof(source); }
+        constexpr pointer resolve_address(reference source) noexcept requires (!std::is_void_v<Pointee>) { return std::addressof(source); }
 
         //================================================================================
         // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
