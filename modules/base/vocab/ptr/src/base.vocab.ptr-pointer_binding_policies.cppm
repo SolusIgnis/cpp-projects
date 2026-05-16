@@ -120,7 +120,8 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
             ;
 
         ///@brief Deleted assignment from `pointer` to structurally guarantee non-null rebinding.
-        ConcretePtr<Pointee>& operator=(pointer) =
+        template<typename Self>
+        Self& operator=(this Self&&, pointer) =
             delete /*("Assignment from `pointer` deleted. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 

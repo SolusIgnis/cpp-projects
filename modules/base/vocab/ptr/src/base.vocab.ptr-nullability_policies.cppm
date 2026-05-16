@@ -95,7 +95,8 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
             ;
 
         ///@brief Deleted assignment from `nullptr` to prevent sources of invalid null rebinding.
-        ConcretePtr<Pointee>& operator=(std::nullptr_t) =
+        template<typename Self>
+        Self& operator=(this Self&&, std::nullptr_t) =
             delete /*("Assignment from `nullptr` deleted to prevent null rebinding. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
