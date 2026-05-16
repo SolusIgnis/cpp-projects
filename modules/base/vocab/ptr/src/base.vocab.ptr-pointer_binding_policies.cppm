@@ -43,7 +43,7 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
 
         template<typename P>
             requires std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, pointer>
-        auto is_constructor_explicit() -> std::conditional_t<std::is_void_v<Pointee>, std::true_type, std::false_type>;
+        auto is_constructor_explicit(P&&) -> std::conditional_t<std::is_void_v<Pointee>, std::true_type, std::false_type>;
 
         ///@brief Resolves address from a raw `pointer`.
         template<typename P>
@@ -58,7 +58,7 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-        auto is_constructor_explicit() -> std::conditional_t<std::is_void_v<Pointee>, std::true_type, std::false_type>;
+        auto is_constructor_explicit(const Pointer<Element, Args...>&) -> std::conditional_t<std::is_void_v<Pointee>, std::true_type, std::false_type>;
 
         ///@brief Resolves address from another pointer-like type.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
