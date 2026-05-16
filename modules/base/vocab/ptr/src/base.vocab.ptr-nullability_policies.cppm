@@ -34,7 +34,7 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
     struct policy_group_tag;
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    struct yes {
+    class yes {
     private:
         using pointer = typename ConcretePtr<Pointee>::pointer;
 
@@ -69,24 +69,27 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
     protected:
         ///@brief Passes the pointer through unchecked because this policy accepts null pointers.
         [[nodiscard]] constexpr pointer validate_by_nullability(pointer source) { return source; }
-    }; //struct yes
+    }; //class yes
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    struct no {
+    class no {
     private:
         using pointer = typename ConcretePtr<Pointee>::pointer;
 
     public:
         using policy_group = policy_group_tag;
 
+        ///@brief Contextually converts to `bool` to "test" if the pointer is engaged. Always returns `true` to confirm invariant.
+        [[nodiscard]] constexpr explicit operator bool() const noexcept { return true; }
+
         ///@brief Deleted default constructor to prevent sources of null initialization.
         no() =
-            delete /*("Default constructor deleted to prevent null initialization. Use `std::optional<ptr_type<T>>` for default-constructible optional pointers.")*/
+            delete /*("Default constructor deleted by policy `nullability::no` to prevent null initialization. Use `std::optional<ptr_type<T>>` for default-constructible optional pointers.")*/
             ;
 
         ///@brief Deleted address resolution from no arguments to prevent indirect default construction.
         pointer resolve_address(this auto&&) =
-            delete /*("No-argument address resolution deleted to prevent null initialization. Use `std::optional<ptr_type<T>>` for default-constructible optional pointers.")*/
+            delete /*("No-argument address resolution deleted by policy `nullability::no` to prevent null initialization. Use `std::optional<ptr_type<T>>` for default-constructible optional pointers.")*/
             ;
 
         ///@brief Deleted constructor from `nullptr` to prevent sources of null initialization.
@@ -97,16 +100,13 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
         ///@brief Deleted assignment from `nullptr` to prevent sources of invalid null rebinding.
         template<typename Self>
         Self& operator=(this Self&&, std::nullptr_t) =
-            delete /*("Assignment from `nullptr` deleted to prevent null rebinding. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            delete /*("Assignment from `nullptr` deleted by policy `nullability::no` to prevent null rebinding. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
         ///@brief Deleted address resolution from `nullptr` to prevent sources of invalid null rebinding.
         pointer resolve_address(this auto&&, std::nullptr_t) =
-            delete /*("Address resolution from `nullptr` deleted to prevent null rebinding. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            delete /*("Address resolution from `nullptr` deleted by policy `nullability::no` to prevent null rebinding. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
-
-        ///@brief Contextually converts to `bool` to "test" if the pointer is engaged. Always returns `true` to confirm invariant.
-        [[nodiscard]] constexpr explicit operator bool() const noexcept { return true; }
 
     protected:
         ///@brief Enforces the non-null invariant by only passing the address through when it is not null.
@@ -116,5 +116,5 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
                 throw std::invalid_argument("`nullability::no` pointers cannot be constructed or assigned from a null pointer.");
             return source;
         }
-    }; //struct no
+    }; //class no
 } //namespace base::vocab::inline ptr::ptr_policies::nullability

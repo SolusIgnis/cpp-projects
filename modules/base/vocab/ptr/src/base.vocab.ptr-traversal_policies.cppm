@@ -35,7 +35,7 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
 
     template<template<typename> typename ConcretePtr, typename Pointee>
         requires (!std::is_void_v<Pointee>)
-    struct arithmetic {
+    class arithmetic {
     private:
         using pointer = typename ConcretePtr<Pointee>::pointer;
         using difference_type = typename ConcretePtr<Pointee>::difference_type;
@@ -157,10 +157,10 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         ///@brief Deleted comparison against `nullptr`.
         [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<Pointee>&, std::nullptr_t) noexcept = delete;
 
-    }; //struct arithmetic
+    }; //class arithmetic
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    struct rebinding {
+    class rebinding {
     private:
         using pointer = typename ConcretePtr<Pointee>::pointer;
         using difference_type = typename ConcretePtr<Pointee>::difference_type;
@@ -175,48 +175,48 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         ///@brief Deleted prefix increment to prevent misuse as an iterator.
         template<typename Self>
         Self& operator++(this Self&&) =
-            delete /*("Prefix increment deleted to prevent pointer arithmetic. `traversal::rebinding` pointers are not iterators.")*/;
+            delete /*("Prefix increment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted prefix decrement to prevent misuse as an iterator.
         template<typename Self>
         Self& operator--(this Self&&) =
-            delete /*("Prefix decrement deleted to prevent pointer arithmetic. `traversal::rebinding` pointers are not iterators.")*/;
+            delete /*("Prefix decrement deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted postfix increment to prevent misuse as an iterator.
         template<typename Self>
         Self operator++(this Self&&, int) =
-            delete /*("Postfix increment deleted to prevent pointer arithmetic. `traversal::rebinding` pointers are not iterators.")*/;
+            delete /*("Postfix increment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted postfix decrement to prevent misuse as an iterator.
         template<typename Self>
         Self operator--(this Self&&, int) =
-            delete /*("Postfix decrement deleted to prevent pointer arithmetic. `traversal::rebinding` pointers are not iterators.")*/;
+            delete /*("Postfix decrement deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted addition assignment to prevent misuse as an iterator.
         template<typename Self>
         Self& operator+=(this Self&&, difference_type) =
-            delete /*("Addition assignment deleted to prevent pointer arithmetic. `traversal::rebinding` pointers are not iterators.")*/;
+            delete /*("Addition assignment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted subtraction assignment to prevent misuse as an iterator.
         template<typename Self>
         Self& operator-=(this Self&&, difference_type) =
-            delete /*("Subtraction assignment deleted to prevent pointer arithmetic. `traversal::rebinding` pointers are not iterators.")*/;
+            delete /*("Subtraction assignment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted pointer addition to prevent misuse as an iterator.
         friend ConcretePtr<Pointee> operator+(ConcretePtr<Pointee>, difference_type) =
-            delete /*("Pointer addition deleted to prevent pointer arithmetic. `traversal::rebinding` pointers are not iterators.")*/;
+            delete /*("Pointer addition deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted pointer addition to prevent misuse as an iterator.
         friend ConcretePtr<Pointee> operator+(difference_type, ConcretePtr<Pointee>) =
-            delete /*("Pointer addition deleted to prevent pointer arithmetic. `traversal::rebinding` pointers are not iterators.")*/;
+            delete /*("Pointer addition deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
         friend difference_type operator-(ConcretePtr<Pointee>, ConcretePtr<Pointee>) =
-            delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `traversal::rebinding` pointers are not iterators.")*/;
+            delete /*("Pointer subtraction deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
         friend ConcretePtr<Pointee> operator-(ConcretePtr<Pointee>, difference_type) =
-            delete /*("Pointer subtraction deleted to prevent pointer arithmetic. `traversal::rebinding` pointers are not iterators.")*/;
+            delete /*("Pointer subtraction deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
 
         //================================================================================
         // Comparison Operators (Equality Allowed, Others Deleted)
@@ -256,11 +256,11 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         template<typename Self>
         auto operator<=>(this Self&&, Self) =
-            delete /*("Comparison operators deleted to prevent address comparisons. ConcretePtr`traversal::rebinding` pointers are not iterators.")*/;
+            delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/;
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         auto operator<=>(const pointer) const =
-            delete /*("Comparison operators deleted to prevent address comparisons. ConcretePtr`traversal::rebinding` pointers are not iterators.")*/;
+            delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/;
 
-    }; //struct rebinding
+    }; //class rebinding
 } //namespace base::vocab::inline ptr::ptr_policies::traversal

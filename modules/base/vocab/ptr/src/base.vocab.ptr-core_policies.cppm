@@ -35,7 +35,7 @@ export import :pointer_binding_policies;
 export import :reference_binding_policies;
 export import :traversal_policies;
 
-namespace base::vocab::inline ptr {
+namespace base::vocab::inline ptr::ptr_policies {
     template<typename... Ts>
     struct type_list {};
 

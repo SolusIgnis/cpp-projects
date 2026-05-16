@@ -34,7 +34,7 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
     struct policy_group_tag;
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    struct allowed {
+    class allowed {
     private:
         using pointer = typename ConcretePtr<Pointee>::pointer;
         using reference = typename ConcretePtr<Pointee>::reference;
@@ -67,10 +67,10 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
         constexpr pointer resolve_address(rvalue_reference) =
             delete /*("Address resolution from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
-    }; //struct allowed
+    }; //class allowed
 
     template<template<typename> typename ConcretePtr, typename Pointee>
-    struct forbidden {
+    class forbidden {
     private:
         using pointer = typename ConcretePtr<Pointee>::pointer;
         using reference = typename ConcretePtr<Pointee>::reference;
@@ -93,5 +93,5 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
         constexpr pointer resolve_address(const reference) =
             delete /*("Address resolution from references deleted by policy `reference_binding::forbidden`. Try resolving from the address directly.")*/
             ;
-    }; //struct forbidden
+    }; //class forbidden
 } //namespace base::vocab::inline ptr::ptr_policies::reference_binding
