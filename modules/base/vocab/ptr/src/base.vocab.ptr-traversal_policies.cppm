@@ -42,6 +42,12 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
     public:
         using policy_group = policy_group_tag;
 
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
+        auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::resolve_address...` expansion.
+        constexpr metadata::pointer resolve_address(policy_group) noexcept requires false;
+
         //================================================================================
         // Arithmetic Operators: Implemented for Iteration
         //================================================================================
@@ -166,6 +172,12 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         using metadata = pointer_metadata<Pointee>;
     public:
         using policy_group = policy_group_tag;
+
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
+        auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::resolve_address...` expansion.
+        constexpr metadata::pointer resolve_address(policy_group) noexcept requires false;
 
         //================================================================================
         // Deleted Pointer Arithmetic Operators: Not an Iterator
