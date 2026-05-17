@@ -57,7 +57,9 @@ export namespace base::vocab::inline ptr {
         using Policies<ConcretePtr, Pointee>::is_constructor_explicit...;
         using Policies<ConcretePtr, Pointee>::validate_by_nullability...;
 
-    public:
+        template<typename... Ts>
+        static auto is_constructor_explicit(Ts&&...) -> std::true_type;
+  public:
         //================================================================================
         // Construction, Assignment, and Swap
         //================================================================================
