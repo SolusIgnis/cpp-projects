@@ -90,11 +90,11 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
             ;
 
         ///@brief Deleted address resolution from C-array to prevent array-to-pointer decay.
-       // template<typename Self, typename AnyCArray>
-       //     requires std::is_array_v<AnyCArray>
-       // metadata::pointer resolve_address(this auto&&, AnyCArray&) =
-       //     delete /*("Address resolution from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
-       //     ;
+        template<typename Self, typename AnyCArray>
+            requires std::is_array_v<AnyCArray>
+        metadata::pointer resolve_address(this auto&&, AnyCArray&) =
+            delete /*("Address resolution from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
+            ;
 
         //================================================================================
         // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
@@ -121,14 +121,14 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
             ;
             
         ///@brief Deleted address resolution from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
-     /*   template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
+        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
                       && requires(Pointer<Element, Args...> ptr) {
                              { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
-                         }*/
-      //  metadata::pointer resolve_address(this auto&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>) =
-      //      delete /*("Address resolution from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
-      //      ;
+                         }
+        metadata::pointer resolve_address(this auto&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>) =
+            delete /*("Address resolution from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
 
     protected:
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
@@ -159,9 +159,9 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
             ;
 
         ///@brief Deleted address resolution from `pointer` to structurally guarantee non-null binding.
-       // metadata::pointer resolve_address(this auto&&, metadata::pointer) =
-       //     delete /*("Address resolution from `pointer` deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
-       //     ;
+        metadata::pointer resolve_address(this auto&&, metadata::pointer) =
+            delete /*("Address resolution from `pointer` deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            ;
             
         ///@brief Deleted constructor from another pointer-like type to structurally guarantee non-null initialization.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
@@ -184,14 +184,14 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
             ;
 
         ///@brief Deleted address resolution from another pointer-like type to structurally guarantee non-null binding.
-       /* template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
+        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
-                     }*/
-       // constexpr metadata::pointer resolve_address(this auto&, const Pointer<Element, Args...>&) =
-       //     delete /*("Address resolution from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
-       //     ;
+                     }
+        constexpr metadata::pointer resolve_address(this auto&, const Pointer<Element, Args...>&) =
+            delete /*("Address resolution from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            ;
 
     protected:
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.

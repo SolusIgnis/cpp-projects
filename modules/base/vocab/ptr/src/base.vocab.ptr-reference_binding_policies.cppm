@@ -62,9 +62,9 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
             ;
             
         ///@brief Deleted address resolution from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
-      //  constexpr metadata::pointer resolve_address(metadata::rvalue_reference) =
-      //      delete /*("Address resolution from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
-      //      ;
+        constexpr metadata::pointer resolve_address(metadata::rvalue_reference) =
+            delete /*("Address resolution from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
 
     protected:
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
@@ -95,9 +95,9 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
             ;
 
         ///@brief Deleted address resolution from `const reference` to forbid binding to lvalue or rvalue references.
-       // constexpr metadata::pointer resolve_address(const metadata::reference) =
-       //     delete /*("Address resolution from references deleted by policy `reference_binding::forbidden`. Try resolving from the address directly.")*/
-       //     ;
+        constexpr metadata::pointer resolve_address(const metadata::reference) =
+            delete /*("Address resolution from references deleted by policy `reference_binding::forbidden`. Try resolving from the address directly.")*/
+            ;
 
     protected:
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
