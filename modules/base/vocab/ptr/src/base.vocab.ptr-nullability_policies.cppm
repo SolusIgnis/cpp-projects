@@ -92,9 +92,9 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
             ;
 
         ///@brief Deleted address resolution from no arguments to prevent indirect default construction.
-        metadata::pointer resolve_address(this auto&&) =
-            delete /*("No-argument address resolution deleted by policy `nullability::no` to prevent null initialization. Use `std::optional<ptr_type<T>>` for default-constructible optional pointers.")*/
-            ;
+    //    metadata::pointer resolve_address(this auto&&) =
+    //        delete /*("No-argument address resolution deleted by policy `nullability::no` to prevent null initialization. Use `std::optional<ptr_type<T>>` for default-constructible optional pointers.")*/
+    //        ;
 
         ///@brief Deleted constructor from `nullptr` to prevent sources of null initialization.
         no(std::nullptr_t) =
@@ -108,9 +108,9 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
             ;
 
         ///@brief Deleted address resolution from `nullptr` to prevent sources of invalid null rebinding.
-        metadata::pointer resolve_address(this auto&&, std::nullptr_t) =
-            delete /*("Address resolution from `nullptr` deleted by policy `nullability::no` to prevent null rebinding. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
-            ;
+     //   metadata::pointer resolve_address(this auto&&, std::nullptr_t) =
+     //       delete /*("Address resolution from `nullptr` deleted by policy `nullability::no` to prevent null rebinding. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+     //       ;
 
     protected:
         ///@brief Enforces the non-null invariant by only passing the address through when it is not null.
