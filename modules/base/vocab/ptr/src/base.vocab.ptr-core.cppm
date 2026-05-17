@@ -71,7 +71,7 @@ export namespace base::vocab::inline ptr {
         ///@brief (Conversion) Implicitly converts from another `ptr_core` according to underlying pointer conversions.
         template<typename OtherPointee>
             requires (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
-        constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept : address_(source.get())
+        constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept : Policies<ConcretePtr, Pointee>::Policies(true)..., address_(source.get())
         {}
 
         ///@brief Constructs a pointer when its new address can be resolved by its policies.
@@ -79,7 +79,7 @@ export namespace base::vocab::inline ptr {
         constexpr explicit(decltype(is_constructor_explicit(std::declval<Args>()...))::value) ptr_core(Args&&... args)
             noexcept(noexcept(resolve_address(std::forward<Args>(args)...)))
             requires requires { resolve_address(std::forward<Args>(args)...); }
-            : address_{resolve_address(std::forward<Args>(args)...)}
+            : Policies<ConcretePtr, Pointee>::Policies(true)..., address_{resolve_address(std::forward<Args>(args)...)}
         {}
 
         ///@brief (Conversion) Assigns from another `ptr_core` according to nested `pointer` type conversions.
