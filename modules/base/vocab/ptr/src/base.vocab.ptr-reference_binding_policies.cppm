@@ -73,6 +73,9 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
     public:
         using policy_group = policy_group_tag;
 
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
+        auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+
         ///@brief Deleted constructor from `const reference` to forbid binding to lvalue or rvalue references.
         forbidden(const metadata::reference) =
             delete /*("Constructor from references deleted by policy `reference_binding::forbidden`. Try constructing from the address directly.")*/

@@ -77,6 +77,12 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
     public:
         using policy_group = policy_group_tag;
 
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
+        auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::resolve_address...` expansion.
+        constexpr metadata::pointer resolve_address(policy_group) noexcept requires false;
+
         ///@brief Contextually converts to `bool` to "test" if the pointer is engaged. Always returns `true` to confirm invariant.
         [[nodiscard]] constexpr explicit operator bool() const noexcept { return true; }
 

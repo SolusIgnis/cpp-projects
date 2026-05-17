@@ -137,6 +137,9 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
     public:
         using policy_group = policy_group_tag;
 
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
+        auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+
         ///@brief Deleted constructor from `pointer` to structurally guarantee non-null initialization.
         forbidden(metadata::pointer) =
             delete /*("Constructor from `pointer` deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
