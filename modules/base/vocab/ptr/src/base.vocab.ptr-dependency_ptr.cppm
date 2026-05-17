@@ -87,7 +87,10 @@ export namespace base::vocab::inline ptr {
         ptr_policies::reference_binding::allowed,
         ptr_policies::traversal::rebinding
     > {
-        
+    private:
+        using base_type = dependency_ptr::ptr_core;
+    public:
+        using base_type::base_type;
     };
 
     /**
