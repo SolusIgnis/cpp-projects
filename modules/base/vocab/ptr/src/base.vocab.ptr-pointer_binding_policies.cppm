@@ -184,11 +184,11 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
             ;
 
         ///@brief Deleted address resolution from another pointer-like type to structurally guarantee non-null binding.
-        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
+       /* template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
-                     }
+                     }*/
        // constexpr metadata::pointer resolve_address(this auto&, const Pointer<Element, Args...>&) =
        //     delete /*("Address resolution from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
        //     ;
