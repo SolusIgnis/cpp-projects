@@ -78,7 +78,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Constructs a pointer when its new address can be resolved by its policies.
         template<typename... Args>
-        constexpr explicit(decltype(is_constructor_explicit(std::declval<Args>()...))::value) ptr_core(Args... args)
+        constexpr explicit(decltype(is_constructor_explicit(std::declval<Args>()...))::value) ptr_core(Args&&... args)
             noexcept(noexcept(resolve_address(std::forward<Args>(args)...)))
             requires requires { resolve_address(std::forward<Args>(args)...); }
             : address_{resolve_address(std::forward<Args>(args)...)}

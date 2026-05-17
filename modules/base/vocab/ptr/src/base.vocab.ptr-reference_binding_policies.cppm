@@ -41,7 +41,7 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
     public:
         using policy_group = policy_group_tag;
 
-        static auto is_constructor_explicit(metadata::reference source) -> std::true_type requires (!std::is_void_v<Pointee>);
+        static auto is_constructor_explicit(metadata::reference) -> std::true_type requires (!std::is_void_v<Pointee>);
 
         ///@brief Resolves an address from a lvalue `reference` to another object.
         constexpr metadata::pointer resolve_address(metadata::reference source) noexcept requires (!std::is_void_v<Pointee>) { return std::addressof(source); }
