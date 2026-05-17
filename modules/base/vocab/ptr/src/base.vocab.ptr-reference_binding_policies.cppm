@@ -65,6 +65,10 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
         constexpr metadata::pointer resolve_address(metadata::rvalue_reference) =
             delete /*("Address resolution from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
+
+    protected:
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
+        void validate_by_nullability() requires false;
     }; //class allowed
 
     template<template<typename> typename ConcretePtr, typename Pointee>
@@ -91,5 +95,9 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
         constexpr metadata::pointer resolve_address(const metadata::reference) =
             delete /*("Address resolution from references deleted by policy `reference_binding::forbidden`. Try resolving from the address directly.")*/
             ;
+
+    protected:
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
+        void validate_by_nullability() requires false;
     }; //class forbidden
 } //namespace base::vocab::inline ptr::ptr_policies::reference_binding

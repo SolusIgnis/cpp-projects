@@ -129,6 +129,10 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
         metadata::pointer resolve_address(this auto&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>) =
             delete /*("Address resolution from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
+
+    protected:
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
+        void validate_by_nullability() requires false;
     }; //class allowed
 
     template<template<typename> typename ConcretePtr, typename Pointee>
@@ -185,5 +189,9 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
         constexpr metadata::pointer resolve_address(this auto&, const Pointer<Element, Args...>&) =
             delete /*("Address resolution from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
+
+    protected:
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
+        void validate_by_nullability() requires false;
     }; //class forbidden
 } //namespace base::vocab::inline ptr::ptr_policies::pointer_binding

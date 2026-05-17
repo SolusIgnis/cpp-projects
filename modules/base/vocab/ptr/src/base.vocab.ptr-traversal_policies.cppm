@@ -165,6 +165,9 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         ///@brief Deleted comparison against `nullptr`.
         [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<Pointee>&, std::nullptr_t) noexcept = delete;
 
+    protected:
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
+        void validate_by_nullability() requires false;
     }; //class arithmetic
 
     template<template<typename> typename ConcretePtr, typename Pointee>
@@ -276,5 +279,8 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         auto operator<=>(const metadata::pointer) const =
             delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/;
 
+    protected:
+        ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
+        void validate_by_nullability() requires false;
     }; //class rebinding
 } //namespace base::vocab::inline ptr::ptr_policies::traversal
