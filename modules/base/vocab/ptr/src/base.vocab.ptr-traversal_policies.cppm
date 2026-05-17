@@ -129,7 +129,10 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         //================================================================================
 
         ///@brief Compares in terms of pointer identity.
-        [[nodiscard]] friend constexpr auto operator<=>(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee>& rhs) noexcept = default;
+        [[nodiscard]] friend constexpr auto operator<=>(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee>& rhs) noexcept
+        {
+            return (lhs.get() <=> rhs.get());
+        }
 
         ///@brief Covariantly compares in terms of pointer identity.
         template<std::derived_from<Pointee> DerivedT>
@@ -219,7 +222,10 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         //================================================================================
 
         ///@brief Compares equality in terms of pointer identity.
-        [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee>& rhs) noexcept = default;
+        [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee>& rhs) noexcept
+        {
+            return (lhs.get() == rhs.get());
+        }
 
         ///@brief Covariantly compares equality in terms of pointer identity.
         template<std::derived_from<Pointee> DerivedT>
