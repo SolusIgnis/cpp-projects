@@ -67,6 +67,9 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
         constexpr void reset(this auto& self, std::nullptr_t null = nullptr) noexcept { self = null; }
 
     protected:
+        ///@brief Initializes empty base object.
+        yes(bool) {}
+        
         ///@brief Passes the pointer through unchecked because this policy accepts null pointers.
         [[nodiscard]] constexpr metadata::pointer validate_by_nullability(metadata::pointer source) { return source; }
     }; //class yes
@@ -113,6 +116,9 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
             ;
 
     protected:
+        ///@brief Initializes empty base object.
+        no(bool) {}
+        
         ///@brief Enforces the non-null invariant by only passing the address through when it is not null.
         [[nodiscard]] constexpr metadata::pointer validate_by_nullability(metadata::pointer source)
         {

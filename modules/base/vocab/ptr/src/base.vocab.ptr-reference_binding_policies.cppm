@@ -67,6 +67,9 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
             ;
 
     protected:
+        ///@brief Initializes empty base object.
+        allowed(bool) {}
+        
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
         void validate_by_nullability() requires false;
     }; //class allowed
@@ -100,6 +103,9 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
             ;
 
     protected:
+        ///@brief Initializes empty base object.
+        forbidden(bool) {}
+        
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
         void validate_by_nullability() requires false;
     }; //class forbidden
