@@ -43,7 +43,7 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
 
         template<typename P>
             requires std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, typename metadata::pointer>
-        auto is_constructor_explicit(P&&) -> std::conditional_t<std::is_void_v<Pointee>, std::true_type, std::false_type>;
+        static auto is_constructor_explicit(P&&) -> std::conditional_t<std::is_void_v<Pointee>, std::true_type, std::false_type>;
 
         ///@brief Resolves address from a raw `pointer`.
         template<typename P>
@@ -58,7 +58,7 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
-        auto is_constructor_explicit(const Pointer<Element, Args...>&) -> std::conditional_t<std::is_void_v<Pointee>, std::true_type, std::false_type>;
+        static auto is_constructor_explicit(const Pointer<Element, Args...>&) -> std::conditional_t<std::is_void_v<Pointee>, std::true_type, std::false_type>;
 
         ///@brief Resolves address from another pointer-like type.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
@@ -142,7 +142,7 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
         using policy_group = policy_group_tag;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
-        auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+        static auto is_constructor_explicit(policy_group) -> std::true_type requires false;
 
         ///@brief Deleted constructor from `pointer` to structurally guarantee non-null initialization.
         forbidden(metadata::pointer) =

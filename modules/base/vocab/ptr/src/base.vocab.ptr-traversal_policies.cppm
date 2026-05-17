@@ -43,7 +43,7 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         using policy_group = policy_group_tag;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
-        auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+        static auto is_constructor_explicit(policy_group) -> std::true_type requires false;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::resolve_address...` expansion.
         constexpr metadata::pointer resolve_address(policy_group) noexcept requires false;
@@ -177,7 +177,7 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         using policy_group = policy_group_tag;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
-        auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+        static auto is_constructor_explicit(policy_group) -> std::true_type requires false;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::resolve_address...` expansion.
         constexpr metadata::pointer resolve_address(policy_group) noexcept requires false;
