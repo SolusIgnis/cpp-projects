@@ -94,7 +94,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Assigns to a pointer when its new address can be resolved by its policies.
         template<typename Self, typename... Args>
             requires (!std::is_const_v<Self>)
-        constexpr ConcretePtr& operator=(this Self& self, Args&&... args)
+        constexpr Self& operator=(this Self& self, Args&&... args)
             noexcept(noexcept(resolve_address(std::forward<Args>(args)...)))
             requires requires { resolve_address(std::forward<Args>(args)...); }
         {
