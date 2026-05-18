@@ -98,8 +98,8 @@ export namespace base::vocab::inline ptr {
             noexcept(noexcept(resolve_address(std::forward<Args>(args)...)))
             requires requires { resolve_address(std::forward<Args>(args)...); }
         {
-            address_ = resolve_address(std::forward<Args>(args)...);
-            return *this;
+            self.address_ = resolve_address(std::forward<Args>(args)...);
+            return self;
         }
 
         ///@brief Swaps pointer addresses.
