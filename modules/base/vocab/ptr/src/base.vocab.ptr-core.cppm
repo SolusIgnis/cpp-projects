@@ -30,9 +30,35 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
-export import :core_policies;
-
 import :metadata;
+
+#ifdef EXPERIMENTAL_CORE_PARTITION
+export import :policies;
+
+namespace base::vocab::inline ptr {
+    template<typename T>
+    concept VocabPtr = requires { typename T::derived_from_ptr_core; };
+} //namespace base::vocab::inline ptr
+
+export namespace base::vocab::inline ptr {
+    template<template<typename> typename ConcretePtr, typename Pointee, typename... Policies>
+        requires (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>)
+    class ptr_core : public pointer_metadata<Pointee> {
+    public:
+        struct derived_from_ptr_core;
+
+    private:
+        using policy_set = ptr_policies::type_list<Policies...>;
+        using metadata = pointer_metadata<Pointee>;
+
+        metadata::pointer address_; ///<@brief The stored address used by all concrete pointer types.
+
+    public:
+        
+    }; //class ptr_core
+} //namespace base::vocab::inline ptr
+#else
+export import :core_policies;
 
 namespace base::vocab::inline ptr {
     template<typename T>
@@ -57,7 +83,7 @@ export namespace base::vocab::inline ptr {
         using Policies<ConcretePtr, Pointee>::is_constructor_explicit...;
         using Policies<ConcretePtr, Pointee>::validate_by_nullability...;
 
-  public:
+    public:
         //================================================================================
         // Construction, Assignment, and Swap
         //================================================================================
@@ -166,6 +192,7 @@ export namespace base::vocab::inline ptr {
         }
     }; //class ptr_core
 } //namespace base::vocab::inline ptr
+#endif
 
 /**
  * @brief Partial specialization of `std::hash` for `VocabPtr`s.

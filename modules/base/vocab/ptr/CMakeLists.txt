@@ -18,6 +18,7 @@ add_named_module(base.vocab.ptr
     src/base.vocab.ptr-reference_binding_policies.cppm
     src/base.vocab.ptr-traversal_policies.cppm
     src/base.vocab.ptr-core_policies.cppm
+    src/base.vocab.ptr-policies.cppm
     src/base.vocab.ptr-core.cppm
     src/base.vocab.ptr-alias_ptr.cppm
     src/base.vocab.ptr-cursor_ptr.cppm
