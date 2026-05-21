@@ -56,20 +56,20 @@ namespace base::meta::sequences {
     template<Sequence Seq, typename Query>
     struct contains;
 
-    template<typename Query, typename... Types>
+    template<typename... Types, typename Query>
     struct contains<type_list<Types...>, Query>
         : std::bool_constant<
             (std::same_as<Query, Types> || ...)
         > {};
 
-    template<auto Query, auto... Values>
-    struct contains<value_list<Values...>, decltype(Query) Query>
+    template<auto... Values, auto Query>
+    struct contains<value_list<Values...>, Query>
         : std::bool_constant<
             (value_equivalent_v<Query, Values> || ...)
         > {};
 
-    template<typename T, T Query, T... Values>
-    struct contains<uniform_value_list<T, Values...>, T Query>
+    template<typename T, T... Values, T Query>
+    struct contains<uniform_value_list<T, Values...>, Query>
         : std::bool_constant<
             ((Query == Values) || ...)
         > {};
