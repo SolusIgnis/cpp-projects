@@ -13,6 +13,9 @@ trace_me()
 # Add submodule directories in dependency order.
 # ===========================================================================
 
+# Add the `base.meta.sequences` module
+add_subdirectory("sequences")
+
 # Add the `base.meta.traits` module
 add_subdirectory("traits")
 
