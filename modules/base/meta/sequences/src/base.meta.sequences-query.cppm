@@ -53,37 +53,40 @@ namespace base::meta::sequences {
 } //namespace base::meta::sequences
 
 namespace base::meta::sequences {
-    template<Sequence Seq, typename Query>
-    struct contains;
+    template<TypeSequence Seq, typename Query>
+    struct contains_type;
 
     template<typename... Types, typename Query>
-    struct contains<type_list<Types...>, Query>
+    struct contains_type<type_list<Types...>, Query>
         : std::bool_constant<
             (std::same_as<Query, Types> || ...)
         > {};
 
+    template<ValueSequence Seq, auto Query>
+    struct contains_value;
+
     template<auto... Values, auto Query>
-    struct contains<value_list<Values...>, Query>
+    struct contains_value<value_list<Values...>, Query>
         : std::bool_constant<
             (value_equivalent_v<Query, Values> || ...)
         > {};
 
     template<typename T, T... Values, T Query>
-    struct contains<uniform_value_list<T, Values...>, Query>
+    struct contains_value<uniform_value_list<T, Values...>, Query>
         : std::bool_constant<
             ((Query == Values) || ...)
         > {};
 
     export template<TypeSequence Seq, typename Query>
     inline constexpr bool contains_v =
-        contains<std::remove_cvref_t<Seq>, Query>::value;
+        contains_type<std::remove_cvref_t<Seq>, Query>::value;
 
     export template<ValueSequence Seq, auto Query>
     inline constexpr bool contains_v<
         Seq,
         decltype(Query) Query>
     > =
-        contains<
+        contains_value<
             std::remove_cvref_t<Seq>,
             decltype(Query) Query
         >::value;
