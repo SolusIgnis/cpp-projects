@@ -82,12 +82,6 @@ namespace base::meta::sequences {
         contains_type<std::remove_cvref_t<Seq>, Query>::value;
 
     export template<ValueSequence Seq, auto Query>
-    inline constexpr bool contains_v<
-        Seq,
-        decltype(Query) Query>
-    > =
-        contains_value<
-            std::remove_cvref_t<Seq>,
-            decltype(Query) Query
-        >::value;
+    inline constexpr bool contains_v =
+        contains_value<std::remove_cvref_t<Seq>, Query>::value;
 } //namespace base::meta::sequences
