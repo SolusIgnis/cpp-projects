@@ -106,13 +106,13 @@ namespace base::meta::sequences {
         value_list<Element, Rest...>,
         UnaryValuePredicate
     > {
-        static constexpr auto value = (
+        static constexpr auto type = (
             UnaryValuePredicate<Element>::value ?
             value_list<Element> :
             try_find_value_if<
                 value_list<Rest...>,
                 UnaryValuePredicate
-            >::value
+            >::type
         );
     };
 
@@ -143,13 +143,13 @@ namespace base::meta::sequences {
         uniform_value_list<T, Element, Rest...>,
         UnaryValuePredicate
     > {
-        static constexpr T value = (
+        static constexpr T type = (
             UnaryValuePredicate<Element>::value ?
             uniform_value_list<T, Element> :
             try_find_value_if<
                 uniform_value_list<T, Rest...>,
                 UnaryValuePredicate
-            >::value
+            >::type
         );
     };
 
