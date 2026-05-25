@@ -15,7 +15,7 @@ add_named_module(base.meta.sequences
     src/base.meta.sequences-core.cppm
     src/base.meta.sequences-access.cppm
     src/base.meta.sequences-query.cppm
-#    src/base.meta.sequences-select.cppm
+    src/base.meta.sequences-select.cppm
 #    src/base.meta.sequences-modify.cppm
 #    src/base.meta.sequences-transform.cppm
 #    src/base.meta.sequences-reduce.cppm
