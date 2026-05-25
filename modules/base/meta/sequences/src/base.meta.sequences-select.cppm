@@ -173,8 +173,8 @@ namespace base::meta::sequences {
         ValueSequence Seq,
         template<auto> typename UnaryValuePredicate
     >
-    inline constexpr auto try_find_value_if_t =
-        try_find_value_if<
+    using try_find_value_if_t =
+        typename try_find_value_if<
             std::remove_cvref_t<Seq>,
             UnaryValuePredicate
         >::type;
