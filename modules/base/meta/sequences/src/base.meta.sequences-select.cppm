@@ -106,14 +106,14 @@ namespace base::meta::sequences {
         value_list<Element, Rest...>,
         UnaryValuePredicate
     > {
-        static constexpr auto type = (
-            UnaryValuePredicate<Element>::value ?
-            value_list<Element> :
-            try_find_value_if<
+        using type = std::conditional_t<
+            UnaryValuePredicate<Element>::value,
+            value_list<Element>,
+            typename try_find_value_if<
                 value_list<Rest...>,
                 UnaryValuePredicate
             >::type
-        );
+        >;
     };
 
     /**
@@ -143,14 +143,14 @@ namespace base::meta::sequences {
         uniform_value_list<T, Element, Rest...>,
         UnaryValuePredicate
     > {
-        static constexpr T type = (
-            UnaryValuePredicate<Element>::value ?
-            uniform_value_list<T, Element> :
-            try_find_value_if<
+        using type = std::conditional_t<
+            UnaryValuePredicate<Element>::value,
+            uniform_value_list<T, Element>,
+            typename try_find_value_if<
                 uniform_value_list<T, Rest...>,
                 UnaryValuePredicate
             >::type
-        );
+        >;
     };
 
     /**
