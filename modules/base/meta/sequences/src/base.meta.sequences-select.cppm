@@ -9,20 +9,17 @@
  * @brief Sequence selection and extraction algorithms.
  *
  * @details
+ * :select
+ * ​ ├── filter_t
+​ *  ├── remove_t
+​ *  ├── try_find_type_if_t
+ * ​ ├── extract_t
+ * ​ ├── partition_t
+ * ​ ├── drop_t
+ * ​ └── take_t
+ *
  * Provides selector-oriented metafunctions for compile-time sequence
  * traversal, extraction, and filtering operations.
- *
- * This partition currently provides:
- * - `find_type_if_t`
- * - `find_value_if_t`
- *
- * These algorithms perform short-circuit left-to-right searches over
- * sequence elements and return the first matching element satisfying
- * the supplied predicate.
- *
- * Type predicates and value predicates are intentionally separated
- * because C++ template-template parameters cannot unify `typename`
- * and `auto` predicate forms under a single interface.
  */
 
 export module base.meta.sequences:select;
@@ -32,7 +29,6 @@ import std;
 import :core;
 
 namespace base::meta::sequences {
-
     /**
      * @brief Sentinel type indicating no matching element was found.
      */
@@ -182,5 +178,4 @@ namespace base::meta::sequences {
             std::remove_cvref_t<Seq>,
             UnaryValuePredicate
         >::value;
-
 } // namespace base::meta::sequences

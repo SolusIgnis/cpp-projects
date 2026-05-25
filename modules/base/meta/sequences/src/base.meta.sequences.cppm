@@ -41,7 +41,9 @@
  * ​│    ├── NonEmptySequence ✔️
  * ​│    ├── front_t ✔️
  * ​│    ├── front_v ✔️
-​ * │    ├── at_t (📌 needs C++26 pack indexing)
+​​ * │    ├── find_type_if_t ✔️
+​ * │    ├── find_value_if_v ✔️
+ * │    ├── at_t (📌 needs C++26 pack indexing)
  * │    ├── at_v (📌 needs C++26 pack indexing)
 ​ * │    ├── back_t (⛓️ needs at_t)
  * ​│    └── back_v (⛓️ needs at_v)
@@ -74,7 +76,7 @@
  * ├── :select
  * ​│    ├── filter_t
 ​ * │    ├── remove_t
-​ * │    ├── find_if_t
+​ * │    ├── try_find_type_if_t ✔️
  * ​│    ├── extract_t
  * ​│    ├── partition_t
  * ​│    ├── drop_t
