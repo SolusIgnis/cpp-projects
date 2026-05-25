@@ -47,16 +47,30 @@
  * ​│    └── back_v (⛓️ needs at_v)
  * ├── :query
  * ​│    ├── value_equivalent_v ✔️
-​ * │    ├── contains_v ✔️
-​ * │    ├── count_v
-​ * │    ├── equal_v
+ * ​│    ├── uniform_equivalent_v ✔️
+​ * │    ├── contains_v
+ * │    ├── contains_type_v ✔️
+ * │    ├── contains_value_v ✔️
+​ * │    ├── count_if_v
+ * │    ├── count_type_if_v ✔️
+ * │    ├── count_value_if_v ✔️
+ * │    ├── count_v
+ * │    ├── count_type_v ✔️
+ * │    ├── count_value_v ✔️
+ * │    ├── exactly_one_of_v
+ * │    ├── exactly_one_type_of_v ✔️
+ * │    ├── exactly_one_value_of_v ✔️
+​ * │    ├── equal_v (📌 needs C++26 pack indexing)
  * ​│    ├── is_unique_v
-​ * │    ├── exactly_one_of_v
 ​ * │    ├── index_of_v
-​​ * │    ├── count_if_v
- * ​│    ├── any_of_v
- * ​│    ├── all_of_v
-​ * │    └── none_of_v
+ * │    ├── index_of_type_v
+ * │    ├── index_of_value_v
+​​ * ​│    ├── any_of_type_v ✔️
+​​ * ​│    ├── any_of_value_v ✔️
+ * ​│    ├── all_of_type_v ✔️
+ * ​│    ├── all_of_value_v ✔️
+ * ​│    ├── none_of_type_v ✔️
+​ * │    └── none_of_value_v ✔️
  * ├── :select
  * ​│    ├── filter_t
 ​ * │    ├── remove_t
