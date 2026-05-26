@@ -80,7 +80,8 @@ namespace base::vocab::inline ptr::ptr_policies {
         }; //class no
     } //namespace nullability
     
-    using type_list = base::meta::sequences::type_list;
+    template<typename... Elements>
+    using type_list = base::meta::sequences::type_list<Elements...>;
 
     template<typename T>
     concept TypeSequence = base::meta::sequences::TypeSequence<T>;
