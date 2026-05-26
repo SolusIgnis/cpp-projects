@@ -27,6 +27,7 @@ export module base.vocab.ptr:core;
 
 import std;
 
+import base.meta.sequences;
 import base.meta.traits;
 import base.meta.concepts;
 
@@ -41,14 +42,14 @@ namespace base::vocab::inline ptr {
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
-    template<template<typename> typename ConcretePtr, typename Pointee, typename... Policies>
+    template<template<typename> typename ConcretePtr, typename Pointee, PtrPolicyList PolicySet>
         requires (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>)
     class ptr_core : public pointer_metadata<Pointee> {
     public:
         struct derived_from_ptr_core;
 
     private:
-        using policy_set = ptr_policies::type_list<Policies...>;
+        using policy_set = PolicySet;
         using metadata = pointer_metadata<Pointee>;
 
         metadata::pointer address_; ///<@brief The stored address used by all concrete pointer types.

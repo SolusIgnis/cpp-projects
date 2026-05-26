@@ -25,6 +25,7 @@ add_named_module(base.vocab.ptr
     src/base.vocab.ptr-dependency_ptr.cppm
     src/base.vocab.ptr-required_ptr.cppm
   IMPORTS
+    base.meta.sequences
     base.meta.traits
     base.meta.concepts
   TEST_DEPENDENCIES

@@ -30,6 +30,8 @@
  *  ├── count_if_v
  *  ├── count_type_if_v
  *  ├── count_value_if_v
+ *  ├── exactly_one_type_if_v
+ *  ├── exactly_one_value_if_v
  *  ├── count_v
  *  ├── count_type_v
  *  ├── count_value_v
@@ -143,6 +145,14 @@ namespace base::meta::sequences {
     export template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
     inline constexpr std::size_t count_value_if_v =
         count_value_if<std::remove_cvref_t<Seq>, UnaryValuePredicate>::value;
+
+    export template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    inline constexpr bool exactly_one_type_if_v =
+        (count_type_if_v<Seq, UnaryTypePredicate> == 1);
+
+    export template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    inline constexpr bool exactly_one_value_if_v =
+        (count_value_if_v<Seq, UnaryValuePredicate> == 1);
 } //namespace base::meta::sequences
 
 namespace base::meta::sequences {

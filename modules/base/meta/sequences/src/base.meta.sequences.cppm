@@ -56,7 +56,9 @@
 ​ * │    ├── count_if_v
  * │    ├── count_type_if_v ✔️
  * │    ├── count_value_if_v ✔️
- * │    ├── count_v
+ * │    ├── exactly_one_type_if_v ✔️
+ * │    ├── exactly_one_value_if_v ✔️
+​ * │    ├── count_v
  * │    ├── count_type_v ✔️
  * │    ├── count_value_v ✔️
  * │    ├── exactly_one_of_v

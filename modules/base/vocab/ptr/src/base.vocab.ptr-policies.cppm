@@ -27,6 +27,7 @@ export module base.vocab.ptr:policies;
 
 import std;
 
+import base.meta.sequences;
 import base.meta.traits;
 import base.meta.concepts;
 
@@ -78,30 +79,47 @@ namespace base::vocab::inline ptr::ptr_policies {
             using policy_group = policy_group_tag;
         }; //class no
     } //namespace nullability
+    
+    using type_list = base::meta::sequences::type_list;
 
-    template<typename... Ts>
-    struct type_list {};
+    template<typename T>
+    concept TypeSequence = base::meta::sequences::TypeSequence<T>;
+    
+    using policy_groups = type_list<
+        traversal::policy_group_tag,
+        reference_binding::policy_group_tag,
+        pointer_binding::policy_group_tag,
+        nullability::policy_group_tag
+    >;
+    
+    template<typename ExpectedPolicyGroup>
+    struct in_policy_group {
+        template<typename T>
+            requires requires { typename T::policy_group; }
+        struct predicate : std::bool_constant<
+            std::same_as<
+                typename T::policy_group,
+                ExpectedPolicyGroup
+            >
+        > {};
+    };
 
-    template<typename Group, typename... Policies>
-    inline constexpr std::size_t group_count = (0u + ... + std::same_as<typename Policies::policy_group, Group>);
+    template<typename Group, TypeSequence PolicyList>
+    inline constexpr bool exactly_one_policy_v = (base::meta::sequences::count_type_if_v<PolicyList, in_policy_group<Group>::template predicate> == 1);
 
-    template<typename Group, typename... Policies>
-    inline constexpr bool exactly_one_policy_v = (group_count<Group, Policies...> == 1);
+    template<TypeSequence GroupList, TypeSequence PolicyList>
+    struct valid_policy_list;
 
-    template<typename GroupList, typename... Policies>
-    struct valid_policy_pack_impl;
-
-    template<typename... Groups, typename... Policies>
-    struct valid_policy_pack_impl<
+    template<typename... Groups, TypeSequence PolicyList>
+    struct valid_policy_list<
         type_list<Groups...>,
-        Policies...
+        PolicyList
     > : std::bool_constant<
-            (... && exactly_one_policy_v<Groups, Policies...>)
+            (... && exactly_one_policy_v<Groups, PolicyList>)
         >
     {};
 
-    template<typename GroupList, typename... Policies>
-    concept valid_policy_pack = valid_policy_pack_impl<GroupList, Policies...>::value;
-       // (pointer_policy<Policies> && ...) &&
-        
+    template<typename T>
+    concept PtrPolicyList = TypeSequence<T> && valid_policy_list<policy_groups, T>::value;
+
 } //namespace base::vocab::inline ptr

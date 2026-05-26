@@ -57,7 +57,7 @@ namespace {
             expect(eq(InstantiableWith<dependency_ptr, std::int32_t&&>, false));
             expect(eq(InstantiableWith<dependency_ptr, void(int)>, false));
             expect(eq(InstantiableWith<dependency_ptr, void (&)(int)>, false));
-            expect(eq(InstantiableWith<dependency_ptr, void (*)(int, float)*>, false));
+            expect(eq(InstantiableWith<dependency_ptr, void (*)(int, float)>, false));
             expect(eq(InstantiableWith<dependency_ptr, void (**)(std::string, int)>, false));
             expect(eq(InstantiableWith<dependency_ptr, void (*******)(int)>, false));
         };
