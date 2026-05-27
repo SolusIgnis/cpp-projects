@@ -20,6 +20,8 @@
  * limitations under the License. @endparblock
  *
  * @brief Core pointer vocabulary infrastructure.
+ *
+ * @note Deleted overloads intentionally use forwarding explicit object parameters to ensure policy diagnostics dominate value-category diagnostics during overload resolution.
  */
 
 //Module partition interface unit
@@ -103,11 +105,11 @@ export namespace base::vocab::inline ptr {
 
         //===== Pointer Binding (Allowed)  =====
 
-        ///@brief Implicitly converts from a raw `pointer`.
+        ///@brief Implicitly converts from a raw `pointer`. Explicit when `Pointee` is void to avoid implicit conversion chaining.
         template<typename P>
             requires std::is_pointer_v<std::remove_cvref_t<P>>
                   && std::convertible_to<std::decay_t<P>, typename metadata::pointer>
-        constexpr explicit(false) ptr_core(P&& source)
+        constexpr explicit(std::is_void_v<T>) ptr_core(P&& source)
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_(validate_by_nullability(source))
         {}
@@ -123,13 +125,13 @@ export namespace base::vocab::inline ptr {
             return self;
         }
 
-        ///@brief Implicitly converts from another pointer-like type.
+        ///@brief Implicitly converts from another pointer-like type. Explicit when `Pointee` is void to avoid implicit conversion chaining.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
-        constexpr explicit(false) ptr_core(const Pointer<Element, Args...>& source)
+        constexpr explicit(std::is_void_v<T>) ptr_core(const Pointer<Element, Args...>& source)
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_(validate_by_nullability(source.get()))
         {}
@@ -643,12 +645,6 @@ export namespace base::vocab::inline ptr {
             requires ptr_policies::rebinding_traversal_v<policy_set>
         {
             return (lhs == rhs.get());
-        }
-
-        ///@brief Compares equality against `nullptr`.
-        [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<Pointee>& ptr, std::nullptr_t null) noexcept
-        {
-            return (ptr.get() == null);
         }
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
