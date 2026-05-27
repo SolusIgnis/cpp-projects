@@ -25,7 +25,7 @@
  *   - `:core`      = Definition of the `type_list`, `value_list`, and `uniform_value_list` type templates.
  *   - `:access`    = Inspect elements and properties of a sequence without transforming it.
  *   - `:query`     = Produce sequence information as compile-time values, predicates, or scalar results.
- *   - `:modify`    = Directly modify sequence structure. 
+ *   - `:modify`    = Directly modify sequence structure.
  *   - `:select`    = Select subsequences according to positions, predicates, or extraction criteria.
  *   - `:transform` = Produce new sequences through mapping, composition, expansion, or higher-order structural transformation.
  *   - `:reduce`    = Fold or accumulate sequence elements into a single synthesized meta-result through iterative reduction.
@@ -110,9 +110,9 @@
 export module base.meta.sequences;
 
 //Export all partition interfaces
-export import :core;      ///< @see "base.meta.sequences-core.cppm"
-export import :access;    ///< @see "base.meta.sequences-access.cppm"
-export import :query;     ///< @see "base.meta.sequences-query.cppm"
+export import :core;   ///< @see "base.meta.sequences-core.cppm"
+export import :access; ///< @see "base.meta.sequences-access.cppm"
+export import :query;  ///< @see "base.meta.sequences-query.cppm"
 //export import :select;    ///< @see "base.meta.sequences-select.cppm"
 //export import :modify;    ///< @see "base.meta.sequences-modify.cppm"
 //export import :transform; ///< @see "base.meta.sequences-transform.cppm"

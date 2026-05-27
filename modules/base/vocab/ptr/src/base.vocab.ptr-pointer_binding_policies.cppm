@@ -38,16 +38,20 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
     template<template<typename> typename ConcretePtr, typename Pointee>
     class allowed {
         using metadata = pointer_metadata<Pointee>;
+
     public:
         using policy_group = policy_group_tag;
 
         template<typename P>
-            requires std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, typename metadata::pointer>
-        static auto is_constructor_explicit(P&&) -> std::conditional_t<std::is_void_v<Pointee>, std::true_type, std::false_type>;
+            requires std::is_pointer_v<std::remove_cvref_t<P>>
+                  && std::convertible_to<std::decay_t<P>, typename metadata::pointer>
+        static auto is_constructor_explicit(P&&)
+            -> std::conditional_t<std::is_void_v<Pointee>, std::true_type, std::false_type>;
 
         ///@brief Resolves address from a raw `pointer`.
         template<typename P>
-            requires std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, typename metadata::pointer>
+            requires std::is_pointer_v<std::remove_cvref_t<P>>
+                  && std::convertible_to<std::decay_t<P>, typename metadata::pointer>
         constexpr metadata::pointer resolve_address(this auto& self, P&& source)
         {
             return self.validate_by_nullability(source);
@@ -58,7 +62,8 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
-        static auto is_constructor_explicit(const Pointer<Element, Args...>&) -> std::conditional_t<std::is_void_v<Pointee>, std::true_type, std::false_type>;
+        static auto is_constructor_explicit(const Pointer<Element, Args...>&)
+            -> std::conditional_t<std::is_void_v<Pointee>, std::true_type, std::false_type>;
 
         ///@brief Resolves address from another pointer-like type.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
@@ -119,7 +124,7 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
         Self& operator=(this Self&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>) =
             delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
-            
+
         ///@brief Deleted address resolution from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
@@ -133,22 +138,26 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
     protected:
         ///@brief Initializes empty base object.
         allowed(bool) {}
-        
+
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
-        void validate_by_nullability() requires false;
+        void validate_by_nullability()
+            requires false;
     }; //class allowed
 
     template<template<typename> typename ConcretePtr, typename Pointee>
     class forbidden {
         using metadata = pointer_metadata<Pointee>;
+
     public:
         using policy_group = policy_group_tag;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
-        auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+        auto is_constructor_explicit(policy_group) -> std::true_type
+            requires false;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::resolve_address...` expansion.
-        constexpr metadata::pointer resolve_address(policy_group) noexcept requires false;
+        constexpr metadata::pointer resolve_address(policy_group) noexcept
+            requires false;
 
         ///@brief Deleted constructor from `pointer` to structurally guarantee non-null initialization.
         forbidden(metadata::pointer) =
@@ -165,13 +174,13 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
         metadata::pointer resolve_address(this auto&&, metadata::pointer) =
             delete /*("Address resolution from `pointer` deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
-            
+
         ///@brief Deleted constructor from another pointer-like type to structurally guarantee non-null initialization.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
-                     }
+                      && requires(Pointer<Element, Args...> ptr) {
+                             { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
+                         }
         forbidden(const Pointer<Element, Args...>&) =
             delete /*("Constructor from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
@@ -179,9 +188,9 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
         ///@brief Deleted assignment from another pointer-like type to structurally guarantee non-null rebinding.
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
-                     }
+                      && requires(Pointer<Element, Args...> ptr) {
+                             { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
+                         }
         Self& operator=(this Self&&, const Pointer<Element, Args...>&) =
             delete /*("Assignment from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
@@ -189,9 +198,9 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
         ///@brief Deleted address resolution from another pointer-like type to structurally guarantee non-null binding.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
-                     }
+                      && requires(Pointer<Element, Args...> ptr) {
+                             { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
+                         }
         constexpr metadata::pointer resolve_address(this auto&, const Pointer<Element, Args...>&) =
             delete /*("Address resolution from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
@@ -199,8 +208,9 @@ namespace base::vocab::inline ptr::ptr_policies::pointer_binding {
     protected:
         ///@brief Initializes empty base object.
         forbidden(bool) {}
-        
+
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
-        void validate_by_nullability() requires false;
+        void validate_by_nullability()
+            requires false;
     }; //class forbidden
 } //namespace base::vocab::inline ptr::ptr_policies::pointer_binding

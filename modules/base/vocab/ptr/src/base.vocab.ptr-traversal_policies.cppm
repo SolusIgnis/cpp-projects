@@ -39,14 +39,17 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         requires (!std::is_void_v<Pointee>)
     class arithmetic {
         using metadata = pointer_metadata<Pointee>;
+
     public:
         using policy_group = policy_group_tag;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
-        static auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+        static auto is_constructor_explicit(policy_group) -> std::true_type
+            requires false;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::resolve_address...` expansion.
-        constexpr metadata::pointer resolve_address(policy_group) noexcept requires false;
+        constexpr metadata::pointer resolve_address(policy_group) noexcept
+            requires false;
 
         //================================================================================
         // Arithmetic Operators: Implemented for Iteration
@@ -119,23 +122,40 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         }
 
         ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
-        friend constexpr ConcretePtr<Pointee> operator+(ConcretePtr<Pointee> ptr, metadata::difference_type diff) noexcept requires base::meta::concepts::CompletePointee<Pointee> { return ptr += diff; }
+        friend constexpr ConcretePtr<Pointee> operator+(ConcretePtr<Pointee> ptr, metadata::difference_type diff) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+        {
+            return ptr += diff;
+        }
 
         ///@brief Pointer addition (commutative): gets a pointer to an address a given distance after the stored address.
-        friend constexpr ConcretePtr<Pointee> operator+(metadata::difference_type diff, ConcretePtr<Pointee> ptr) noexcept requires base::meta::concepts::CompletePointee<Pointee> { return ptr += diff; }
+        friend constexpr ConcretePtr<Pointee> operator+(metadata::difference_type diff, ConcretePtr<Pointee> ptr) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+        {
+            return ptr += diff;
+        }
 
         ///@brief Pointer subtraction: gets a pointer to an address a given distance before the stored address.
-        friend constexpr ConcretePtr<Pointee> operator-(ConcretePtr<Pointee> ptr, metadata::difference_type diff) noexcept requires base::meta::concepts::CompletePointee<Pointee> { return ptr -= diff; }
+        friend constexpr ConcretePtr<Pointee> operator-(ConcretePtr<Pointee> ptr, metadata::difference_type diff) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+        {
+            return ptr -= diff;
+        }
 
         ///@brief Pointer subtraction (difference): computes the distance between the addresses stored in two pointers.
-        friend constexpr metadata::difference_type operator-(ConcretePtr<Pointee> lhs, ConcretePtr<Pointee> rhs) noexcept requires base::meta::concepts::CompletePointee<Pointee> { return lhs.get() - rhs.get(); }
+        friend constexpr metadata::difference_type operator-(ConcretePtr<Pointee> lhs, ConcretePtr<Pointee> rhs) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+        {
+            return lhs.get() - rhs.get();
+        }
 
         //================================================================================
         // Comparison Operators (Three-way)
         //================================================================================
 
         ///@brief Compares in terms of pointer identity.
-        [[nodiscard]] friend constexpr auto operator<=>(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee>& rhs) noexcept
+        [[nodiscard]] friend constexpr auto
+            operator<=>(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee>& rhs) noexcept
         {
             return (lhs.get() <=> rhs.get());
         }
@@ -143,14 +163,16 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         ///@brief Covariantly compares in terms of pointer identity.
         template<std::derived_from<Pointee> DerivedT>
             requires (!std::same_as<DerivedT, Pointee>)
-        [[nodiscard]] friend constexpr auto operator<=>(const ConcretePtr<Pointee>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+        [[nodiscard]] friend constexpr auto
+            operator<=>(const ConcretePtr<Pointee>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
         {
             return (lhs.get() <=> rhs.get());
         }
 
         ///@brief Covariantly compares a `ConcretePtr`-to-base with a raw pointer-to-derived in terms of pointer identity.
         template<std::derived_from<Pointee> DerivedT>
-        [[nodiscard]] friend constexpr auto operator<=>(const ConcretePtr<Pointee>& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+        [[nodiscard]] friend constexpr auto
+            operator<=>(const ConcretePtr<Pointee>& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
         {
             return (lhs.get() <=> rhs);
         }
@@ -168,22 +190,26 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
     protected:
         ///@brief Initializes empty base object.
         arithmetic(bool) {}
-        
+
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
-        void validate_by_nullability() requires false;
+        void validate_by_nullability()
+            requires false;
     }; //class arithmetic
 
     template<template<typename> typename ConcretePtr, typename Pointee>
     class rebinding {
         using metadata = pointer_metadata<Pointee>;
+
     public:
         using policy_group = policy_group_tag;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
-        static auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+        static auto is_constructor_explicit(policy_group) -> std::true_type
+            requires false;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::resolve_address...` expansion.
-        constexpr metadata::pointer resolve_address(policy_group) noexcept requires false;
+        constexpr metadata::pointer resolve_address(policy_group) noexcept
+            requires false;
 
         //================================================================================
         // Deleted Pointer Arithmetic Operators: Not an Iterator
@@ -192,70 +218,83 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         ///@brief Deleted prefix increment to prevent misuse as an iterator.
         template<typename Self>
         Self& operator++(this Self&&) =
-            delete /*("Prefix increment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
+            delete /*("Prefix increment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
 
         ///@brief Deleted prefix decrement to prevent misuse as an iterator.
         template<typename Self>
         Self& operator--(this Self&&) =
-            delete /*("Prefix decrement deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
+            delete /*("Prefix decrement deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
 
         ///@brief Deleted postfix increment to prevent misuse as an iterator.
         template<typename Self>
         Self operator++(this Self&&, int) =
-            delete /*("Postfix increment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
+            delete /*("Postfix increment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
 
         ///@brief Deleted postfix decrement to prevent misuse as an iterator.
         template<typename Self>
         Self operator--(this Self&&, int) =
-            delete /*("Postfix decrement deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
+            delete /*("Postfix decrement deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
 
         ///@brief Deleted addition assignment to prevent misuse as an iterator.
         template<typename Self>
         Self& operator+=(this Self&&, metadata::difference_type) =
-            delete /*("Addition assignment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
+            delete /*("Addition assignment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
 
         ///@brief Deleted subtraction assignment to prevent misuse as an iterator.
         template<typename Self>
         Self& operator-=(this Self&&, metadata::difference_type) =
-            delete /*("Subtraction assignment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
+            delete /*("Subtraction assignment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
 
         ///@brief Deleted pointer addition to prevent misuse as an iterator.
         friend ConcretePtr<Pointee> operator+(ConcretePtr<Pointee>, metadata::difference_type) =
-            delete /*("Pointer addition deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
+            delete /*("Pointer addition deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
 
         ///@brief Deleted pointer addition to prevent misuse as an iterator.
         friend ConcretePtr<Pointee> operator+(metadata::difference_type, ConcretePtr<Pointee>) =
-            delete /*("Pointer addition deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
+            delete /*("Pointer addition deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
 
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
         friend metadata::difference_type operator-(ConcretePtr<Pointee>, ConcretePtr<Pointee>) =
-            delete /*("Pointer subtraction deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
+            delete /*("Pointer subtraction deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
 
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
         friend ConcretePtr<Pointee> operator-(ConcretePtr<Pointee>, metadata::difference_type) =
-            delete /*("Pointer subtraction deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/;
+            delete /*("Pointer subtraction deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
 
         //================================================================================
         // Comparison Operators (Equality Allowed, Others Deleted)
         //================================================================================
 
         ///@brief Compares equality in terms of pointer identity.
-        [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee>& rhs) noexcept
+        [[nodiscard]] friend constexpr bool
+            operator==(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee>& rhs) noexcept
         {
             return (lhs.get() == rhs.get());
         }
 
         ///@brief Covariantly compares equality in terms of pointer identity.
         template<std::derived_from<Pointee> DerivedT>
-            requires (!std::same_as<DerivedT, Pointee> )
-        [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<Pointee>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+            requires (!std::same_as<DerivedT, Pointee>)
+        [[nodiscard]] friend constexpr bool
+            operator==(const ConcretePtr<Pointee>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
         {
             return (lhs.get() == rhs.get());
         }
 
         ///@brief Covariantly compares equality of an `ConcretePtr`-to-base with a raw pointer-to-derived in terms of pointer identity.
         template<std::derived_from<Pointee> DerivedT>
-        [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<Pointee>& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+        [[nodiscard]] friend constexpr bool
+            operator==(const ConcretePtr<Pointee>& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
         {
             return (lhs.get() == rhs);
         }
@@ -276,17 +315,20 @@ namespace base::vocab::inline ptr::ptr_policies::traversal {
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         template<typename Self>
         auto operator<=>(this Self&&, Self) =
-            delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/;
+            delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/
+            ;
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         auto operator<=>(const metadata::pointer) const =
-            delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/;
+            delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/
+            ;
 
     protected:
         ///@brief Initializes empty base object.
         rebinding(bool) {}
-        
+
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
-        void validate_by_nullability() requires false;
+        void validate_by_nullability()
+            requires false;
     }; //class rebinding
 } //namespace base::vocab::inline ptr::ptr_policies::traversal

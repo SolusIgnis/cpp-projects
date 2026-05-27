@@ -24,7 +24,7 @@
  * :core
 ​ *  ├── type_list
  * ​ ├── value_list
-​ *  ├── uniform_value_list 
+​ *  ├── uniform_value_list
  * ​ ├── is_type_list_v
  * ​ ├── is_value_list_v
  * ​ ├── is_uniform_value_list_v
@@ -43,10 +43,10 @@ import std;
 export namespace base::meta::sequences {
     template<typename... Types>
     struct type_list {};
-    
+
     template<auto... Values>
     struct value_list {};
-    
+
     template<typename T, T... Values>
     struct uniform_value_list {
         using as_value_list = value_list<Values...>;
@@ -62,17 +62,17 @@ namespace base::meta::sequences {
     template<auto Value>
     struct value_constant {
         static constexpr auto value = Value;
-        using value_type = decltype(Value);
+        using value_type            = decltype(Value);
     };
 } //namespace base::meta::sequences
 
 namespace base::meta::sequences {
     template<typename T>
     struct is_type_list : std::false_type {};
-    
+
     template<typename... Types>
     struct is_type_list<type_list<Types...>> : std::true_type {};
-    
+
     export template<typename T>
     inline constexpr bool is_type_list_v = is_type_list<std::remove_cvref_t<T>>::value;
 } //namespace base::meta::sequences
@@ -80,13 +80,13 @@ namespace base::meta::sequences {
 namespace base::meta::sequences {
     template<typename T>
     struct is_value_list : std::false_type {};
-    
+
     template<auto... Values>
     struct is_value_list<value_list<Values...>> : std::true_type {};
-    
+
     template<typename T, T... Values>
     struct is_value_list<uniform_value_list<T, Values...>> : std::true_type {};
-    
+
     export template<typename T>
     inline constexpr bool is_value_list_v = is_value_list<std::remove_cvref_t<T>>::value;
 } //namespace base::meta::sequences
@@ -111,4 +111,4 @@ export namespace base::meta::sequences {
 
     template<typename T>
     concept Sequence = TypeSequence<T> || ValueSequence<T>;
-}  //namespace base::meta::sequences
+} //namespace base::meta::sequences

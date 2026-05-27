@@ -49,16 +49,10 @@ namespace base::vocab::inline ptr::ptr_policies {
     struct valid_policy_pack_impl;
 
     template<typename... Groups, typename... Policies>
-    struct valid_policy_pack_impl<
-        type_list<Groups...>,
-        Policies...
-    > : std::bool_constant<
-            (... && exactly_one_policy_v<Groups, Policies...>)
-        >
-    {};
+    struct valid_policy_pack_impl<type_list<Groups...>, Policies...>
+        : std::bool_constant<(... && exactly_one_policy_v<Groups, Policies...>)> {};
 
     template<typename GroupList, typename... Policies>
     concept valid_policy_pack = valid_policy_pack_impl<GroupList, Policies...>::value;
-       // (pointer_policy<Policies> && ...) &&
-        
-} //namespace base::vocab::inline ptr
+    // (pointer_policy<Policies> && ...) &&
+} //namespace base::vocab::inline ptr::ptr_policies

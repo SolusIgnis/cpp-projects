@@ -50,7 +50,7 @@ export namespace base::vocab::inline ptr {
 
     private:
         using policy_set = PolicySet;
-        using metadata = pointer_metadata<Pointee>;
+        using metadata   = pointer_metadata<Pointee>;
 
         metadata::pointer address_; ///<@brief The stored address used by all concrete pointer types.
 
@@ -64,8 +64,7 @@ export namespace base::vocab::inline ptr {
         ///@brief (Conversion) Implicitly converts from another pointer according to nested `pointer` type conversions.
         template<typename U>
             requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
-        constexpr explicit(false) ptr_core(const ptr_core<U>& source) noexcept
-            : address_(source.get())
+        constexpr explicit(false) ptr_core(const ptr_core<U>& source) noexcept : address_(source.get())
         {}
 
         ///@brief (Conversion) Assigns from another pointer according to nested `pointer` type conversions.
@@ -106,18 +105,19 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Implicitly converts from a raw `pointer`.
         template<typename P>
-            requires std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, pointer>
-        constexpr explicit(false) ptr_core(P&& source)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+            requires std::is_pointer_v<std::remove_cvref_t<P>>
+                  && std::convertible_to<std::decay_t<P>, pointer>
+                     constexpr explicit(false) ptr_core(P&& source)
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_(validate_by_nullability(source))
         {}
 
         ///@brief Assigns from a raw `pointer`.
         template<typename Self, typename P>
-            requires (!std::is_const_v<Self>)
-                  && std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, pointer>
-        constexpr Self& operator=(this Self& self, P&& source)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+            requires (!std::is_const_v<Self>) && std::is_pointer_v<std::remove_cvref_t<P>>
+                  && std::convertible_to<std::decay_t<P>, pointer>
+                     constexpr Self& operator=(this Self& self, P&& source)
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = validate_by_nullability(source);
             return self;
@@ -129,19 +129,20 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-        constexpr explicit(false) ptr_core(const Pointer<Element, Args...>& source)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                     constexpr explicit(false) ptr_core(const Pointer<Element, Args...>& source)
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_(validate_by_nullability(source.get()))
         {}
 
         ///@brief Assigns from another pointer-like type.
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ptr_core>)
-                  && (!std::is_const_v<Self>) && requires(Pointer<Element, Args...> ptr) {
-                                                     { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
-                                                 }
-        constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                  && (!std::is_const_v<Self>)
+                  && requires(Pointer<Element, Args...> ptr) {
+                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
+                     }
+                     constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source)
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = validate_by_nullability(source.get());
             return self;
@@ -172,8 +173,8 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
-        ptr_core(const Pointer<Element, Args...>&)
-            requires ptr_policies::forbidden_pointer_binding_v<policy_set>
+                     ptr_core(const Pointer<Element, Args...>&)
+                         requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Constructor from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
@@ -183,8 +184,8 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
-        Self& operator=(this Self&&, const Pointer<Element, Args...>&)
-            requires ptr_policies::forbidden_pointer_binding_v<policy_set>
+                     Self& operator=(this Self&&, const Pointer<Element, Args...>&)
+                         requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Assignment from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
@@ -234,22 +235,22 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted constructor from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                      && requires(Pointer<Element, Args...> ptr) {
-                             { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
-                         }
-        ptr_core(std::add_rvalue_reference_t<Pointer<Element, Args...>>)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                  && requires(Pointer<Element, Args...> ptr) {
+                         { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
+                     }
+                     ptr_core(std::add_rvalue_reference_t<Pointer<Element, Args...>>)
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         = delete /*("Constructor from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
         ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                      && requires(Pointer<Element, Args...> ptr) {
-                             { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
-                         }
-        Self& operator=(this Self&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                  && requires(Pointer<Element, Args...> ptr) {
+                         { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
+                     }
+                     Self& operator=(this Self&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>)
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         = delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
@@ -272,14 +273,18 @@ export namespace base::vocab::inline ptr {
         ///@brief Passes the pointer through unchecked because this policy accepts null pointers.
         [[nodiscard]] constexpr metadata::pointer validate_by_nullability(metadata::pointer source)
             requires nullable_v<policy_set>
-        { return source; }
+        {
+            return source;
+        }
 
         ///@brief Enforces the non-null invariant by only passing the address through when it is not null.
         [[nodiscard]] constexpr metadata::pointer validate_by_nullability(metadata::pointer source)
             requires nonnullable_v<policy_set>
         {
             if (source == nullptr) [[unlikely]]
-                throw std::invalid_argument("`nullability::no` pointers cannot be constructed or assigned from a null pointer.");
+                throw std::invalid_argument(
+                    "`nullability::no` pointers cannot be constructed or assigned from a null pointer."
+                );
             return source;
         }
     }; //class ptr_core
@@ -293,9 +298,14 @@ namespace base::vocab::inline ptr {
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
-    template<template<typename> typename ConcretePtr, typename Pointee, template<template<typename> typename, typename> typename... Policies>
+    template<
+        template<typename> typename ConcretePtr,
+        typename Pointee,
+        template<template<typename> typename, typename> typename... Policies
+    >
         requires (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>)
-    class ptr_core : public pointer_metadata<Pointee>, public Policies<ConcretePtr, Pointee>... {
+    class ptr_core : public pointer_metadata<Pointee>,
+                     public Policies<ConcretePtr, Pointee>... {
     public:
         struct derived_from_ptr_core;
         friend Policies<ConcretePtr, Pointee>...;
@@ -323,21 +333,25 @@ export namespace base::vocab::inline ptr {
 
         ///@brief (Conversion) Implicitly converts from another `ptr_core` according to underlying pointer conversions.
         template<typename OtherPointee>
-            requires (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
-        constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept : Policies<ConcretePtr, Pointee>(true)..., address_(source.get())
+            requires (!std::same_as<OtherPointee, Pointee>)
+                      && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
+        constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept
+            : Policies<ConcretePtr, Pointee>(true)..., address_(source.get())
         {}
 
         ///@brief Constructs a pointer when its new address can be resolved by its policies.
         template<typename... Args>
-        constexpr explicit(decltype(is_constructor_explicit(std::declval<Args>()...))::value) ptr_core(Args&&... args)
-            noexcept(noexcept(resolve_address(std::forward<Args>(args)...)))
+        constexpr explicit(decltype(is_constructor_explicit(std::declval<Args>()...))::value) ptr_core(Args&&... args) noexcept(
+            noexcept(resolve_address(std::forward<Args>(args)...))
+        )
             requires requires { resolve_address(std::forward<Args>(args)...); }
             : Policies<ConcretePtr, Pointee>(true)..., address_{resolve_address(std::forward<Args>(args)...)}
         {}
 
         ///@brief (Conversion) Assigns from another `ptr_core` according to nested `pointer` type conversions.
         template<typename Self, typename OtherPointee>
-            requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
+            requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, Pointee>)
+                  && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
         constexpr Self& operator=(this Self& self, const ConcretePtr<OtherPointee>& source) noexcept
         {
             self.address_ = source.get();
@@ -347,8 +361,8 @@ export namespace base::vocab::inline ptr {
         ///@brief Assigns to a pointer when its new address can be resolved by its policies.
         template<typename Self, typename... Args>
             requires (!std::is_const_v<Self>)
-        constexpr Self& operator=(this Self& self, Args&&... args)
-            noexcept(noexcept(resolve_address(std::forward<Args>(args)...)))
+        constexpr Self&
+            operator=(this Self& self, Args&&... args) noexcept(noexcept(resolve_address(std::forward<Args>(args)...)))
             requires requires { resolve_address(std::forward<Args>(args)...); }
         {
             self.address_ = resolve_address(std::forward<Args>(args)...);

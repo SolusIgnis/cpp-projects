@@ -38,6 +38,7 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
     template<template<typename> typename ConcretePtr, typename Pointee>
     class yes {
         using metadata = pointer_metadata<Pointee>;
+
     public:
         using policy_group = policy_group_tag;
 
@@ -61,7 +62,10 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
         }
 
         ///@brief Returns a raw pointer to the stored address while disengaging the pointer.
-        [[nodiscard]] constexpr metadata::pointer release(this auto&& self) noexcept { return std::exchange(self.address_, nullptr); }
+        [[nodiscard]] constexpr metadata::pointer release(this auto&& self) noexcept
+        {
+            return std::exchange(self.address_, nullptr);
+        }
 
         ///@brief Reset the pointer to `nullptr`.
         constexpr void reset(this auto& self, std::nullptr_t null = nullptr) noexcept { self = null; }
@@ -69,7 +73,7 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
     protected:
         ///@brief Initializes empty base object.
         yes(bool) {}
-        
+
         ///@brief Passes the pointer through unchecked because this policy accepts null pointers.
         [[nodiscard]] constexpr metadata::pointer validate_by_nullability(metadata::pointer source) { return source; }
     }; //class yes
@@ -77,14 +81,17 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
     template<template<typename> typename ConcretePtr, typename Pointee>
     class no {
         using metadata = pointer_metadata<Pointee>;
+
     public:
         using policy_group = policy_group_tag;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
-        static auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+        static auto is_constructor_explicit(policy_group) -> std::true_type
+            requires false;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::resolve_address...` expansion.
-        constexpr metadata::pointer resolve_address(policy_group) noexcept requires false;
+        constexpr metadata::pointer resolve_address(policy_group) noexcept
+            requires false;
 
         ///@brief Contextually converts to `bool` to "test" if the pointer is engaged. Always returns `true` to confirm invariant.
         [[nodiscard]] constexpr explicit operator bool() const noexcept { return true; }
@@ -118,12 +125,14 @@ namespace base::vocab::inline ptr::ptr_policies::nullability {
     protected:
         ///@brief Initializes empty base object.
         no(bool) {}
-        
+
         ///@brief Enforces the non-null invariant by only passing the address through when it is not null.
         [[nodiscard]] constexpr metadata::pointer validate_by_nullability(metadata::pointer source)
         {
             if (source == nullptr) [[unlikely]]
-                throw std::invalid_argument("`nullability::no` pointers cannot be constructed or assigned from a null pointer.");
+                throw std::invalid_argument(
+                    "`nullability::no` pointers cannot be constructed or assigned from a null pointer."
+                );
             return source;
         }
     }; //class no

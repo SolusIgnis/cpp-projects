@@ -38,13 +38,19 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
     template<template<typename> typename ConcretePtr, typename Pointee>
     class allowed {
         using metadata = pointer_metadata<Pointee>;
+
     public:
         using policy_group = policy_group_tag;
 
-        static auto is_constructor_explicit(metadata::reference) -> std::true_type requires (!std::is_void_v<Pointee>);
+        static auto is_constructor_explicit(metadata::reference) -> std::true_type
+            requires (!std::is_void_v<Pointee>);
 
         ///@brief Resolves an address from a lvalue `reference` to another object.
-        constexpr metadata::pointer resolve_address(metadata::reference source) noexcept requires (!std::is_void_v<Pointee>) { return std::addressof(source); }
+        constexpr metadata::pointer resolve_address(metadata::reference source) noexcept
+            requires (!std::is_void_v<Pointee>)
+        {
+            return std::addressof(source);
+        }
 
         //================================================================================
         // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
@@ -60,7 +66,7 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
         Self& operator=(this Self&&, metadata::rvalue_reference) =
             delete /*("Assignment from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
-            
+
         ///@brief Deleted address resolution from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
         constexpr metadata::pointer resolve_address(metadata::rvalue_reference) =
             delete /*("Address resolution from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
@@ -69,22 +75,26 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
     protected:
         ///@brief Initializes empty base object.
         allowed(bool) {}
-        
+
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
-        void validate_by_nullability() requires false;
+        void validate_by_nullability()
+            requires false;
     }; //class allowed
 
     template<template<typename> typename ConcretePtr, typename Pointee>
     class forbidden {
         using metadata = pointer_metadata<Pointee>;
+
     public:
         using policy_group = policy_group_tag;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::is_constructor_explicit...` expansion.
-        auto is_constructor_explicit(policy_group) -> std::true_type requires false;
+        auto is_constructor_explicit(policy_group) -> std::true_type
+            requires false;
 
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::resolve_address...` expansion.
-        constexpr metadata::pointer resolve_address(policy_group) noexcept requires false;
+        constexpr metadata::pointer resolve_address(policy_group) noexcept
+            requires false;
 
         ///@brief Deleted constructor from `const reference` to forbid binding to lvalue or rvalue references.
         forbidden(const metadata::reference) =
@@ -105,8 +115,9 @@ namespace base::vocab::inline ptr::ptr_policies::reference_binding {
     protected:
         ///@brief Initializes empty base object.
         forbidden(bool) {}
-        
+
         ///@brief Culled stub to provide a non-viable overload candidate for `using Policies::validate_by_nullability...` expansion.
-        void validate_by_nullability() requires false;
+        void validate_by_nullability()
+            requires false;
     }; //class forbidden
 } //namespace base::vocab::inline ptr::ptr_policies::reference_binding

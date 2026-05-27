@@ -36,40 +36,26 @@ namespace base::meta::sequences {
      * @tparam Seq A type sequence.
      * @tparam UnaryTypePredicate A unary type predicate.
      */
-    template<TypeSequence Seq,
-             template<typename> typename UnaryTypePredicate>
+    template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
     struct try_find_type_if;
 
     /**
      * @brief Base case for empty type sequences.
      */
     template<template<typename> typename UnaryTypePredicate>
-    struct try_find_type_if<
-        type_list<>,
-        UnaryTypePredicate
-    > {
+    struct try_find_type_if<type_list<>, UnaryTypePredicate> {
         using type = type_list<>;
     };
 
     /**
      * @brief Recursive short-circuit search over type sequences.
      */
-    template<
-        typename T,
-        typename... Rest,
-        template<typename> typename UnaryTypePredicate
-    >
-    struct try_find_type_if<
-        type_list<T, Rest...>,
-        UnaryTypePredicate
-    > {
+    template<typename T, typename... Rest, template<typename> typename UnaryTypePredicate>
+    struct try_find_type_if<type_list<T, Rest...>, UnaryTypePredicate> {
         using type = std::conditional_t<
             UnaryTypePredicate<T>::value,
             type_list<T>,
-            typename try_find_type_if<
-                type_list<Rest...>,
-                UnaryTypePredicate
-            >::type
+            typename try_find_type_if<type_list<Rest...>, UnaryTypePredicate>::type
         >;
     };
 
@@ -79,103 +65,58 @@ namespace base::meta::sequences {
      * @tparam Seq A value sequence.
      * @tparam UnaryValuePredicate A unary value predicate.
      */
-    template<ValueSequence Seq,
-             template<auto> typename UnaryValuePredicate>
+    template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
     struct try_find_value_if;
 
     /**
      * @brief Base case for empty heterogeneous value sequences.
      */
     template<template<auto> typename UnaryValuePredicate>
-    struct try_find_value_if<
-        value_list<>,
-        UnaryValuePredicate
-    > {
+    struct try_find_value_if<value_list<>, UnaryValuePredicate> {
         using type = value_list<>;
     };
 
     /**
      * @brief Recursive short-circuit search over heterogeneous values.
      */
-    template<
-        auto Element,
-        auto... Rest,
-        template<auto> typename UnaryValuePredicate
-    >
-    struct try_find_value_if<
-        value_list<Element, Rest...>,
-        UnaryValuePredicate
-    > {
+    template<auto Element, auto... Rest, template<auto> typename UnaryValuePredicate>
+    struct try_find_value_if<value_list<Element, Rest...>, UnaryValuePredicate> {
         using type = std::conditional_t<
             UnaryValuePredicate<Element>::value,
             value_list<Element>,
-            typename try_find_value_if<
-                value_list<Rest...>,
-                UnaryValuePredicate
-            >::type
+            typename try_find_value_if<value_list<Rest...>, UnaryValuePredicate>::type
         >;
     };
 
     /**
      * @brief Base case for empty uniform value sequences.
      */
-    template<
-        typename T,
-        template<auto> typename UnaryValuePredicate
-    >
-    struct try_find_value_if<
-        uniform_value_list<T>,
-        UnaryValuePredicate
-    > {
+    template<typename T, template<auto> typename UnaryValuePredicate>
+    struct try_find_value_if<uniform_value_list<T>, UnaryValuePredicate> {
         using type = uniform_value_list<T>;
     };
 
     /**
      * @brief Recursive short-circuit search over uniform values.
      */
-    template<
-        typename T,
-        T Element,
-        T... Rest,
-        template<auto> typename UnaryValuePredicate
-    >
-    struct try_find_value_if<
-        uniform_value_list<T, Element, Rest...>,
-        UnaryValuePredicate
-    > {
+    template<typename T, T Element, T... Rest, template<auto> typename UnaryValuePredicate>
+    struct try_find_value_if<uniform_value_list<T, Element, Rest...>, UnaryValuePredicate> {
         using type = std::conditional_t<
             UnaryValuePredicate<Element>::value,
             uniform_value_list<T, Element>,
-            typename try_find_value_if<
-                uniform_value_list<T, Rest...>,
-                UnaryValuePredicate
-            >::type
+            typename try_find_value_if<uniform_value_list<T, Rest...>, UnaryValuePredicate>::type
         >;
     };
 
     /**
      * @brief Alias for the first type satisfying a predicate.
      */
-    export template<
-        TypeSequence Seq,
-        template<typename> typename UnaryTypePredicate
-    >
-    using try_find_type_if_t =
-        typename try_find_type_if<
-            std::remove_cvref_t<Seq>,
-            UnaryTypePredicate
-        >::type;
+    export template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    using try_find_type_if_t = typename try_find_type_if<std::remove_cvref_t<Seq>, UnaryTypePredicate>::type;
 
     /**
      * @brief Alias for the first value satisfying a predicate.
      */
-    export template<
-        ValueSequence Seq,
-        template<auto> typename UnaryValuePredicate
-    >
-    using try_find_value_if_t =
-        typename try_find_value_if<
-            std::remove_cvref_t<Seq>,
-            UnaryValuePredicate
-        >::type;
+    export template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    using try_find_value_if_t = typename try_find_value_if<std::remove_cvref_t<Seq>, UnaryValuePredicate>::type;
 } // namespace base::meta::sequences

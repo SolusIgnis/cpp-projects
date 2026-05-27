@@ -32,6 +32,7 @@ namespace base::vocab::inline ptr {
     struct pointer_metadata {
     private:
         struct void_reference;
+
     public:
         /**
          * @typedef element_type
@@ -56,8 +57,11 @@ namespace base::vocab::inline ptr {
          * @brief The reference type (`Pointee&`).
          * @remark When `Pointee` is `void`, uses `void_reference&` because `void` as a function parameter is ill-formed.
          */
-        using reference =
-            std::conditional_t<std::is_void_v<Pointee>, std::add_lvalue_reference_t<void_reference>, std::add_lvalue_reference_t<Pointee>>;
+        using reference = std::conditional_t<
+            std::is_void_v<Pointee>,
+            std::add_lvalue_reference_t<void_reference>,
+            std::add_lvalue_reference_t<Pointee>
+        >;
 
         /**
          * @typedef rvalue_reference
@@ -66,8 +70,11 @@ namespace base::vocab::inline ptr {
          * @remark When `Pointee` is `void`, uses `void_reference&&` because `void` as a function parameter is ill-formed.
          * @note Used only for deletion of invalid overloads to prevent binding to temporaries.
          */
-        using rvalue_reference =
-            std::conditional_t<std::is_void_v<Pointee>, std::add_rvalue_reference_t<void_reference>, std::add_rvalue_reference_t<Pointee>>;
+        using rvalue_reference = std::conditional_t<
+            std::is_void_v<Pointee>,
+            std::add_rvalue_reference_t<void_reference>,
+            std::add_rvalue_reference_t<Pointee>
+        >;
 
         /**
          * @typedef difference_type
