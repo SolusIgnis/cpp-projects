@@ -109,6 +109,19 @@ namespace base::meta::sequences {
     template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
     struct find_type_if;
 
+    template<bool, typename T, TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    struct find_type_if_impl;
+
+    template<typename T, TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    struct find_type_if_impl<true, T, Seq, UnaryTypePredicate> {
+        using type = T;
+    };
+
+    template<typename T, TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    struct find_type_if_impl<false, T, Seq, Pred> {
+        using type = typename find_type_if<Seq, UnaryTypePredicate>::type;
+    };
+    
     /**
      * @brief Base case for empty type sequences.
      */
@@ -121,10 +134,14 @@ namespace base::meta::sequences {
      * @brief Recursive short-circuit search over type sequences.
      */
     template<typename T, typename... Rest, template<typename> typename UnaryTypePredicate>
-    struct find_type_if<type_list<T, Rest...>, UnaryTypePredicate> {
-        using type = std::
-            conditional_t<UnaryTypePredicate<T>::value, T, typename find_type_if<type_list<Rest...>, UnaryTypePredicate>::type>;
-    };
+    struct find_type_if<type_list<T, Rest...>, UnaryTypePredicate>
+        : find_if_impl<
+            Pred<T>::value,
+            T,
+            type_list<Rest...>,
+            Pred
+        >
+    {};
 
     /**
      * @brief Finds the first value satisfying a unary value predicate.
