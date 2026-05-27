@@ -100,6 +100,12 @@ namespace base::meta::sequences {
 } //namespace base::meta::sequences
 
 namespace base::meta::sequences {
+    template<typename T>
+    struct dependently_false : std::false_type;
+    
+    template<typename T>
+    inline constexpr bool dependently_false_v = dependently_false<T>::value;
+
     /**
      * @brief Finds the first type satisfying a unary type predicate.
      *
@@ -127,7 +133,7 @@ namespace base::meta::sequences {
      */
     template<template<typename> typename UnaryTypePredicate>
     struct find_type_if<type_list<>, UnaryTypePredicate> {
-        static_assert(false, "find_if failure: result not found; use try_find_if for optional results");
+        static_assert(dependently_false_v<type_list<>>, "find_if failure: result not found; use try_find_if for optional results");
     };
 
     /**
