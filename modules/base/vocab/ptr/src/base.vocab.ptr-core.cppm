@@ -33,7 +33,7 @@ import base.meta.concepts;
 
 import :metadata;
 
-#ifdef EXPERIMENTAL_CORE_PARTITION
+#ifndef EXPERIMENTAL_CORE_PARTITION
 export import :policies;
 
 namespace base::vocab::inline ptr {
@@ -59,7 +59,7 @@ export namespace base::vocab::inline ptr {
         // Construction, Assignment, and Swap
         //================================================================================
 
-        //===== Core =====
+        //===== Universal Core =====
 
         ///@brief (Conversion) Implicitly converts from another pointer according to nested `pointer` type conversions.
         template<typename U>
@@ -107,8 +107,8 @@ export namespace base::vocab::inline ptr {
         template<typename P>
             requires std::is_pointer_v<std::remove_cvref_t<P>>
                   && std::convertible_to<std::decay_t<P>, pointer>
-                     constexpr explicit(false) ptr_core(P&& source)
-                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        constexpr explicit(false) ptr_core(P&& source)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_(validate_by_nullability(source))
         {}
 
@@ -116,8 +116,8 @@ export namespace base::vocab::inline ptr {
         template<typename Self, typename P>
             requires (!std::is_const_v<Self>) && std::is_pointer_v<std::remove_cvref_t<P>>
                   && std::convertible_to<std::decay_t<P>, pointer>
-                     constexpr Self& operator=(this Self& self, P&& source)
-                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        constexpr Self& operator=(this Self& self, P&& source)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = validate_by_nullability(source);
             return self;
@@ -129,8 +129,8 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-                     constexpr explicit(false) ptr_core(const Pointer<Element, Args...>& source)
-                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        constexpr explicit(false) ptr_core(const Pointer<Element, Args...>& source)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_(validate_by_nullability(source.get()))
         {}
 
@@ -141,16 +141,54 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-                     constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source)
-                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = validate_by_nullability(source.get());
+            return self;
+        }
+
+        //===== Nullability (Yes) =====
+
+        ///@brief Default constructor initializes to null.
+        ptr_core() = default;
+
+        ///@brief Constructor from `nullptr` initializes to null.
+        ptr_core(std::nullptr_t null) : address_(null) {}
+
+        ///@brief Assignment from `nullptr` rebinds to null.
+        template<typename Self>
+            requires (!std::is_const_v<Self>)
+        Self& operator=(this Self& self, std::nullptr_t null)
+        {
+            self.address_ = null;
             return self;
         }
 
         //================================================================================
         // Deleted Constructors and Assignment Operators: Non-Null Structural Invariant
         //================================================================================
+
+        //===== Nullability (No) =====
+
+        ///@brief Deleted default constructor to prevent sources of null initialization.
+        ptr_core()
+            requires nonnullable_v<policy_set>
+        = delete /*("Default constructor deleted by policy `nullability::no` to prevent null initialization. Use `std::optional<ptr_type<T>>` for default-constructible optional pointers.")*/
+            ;
+
+        ///@brief Deleted constructor from `nullptr` to prevent sources of null initialization.
+        ptr_core(std::nullptr_t)
+            requires nonnullable_v<policy_set>
+        = delete /*("Constructor from `nullptr` deleted to prevent null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            ;
+
+        ///@brief Deleted assignment from `nullptr` to prevent sources of invalid null rebinding.
+        template<typename Self>
+        Self& operator=(this Self&&, std::nullptr_t)
+            requires nonnullable_v<policy_set>
+        = delete /*("Assignment from `nullptr` deleted by policy `nullability::no` to prevent null rebinding. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            ;
 
         //===== Pointer Binding (Forbidden) =====
 
@@ -173,8 +211,8 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
-                     ptr_core(const Pointer<Element, Args...>&)
-                         requires ptr_policies::forbidden_pointer_binding_v<policy_set>
+        ptr_core(const Pointer<Element, Args...>&)
+            requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Constructor from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
@@ -184,8 +222,8 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
-                     Self& operator=(this Self&&, const Pointer<Element, Args...>&)
-                         requires ptr_policies::forbidden_pointer_binding_v<policy_set>
+        Self& operator=(this Self&&, const Pointer<Element, Args...>&)
+            requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Assignment from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
@@ -238,8 +276,8 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
-                     ptr_core(std::add_rvalue_reference_t<Pointer<Element, Args...>>)
-                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        ptr_core(std::add_rvalue_reference_t<Pointer<Element, Args...>>)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
         = delete /*("Constructor from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
@@ -249,8 +287,8 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
-                     Self& operator=(this Self&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>)
-                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        Self& operator=(this Self&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
         = delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
@@ -267,6 +305,363 @@ export namespace base::vocab::inline ptr {
         Self& operator=(this Self&&, const metadata::reference)
             requires ptr_policies::forbidden_reference_binding_v<policy_set>
         = delete /*("Assignment from references deleted by policy `reference_binding::forbidden`. Try assigning from the address directly.")*/
+            ;
+        //================================================================================
+        // Pointer Operations
+        //================================================================================
+
+        //===== Universal Core =====
+
+        ///@brief Provides member access to the pointee object.
+        [[nodiscard]] constexpr metadata::pointer operator->(this auto&& self) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+        {
+            return self.address_;
+        }
+
+        ///@brief Provides a reference to the pointee object.
+        [[nodiscard]] constexpr auto& operator*(this auto&& self) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+        {
+            return *self.address_;
+        }
+
+        ///@brief Returns a raw pointer to the stored address.
+        [[nodiscard]] constexpr metadata::pointer get(this auto&& self) noexcept { return self.address_; }
+
+        ///@brief Implicitly converts to the nested `pointer` type.
+        [[nodiscard]] constexpr explicit(false) operator typename metadata::pointer() const noexcept { return this->get(); }
+
+        ///@brief Rebinding passes through to assignment.
+        template<typename Self, typename P>
+        Self& rebind(this Self& self, P&& source) noexcept(std::is_nothrow_assignable_v<Self&, P>)
+            requires std::is_assignable_v<Self&, P>
+        {
+            return self = std::forward<P>(source);
+        }
+
+        ///@brief Resets the pointer to a new address.
+        template<typename Self, typename P>
+            requires (!std::same_as<P, std::nullptr_t>)
+        constexpr void reset(this Self& self, P&& source) noexcept(std::is_nothrow_assignable_v<Self&, P>)
+            requires std::is_assignable_v<Self&, P>
+        {
+            self = std::forward<P>(source);
+        }
+
+        //===== Nullability (Yes) =====
+
+        ///@brief Reset the pointer to `nullptr`.
+        constexpr void reset(this auto& self, std::nullptr_t null = nullptr) noexcept
+            requires nullable_v<policy_set>
+        { self = null; }
+
+        ///@brief Returns a raw pointer to the stored address while disengaging the pointer.
+        [[nodiscard]] constexpr metadata::pointer release(this auto&& self) noexcept
+            requires nullable_v<policy_set>
+        {
+            return std::exchange(self.address_, nullptr);
+        }
+
+        ///@brief Contextually converts to `bool` to test if the pointer is engaged.
+        [[nodiscard]] constexpr explicit operator bool(this auto&& self) noexcept
+            requires nullable_v<policy_set>
+        { return (self.get() != nullptr); }
+
+        ///@brief Compares equality against `nullptr`.
+        [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<Pointee>& ptr, std::nullptr_t null) noexcept
+            requires nullable_v<policy_set>
+        {
+            return (ptr.get() == null);
+        }
+
+        //===== Nullability (No) =====
+
+        ///@brief Contextually converts to `bool` to "test" if the pointer is engaged. Always returns `true` to confirm invariant.
+        [[nodiscard]] constexpr explicit operator bool() const noexcept
+            requires nonnullable_v<policy_set>
+        { return true; }
+
+        //================================================================================
+        // Arithmetic Operators: Implemented for Iteration, Deleted Otherwise
+        //================================================================================
+
+        //===== Traversal (Arithmetic) =====
+
+        ///@brief Subscript operator provided solely to comply with random-access iterator requirements.
+        [[nodiscard]] [[deprecated(
+            "Subscript operator conflates pointers with arrays. Use `*(ptr + offset)` for explicit traversal or consider subscripting the container instead."
+        )]]
+        constexpr auto& operator[](this auto self, metadata::difference_type offset) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+            && arithmetic_traversal_v<policy_set>
+        {
+            return *(self + offset);
+        }
+
+        ///@brief Prefix increment: increments the stored address.
+        template<typename Self>
+        constexpr decltype(auto) operator++(this Self&& self) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+            && arithmetic_traversal_v<policy_set>
+        {
+            ++self.address_;
+            return std::forward<Self>(self);
+        }
+
+        ///@brief Prefix decrement: decrements the stored address.
+        template<typename Self>
+        constexpr decltype(auto) operator--(this Self&& self) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+            && arithmetic_traversal_v<policy_set>
+        {
+            --self.address_;
+            return std::forward<Self>(self);
+        }
+
+        ///@brief Postfix increment: increments the stored address but return a pointer to the prior stored address.
+        template<typename Self>
+        constexpr auto operator++(this Self&& self, int) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+            && arithmetic_traversal_v<policy_set>
+        {
+            std::decay_t<Self> old{self};
+            ++self;
+            return old;
+        }
+
+        ///@brief Postfix decrement: decrements the stored address but return a pointer to the prior stored address.
+        template<typename Self>
+        constexpr auto operator--(this Self&& self, int) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+            && arithmetic_traversal_v<policy_set>
+        {
+            std::decay_t<Self> old{self};
+            --self;
+            return old;
+        }
+
+        ///@brief Addition assignment: increments the stored address by a given distance.
+        template<typename Self>
+        constexpr decltype(auto) operator+=(this Self&& self, metadata::difference_type diff) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+            && arithmetic_traversal_v<policy_set>
+        {
+            self.address_ += diff;
+            return std::forward<Self>(self);
+        }
+
+        ///@brief Subtraction assignment: decrements the stored address by a given distance.
+        template<typename Self>
+        constexpr decltype(auto) operator-=(this Self&& self, metadata::difference_type diff) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+            && arithmetic_traversal_v<policy_set>
+        {
+            self.address_ -= diff;
+            return std::forward<Self>(self);
+        }
+
+        ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
+        friend constexpr ConcretePtr<Pointee> operator+(ConcretePtr<Pointee> ptr, metadata::difference_type diff) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+            && arithmetic_traversal_v<policy_set>
+        {
+            return ptr += diff;
+        }
+
+        ///@brief Pointer addition (commutative): gets a pointer to an address a given distance after the stored address.
+        friend constexpr ConcretePtr<Pointee> operator+(metadata::difference_type diff, ConcretePtr<Pointee> ptr) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+            && arithmetic_traversal_v<policy_set>
+        {
+            return ptr += diff;
+        }
+
+        ///@brief Pointer subtraction: gets a pointer to an address a given distance before the stored address.
+        friend constexpr ConcretePtr<Pointee> operator-(ConcretePtr<Pointee> ptr, metadata::difference_type diff) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+            && arithmetic_traversal_v<policy_set>
+        {
+            return ptr -= diff;
+        }
+
+        ///@brief Pointer subtraction (difference): computes the distance between the addresses stored in two pointers.
+        friend constexpr metadata::difference_type operator-(ConcretePtr<Pointee> lhs, ConcretePtr<Pointee> rhs) noexcept
+            requires base::meta::concepts::CompletePointee<Pointee>
+            && arithmetic_traversal_v<policy_set>
+        {
+            return lhs.get() - rhs.get();
+        }
+
+        //===== Traversal (Rebinding) =====
+
+        ///@brief Deleted prefix increment to prevent misuse as an iterator.
+        template<typename Self>
+        Self& operator++(this Self&&)
+            requires rebinding_traversal_v<policy_set>
+        = delete /*("Prefix increment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
+
+        ///@brief Deleted prefix decrement to prevent misuse as an iterator.
+        template<typename Self>
+        Self& operator--(this Self&&)
+            requires rebinding_traversal_v<policy_set>
+        = delete /*("Prefix decrement deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
+
+        ///@brief Deleted postfix increment to prevent misuse as an iterator.
+        template<typename Self>
+        Self operator++(this Self&&, int)
+            requires rebinding_traversal_v<policy_set>
+        = delete /*("Postfix increment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
+
+        ///@brief Deleted postfix decrement to prevent misuse as an iterator.
+        template<typename Self>
+        Self operator--(this Self&&, int)
+            requires rebinding_traversal_v<policy_set>
+        = delete /*("Postfix decrement deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
+
+        ///@brief Deleted addition assignment to prevent misuse as an iterator.
+        template<typename Self>
+        Self& operator+=(this Self&&, metadata::difference_type)
+            requires rebinding_traversal_v<policy_set>
+        = delete /*("Addition assignment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
+
+        ///@brief Deleted subtraction assignment to prevent misuse as an iterator.
+        template<typename Self>
+        Self& operator-=(this Self&&, metadata::difference_type)
+            requires rebinding_traversal_v<policy_set>
+        = delete /*("Subtraction assignment deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
+
+        ///@brief Deleted pointer addition to prevent misuse as an iterator.
+        friend ConcretePtr<Pointee> operator+(ConcretePtr<Pointee>, metadata::difference_type)
+            requires rebinding_traversal_v<policy_set>
+        = delete /*("Pointer addition deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
+
+        ///@brief Deleted pointer addition to prevent misuse as an iterator.
+        friend ConcretePtr<Pointee> operator+(metadata::difference_type, ConcretePtr<Pointee>)
+            requires rebinding_traversal_v<policy_set>
+        = delete /*("Pointer addition deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
+
+        ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
+        friend metadata::difference_type operator-(ConcretePtr<Pointee>, ConcretePtr<Pointee>)
+            requires rebinding_traversal_v<policy_set>
+        = delete /*("Pointer subtraction deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
+
+        ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
+        friend ConcretePtr<Pointee> operator-(ConcretePtr<Pointee>, metadata::difference_type)
+            requires rebinding_traversal_v<policy_set>
+        = delete /*("Pointer subtraction deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
+            ;
+
+        //================================================================================
+        // Comparison Operators (Three-way for Arithmetic Traversal,  Equality for Rebinding)
+        //================================================================================
+
+        //===== Traversal (Arithmetic) =====
+
+        ///@brief Compares in terms of pointer identity.
+        [[nodiscard]] friend constexpr auto
+            operator<=>(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee>& rhs) noexcept
+            requires arithmetic_traversal_v<policy_set>
+        {
+            return (lhs.get() <=> rhs.get());
+        }
+
+        ///@brief Covariantly compares in terms of pointer identity.
+        template<std::derived_from<Pointee> DerivedT>
+            requires (!std::same_as<DerivedT, Pointee>)
+        [[nodiscard]] friend constexpr auto
+            operator<=>(const ConcretePtr<Pointee>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+            requires arithmetic_traversal_v<policy_set>
+        {
+            return (lhs.get() <=> rhs.get());
+        }
+
+        ///@brief Covariantly compares a `ConcretePtr`-to-base with a raw pointer-to-derived in terms of pointer identity.
+        template<std::derived_from<Pointee> DerivedT>
+        [[nodiscard]] friend constexpr auto
+            operator<=>(const ConcretePtr<Pointee>& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+            requires arithmetic_traversal_v<policy_set>
+        {
+            return (lhs.get() <=> rhs);
+        }
+
+        ///@brief Covariantly compares a raw pointer-to-base with a `ConcretePtr`-to-derived in terms of pointer identity.
+        template<std::derived_from<Pointee> DerivedT>
+        [[nodiscard]] friend constexpr auto operator<=>(const metadata::pointer lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+            requires arithmetic_traversal_v<policy_set>
+        {
+            return (lhs <=> rhs.get());
+        }
+
+        ///@brief Deleted comparison against `nullptr`.
+        [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<Pointee>&, std::nullptr_t) noexcept
+            requires arithmetic_traversal_v<policy_set>
+        = delete
+            ;
+
+        //===== Traversal (Rebinding) =====
+
+        ///@brief Compares equality in terms of pointer identity.
+        [[nodiscard]] friend constexpr bool
+            operator==(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee>& rhs) noexcept
+            requires rebinding_traversal_v<policy_set>
+        {
+            return (lhs.get() == rhs.get());
+        }
+
+        ///@brief Covariantly compares equality in terms of pointer identity.
+        template<std::derived_from<Pointee> DerivedT>
+            requires (!std::same_as<DerivedT, Pointee>)
+        [[nodiscard]] friend constexpr bool
+            operator==(const ConcretePtr<Pointee>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+            requires rebinding_traversal_v<policy_set>
+        {
+            return (lhs.get() == rhs.get());
+        }
+
+        ///@brief Covariantly compares equality of an `ConcretePtr`-to-base with a raw pointer-to-derived in terms of pointer identity.
+        template<std::derived_from<Pointee> DerivedT>
+        [[nodiscard]] friend constexpr bool
+            operator==(const ConcretePtr<Pointee>& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+            requires rebinding_traversal_v<policy_set>
+        {
+            return (lhs.get() == rhs);
+        }
+
+        ///@brief Covariantly compares equality of a raw pointer-to-base with an `ConcretePtr`-to-derived in terms of pointer identity.
+        template<std::derived_from<Pointee> DerivedT>
+        [[nodiscard]] friend constexpr bool operator==(const metadata::pointer lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+            requires rebinding_traversal_v<policy_set>
+        {
+            return (lhs == rhs.get());
+        }
+
+        ///@brief Compares equality against `nullptr`.
+        [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<Pointee>& ptr, std::nullptr_t null) noexcept
+        {
+            return (ptr.get() == null);
+        }
+
+        ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
+        template<typename Self>
+        auto operator<=>(this Self&&, Self)
+            requires rebinding_traversal_v<policy_set>
+        = delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/
+            ;
+
+        ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
+        auto operator<=>(const metadata::pointer) const
+            requires rebinding_traversal_v<policy_set>
+        = delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/
             ;
 
     private:
