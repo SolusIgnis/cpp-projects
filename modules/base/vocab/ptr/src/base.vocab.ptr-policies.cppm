@@ -147,3 +147,14 @@ namespace base::vocab::inline ptr::ptr_policies {
     inline constexpr bool nonnullable_v =
         std::same_as<ptr_policies::group_policy_t<Policies, nullability::group>, nullability::no>;
 } //namespace base::vocab::inline ptr::ptr_policies
+
+namespace base::vocab::inline ptr {
+    static_assert(ptr_policies::in_policy_group<ptr_policies::nullability::group>::template predicate<ptr_policies::nullability::no>::value,  "in_policy_group bug");
+    using test_policy_set = ptr_policies::type_list<
+            ptr_policies::nullability::no,
+            ptr_policies::pointer_binding::forbidden,
+            ptr_policies::reference_binding::allowed,
+            ptr_policies::traversal::rebinding
+        >;
+    static_assert(ptr_policies::PtrPolicyList<test_policy_set>, "policy set is invalid");
+}
