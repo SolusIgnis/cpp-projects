@@ -106,7 +106,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Implicitly converts from a raw `pointer`.
         template<typename P>
             requires std::is_pointer_v<std::remove_cvref_t<P>>
-                  && std::convertible_to<std::decay_t<P>, metadata::pointer>
+                  && std::convertible_to<std::decay_t<P>, typename metadata::pointer>
         constexpr explicit(false) ptr_core(P&& source)
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_(validate_by_nullability(source))
@@ -115,7 +115,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Assigns from a raw `pointer`.
         template<typename Self, typename P>
             requires (!std::is_const_v<Self>) && std::is_pointer_v<std::remove_cvref_t<P>>
-                  && std::convertible_to<std::decay_t<P>, metadata::pointer>
+                  && std::convertible_to<std::decay_t<P>, typename metadata::pointer>
         constexpr Self& operator=(this Self& self, P&& source)
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
@@ -127,7 +127,7 @@ export namespace base::vocab::inline ptr {
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ptr_core>)
                   && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
+                         { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
         constexpr explicit(false) ptr_core(const Pointer<Element, Args...>& source)
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
@@ -139,7 +139,7 @@ export namespace base::vocab::inline ptr {
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ptr_core>)
                   && (!std::is_const_v<Self>)
                   && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
+                         { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
         constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source)
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
