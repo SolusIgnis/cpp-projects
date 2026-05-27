@@ -109,7 +109,7 @@ export namespace base::vocab::inline ptr {
         template<typename P>
             requires std::is_pointer_v<std::remove_cvref_t<P>>
                   && std::convertible_to<std::decay_t<P>, typename metadata::pointer>
-        constexpr explicit(std::is_void_v<T>) ptr_core(P&& source)
+        constexpr explicit(std::is_void_v<Pointee>) ptr_core(P&& source)
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_(validate_by_nullability(source))
         {}
@@ -131,7 +131,7 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
-        constexpr explicit(std::is_void_v<T>) ptr_core(const Pointer<Element, Args...>& source)
+        constexpr explicit(std::is_void_v<Pointee>) ptr_core(const Pointer<Element, Args...>& source)
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_(validate_by_nullability(source.get()))
         {}
