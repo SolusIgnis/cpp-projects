@@ -64,13 +64,13 @@ export namespace base::vocab::inline ptr {
         ///@brief (Conversion) Implicitly converts from another pointer according to nested `pointer` type conversions.
         template<typename OtherPointee>
             requires (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
-        constexpr explicit(false) ptr_core(const ptr_core<OtherPointee>& source) noexcept : address_(source.get())
+        constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept : address_(source.get())
         {}
 
         ///@brief (Conversion) Assigns from another pointer according to nested `pointer` type conversions.
         template<typename Self, typename OtherPointee>
             requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
-        constexpr Self& operator=(this Self& self, const ptr_core<OtherPointee>& source) noexcept
+        constexpr Self& operator=(this Self& self, const ConcretePtr<OtherPointee>& source) noexcept
         {
             self.address_ = source.get();
             return self;
@@ -125,7 +125,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Implicitly converts from another pointer-like type.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, template ptr_core>)
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
@@ -136,7 +136,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Assigns from another pointer-like type.
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, template ptr_core>)
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
                   && (!std::is_const_v<Self>)
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
