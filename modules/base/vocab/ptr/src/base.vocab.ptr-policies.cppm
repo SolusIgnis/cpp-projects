@@ -157,5 +157,18 @@ namespace base::vocab::inline ptr {
             ptr_policies::traversal::rebinding
         >;
     static_assert(ptr_policies::PtrPolicyList<test_policy_set>, "policy set is invalid");
-    static_assert(ptr_policies::nonnullable_v<test_policy_set>, "nullability::no failed");
+    
+    template<typename T>
+    struct nullability_predicate :
+        ptr_policies::in_policy_group<
+            ptr_policies::nullability::group
+        >::template predicate<T>
+    {};
+    using extracted =
+        base::meta::sequences::find_type_if_t<
+            test_policy_set,
+            nullability_predicate
+        >;
+    static_assert(std::same_as<extracted, ptr_policies::nullability::no>, "same_as nullability::no failed");
+    static_assert(ptr_policies::nonnullable_v<test_policy_set>, "nonnullable_v failed");
 }
