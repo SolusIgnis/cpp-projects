@@ -77,6 +77,7 @@ export namespace base::vocab::inline ptr {
      *
      * @see `alias_ptr` for nullable aliasing, `required_ptr` for non-null aliasing, `cursor_ptr` for non-null iteration/traversal, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */
+    static_assert(ptr_policies::in_policy_group<ptr_policies::nullability::group>::template predicate<ptr_policies::nullability::no>::value,  "in_policy_group bug");
     template<typename Pointee>
         requires (!std::is_void_v<Pointee>)
     class [[nodiscard]] dependency_ptr : public ptr_core<
