@@ -63,14 +63,14 @@ export namespace base::vocab::inline ptr {
 
         ///@brief (Conversion) Implicitly converts from another pointer according to nested `pointer` type conversions.
         template<typename OtherPointee>
-            requires (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, metadata::pointer>
-        constexpr explicit(false) ptr_core(const ptr_core<U>& source) noexcept : address_(source.get())
+            requires (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
+        constexpr explicit(false) ptr_core(const ptr_core<OtherPointee>& source) noexcept : address_(source.get())
         {}
 
         ///@brief (Conversion) Assigns from another pointer according to nested `pointer` type conversions.
         template<typename Self, typename OtherPointee>
-            requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, metadata::pointer>
-        constexpr Self& operator=(this Self& self, const ptr_core<U>& source) noexcept
+            requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
+        constexpr Self& operator=(this Self& self, const ptr_core<OtherPointee>& source) noexcept
         {
             self.address_ = source.get();
             return self;
@@ -94,7 +94,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Rebinds the pointer to another object.
         template<typename Self>
             requires (!std::is_const_v<Self>)
-        constexpr Self& operator=(this Self& self, reference source) noexcept
+        constexpr Self& operator=(this Self& self, metadata::reference source) noexcept
             requires ptr_policies::allowed_reference_binding_v<policy_set>
         {
             self.address_ = std::addressof(source);
@@ -666,14 +666,14 @@ export namespace base::vocab::inline ptr {
 
     private:
         ///@brief Passes the pointer through unchecked because this policy accepts null pointers.
-        [[nodiscard]] constexpr metadata::pointer validate_by_nullability(metadata::pointer source)
+        [[nodiscard]] static constexpr metadata::pointer validate_by_nullability(metadata::pointer source)
             requires ptr_policies::nullable_v<policy_set>
         {
             return source;
         }
 
         ///@brief Enforces the non-null invariant by only passing the address through when it is not null.
-        [[nodiscard]] constexpr metadata::pointer validate_by_nullability(metadata::pointer source)
+        [[nodiscard]] static constexpr metadata::pointer validate_by_nullability(metadata::pointer source)
             requires ptr_policies::nonnullable_v<policy_set>
         {
             if (source == nullptr) [[unlikely]]
