@@ -157,4 +157,5 @@ namespace base::vocab::inline ptr {
             ptr_policies::traversal::rebinding
         >;
     static_assert(ptr_policies::PtrPolicyList<test_policy_set>, "policy set is invalid");
+    static_assert(ptr_policies::nonnullable_v<test_policy_set>, "nullability::no failed");
 }

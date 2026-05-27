@@ -44,7 +44,7 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
-#ifndef EXPERIMENTAL_CORE_PARTITION
+#ifdef EXPERIMENTAL_CORE_PARTITION
 import :core;
 
 export namespace base::vocab::inline ptr {
