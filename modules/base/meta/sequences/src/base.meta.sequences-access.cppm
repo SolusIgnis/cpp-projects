@@ -101,7 +101,7 @@ namespace base::meta::sequences {
 
 namespace base::meta::sequences {
     template<typename T>
-    struct dependently_false : std::false_type;
+    struct dependently_false : std::false_type {};
     
     template<typename T>
     inline constexpr bool dependently_false_v = dependently_false<T>::value;
