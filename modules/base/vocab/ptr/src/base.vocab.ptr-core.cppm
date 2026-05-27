@@ -125,7 +125,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Implicitly converts from another pointer-like type.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ptr_core>)
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, template ptr_core>)
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
@@ -136,7 +136,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Assigns from another pointer-like type.
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ptr_core>)
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, template ptr_core>)
                   && (!std::is_const_v<Self>)
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
