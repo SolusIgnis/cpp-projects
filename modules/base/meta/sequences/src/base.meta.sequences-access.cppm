@@ -118,7 +118,7 @@ namespace base::meta::sequences {
     };
 
     template<typename T, TypeSequence Seq, template<typename> typename UnaryTypePredicate>
-    struct find_type_if_impl<false, T, Seq, Pred> {
+    struct find_type_if_impl<false, T, Seq, UnaryTypePredicate> {
         using type = typename find_type_if<Seq, UnaryTypePredicate>::type;
     };
     
@@ -136,10 +136,10 @@ namespace base::meta::sequences {
     template<typename T, typename... Rest, template<typename> typename UnaryTypePredicate>
     struct find_type_if<type_list<T, Rest...>, UnaryTypePredicate>
         : find_if_impl<
-            Pred<T>::value,
+            UnaryTypePredicate<T>::value,
             T,
             type_list<Rest...>,
-            Pred
+            UnaryTypePredicate
         >
     {};
 
