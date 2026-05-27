@@ -63,13 +63,13 @@ export namespace base::vocab::inline ptr {
 
         ///@brief (Conversion) Implicitly converts from another pointer according to nested `pointer` type conversions.
         template<typename OtherPointee>
-            requires (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, pointer>
+            requires (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, metadata::pointer>
         constexpr explicit(false) ptr_core(const ptr_core<U>& source) noexcept : address_(source.get())
         {}
 
         ///@brief (Conversion) Assigns from another pointer according to nested `pointer` type conversions.
         template<typename Self, typename OtherPointee>
-            requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, pointer>
+            requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, metadata::pointer>
         constexpr Self& operator=(this Self& self, const ptr_core<U>& source) noexcept
         {
             self.address_ = source.get();
@@ -106,7 +106,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Implicitly converts from a raw `pointer`.
         template<typename P>
             requires std::is_pointer_v<std::remove_cvref_t<P>>
-                  && std::convertible_to<std::decay_t<P>, pointer>
+                  && std::convertible_to<std::decay_t<P>, metadata::pointer>
         constexpr explicit(false) ptr_core(P&& source)
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_(validate_by_nullability(source))
@@ -115,7 +115,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Assigns from a raw `pointer`.
         template<typename Self, typename P>
             requires (!std::is_const_v<Self>) && std::is_pointer_v<std::remove_cvref_t<P>>
-                  && std::convertible_to<std::decay_t<P>, pointer>
+                  && std::convertible_to<std::decay_t<P>, metadata::pointer>
         constexpr Self& operator=(this Self& self, P&& source)
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
