@@ -148,6 +148,69 @@ export namespace base::vocab::inline ptr {
         }
 
         //================================================================================
+        // Deleted Constructors and Assignment Operators: Non-Null Structural Invariant
+        //================================================================================
+
+        //===== Pointer Binding (Forbidden) =====
+
+        ///@brief Deleted constructor from `pointer` to structurally guarantee non-null initialization.
+        ptr_core(metadata::pointer)
+            requires ptr_policies::forbidden_pointer_binding_v<policy_set>
+        = delete /*("Constructor from `pointer` deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            ;
+
+        ///@brief Deleted assignment from `pointer` to structurally guarantee non-null rebinding.
+        template<typename Self>
+        Self& operator=(this Self&&, metadata::pointer)
+            requires ptr_policies::forbidden_pointer_binding_v<policy_set>
+        = delete /*("Assignment from `pointer` deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            ;
+
+        ///@brief Deleted constructor from another pointer-like type to structurally guarantee non-null initialization.
+        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
+                  && requires(Pointer<Element, Args...> ptr) {
+                         { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
+                     }
+        ptr_core(const Pointer<Element, Args...>&)
+            requires ptr_policies::forbidden_pointer_binding_v<policy_set>
+        = delete /*("Constructor from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            ;
+
+        ///@brief Deleted assignment from another pointer-like type to structurally guarantee non-null rebinding.
+        template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
+                  && requires(Pointer<Element, Args...> ptr) {
+                         { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
+                     }
+        Self& operator=(this Self&&, const Pointer<Element, Args...>&)
+            requires ptr_policies::forbidden_pointer_binding_v<policy_set>
+        = delete /*("Assignment from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            ;
+
+        //================================================================================
+        // Deleted Constructors and Assignment Operators: No Array-to-Pointer Decay
+        //================================================================================
+
+        //===== Pointer Binding (Allowed) =====
+
+        ///@brief Deleted constructor from C-array to prevent array-to-pointer decay.
+        template<typename AnyCArray>
+            requires std::is_array_v<AnyCArray>
+        ptr_core(AnyCArray&)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        = delete /*("Constructor from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
+            ;
+
+        ///@brief Deleted assignment from C-array to prevent array-to-pointer decay.
+        template<typename Self, typename AnyCArray>
+            requires std::is_array_v<AnyCArray>
+        Self& operator=(this Self&&, AnyCArray&)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        = delete /*("Assignment from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
+            ;
+
+        //================================================================================
         // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
         //================================================================================
 
@@ -165,11 +228,29 @@ export namespace base::vocab::inline ptr {
             requires ptr_policies::allowed_reference_binding_v<policy_set>
         = delete /*("Assignment from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
-            
-        ///@brief Deleted address resolution from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
-        constexpr metadata::pointer resolve_address(metadata::rvalue_reference)
-            requires ptr_policies::allowed_reference_binding_v<policy_set>
-        = delete /*("Address resolution from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+
+        //===== Pointer Binding (Allowed) =====
+
+        ///@brief Deleted constructor from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
+        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
+                      && requires(Pointer<Element, Args...> ptr) {
+                             { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
+                         }
+        ptr_core(std::add_rvalue_reference_t<Pointer<Element, Args...>>)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        = delete /*("Constructor from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
+
+        ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
+        template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
+                      && requires(Pointer<Element, Args...> ptr) {
+                             { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
+                         }
+        Self& operator=(this Self&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        = delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
         //===== Reference Binding (Forbidden) =====
