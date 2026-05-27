@@ -33,50 +33,50 @@ import base.meta.concepts;
 
 namespace base::vocab::inline ptr::ptr_policies {
     namespace traversal {
-        struct policy_group_tag;
+        struct group;
     
         struct arithmetic {
-            using policy_group = policy_group_tag;
+            using policy_group = group;
         }; //class arithmetic
     
         struct rebinding {
-            using policy_group = policy_group_tag;
+            using policy_group = group;
         }; //class rebinding
     } //namespace traversal
     
     namespace reference_binding {
-        struct policy_group_tag;
+        struct group;
     
         struct allowed {
-            using policy_group = policy_group_tag;
+            using policy_group = group;
         }; //class allowed
     
         struct forbidden {
-            using policy_group = policy_group_tag;
+            using policy_group = group;
         }; //class forbidden
     } //namespace reference_binding
     
     namespace pointer_binding {
-        struct policy_group_tag;
+        struct group;
     
         struct allowed {
-            using policy_group = policy_group_tag;
+            using policy_group = group;
         }; //class allowed
     
         struct forbidden {
-            using policy_group = policy_group_tag;
+            using policy_group = group;
         }; //class forbidden
     } //namespace pointer_binding
     
     namespace nullability {
-        struct policy_group_tag;
+        struct group;
     
         struct yes {
-            using policy_group = policy_group_tag;
+            using policy_group = group;
         }; //class yes
     
         struct no {
-            using policy_group = policy_group_tag;
+            using policy_group = group;
         }; //class no
     } //namespace nullability
     
@@ -87,13 +87,16 @@ namespace base::vocab::inline ptr::ptr_policies {
     concept TypeSequence = base::meta::sequences::TypeSequence<T>;
     
     using policy_groups = type_list<
-        traversal::policy_group_tag,
-        reference_binding::policy_group_tag,
-        pointer_binding::policy_group_tag,
-        nullability::policy_group_tag
+        traversal::group,
+        reference_binding::group,
+        pointer_binding::group,
+        nullability::group
     >;
     
-    template<typename ExpectedPolicyGroup>
+    template<typename T>
+    concept PtrPolicyGroup = base::meta::sequences::contains_type_v<policy_groups, T>;
+
+    template<PtrPolicyGroup ExpectedPolicyGroup>
     struct in_policy_group {
         template<typename T>
             requires requires { typename T::policy_group; }
@@ -104,8 +107,8 @@ namespace base::vocab::inline ptr::ptr_policies {
             >
         > {};
     };
-
-    template<typename Group, TypeSequence PolicyList>
+    
+    template<PtrPolicyGroup Group, TypeSequence PolicyList>
     inline constexpr bool exactly_one_policy_v = (base::meta::sequences::count_type_if_v<PolicyList, in_policy_group<Group>::template predicate> == 1);
 
     template<TypeSequence GroupList, TypeSequence PolicyList>
@@ -123,4 +126,30 @@ namespace base::vocab::inline ptr::ptr_policies {
     template<typename T>
     concept PtrPolicyList = TypeSequence<T> && valid_policy_list<policy_groups, T>::value;
 
+    template<PtrPolicyList Policies, PtrPolicyGroup Group> 
+    using group_policy_t = base::meta::sequences::find_type_if_t<Policies, in_policy_group<Group>::template predicate>;
+
+    template<PtrPolicyList Policies>
+    inline constexpr bool arithmetic_traversal_v = std::same_as<ptr_policies::group_policy_t<Policies, traversal::group>, traversal::arithmetic>;
+
+    template<PtrPolicyList Policies>
+    inline constexpr bool rebinding_traversal_v = std::same_as<ptr_policies::group_policy_t<Policies, traversal::group>, traversal::rebinding>;
+
+    template<PtrPolicyList Policies>
+    inline constexpr bool allowed_reference_binding_v = std::same_as<ptr_policies::group_policy_t<Policies, reference_binding::group>, reference_binding::allowed>;
+
+    template<PtrPolicyList Policies>
+    inline constexpr bool forbidden_reference_binding_v = std::same_as<ptr_policies::group_policy_t<Policies, reference_binding::group>, reference_binding::forbidden>;
+
+    template<PtrPolicyList Policies>
+    inline constexpr bool allowed_pointer_binding_v = std::same_as<ptr_policies::group_policy_t<Policies, pointer_binding::group>, pointer_binding::allowed>;
+
+    template<PtrPolicyList Policies>
+    inline constexpr bool forbidden_pointer_binding_v = std::same_as<ptr_policies::group_policy_t<Policies, pointer_binding::group>, pointer_binding::forbidden>;
+
+    template<PtrPolicyList Policies>
+    inline constexpr bool nullable_v = std::same_as<ptr_policies::group_policy_t<Policies, nullability::group>, nullability::yes>;
+
+    template<PtrPolicyList Policies>
+    inline constexpr bool nonnullable_v = std::same_as<ptr_policies::group_policy_t<Policies, nullability::group>, nullability::no>;    
 } //namespace base::vocab::inline ptr

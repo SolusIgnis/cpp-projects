@@ -42,7 +42,7 @@ namespace base::vocab::inline ptr {
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
-    template<template<typename> typename ConcretePtr, typename Pointee, PtrPolicyList PolicySet>
+    template<template<typename> typename ConcretePtr, typename Pointee, ptr_policies::PtrPolicyList PolicySet>
         requires (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>)
     class ptr_core : public pointer_metadata<Pointee> {
     public:
@@ -55,7 +55,140 @@ export namespace base::vocab::inline ptr {
         metadata::pointer address_; ///<@brief The stored address used by all concrete pointer types.
 
     public:
+        //================================================================================
+        // Construction, Assignment, and Swap
+        //================================================================================
+
+        //===== Core =====
+
+        ///@brief (Conversion) Implicitly converts from another pointer according to nested `pointer` type conversions.
+        template<typename U>
+            requires (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
+        constexpr explicit(false) ptr_core(const ptr_core<U>& source) noexcept
+            : address_(source.get())
+        {}
+
+        ///@brief (Conversion) Assigns from another pointer according to nested `pointer` type conversions.
+        template<typename Self, typename U>
+            requires (!std::is_const_v<Self>) && (!std::same_as<U, T>) && std::convertible_to<std::add_pointer_t<U>, pointer>
+        constexpr Self& operator=(this Self& self, const ptr_core<U>& source) noexcept
+        {
+            self.address_ = source.get();
+            return self;
+        }
+
+        ///@brief Swaps addresses.
+        friend constexpr void swap(ptr_core& lhs, ptr_core& rhs) noexcept
+        {
+            using std::swap;
+            swap(lhs.address_, rhs.address_);
+        }
+
+        //===== Reference Binding (Allowed) =====
+
+        ///@brief Constructs a pointer bound to an existing object.
+        constexpr explicit ptr_core(metadata::reference source) noexcept
+            requires ptr_policies::allowed_reference_binding_v<policy_set>
+            : address_(std::addressof(source))
+        {}
+
+        ///@brief Rebinds the pointer to another object.
+        template<typename Self>
+            requires (!std::is_const_v<Self>)
+        constexpr Self& operator=(this Self& self, reference source) noexcept
+            requires ptr_policies::allowed_reference_binding_v<policy_set>
+        {
+            self.address_ = std::addressof(source);
+            return self;
+        }
+
+        //===== Pointer Binding (Allowed)  =====
+
+        ///@brief Implicitly converts from a raw `pointer`.
+        template<typename P>
+            requires std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, pointer>
+        constexpr explicit(false) ptr_core(P&& source)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+            : address_(check_for_null(source))
+        {}
+
+        ///@brief Assigns from a raw `pointer`.
+        template<typename Self, typename P>
+            requires (!std::is_const_v<Self>)
+                  && std::is_pointer_v<std::remove_cvref_t<P>> && std::convertible_to<std::decay_t<P>, pointer>
+        constexpr Self& operator=(this Self& self, P&& source)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        {
+            self.address_ = check_for_null(source);
+            return self;
+        }
+
+        ///@brief Implicitly converts from another pointer-like type.
+        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ptr_core>)
+                  && requires(Pointer<Element, Args...> ptr) {
+                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
+                     }
+        constexpr explicit(false) ptr_core(const Pointer<Element, Args...>& source)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+            : address_(check_for_null(source.get()))
+        {}
+
+        ///@brief Assigns from another pointer-like type.
+        template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
+            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ptr_core>)
+                  && (!std::is_const_v<Self>) && requires(Pointer<Element, Args...> ptr) {
+                                                     { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
+                                                 }
+        constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        {
+            self.address_ = check_for_null(source.get());
+            return self;
+        }
+
+        //================================================================================
+        // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
+        //================================================================================
+
+        //===== Reference Binding (Allowed) =====
+
+        ///@brief Deleted constructor from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
+        ptr_core(metadata::rvalue_reference)
+            requires ptr_policies::allowed_reference_binding_v<policy_set>
+        = delete /*("Constructor from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
+
+        ///@brief Deleted assignment from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
+        template<typename Self>
+        Self& operator=(this Self&&, metadata::rvalue_reference)
+            requires ptr_policies::allowed_reference_binding_v<policy_set>
+        = delete /*("Assignment from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
+            
+        ///@brief Deleted address resolution from `rvalue_reference` to discourage dangling by rejecting direct binding to temporaries.
+        constexpr metadata::pointer resolve_address(metadata::rvalue_reference)
+            requires ptr_policies::allowed_reference_binding_v<policy_set>
+        = delete /*("Address resolution from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
+
+        //===== Reference Binding (Forbidden) =====
+
+        ///@brief Deleted constructor from `const reference` to forbid binding to lvalue or rvalue references.
+        ptr_core(const metadata::reference)
+            requires ptr_policies::forbidden_reference_binding_v<policy_set>
+        = delete /*("Constructor from references deleted by policy `reference_binding::forbidden`. Try constructing from the address directly.")*/
+            ;
+
+        ///@brief Deleted assignment from `const references` to forbid binding to lvalue or rvalue references.
+        template<typename Self>
+        Self& operator=(this Self&&, const metadata::reference)
+            requires ptr_policies::forbidden_reference_binding_v<policy_set>
+        = delete /*("Assignment from references deleted by policy `reference_binding::forbidden`. Try assigning from the address directly.")*/
+            ;
+
         
+
     }; //class ptr_core
 } //namespace base::vocab::inline ptr
 #else
@@ -201,7 +334,7 @@ export namespace base::vocab::inline ptr {
  * @tparam T The concrete pointer type.
  *
  * @remark Hashes the underlying stored address rather than pointee object state or values.
- * @remark Consistent with `cursor_ptr` equality semantics.
+ * @remark Consistent with `ptr_core` equality semantics.
  */
 export template<base::vocab::ptr::VocabPtr T>
 struct std::hash<T> {
