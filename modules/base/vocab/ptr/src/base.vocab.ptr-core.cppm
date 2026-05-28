@@ -156,15 +156,20 @@ export namespace base::vocab::inline ptr {
         //===== Nullability (Yes) =====
 
         ///@brief Default constructor initializes to null.
-        ptr_core() = default;
+        ptr_core()
+            requires ptr_policies::nullable_v<policy_set>
+        = default;
 
         ///@brief Constructor from `nullptr` initializes to null.
-        ptr_core(std::nullptr_t null) : address_(null) {}
+        ptr_core(std::nullptr_t null)
+            requires ptr_policies::nullable_v<policy_set>
+            : address_(null) {}
 
         ///@brief Assignment from `nullptr` rebinds to null.
         template<typename Self>
             requires (!std::is_const_v<Self>)
         Self& operator=(this Self& self, std::nullptr_t null)
+            requires ptr_policies::nullable_v<policy_set>
         {
             self.address_ = null;
             return self;
