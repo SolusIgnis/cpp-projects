@@ -44,7 +44,7 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
-#ifndef EXPERIMENTAL_CORE_PARTITION
+#ifndef LEGACY_POINTER_IMPLEMENTATION
 import :core;
 
 export namespace base::vocab::inline ptr {
@@ -78,8 +78,8 @@ export namespace base::vocab::inline ptr {
      * @see `alias_ptr` for nullable aliasing, `required_ptr` for non-null aliasing, `cursor_ptr` for non-null iteration/traversal, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */
     template<typename Pointee>
-        requires valid_pointee_v<Pointee> && (!std::is_void_v<Pointee>)
-    class [[nodiscard]] dependency_ptr : public ptr_core<
+        requires is_valid_pointee_v<Pointee> && (!std::is_void_v<Pointee>)
+    class [[nodiscard]] dependency_ptr final : public ptr_core<
         dependency_ptr,
         Pointee,
         ptr_policies::type_list<

@@ -42,12 +42,17 @@ namespace base::vocab::inline ptr {
     concept VocabPtr = requires { typename T::derived_from_ptr_core; };
 
     template<typename Pointee>
-    inline constexpr bool valid_pointee_v = (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>);
+    inline constexpr bool is_valid_pointee_v = (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>);
+
+    template<typename Source, typename Target>
+    inline constexpr bool is_smart_ptr_convertible_to_v = requires(Source ptr) {
+                                                              { std::as_const(ptr).get() } -> std::convertible_to<Target>;
+                                                          };
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
     template<template<typename> typename ConcretePtr, typename Pointee, ptr_policies::PtrPolicyList PolicySet>
-        requires valid_pointee_v<Pointee>
+        requires is_valid_pointee_v<Pointee>
     class ptr_core : public pointer_metadata<Pointee> {
     public:
         struct derived_from_ptr_core;
@@ -133,9 +138,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Implicitly converts from another pointer-like type. Explicit when `Pointee` is void to avoid implicit conversion chaining.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
-                     }
+                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, typename metadata::pointer>
         constexpr explicit(std::is_void_v<Pointee>) ptr_core(const Pointer<Element, Args...>& source) noexcept(noexcept(apply_nullability_policy(source.get())))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_(apply_nullability_policy(source.get()))
@@ -145,9 +148,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
                   && (!std::is_const_v<Self>)
-                  && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
-                     }
+                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, typename metadata::pointer>
         constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source) noexcept(noexcept(apply_nullability_policy(source.get())))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
@@ -318,6 +319,7 @@ export namespace base::vocab::inline ptr {
             requires ptr_policies::forbidden_reference_binding_v<policy_set>
         = delete /*("Assignment from references deleted by policy `reference_binding::forbidden`. Try assigning from the address directly.")*/
             ;
+
         //================================================================================
         // Pointer Operations
         //================================================================================
@@ -686,6 +688,16 @@ export namespace base::vocab::inline ptr {
         }
     }; //class ptr_core
 } //namespace base::vocab::inline ptr
+
+/**
+ * Post-class method documentation blocks go here.
+ */
+
+
+
+
+
+
 
 /**
  * @brief Partial specialization of `std::hash` for `VocabPtr`s.
