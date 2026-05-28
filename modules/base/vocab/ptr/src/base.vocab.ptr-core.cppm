@@ -41,11 +41,14 @@ export import :policies;
 namespace base::vocab::inline ptr {
     template<typename T>
     concept VocabPtr = requires { typename T::derived_from_ptr_core; };
+
+    template<typename Pointee>
+    inline constexpr bool valid_pointee_v = (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>);
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
     template<template<typename> typename ConcretePtr, typename Pointee, ptr_policies::PtrPolicyList PolicySet>
-        requires (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>)
+        requires valid_pointee_v<Pointee>
     class ptr_core : public pointer_metadata<Pointee> {
     public:
         struct derived_from_ptr_core;
