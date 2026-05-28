@@ -60,6 +60,9 @@ export namespace base::vocab::inline ptr {
         metadata::pointer address_; ///<@brief The stored address used by all concrete pointer types.
 
     public:
+        using iterator_concept = std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::contiguous_iterator_tag, void>;
+        using iterator_category = std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::random_access_iterator_tag, void>;
+
         //================================================================================
         // Construction, Assignment, and Swap
         //================================================================================

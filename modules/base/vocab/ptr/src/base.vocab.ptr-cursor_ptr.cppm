@@ -108,9 +108,6 @@ export namespace base::vocab::inline ptr {
     private:
         using base_type = cursor_ptr::ptr_core;
     public:
-        using iterator_concept = std::contiguous_iterator_tag;
-        using iterator_category = std::random_access_iterator_tag;
-    
         using base_type::base_type;
         using base_type::operator=;
     };
