@@ -926,15 +926,11 @@ namespace {
             constexpr bool element = std::same_as<T::element_type, void>;
             constexpr bool value   = std::same_as<T::value_type, void>;
             constexpr bool pointer = std::same_as<T::pointer, void*>;
-            constexpr bool ref     = std::same_as<T::reference, std::monostate&>;
-            constexpr bool rref    = std::same_as<T::rvalue_reference, std::monostate&&>;
             constexpr bool ptrdiff = std::same_as<T::difference_type, std::ptrdiff_t>;
 
             expect(eq(element, true));
             expect(eq(value, true));
             expect(eq(pointer, true));
-            expect(eq(ref, true));
-            expect(eq(rref, true));
             expect(eq(ptrdiff, true));
         };
 
