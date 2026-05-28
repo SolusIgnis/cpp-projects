@@ -158,19 +158,19 @@ export namespace base::vocab::inline ptr {
         //===== Nullability (Yes) =====
 
         ///@brief Default constructor initializes to null.
-        ptr_core()
+        ptr_core() noexcept
             requires ptr_policies::nullable_v<policy_set>
         = default;
 
         ///@brief Constructor from `nullptr` initializes to null.
-        ptr_core(std::nullptr_t null)
+        ptr_core(std::nullptr_t null) noexcept
             requires ptr_policies::nullable_v<policy_set>
             : address_(null) {}
 
         ///@brief Assignment from `nullptr` rebinds to null.
         template<typename Self>
             requires (!std::is_const_v<Self>)
-        Self& operator=(this Self& self, std::nullptr_t null)
+        Self& operator=(this Self& self, std::nullptr_t null) noexcept
             requires ptr_policies::nullable_v<policy_set>
         {
             self.address_ = null;
@@ -375,11 +375,6 @@ export namespace base::vocab::inline ptr {
             return std::exchange(self.address_, nullptr);
         }
 
-        ///@brief Contextually converts to `bool` to test if the pointer is engaged.
-        [[nodiscard]] constexpr explicit operator bool(this auto&& self) noexcept
-            requires ptr_policies::nullable_v<policy_set>
-        { return (self.get() != nullptr); }
-
         ///@brief Compares equality against `nullptr`.
         [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<Pointee>& ptr, std::nullptr_t null) noexcept
             requires ptr_policies::nullable_v<policy_set>
@@ -387,10 +382,15 @@ export namespace base::vocab::inline ptr {
             return (ptr.get() == null);
         }
 
+        ///@brief Contextually converts to `bool` to test if the pointer is engaged.
+        [[nodiscard]] constexpr explicit operator bool(this auto&& self) noexcept
+            requires ptr_policies::nullable_v<policy_set>
+        { return (self.get() != nullptr); }
+
         //===== Nullability (No) =====
 
         ///@brief Contextually converts to `bool` to "test" if the pointer is engaged. Always returns `true` to confirm invariant.
-        [[nodiscard]] constexpr explicit operator bool() const noexcept
+        [[nodiscard]] constexpr explicit operator bool(this auto&&) noexcept
             requires ptr_policies::nonnullable_v<policy_set>
         { return true; }
 
