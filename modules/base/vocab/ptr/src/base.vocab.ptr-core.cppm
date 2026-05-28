@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-core.cppm
  * @version 0.6.0
- * @date May 10, 2026
+ * @date May 28, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock

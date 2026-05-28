@@ -19,6 +19,9 @@
 - Added `alias_ptr` to `base.vocab.ptr` module.
 - Added `cursor_ptr` to `base.vocab.ptr` module.
 - Added `complete_type` and `complete_pointee` concepts to `base.meta.concepts` module.
+- Added `base.meta.sequences` module providing `type_list` (and `value_list`/`uniform_value_list` for completeness) along with some template metaprogramming algorithms.
+- Added `ptr_core` policy-based implementation class and refactored all behaviors from the 4 concrete pointer types into `ptr_core`.
+- Reimplemented the 4 concrete pointer types as derived from `ptr_core` specialized on a `type_list` of policies.
 
 ## [0.5.7] - February 11, 2026
 ### Added
