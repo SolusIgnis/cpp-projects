@@ -66,8 +66,73 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
+#ifdef EXPERIMENTAL_CORE_PARTITION
 import :core;
 
+export namespace base::vocab::inline ptr {
+    /**
+     * @brief Pointer type representing a non-null cursor/iterator.
+     *
+     * @tparam T The pointed-to type (must not be a reference type per "C++ standard [dcl.ptr]", `void`, nor a function pointer).
+     *
+     * @details `cursor_ptr` models a non-owning, non-nullable, arithmetic, non-void-permitting
+     * pointer abstraction. It is designed for random-access and contiguous iteration over objects
+     * stored in contiguous memory. Because it exposes memory traversal semantics (pointer
+     * arithmetic and ordering), it is not a stable alias to a single object.
+     *
+     * @note Standard Layout type with size and alignment of a raw pointer.
+     * @invariant Always engaged: a `cursor_ptr` always stores a valid memory address; there is no null/disengaged representation. Attempts to construct/assign from another pointer throw on null.
+     * @remark This type does not own the pointee object and does not participate in lifetime management.
+     * @remark Copying and assignment rebind the stored address without affecting pointee lifetime.
+     * @note Construction or assignment from `nullptr` is ill-formed.
+     * @note Construction or assignment from pointers and pointer-like values performs runtime validation and throws `std::invalid_argument` on null. All operations provide the Strong Exception Safety Guarantee.
+     * @remark Explicit comparison overloads are provided only where implicit conversion to the nested `pointer` type is insufficient to enable the desired comparison.
+     *
+     * @warning The referenced object MUST outlive the `cursor_ptr`. Violating this results in undefined behavior.
+     * @warning Any operation that invalidates the underlying contiguous storage also invalidates associated `cursor_ptr` instances.
+     *
+     * @see `alias_ptr` for nullable aliasing, `required_ptr` for non-null aliasing, `dependency_ptr` for dependency injection structural non-nullability, `std::unique_ptr` and `std::shared_ptr` for ownership.
+     */
+    template<typename Pointee>
+        requires valid_pointee_v<Pointee> && (!std::is_void_v<Pointee>)
+    class cursor_ptr : public ptr_core<
+        cursor_ptr,
+        Pointee,
+        ptr_policies::type_list<
+            ptr_policies::nullability::no,
+            ptr_policies::pointer_binding::allowed,
+            ptr_policies::reference_binding::allowed,
+            ptr_policies::traversal::arithmetic
+        >
+    > {
+    private:
+        using base_type = cursor_ptr::ptr_core;
+    public:
+        using base_type::base_type;
+        using base_type::operator=;
+    };
+
+    /**
+     * @brief Deduction guide for `cursor_ptr`.
+     *
+     * @tparam T The type of the referenced object.
+     *
+     * @remark Deduces `T` from the referenced object, preserving cv-qualification.
+     */
+    template<typename T>
+    cursor_ptr(T&) -> cursor_ptr<T>;
+
+    /**
+     * @brief Deduction guide for `cursor_ptr`.
+     *
+     * @tparam T The type of the pointee.
+     *
+     * @remark Deduces `T` from the pointee, preserving cv-qualification.
+     */
+    template<typename T>
+    cursor_ptr(T*) -> cursor_ptr<T>;
+} //namespace base::vocab::inline ptr
+#else
 export namespace base::vocab::inline ptr {
     /**
      * @brief Pointer type representing a non-null cursor/iterator.
@@ -992,3 +1057,4 @@ struct std::formatter<base::vocab::ptr::cursor_ptr<T>, CharT> : std::formatter<c
         );
     }
 };
+#endif

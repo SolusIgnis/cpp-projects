@@ -63,8 +63,72 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
+#ifdef EXPERIMENTAL_CORE_PARTITION
 import :core;
 
+export namespace base::vocab::inline ptr {
+    /**
+     * @brief Pointer type representing a required object alias.
+     *
+     * @tparam T The pointed-to type (must not be a reference type per "C++ standard [dcl.ptr]" nor a function pointer).
+     *
+     * @details `required_ptr` models a non-owning, non-nullable, non-arithmetic, void-permitting
+     * pointer abstraction.
+     *
+     * @note Standard Layout type with size and alignment of a raw pointer.
+     * @invariant Always engaged: a `required_ptr` always refers to a valid object; there is no null/disengaged representation. Attempts to construct/assign from another pointer throw on null.
+     * @remark This type does not own the referenced object and does not participate in lifetime management.
+     * @remark Copying and assignment rebind the pointer without affecting the lifetime of the underlying object.
+     * @note Construction or assignment from `nullptr` is ill-formed.
+     * @note Construction or assignment from raw pointer values performs runtime validation and throws `std::invalid_argument` on null. All operations provide the Strong Exception Safety Guarantee.
+     * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator.
+     * @note `required_ptr<void>` reuses the primary template rather than introducing a specialization. Placeholder reference aliases based on `std::monostate` are used solely to keep deleted overload declarations well-formed.
+     * @remark Explicit equality comparison overloads are provided only where built-in pointer comparison cannot be reached through the implicit raw-pointer conversion operator alone.
+     *
+     * @warning The referenced object MUST outlive the `required_ptr`. Violating this results in undefined behavior.
+     *
+     * @see `alias_ptr` for nullable aliasing, `dependency_ptr` for dependency injection structural non-nullability, `cursor_ptr` for non-null iteration/traversal, `std::unique_ptr` and `std::shared_ptr` for ownership.
+     */
+    template<typename Pointee>
+        requires valid_pointee_v<Pointee>
+    class required_ptr : public ptr_core<
+        required_ptr,
+        Pointee,
+        ptr_policies::type_list<
+            ptr_policies::nullability::no,
+            ptr_policies::pointer_binding::allowed,
+            ptr_policies::reference_binding::allowed,
+            ptr_policies::traversal::rebinding
+        >
+    > {
+    private:
+        using base_type = required_ptr::ptr_core;
+    public:
+        using base_type::base_type;
+        using base_type::operator=;
+    };
+
+    /**
+     * @brief Deduction guide for `required_ptr`.
+     *
+     * @tparam T The type of the referenced object.
+     *
+     * @remark Deduces `T` from the referenced object, preserving cv-qualification.
+     */
+    template<typename T>
+    required_ptr(T&) -> required_ptr<T>;
+
+    /**
+     * @brief Deduction guide for `required_ptr`.
+     *
+     * @tparam T The type of the pointee.
+     *
+     * @remark Deduces `T` from the pointee, preserving cv-qualification.
+     */
+    template<typename T>
+    required_ptr(T*) -> required_ptr<T>;
+} //namespace base::vocab::inline ptr
+#else
 export namespace base::vocab::inline ptr {
     /**
      * @brief Pointer type representing a required object alias.
@@ -737,3 +801,4 @@ struct std::formatter<base::vocab::ptr::required_ptr<T>, CharT> : std::formatter
         );
     }
 };
+#endif

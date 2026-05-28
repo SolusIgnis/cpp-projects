@@ -79,8 +79,69 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
+#ifdef EXPERIMENTAL_CORE_PARTITION
 import :core;
 
+export namespace base::vocab::inline ptr {
+    /**
+     * @brief Pointer type representing a potentially null object alias.
+     *
+     * @tparam T The pointed-to type (must not be a reference type per "C++ standard [dcl.ptr]" nor a function pointer).
+     *
+     * @details `alias_ptr` models a non-owning, nullable, non-arithmetic, void-permitting
+     * pointer abstraction.
+     *
+     * @note Standard Layout type with size and alignment of a raw pointer.
+     * @remark This type does not own the referenced object and does not participate in lifetime management.
+     * @remark Copying and assignment rebind the stored address without affecting pointee lifetime.
+     * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator. @see cursor_ptr for traversal/iteration semantics.
+     * @note `alias_ptr<void>` reuses the primary template rather than introducing a specialization. Placeholder reference aliases based on `std::monostate` are used solely to keep deleted overload declarations well-formed.
+     * @remark Explicit equality comparison overloads are provided only where implicit conversion to the nested `pointer` type is insufficient to enable the desired comparison.
+     *
+     * @warning The referenced object MUST outlive the `alias_ptr`. Violating this results in undefined behavior.
+     *
+     * @see `required_ptr` for non-null aliasing, `dependency_ptr` for dependency injection structural non-nullability, `cursor_ptr` for non-null iteration/traversal, `std::unique_ptr` and `std::shared_ptr` for ownership.
+     */
+    template<typename Pointee>
+        requires valid_pointee_v<Pointee>
+    class alias_ptr : public ptr_core<
+        alias_ptr,
+        Pointee,
+        ptr_policies::type_list<
+            ptr_policies::nullability::yes,
+            ptr_policies::pointer_binding::allowed,
+            ptr_policies::reference_binding::allowed,
+            ptr_policies::traversal::rebinding
+        >
+    > {
+    private:
+        using base_type = alias_ptr::ptr_core;
+    public:
+        using base_type::base_type;
+        using base_type::operator=;
+    };
+
+    /**
+     * @brief Deduction guide for `alias_ptr`.
+     *
+     * @tparam T The type of the referenced object.
+     *
+     * @remark Deduces `T` from the referenced object, preserving cv-qualification.
+     */
+    template<typename T>
+    alias_ptr(T&) -> alias_ptr<T>;
+
+    /**
+     * @brief Deduction guide for `alias_ptr`.
+     *
+     * @tparam T The type of the pointee.
+     *
+     * @remark Deduces `T` from the pointee, preserving cv-qualification.
+     */
+    template<typename T>
+    alias_ptr(T*) -> alias_ptr<T>;
+} //namespace base::vocab::inline ptr
+#else
 export namespace base::vocab::inline ptr {
     /**
      * @brief Pointer type representing a potentially null object alias.
@@ -803,3 +864,4 @@ struct std::formatter<base::vocab::ptr::alias_ptr<T>, CharT> : std::formatter<co
         );
     }
 };
+#endif
