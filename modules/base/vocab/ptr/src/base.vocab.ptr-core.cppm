@@ -114,19 +114,19 @@ export namespace base::vocab::inline ptr {
         template<typename P>
             requires std::is_pointer_v<std::remove_cvref_t<P>>
                   && std::convertible_to<std::decay_t<P>, typename metadata::pointer>
-        constexpr explicit(std::is_void_v<Pointee>) ptr_core(P&& source)
+        constexpr explicit(std::is_void_v<Pointee>) ptr_core(P&& source) noexcept(noexcept(apply_nullability_policy(std::forward<P>(source))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
-            : address_(validate_by_nullability(source))
+            : address_(apply_nullability_policy(std::forward<P>(source)))
         {}
 
         ///@brief Assigns from a raw `pointer`.
         template<typename Self, typename P>
             requires (!std::is_const_v<Self>) && std::is_pointer_v<std::remove_cvref_t<P>>
                   && std::convertible_to<std::decay_t<P>, typename metadata::pointer>
-        constexpr Self& operator=(this Self& self, P&& source)
+        constexpr Self& operator=(this Self& self, P&& source) noexcept(noexcept(apply_nullability_policy(std::forward<P>(source))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
-            self.address_ = validate_by_nullability(source);
+            self.address_ = apply_nullability_policy(std::forward<P>(source));
             return self;
         }
 
@@ -136,9 +136,9 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
-        constexpr explicit(std::is_void_v<Pointee>) ptr_core(const Pointer<Element, Args...>& source)
+        constexpr explicit(std::is_void_v<Pointee>) ptr_core(const Pointer<Element, Args...>& source) noexcept(noexcept(apply_nullability_policy(source.get())))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
-            : address_(validate_by_nullability(source.get()))
+            : address_(apply_nullability_policy(source.get()))
         {}
 
         ///@brief Assigns from another pointer-like type.
@@ -148,10 +148,10 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<typename metadata::pointer>;
                      }
-        constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source)
+        constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source) noexcept(noexcept(apply_nullability_policy(source.get())))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
-            self.address_ = validate_by_nullability(source.get());
+            self.address_ = apply_nullability_policy(source.get());
             return self;
         }
 
@@ -671,22 +671,18 @@ export namespace base::vocab::inline ptr {
             ;
 
     private:
-        ///@brief Passes the pointer through unchecked because this policy accepts null pointers.
-        [[nodiscard]] static constexpr metadata::pointer validate_by_nullability(metadata::pointer source)
-            requires ptr_policies::nullable_v<policy_set>
-        {
-            return source;
-        }
-
-        ///@brief Enforces the non-null invariant by only passing the address through when it is not null.
-        [[nodiscard]] static constexpr metadata::pointer validate_by_nullability(metadata::pointer source)
-            requires ptr_policies::nonnullable_v<policy_set>
-        {
-            if (source == nullptr) [[unlikely]]
-                throw std::invalid_argument(
-                    "`nullability::no` pointers cannot be constructed or assigned from a null pointer."
-                );
-            return source;
+        ///@brief Enforces the non-null invariant for `nullability::no` pointers by only passing the address through when it is not null but allows unchecked pass-through otherwise.  
+        [[nodiscard]] static constexpr metadata::pointer apply_nullability_policy(metadata::pointer source)
+            noexcept(!ptr_policies::nonnullable_v<policy_set>)
+        {  
+            if constexpr (ptr_policies::nonnullable_v<policy_set>) {  
+                if (source == nullptr) [[unlikely]] {  
+                    throw std::invalid_argument(  
+                        "`nullability::no` pointers cannot be constructed or assigned from a null pointer."  
+                    );  
+                }  
+            }  
+            return source;  
         }
     }; //class ptr_core
 } //namespace base::vocab::inline ptr
