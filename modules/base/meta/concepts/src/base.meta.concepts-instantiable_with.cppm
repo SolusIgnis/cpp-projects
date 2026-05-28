@@ -43,5 +43,5 @@ export namespace base::meta::concepts {
      * @remark Useful for constraining templates based on the availability of a specialization without instantiating or requiring full semantic validity.
      */
     template<template<typename...> typename Template, typename... Args>
-    concept InstantiableWith = requires { typename Template<Args...>; } (std::default_initializable<Template<Args...>> || !std::default_initializable<Template<Args...>>);
+    concept InstantiableWith = requires { typename Template<Args...>; } && (std::default_initializable<Template<Args...>> || !std::default_initializable<Template<Args...>>);
 } //namespace base::meta::concepts
