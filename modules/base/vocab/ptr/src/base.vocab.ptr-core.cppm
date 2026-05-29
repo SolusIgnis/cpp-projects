@@ -672,6 +672,21 @@ export namespace base::vocab::inline ptr {
         = delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/
             ;
 
+        //================================================================================
+        // Stream Output
+        //================================================================================
+
+        ///@brief Outputs a `ptr_core` address to a `std::basic_ostream`.
+        template<typename CharT, typename Traits>
+        friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& stream, const ptr_core& ptr)
+        {
+            // In order to support pointers to arbitrarily cv-qualified objects:
+            // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
+            // 2. `const_cast` to `const void*` to satisfy the inserter's interface which lacks `volatile void*` overloads.
+            // This is safe because formatting is a read-only numerical operation on the address.
+            return stream << const_cast<const void*>(static_cast<const volatile void*>(ptr.get()));
+        }
+
     private:
         ///@brief Enforces the non-null invariant for `nullability::no` pointers by only passing the address through when it is not null but allows unchecked pass-through otherwise.  
         [[nodiscard]] static constexpr metadata::pointer apply_nullability_policy(metadata::pointer source)
