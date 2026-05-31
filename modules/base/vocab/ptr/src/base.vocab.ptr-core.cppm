@@ -116,8 +116,16 @@ namespace base::vocab::inline ptr {
     private:
         AddressType stored_address_; ///< @note Intentionally uninitialized.
     public:
-        constexpr explicit(false) address_storage(AddressType source) : stored_address_{source} {}
-        [[nodiscard]] constexpr explicit(false) operator AddressType() { return stored_address_; }
+        constexpr explicit(false) address_storage(AddressType source) noexcept : stored_address_{source} {}
+        [[nodiscard]] constexpr explicit(false) operator AddressType() const noexcept { return stored_address_; }
+
+        template<typename Self>
+            requires (!std::is_const_v<Self>)
+        constexpr Self& operator=(this Self& self, AddressType source) noexcept
+        {
+            self.stored_address_ = source;
+            return self;
+        }
     };
 
     // Specialization: Null IS allowed. Default initializer provided.
@@ -126,9 +134,17 @@ namespace base::vocab::inline ptr {
     private:
         AddressType stored_address_{}; ///< @note Value initialized to null.
     public:
-        constexpr explicit(false) address_storage(AddressType source) : stored_address_{source} {}
-        constexpr address_storage() = default;
-        [[nodiscard]] constexpr explicit(false) operator AddressType() { return stored_address_; }
+        constexpr address_storage() noexcept = default;
+        constexpr explicit(false) address_storage(AddressType source) noexcept : stored_address_{source} {}
+        [[nodiscard]] constexpr explicit(false) operator AddressType() const noexcept { return stored_address_; }
+
+        template<typename Self>
+            requires (!std::is_const_v<Self>)
+        constexpr Self& operator=(this Self& self, AddressType source) noexcept
+        {
+            self.stored_address_ = source;
+            return self;
+        }
     };
 } //namespace base::vocab::inline ptr
 
