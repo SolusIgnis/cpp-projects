@@ -35,6 +35,67 @@ import base.meta.concepts;
 
 import :metadata;
 
+#ifdef CONTENTS_OF_METADATA_PARTITION_FOR_EXPOSITION_ONLY
+namespace base::vocab::inline ptr {
+    template<typename Pointee>
+    struct pointer_metadata {
+    private:
+        struct void_reference;
+
+    public:
+        /**
+         * @typedef element_type
+         * @brief The stored element type.
+         */
+        using element_type = Pointee;
+
+        /**
+         * @typedef value_type
+         * @brief The unqualified element type (`std::remove_cv_t<Pointee>`).
+         */
+        using value_type = std::remove_cv_t<Pointee>;
+
+        /**
+         * @typedef pointer
+         * @brief The raw pointer type of the stored address (`Pointee*`).
+         */
+        using pointer = std::add_pointer_t<Pointee>;
+
+        /**
+         * @typedef reference
+         * @brief The reference type (`Pointee&`).
+         * @remark When `Pointee` is `void`, uses `void_reference&` because `void` as a function parameter is ill-formed.
+         */
+        using reference = std::conditional_t<
+            std::is_void_v<Pointee>,
+            std::add_lvalue_reference_t<void_reference>,
+            std::add_lvalue_reference_t<Pointee>
+        >;
+
+        /**
+         * @typedef rvalue_reference
+         * @brief The rvalue reference type (`Pointee&&`).
+         *
+         * @remark When `Pointee` is `void`, uses `void_reference&&` because `void` as a function parameter is ill-formed.
+         * @note Used only for deletion of invalid overloads to prevent binding to temporaries.
+         */
+        using rvalue_reference = std::conditional_t<
+            std::is_void_v<Pointee>,
+            std::add_rvalue_reference_t<void_reference>,
+            std::add_rvalue_reference_t<Pointee>
+        >;
+
+        /**
+         * @typedef difference_type
+         * @brief Pointer difference type (`std::ptrdiff_t`).
+         *
+         * @note Provided to model pointer interface even when arithmetic is disabled.
+         */
+        using difference_type = std::ptrdiff_t;
+    }; //struct pointer_metadata
+} //namespace base::vocab::inline ptr
+#endif
+
 export import :policies;
 
 namespace base::vocab::inline ptr {
@@ -48,20 +109,96 @@ namespace base::vocab::inline ptr {
     inline constexpr bool is_smart_ptr_convertible_to_v = requires(Source ptr) {
                                                               { std::as_const(ptr).get() } -> std::convertible_to<Target>;
                                                           };
+
+    // Primary template: Null is NOT allowed. No default initializer provided.
+    template<typename AddressType, bool IsNullable>
+    struct basic_address_storage {
+    protected:
+        AddressType address_; ///< @note Intentionally uninitialized.
+    };
+
+    // Specialization: Null IS allowed. Default initializer provided.
+    template<typename AddressType>
+    struct basic_address_storage<AddressType, true> {
+    protected:
+        AddressType address_{}; ///< @note Value initialized to null.
+    };
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
+    /**
+     * @class ptr_core
+     * @brief Policy-driven foundational layer for the vocabulary pointer suite.
+     *
+     * @tparam ConcretePtr The derived template pointer specialization (CRTP-like template-template pattern).
+     * @tparam Pointee The type of the object being pointed to.
+     * @tparam PolicySet A type-list configuration enforcing rules across traversability, binding, and nullability axes.
+     *
+     * ### Architecture & Design Intent
+     * `ptr_core` centralizes universal raw pointer management and structural type-traits to prevent API and implementation
+     * drift among specialized types (`alias_ptr`, `required_ptr`, `dependency_ptr`, and `cursor_ptr`). Rather than using 
+     * classic polymorphic inheritance or verbose mixins, it leverages a **Nybble-driven Policy Mapping System** to selectively
+     * expose or `= delete` fundamental operations at compile time based on the structural requirements of the concrete type.
+     *
+     * ### Structural Policy Propagation
+     * Behavior is customized statically through boolean flags embedded within the `PolicySet`. This approach yields zero
+     * runtime overhead via Empty Base Optimization (EBO) and compiler optimization of constrained overloads:
+     *
+     * Policy Group        | Policy State                   | Invariant / Interface Changes
+     * ------------------- | ------------------------------ | -----------------------------------------------------------------------
+     * `traversal`         | `traversal::rebinding`         | Exposes purely invariant identity comparison (`operator==`). Deletes
+     *                     |                                | all pointer arithmetic and ordering operators (`operator<=>`,
+     *                     |                                | `operator++`, etc.).
+     *                     | `traversal::arithmetic`        | Models `std::contiguous_iterator`. Exposes full relational operators,
+     *                     |                                | displacement operators (`operator+=`, `operator+`), and defines valid
+     *                     |                                | standard iterator tags.
+     * `pointer_binding`   | `pointer_binding::allowed`     | Synthesizes constructors and assignment operators from matching raw
+     *                     |                                | pointers and compatible smart pointers.
+     *                     | `pointer_binding::forbidden`   | Explicitly deletes raw pointer constructors to enforce alternate
+     *                     |                                | initialization sequences (e.g., forcing reference-only binding).
+     * `reference_binding` | `reference_binding::allowed`   | Synthesizes constructors and assignment operators from matching
+     *                     |                                | lvalue references while deleting them from rvalue references to
+     *                     |                                | eliminate a source of reference dangling (binding to a temporary).
+     *                     | `reference_binding::forbidden` | Deletes consteuction and assignment from both lvalue and rvalue
+     *                     |                                | references.
+     * `nullability`       | `nullability::yes`             | Provides `nullptr` constructors/assignments, `release()`, a `nullptr`
+     *                     |                                | sensitive `reset()`, and contextual conversion to `bool` checking for
+     *                     |                                | engagement.
+     *                     | `nullability::no`              | Deletes `nullptr_t` overloads, deletes the default constructor, and
+     *                     |                                | forces a contextual conversion to `bool` that unconditionally returns
+     *                     |                                | `true` to optimize validation paths.
+     *
+     * ### Explicit Object Parameters ("Deducing This")
+     * This facade utilizes C++23 explicit object parameters across its interface. By abstracting the value category and 
+     * cv-qualification of the calling instance via `this auto&& self`, the class eliminates the traditional explosion of 
+     * four-way cv/ref qualifiers for accessors (`get()`, `operator*()`, `operator->()`). 
+     * * @note Deletion signatures deliberately use forwarding explicit object parameters (`this Self&&`). This architectural choice 
+     * ensures that during overload resolution, explicit policy-driven diagnostic errors cleanly dominate over casual 
+     * value-category mismatches, providing readable compiler errors.
+     *
+     * ### Memory Safety & Invariants
+     * - **Array Decay Prevention:** Constructors taking raw C-arrays are explicitly intercepted and deleted for binding-enabled
+     * configurations to block inadvertent pointer-decay errors when targeting blocks of contiguous memory.
+     * - **Lifetime Sanitization:** Direct binding from temporary variables (`rvalue_references` or pointer-like temporaries) 
+     * is structurally blocked using deleted sinks, eliminating a primary vector for dangling pointers at the library boundary.
+     * - **Layout Guarantee:** Concrete pointers derived from `ptr_core` maintain a strict `static_assert(std::is_standard_layout_v)`
+     * footprint, preserving the visual and physical properties of a scalar raw pointer.
+     */
     template<template<typename> typename ConcretePtr, typename Pointee, ptr_policies::PtrPolicyList PolicySet>
         requires is_valid_pointee_v<Pointee>
-    class ptr_core : public pointer_metadata<Pointee> {
+    class ptr_core :
+        public pointer_metadata<Pointee>,
+        private basic_address_storage<typename pointer_metadata<Pointee>::pointer, ptr_policies::nullable_v<PolicySet>>
+    {
     public:
         struct derived_from_ptr_core;
 
     private:
-        using policy_set = PolicySet;
-        using metadata   = pointer_metadata<Pointee>;
+        using policy_set      = PolicySet;
+        using metadata        = pointer_metadata<Pointee>;
+        using address_storage = basic_address_storage<typename pointer_metadata<Pointee>::pointer, ptr_policies::nullable_v<policy_set>>;
 
-        metadata::pointer address_; ///<@brief The stored address used by all concrete pointer types.
+        using address_storage::address_; ///<@brief The stored address used by all concrete pointer types.
 
     public:
         using iterator_concept = std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::contiguous_iterator_tag, void>;
@@ -73,13 +210,13 @@ export namespace base::vocab::inline ptr {
 
         //===== Universal Core =====
 
-        ///@brief (Conversion) Implicitly converts from another pointer according to nested `pointer` type conversions.
+        ///@brief (Conversion) Implicitly converts from another `ConcretePtr` specialization according to nested `metadata::pointer` type conversions.
         template<typename OtherPointee>
             requires (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
         constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept : address_(source.get())
         {}
 
-        ///@brief (Conversion) Assigns from another pointer according to nested `pointer` type conversions.
+        ///@brief (Conversion) Assigns from another `ConcretePtr` specialization according to nested `metadata::pointer` type conversions.
         template<typename Self, typename OtherPointee>
             requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
         constexpr Self& operator=(this Self& self, const ConcretePtr<OtherPointee>& source) noexcept
@@ -702,17 +839,748 @@ export namespace base::vocab::inline ptr {
             return source;  
         }
     }; //class ptr_core
+
+    /**
+     * Post-class method documentation goes here.
+     */
+     
+    /**
+     * @fn explicit alias_ptr::alias_ptr(reference source) noexcept
+     *
+     * @param source The object to reference.
+     *
+     * @pre `source` must refer to a valid object that outlives the constructed `alias_ptr`.
+     * @post `get() == std::addressof(source)`.
+     *
+     * @remark Prevents binding to temporaries via deleted rvalue overload.
+     */
+    /**
+     * @overload alias_ptr::alias_ptr(const alias_ptr<U>& source) noexcept
+     *
+     * @tparam U The element type, with its pointer convertible to `pointer`, of the source `alias_ptr`.
+     *
+     * @param source The `alias_ptr` being converted.
+     *
+     * @pre `source` must be null or point to a valid object that outlives the resulting `alias_ptr`.
+     * @post `get() == source.get()`.
+     *
+     * @details This single constructor handles:
+     * 1. Derived-to-Base conversion (e.g., `ptr<Derived>` to `ptr<Base>`).
+     * 2. Qualification conversion (e.g., `ptr<T>` to `ptr<const T>`).
+     * 3. Type erasure (e.g., `ptr<T>` to `ptr<void>`).
+     *
+     * @remark Preserves covariance. Converts from alias_ptr-to-derived to alias_ptr-to-base implicitly.
+     * @remark Enables type erasure by converting `alias_ptr<U>` to `alias_ptr<void>` when applicable.
+     */
+    /**
+     * @overload explicit alias_ptr::alias_ptr(P&& source)
+     *
+     * @tparam P The raw pointer type which must decay to a type convertible to `pointer`.
+     *
+     * @param source The raw pointer to bind.
+     *
+     * @pre `source` must be null or point to a valid object that outlives the constructed `alias_ptr`.
+     * @post `get() == source`.
+     *
+     * @details Captures the original argument type prior to decay via
+     * forwarding reference so that C-array arguments can be diagnosed
+     * explicitly instead of silently decaying to element pointers.
+     *
+     * @note This constructor is constrained to raw pointers to prevent hijacking copy/move operations or accepting arrays.
+     * @remark Explicit when `T` is `void` to prevent unintended implicit erasure chains.
+     */
+    /**
+     * @overload explicit alias_ptr::alias_ptr(const Pointer<Element, Args...>& source)
+     *
+     * @tparam Pointer A class template modeling a pointer-like type.
+     * @tparam Element The element type of the source pointer.
+     * @tparam Args Additional template parameters of the pointer type.
+     *
+     * @param source The pointer-like object providing access to a pointer-compatible value via `get()`.
+     *
+     * @pre `source.get()` must be a valid expression convertible to `pointer`.
+     * @pre `source.get()` must be null or point to an object whose lifetime strictly exceeds that of the constructed `alias_ptr`.
+     * @post `get() == static_cast<pointer>(source.get())`.
+     *
+     * @remark Enables interoperation with pointer-like types (e.g., smart pointers) that expose a `get()` member.
+     * @remark The source type must not be a specialization of `alias_ptr` (to avoid ambiguity with existing overloads).
+     * @remark This constructor does not transfer ownership nor affect the lifetime of the pointee object.
+     */
+    /**
+     * @fn alias_ptr& alias_ptr::operator=(reference source) noexcept
+     *
+     * @param source The object to reference.
+     * @return Reference to `*this`.
+     *
+     * @pre `source` must refer to a valid object that outlives the `alias_ptr`.
+     *
+     * @remark Rebinds the stored address without affecting ownership or pointee lifetime.
+     */
+    /**
+     * @overload alias_ptr& alias_ptr::operator=(const alias_ptr<U>& source) noexcept
+     *
+     * @tparam U The element type, with its pointer convertible to `pointer`, of the source `alias_ptr`.
+     *
+     * @param source The `alias_ptr` being converted.
+     * @return Reference to `*this`.
+     *
+     * @pre `source` must be null or point to a valid object that outlives the resulting `alias_ptr`.
+     *
+     * @details This single assignment operator handles:
+     * 1. Derived-to-Base conversion (e.g., `ptr<Derived>` to `ptr<Base>`).
+     * 2. Qualification conversion (e.g., `ptr<T>` to `ptr<const T>`).
+     * 3. Type erasure (e.g., `ptr<T>` to `ptr<void>`).
+     *
+     * @remark Preserves covariance. Converts from alias_ptr-to-derived to alias_ptr-to-base implicitly.
+     * @remark Enables type erasure by converting `alias_ptr<U>` to `alias_ptr<void>` when applicable.
+     */
+    /**
+     * @overload alias_ptr& alias_ptr::operator=(P&& source)
+     *
+     * @tparam P The raw pointer type which must decay to a type convertible to `pointer`.
+     *
+     * @param source The raw pointer to rebind to.
+     * @return Reference to `*this`.
+     *
+     * @pre `source` must be null or point to a valid object that outlives the `alias_ptr`.
+     * @post `get() == source`.
+     *
+     * @details Captures the original argument type prior to decay via
+     * forwarding reference so that C-array arguments can be diagnosed
+     * explicitly instead of silently decaying to element pointers.
+     *
+     * @note This assignment operator is constrained to raw pointers to prevent hijacking copy/move operations or accepting arrays.
+     * @remark Does not affect the lifetime of the referenced object.
+     */
+    /**
+     * @overload alias_ptr& alias_ptr::operator=(const Pointer<Element, Args...>& source)
+     *
+     * @tparam Pointer A class template modeling a pointer-like type.
+     * @tparam Element The element type of the source pointer.
+     * @tparam Args Additional template parameters of the pointer type.
+     *
+     * @param source The pointer-like object providing access to a pointer-compatible value via `get()`.
+     * @return Reference to `*this`.
+     *
+     * @pre `source.get()` must be a valid expression convertible to `pointer`.
+     * @pre `source.get()` must be null or point to an object whose lifetime strictly exceeds that of the `alias_ptr`.
+     * @post `get() == static_cast<pointer>(source.get())`.
+     *
+     * @remark Does not transfer ownership and does not affect the lifetime of the underlying object.
+     */
+    /**
+     * @fn constexpr void swap(alias_ptr& lhs, alias_ptr& rhs) noexcept
+     *
+     * @param lhs The first pointer object.
+     * @param rhs The second pointer object.
+     *
+     * @post `lhs.get()` equals the value of `rhs.get()` prior to the call.
+     * @post `rhs.get()` equals the value of `lhs.get()` prior to the call.
+     *
+     * @remark Swaps only the stored addresses.
+     * @remark Does not affect ownership or pointee lifetime.
+     * @remark Provided as a hidden friend for ADL interoperability.
+     */
+    /**
+     * @fn constexpr bool operator==(const alias_ptr& lhs, const alias_ptr& rhs) noexcept
+     *
+     * @param lhs The left-hand side `alias_ptr`.
+     * @param rhs The right-hand side `alias_ptr`.
+     *
+     * @return `true` if both pointers refer to the same object; otherwise `false`.
+     *
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
+     */
+    /**
+     * @overload constexpr bool operator==(const alias_ptr& lhs, const alias_ptr<DerivedT>& rhs) noexcept
+     *
+     * @tparam DerivedT The element type, derived from `T`, of the right-hand side `alias_ptr`.
+     *
+     * @param lhs The left-hand side `alias_ptr`.
+     * @param rhs The right-hand side `alias_ptr` to compare.
+     *
+     * @return `true` if both pointers refer to the same object; otherwise `false`.
+     *
+     * @remark Enables equality comparison between `alias_ptr` instances of related types when that can't be synthesized by implicit conversion to raw pointers.
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
+     */
+    /**
+     * @overload constexpr bool operator==(const alias_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+     *
+     * @tparam DerivedT The element type, derived from `T`, of the raw pointer.
+     *
+     * @param lhs The `alias_ptr` being compared.
+     * @param rhs The raw pointer to compare against.
+     *
+     * @return `true` if the stored address in `lhs` equals `rhs`; otherwise `false`.
+     *
+     * @remark Enables equality comparison with raw pointers-to-derived when that can't be synthesized by implicit conversion to raw pointers.
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
+     */
+    /**
+     * @overload constexpr bool operator==(const pointer lhs, const alias_ptr<DerivedT>& rhs) noexcept
+     *
+     * @tparam DerivedT The element type, derived from `T`, of the right-hand side `alias_ptr`.
+     *
+     * @param lhs The raw pointer to compare.
+     * @param rhs The `alias_ptr` being compared.
+     *
+     * @return `true` if `lhs` equals the stored address in `rhs`; otherwise `false`.
+     *
+     * @remark Enables comparison with raw pointers-to-base when that can't be synthesized by implicit conversion to raw pointers.
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
+     */
+    /**
+     * @overload constexpr bool operator==(const alias_ptr& ptr, std::nullptr_t null) noexcept
+     *
+     * @param ptr The pointer being compared.
+     * @param null The `nullptr_t` parameter.
+     *
+     * @return `true` if `ptr` is disengaged; otherwise `false`.
+     */
+    /**
+     * @fn constexpr pointer alias_ptr::operator->() const noexcept
+     *
+     * @return A raw pointer to the stored address.
+     *
+     * @pre `get() != nullptr`
+     * @pre The pointee object must remain valid (non-dangling).
+     *
+     * @remark Provides pointee member access semantics.
+     */
+    /**
+     * @fn constexpr reference alias_ptr::operator*() const noexcept
+     *
+     * @return Reference to the pointee object.
+     *
+     * @pre `get() != nullptr`
+     * @pre The pointee object must remain valid (non-dangling).
+     *
+     * @remark Equivalent to dereferencing `get()`.
+     */
+    /**
+     * @fn constexpr pointer alias_ptr::get() const noexcept
+     *
+     * @return A raw pointer to the stored address.
+     *
+     * @remark Provided for interoperability with pointer-based APIs.
+     */
+    /**
+     * @fn constexpr alias_ptr::operator pointer() const noexcept
+     *
+     * @return A raw pointer to the stored address.
+     *
+     * @remark Enables seamless interoperability with legacy interfaces expecting raw pointers.
+     * @warning Implicit conversion may obscure the non-owning semantics; prefer `get()` when clarity is important.
+     */
+    /**
+     * @fn constexpr alias_ptr::operator bool() const noexcept
+     *
+     * @return `true` if the pointer is engaged (i.e., the stored address is not `nullptr`); otherwise `false`.
+     *
+     * @remark Satisfies boolean-testable requirements in generic templates and logical contexts.
+     * @remark Models pointer interface by providing contextual conversion to `bool`.
+     */
+    /**
+     * @fn constexpr pointer alias_ptr::release() noexcept
+     *
+     * @return The previously stored address.
+     *
+     * @post `get() == nullptr`.
+     *
+     * @remark Returns the stored address and disengages the pointer without affecting ownership or pointee lifetime.
+     * @remark Provided for interoperability with generic pointer-like interfaces.
+     */
+    /**
+     * @fn constexpr Self& alias_ptr::rebind(P&& source)
+     *
+     * @tparam P A pointer-compatible source type assignable to `alias_ptr`.
+     *
+     * @param source The source used to replace the stored address.
+     *
+     * @return Reference to `*this`.
+     *
+     * @post Equivalent to assignment from `std::forward<P>(source)`.
+     *
+     * @remark Convenience wrapper over assignment for generic pointer-like interoperability.
+     */
+    /**
+     * @fn constexpr void alias_ptr::reset(std::nullptr_t) noexcept
+     *
+     * @post `get() == nullptr`.
+     *
+     * @remark Disengages the pointer by resetting the stored address to `nullptr`.
+     */
+    /**
+     * @fn constexpr void alias_ptr::reset(P&& source)
+     *
+     * @tparam P A pointer-compatible source type assignable to `alias_ptr`.
+     *
+     * @param source The source used to replace the stored address.
+     *
+     * @post Equivalent to assignment from `std::forward<P>(source)`.
+     *
+     * @remark Replaces the stored address without affecting ownership or pointee lifetime.
+     */
+
+
+    /**
+     * @fn explicit cursor_ptr::cursor_ptr(reference source) noexcept
+     *
+     * @param source The object to reference.
+     *
+     * @pre `source` must refer to a valid object that outlives the constructed `cursor_ptr`.
+     * @post `get() == std::addressof(source)`.
+     *
+     * @remark Establishes the non-null invariant at construction.
+     * @remark Prevents binding to temporaries via deleted rvalue overload.
+     */
+    /**
+     * @overload cursor_ptr::cursor_ptr(const cursor_ptr<U>& source) noexcept
+     *
+     * @tparam U The element type, with its pointer convertible to `pointer`, of the source `cursor_ptr`.
+     *
+     * @param source The `cursor_ptr` being converted.
+     *
+     * @pre `source` must point to a valid object that outlives the resulting `cursor_ptr`.
+     * @post `get() == source.get()`.
+     *
+     * @details This single constructor handles:
+     * 1. Derived-to-Base conversion (e.g., `ptr<Derived>` to `ptr<Base>`).
+     * 2. Qualification conversion (e.g., `ptr<T>` to `ptr<const T>`).
+     *
+     * @remark Preserves covariance. Converts from cursor_ptr-to-derived to cursor_ptr-to-base implicitly.
+     * @remark Preserves the non-null invariant.
+     */
+    /**
+     * @overload explicit cursor_ptr::cursor_ptr(P&& source)
+     *
+     * @tparam P The raw pointer type which must decay to a type convertible to `pointer`.
+     *
+     * @param source The raw pointer to bind.
+     *
+     * @pre `source` must point to a valid object that outlives the constructed `cursor_ptr`.
+     * @post `get() == source`.
+     *
+     * @throws std::invalid_argument if `source == nullptr`. Provides the Strong Exception Safety Guarantee.
+     *
+     * @details Captures the original argument type prior to decay via
+     * forwarding reference so that C-array arguments can be diagnosed
+     * explicitly instead of silently decaying to element pointers.
+     *
+     * @note This constructor is constrained to raw pointers to prevent hijacking copy/move operations or accepting arrays.
+     * @remark Establishes the non-null invariant at runtime when constructed from raw pointers.
+     */
+    /**
+     * @overload explicit cursor_ptr::cursor_ptr(const Pointer<Element, Args...>& source)
+     *
+     * @tparam Pointer A class template modeling a pointer-like type.
+     * @tparam Element The element type of the source pointer.
+     * @tparam Args Additional template parameters of the pointer type.
+     *
+     * @param source The pointer-like object providing access to a pointer-compatible value via `get()`.
+     *
+     * @pre `source.get()` must be a valid expression convertible to `pointer`.
+     * @pre `source.get()` must point to an object whose lifetime strictly exceeds that of the constructed `cursor_ptr`.
+     * @post `get() == static_cast<pointer>(source.get())`.
+     *
+     * @throws std::invalid_argument if `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
+     *
+     * @remark Enables interoperation with pointer-like types (e.g., smart pointers) that expose a `get()` member.
+     * @remark The source type must not be a specialization of `cursor_ptr` (to avoid ambiguity with existing overloads).
+     * @remark This constructor does not transfer ownership and does not affect the lifetime of the underlying object.
+     */
+    /**
+     * @fn constexpr Self& cursor_ptr::operator=(this Self& self, reference source) noexcept
+     *
+     * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
+     *
+     * @param self The target `cursor_ptr` being rebound.
+     * @param source The object to reference.
+     *
+     * @return Reference to `self`.
+     *
+     * @pre `source` must refer to a valid object that outlives the `cursor_ptr`.
+     *
+     * @remark Rebinds the stored address without affecting ownership or pointee lifetime.
+     */
+    /**
+     * @overload constexpr Self& cursor_ptr::operator=(this Self& self, const cursor_ptr<U>& source) noexcept
+     *
+     * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
+     * @tparam U The element type, with its pointer convertible to `pointer`, of the source `cursor_ptr`.
+     *
+     * @param self The target `cursor_ptr` being rebound.
+     * @param source The `cursor_ptr` being converted.
+     *
+     * @return Reference to `self`.
+     *
+     * @pre `source` must point to a valid object that outlives the resulting `cursor_ptr`.
+     *
+     * @details This single assignment operator handles:
+     * 1. Derived-to-Base conversion (e.g., `ptr<Derived>` to `ptr<Base>`).
+     * 2. Qualification conversion (e.g., `ptr<T>` to `ptr<const T>`).
+     *
+     * @remark Preserves covariance. Converts from cursor_ptr-to-derived to cursor_ptr-to-base implicitly.
+     * @remark Preserves the non-null invariant.
+     */
+    /**
+     * @overload constexpr Self& cursor_ptr::operator=(this Self& self, P&& source)
+     *
+     * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
+     * @tparam P The raw pointer type which must decay to a type convertible to `pointer`.
+     *
+     * @param self The target `cursor_ptr` being rebound.
+     * @param source The raw pointer to rebind to.
+     *
+     * @return Reference to `self`.
+     *
+     * @pre `source` must point to a valid object that outlives the `cursor_ptr`.
+     * @post `self.get() == source`.
+     *
+     * @throws std::invalid_argument if `source == nullptr`. Provides the Strong Exception Safety Guarantee.
+     *
+     * @details Captures the original argument type prior to decay via
+     * forwarding reference so that C-array arguments can be diagnosed
+     * explicitly instead of silently decaying to element pointers.
+     *
+     * @note This assignment operator is constrained to raw pointers to prevent hijacking copy/move operations or accepting arrays.
+     * @remark Rebinds the pointer while preserving the non-null invariant.
+     * @remark Does not affect the lifetime of the referenced object.
+     */
+    /**
+     * @overload constexpr Self& cursor_ptr::operator=(this Self& self, const Pointer<Element, Args...>& source)
+     *
+     * @tparam Self The cv-qualified `cursor_ptr` type deduced from the call site.
+     * @tparam Pointer A class template modeling a pointer-like type.
+     * @tparam Element The element type of the source pointer.
+     * @tparam Args Additional template parameters of the pointer type.
+     *
+     * @param self The target `cursor_ptr` being rebound.
+     * @param source The pointer-like object providing access to a raw pointer via `get()`.
+     *
+     * @return Reference to `self`.
+     *
+     * @pre `source.get()` must be a valid expression convertible to `pointer`.
+     * @pre `source.get()` must point to an object whose lifetime strictly exceeds that of the `cursor_ptr`.
+     * @post `self.get() == static_cast<pointer>(source.get())`.
+     *
+     * @throws std::invalid_argument if `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
+     *
+     * @remark Rebinds the `cursor_ptr` from a pointer-like source while preserving the non-null invariant.
+     * @remark Does not transfer ownership and does not affect the lifetime of the underlying object.
+     */
+    /**
+     * @fn constexpr void swap(cursor_ptr& lhs, cursor_ptr& rhs) noexcept
+     *
+     * @param lhs The first pointer object.
+     * @param rhs The second pointer object.
+     *
+     * @post `lhs` refers to the object previously referenced by `rhs`.
+     * @post `rhs` refers to the object previously referenced by `lhs`.
+     *
+     * @remark Swaps only the stored addresses.
+     * @remark Does not affect ownership or pointee lifetime.
+     * @remark Provided as a hidden friend for ADL interoperability.
+     */
+    /**
+     * @fn constexpr auto operator<=>(const cursor_ptr& lhs, const cursor_ptr& rhs) noexcept
+     *
+     * @param lhs The left-hand side `cursor_ptr`.
+     * @param rhs The right-hand side `cursor_ptr`.
+     *
+     * @return The three-way comparison result of the stored addresses.
+     *
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
+     * @remark Defaulted comparison preserving raw pointer ordering semantics.
+     */
+    /**
+     * @overload constexpr auto operator<=>(const cursor_ptr& lhs, const cursor_ptr<DerivedT>& rhs) noexcept
+     *
+     * @tparam DerivedT The element type, derived from `T`, of the right-hand side `cursor_ptr`.
+     *
+     * @param lhs The left-hand side `cursor_ptr`.
+     * @param rhs The right-hand side `cursor_ptr` to compare.
+     *
+     * @return The three-way comparison result of the stored addresses.
+     *
+     * @remark Enables comparison between `cursor_ptr` instances of related types when that can't be synthesized by implicit conversion to raw pointers.
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
+     */
+    /**
+     * @overload constexpr auto operator<=>(const cursor_ptr& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+     *
+     * @tparam DerivedT The element type, derived from `T`, of the raw pointer.
+     *
+     * @param lhs The `cursor_ptr` being compared.
+     * @param rhs The raw pointer to compare against.
+     *
+     * @return The three-way comparison result of the stored addresses.
+     *
+     * @remark Enables comparison with raw pointers-to-derived when that can't be synthesized by implicit conversion to raw pointers.
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
+     */
+    /**
+     * @overload constexpr auto operator<=>(const pointer lhs, const cursor_ptr<DerivedT>& rhs) noexcept
+     *
+     * @tparam DerivedT The element type, derived from `T`, of the right-hand side `cursor_ptr`.
+     *
+     * @param lhs The raw pointer to compare.
+     * @param rhs The `cursor_ptr` being compared.
+     *
+     * @return The three-way comparison result of the stored addresses.
+     *
+     * @remark Enables comparison with raw pointers-to-base when that can't be synthesized by implicit conversion to raw pointers.
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
+     */
+    /**
+     * @fn constexpr pointer cursor_ptr::operator->(this auto&& self) noexcept
+     *
+     * @param self The `cursor_ptr` providing member access.
+     *
+     * @return A raw pointer to the stored address.
+     *
+     * @pre `self.get() != nullptr`
+     * @pre The pointee object must remain valid (non-dangling).
+     *
+     * @remark Provides pointee member access semantics.
+     */
+    /**
+     * @fn constexpr reference cursor_ptr::operator*(this auto&& self) noexcept
+     *
+     * @param self The `cursor_ptr` being dereferenced.
+     *
+     * @return Reference to the pointee object.
+     *
+     * @pre The pointee object must remain valid (non-dangling).
+     *
+     * @remark Equivalent to dereferencing `self.get()`.
+     */
+    /**
+     * @fn constexpr pointer cursor_ptr::get(this auto&& self) noexcept
+     *
+     * @param self The `cursor_ptr` exposing its stored address.
+     *
+     * @return The underlying raw pointer.
+     *
+     * @post The returned pointer is non-null.
+     *
+     * @remark Provided for interoperability with pointer-based APIs.
+     */
+    /**
+     * @fn constexpr cursor_ptr::operator pointer() const noexcept
+     *
+     * @return The underlying raw pointer.
+     *
+     * @post The returned pointer is non-null.
+     *
+     * @remark Enables seamless interoperability with legacy interfaces expecting raw pointers.
+     * @warning Implicit conversion may obscure the non-owning, non-null semantics; prefer `get()` when clarity is important.
+     */
+    /**
+     * @fn constexpr cursor_ptr::operator bool() const noexcept
+     *
+     * @return `true` (The pointer is structurally guaranteed to always be engaged.)
+     *
+     * @post Always evaluates to `true`.
+     *
+     * @remark Satisfies boolean-testable requirements in generic templates and logical contexts.
+     * @remark Models pointer interface by providing contextual conversion to `bool` albeit redundantly.
+     * @note Because this always returns `true`, the compiler may elide checks in generic code when `cursor_ptr` is the concrete type.
+     * @note This does not indicate engagement/optionality as `cursor_ptr` has no disengaged state.
+     */
+    /**
+     * @fn constexpr Self& cursor_ptr::rebind(this Self& self, P&& source)
+     *
+     * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
+     * @tparam P A pointer-compatible source type assignable to `cursor_ptr`.
+     *
+     * @param self The `cursor_ptr` being rebound.
+     * @param source The source used to replace the stored address.
+     *
+     * @return Reference to `self`.
+     *
+     * @post Equivalent to `self = std::forward<P>(source)`.
+     *
+     * @remark Convenience wrapper over assignment for generic pointer-like interoperability.
+     */
+    /**
+     * @fn constexpr void cursor_ptr::reset(this Self& self, P&& source)
+     *
+     * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
+     * @tparam P A pointer-compatible source type assignable to `cursor_ptr`.
+     *
+     * @param self The `cursor_ptr` being rebound.
+     * @param source The source used to replace the stored address.
+     *
+     * @post Equivalent to `self = std::forward<P>(source)`.
+     *
+     * @remark Replaces the stored address without affecting ownership or pointee lifetime.
+     */
+    /**
+     * @fn constexpr element_type& cursor_ptr::operator[](this auto self, difference_type offset) noexcept
+     *
+     * @param self The `cursor_ptr` whose stored address is the base of the offset address.
+     * @param offset The offset to add to the base address to compute the address to dereference.
+     *
+     * @return Reference to the pointee object located at `self.get() + offset`.
+     *
+     * @note This operator is provided solely to fulfill the requirements of `std::random_access_iterator`.
+     * @deprecated Applying the subscript operator to a pointer conflates pointers with arrays. Use `*(ptr + offset)` for explicit traversal or consider subscripting the container instead.
+     * @warning Indexing beyond the bounds of the referenced contiguous sequence results in undefined behavior.
+     */
+    /**
+     * @fn constexpr Self& cursor_ptr::operator++(this Self&& self) noexcept
+     *
+     * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
+     *
+     * @param self The `cursor_ptr` whose stored address is incremented.
+     *
+     * @return Reference to `self`.
+     *
+     * @post `self.get()` refers to the next contiguous element.
+     *
+     * @remark Advances the stored address using built-in pointer increment semantics.
+     * @warning Advancing beyond the bounds of the referenced contiguous sequence results in undefined behavior.
+     */
+    /**
+     * @overload constexpr Self cursor_ptr::operator++(this Self&& self, int) noexcept
+     *
+     * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
+     *
+     * @param self The `cursor_ptr` whose stored address is incremented.
+     *
+     * @return A copy of the `cursor_ptr` prior to increment.
+     *
+     * @post `self.get()` refers to the next contiguous element.
+     *
+     * @remark Advances the stored address using built-in pointer increment semantics.
+     * @warning Advancing beyond the bounds of the referenced contiguous sequence results in undefined behavior.
+     */
+    /**
+     * @fn constexpr Self& cursor_ptr::operator--(this Self&& self) noexcept
+     *
+     * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
+     *
+     * @param self The `cursor_ptr` whose stored address is decremented.
+     *
+     * @return Reference to `self`.
+     *
+     * @post `self.get()` refers to the previous contiguous element.
+     *
+     * @remark Retreats the stored address using built-in pointer decrement semantics.
+     * @warning Decrementing before the bounds of the referenced contiguous sequence results in undefined behavior.
+     */
+    /**
+     * @overload constexpr Self cursor_ptr::operator--(this Self&& self, int) noexcept
+     *
+     * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
+     *
+     * @param self The `cursor_ptr` whose stored address is decremented.
+     *
+     * @return A copy of the `cursor_ptr` prior to decrement.
+     *
+     * @post `self.get()` refers to the previous contiguous element.
+     *
+     * @remark Retreats the stored address using built-in pointer decrement semantics.
+     * @warning Decrementing before the bounds of the referenced contiguous sequence results in undefined behavior.
+     */
+    /**
+     * @fn constexpr Self& cursor_ptr::operator+=(this Self&& self, difference_type diff) noexcept
+     *
+     * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
+     *
+     * @param self The `cursor_ptr` whose stored address is advanced.
+     * @param diff The signed offset, in elements, to add to the stored address.
+     *
+     * @return Reference to `self`.
+     *
+     * @post `self.get() == std::next(old(self.get()), diff)`.
+     *
+     * @remark Advances the stored address by `diff` elements using built-in pointer arithmetic semantics.
+     * @warning Advancing outside the bounds of the referenced contiguous sequence results in undefined behavior.
+     */
+    /**
+     * @fn constexpr Self& cursor_ptr::operator-=(this Self&& self, difference_type diff) noexcept
+     *
+     * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
+     *
+     * @param self The `cursor_ptr` whose stored address is retreated.
+     * @param diff The signed offset, in elements, to subtract from the stored address.
+     *
+     * @return Reference to `self`.
+     *
+     * @post `self.get() == std::prev(old(self.get()), diff)`.
+     *
+     * @remark Retreats the stored address by `diff` elements using built-in pointer arithmetic semantics.
+     * @warning Retreating outside the bounds of the referenced contiguous sequence results in undefined behavior.
+     */
+    /**
+     * @fn constexpr cursor_ptr operator+(cursor_ptr ptr, difference_type diff) noexcept
+     *
+     * @param ptr The base `cursor_ptr`.
+     * @param diff The signed offset, in elements, to add to the stored address.
+     *
+     * @return A new `cursor_ptr` referring to the address `diff` elements after `ptr`.
+     *
+     * @remark Computes an offset pointer using built-in pointer arithmetic semantics.
+     * @remark Does not modify the original `ptr`.
+     * @warning Advancing outside the bounds of the referenced contiguous sequence results in undefined behavior.
+     */
+    /**
+     * @overload constexpr cursor_ptr operator+(difference_type diff, cursor_ptr ptr) noexcept
+     *
+     * @param diff The signed offset, in elements, to add to the stored address.
+     * @param ptr The base `cursor_ptr`.
+     *
+     * @return A new `cursor_ptr` referring to the address `diff` elements after `ptr`.
+     *
+     * @remark Provides commutative addition syntax for pointer arithmetic.
+     * @remark Does not modify the original `ptr`.
+     * @warning Advancing outside the bounds of the referenced contiguous sequence results in undefined behavior.
+     */
+    /**
+     * @fn constexpr cursor_ptr operator-(cursor_ptr ptr, difference_type diff) noexcept
+     *
+     * @param ptr The base `cursor_ptr`.
+     * @param diff The signed offset, in elements, to subtract from the stored address.
+     *
+     * @return A new `cursor_ptr` referring to the address `diff` elements before `ptr`.
+     *
+     * @remark Computes an offset pointer using built-in pointer arithmetic semantics.
+     * @remark Does not modify the original `ptr`.
+     * @warning Retreating outside the bounds of the referenced contiguous sequence results in undefined behavior.
+     */
+    /**
+     * @fn constexpr difference_type operator-(cursor_ptr lhs, cursor_ptr rhs) noexcept
+     *
+     * @param lhs The left-hand side `cursor_ptr`.
+     * @param rhs The right-hand side `cursor_ptr`.
+     *
+     * @return The distance, in elements, between the stored addresses.
+     *
+     * @remark Equivalent to `lhs.get() - rhs.get()`.
+     * @remark The result is positive when `lhs` refers to a later element than `rhs`.
+     * @warning Subtracting pointers that do not refer into the same contiguous sequence results in undefined behavior.
+     */
+    /**
+     * @fn constexpr static pointer cursor_ptr::check_for_null(pointer source)
+     *
+     * @param source The raw pointer to validate.
+     *
+     * @return The same pointer value if non-null.
+     *
+     * @post The returned pointer is guaranteed to be non-null.
+     *
+     * @throws std::invalid_argument if `source == nullptr`. Provides the Strong Exception Safety Guarantee.
+     *
+     * @remark Centralizes enforcement of the non-null invariant for all constructors and assignment operators accepting raw or pointer-like inputs.
+     * @remark Marked `[[nodiscard]]` to discourage accidental ignoring of the validated result.
+     * @remark Defined as a private static helper to avoid duplication and ensure consistent exception semantics.
+     * @note This function does not perform lifetime validation; it assumes the caller ensures the pointee remains valid.
+     */
+
 } //namespace base::vocab::inline ptr
-
-/**
- * Post-class method documentation blocks go here.
- */
-
-
-
-
-
-
 
 /**
  * @brief Partial specialization of `std::hash` for `VocabPtr`s.
