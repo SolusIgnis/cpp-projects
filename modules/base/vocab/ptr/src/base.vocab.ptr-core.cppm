@@ -112,19 +112,23 @@ namespace base::vocab::inline ptr {
 
     // Primary template: Null is NOT allowed. No default initializer provided.
     template<typename AddressType, bool IsNullable>
-    struct basic_address_storage {
-        constexpr explicit basic_address_storage(AddressType source) : address_{source} {}
-    protected:
-        AddressType address_; ///< @note Intentionally uninitialized.
+    class address_storage {
+    private:
+        AddressType stored_address_; ///< @note Intentionally uninitialized.
+    public:
+        constexpr explicit(false) address_storage(AddressType source) : stored_address_{source} {}
+        [[nodiscard]] constexpr explicit(false) operator typename AddressType() { return stored_address_; }
     };
 
     // Specialization: Null IS allowed. Default initializer provided.
     template<typename AddressType>
-    struct basic_address_storage<AddressType, true> {
-        constexpr explicit basic_address_storage(AddressType source) : address_{source} {}
-        constexpr basic_address_storage() = default;
-    protected:
-        AddressType address_{}; ///< @note Value initialized to null.
+    class address_storage<AddressType, true> {
+    private:
+        AddressType stored_address_{}; ///< @note Value initialized to null.
+    public:
+        constexpr explicit(false) address_storage(AddressType source) : stored_address_{source} {}
+        constexpr address_storage() = default;
+        [[nodiscard]] constexpr explicit(false) operator typename AddressType() { return stored_address_; }
     };
 } //namespace base::vocab::inline ptr
 
@@ -189,19 +193,16 @@ export namespace base::vocab::inline ptr {
      */
     template<template<typename> typename ConcretePtr, typename Pointee, ptr_policies::PtrPolicyList PolicySet>
         requires is_valid_pointee_v<Pointee>
-    class ptr_core :
-        public pointer_metadata<Pointee>,
-        private basic_address_storage<typename pointer_metadata<Pointee>::pointer, ptr_policies::nullable_v<PolicySet>>
-    {
+    class ptr_core : public pointer_metadata<Pointee> {
     public:
         struct derived_from_ptr_core;
 
     private:
-        using policy_set      = PolicySet;
-        using metadata        = pointer_metadata<Pointee>;
-        using address_storage = basic_address_storage<typename pointer_metadata<Pointee>::pointer, ptr_policies::nullable_v<policy_set>>;
+        using policy_set = PolicySet;
+        using metadata   = pointer_metadata<Pointee>;
+        using address_t  = address_storage<typename metadata::pointer, ptr_policies::nullable_v<policy_set>>;
 
-        using address_storage::address_; ///<@brief The stored address used by all concrete pointer types.
+        address_t address_; ///<@brief The stored address used by all concrete pointer types.
 
     public:
         using iterator_concept = std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::contiguous_iterator_tag, void>;
