@@ -113,7 +113,7 @@ namespace base::vocab::inline ptr {
     // Primary template: Null is NOT allowed. No default initializer provided.
     template<typename AddressType, bool IsNullable>
     struct basic_address_storage {
-        basic_address_storage(AddressType source) : address_{source} {}
+        constexpr explicit basic_address_storage(AddressType source) : address_{source} {}
     protected:
         AddressType address_; ///< @note Intentionally uninitialized.
     };
@@ -121,7 +121,7 @@ namespace base::vocab::inline ptr {
     // Specialization: Null IS allowed. Default initializer provided.
     template<typename AddressType>
     struct basic_address_storage<AddressType, true> {
-        basic_address_storage(AddressType source) : address_{source} {}
+        constexpr explicit basic_address_storage(AddressType source) : address_{source} {}
     protected:
         AddressType address_{}; ///< @note Value initialized to null.
     };
