@@ -213,7 +213,7 @@ export namespace base::vocab::inline ptr {
         ///@brief (Conversion) Implicitly converts from another `ConcretePtr` specialization according to nested `metadata::pointer` type conversions.
         template<typename OtherPointee>
             requires (!std::same_as<OtherPointee, Pointee>) && std::convertible_to<std::add_pointer_t<OtherPointee>, typename metadata::pointer>
-        constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept : address_storage(source.get())
+        constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept : address_storage{source.get()}
         {}
 
         ///@brief (Conversion) Assigns from another `ConcretePtr` specialization according to nested `metadata::pointer` type conversions.
@@ -237,7 +237,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Constructs a pointer bound to an existing object.
         constexpr explicit ptr_core(metadata::reference source) noexcept
             requires ptr_policies::allowed_reference_binding_v<policy_set>
-            : address_storage(std::addressof(source))
+            : address_storage{std::addressof(source)}
         {}
 
         ///@brief Rebinds the pointer to another object.
@@ -258,7 +258,7 @@ export namespace base::vocab::inline ptr {
                   && std::convertible_to<std::decay_t<P>, typename metadata::pointer>
         constexpr explicit(std::is_void_v<Pointee>) ptr_core(P&& source) noexcept(noexcept(apply_nullability_policy(std::forward<P>(source))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
-            : address_storage(apply_nullability_policy(std::forward<P>(source)))
+            : address_storage{apply_nullability_policy(std::forward<P>(source))}
         {}
 
         ///@brief Assigns from a raw `pointer`.
@@ -278,7 +278,7 @@ export namespace base::vocab::inline ptr {
                   && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, typename metadata::pointer>
         constexpr explicit(std::is_void_v<Pointee>) ptr_core(const Pointer<Element, Args...>& source) noexcept(noexcept(apply_nullability_policy(source.get())))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
-            : address_storage(apply_nullability_policy(source.get()))
+            : address_storage{apply_nullability_policy(source.get())}
         {}
 
         ///@brief Assigns from another pointer-like type.
@@ -303,7 +303,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Constructor from `nullptr` initializes to null.
         ptr_core(std::nullptr_t null) noexcept
             requires ptr_policies::nullable_v<policy_set>
-            : address_storage(null) {}
+            : address_storage{null} {}
 
         ///@brief Assignment from `nullptr` rebinds to null.
         template<typename Self>
