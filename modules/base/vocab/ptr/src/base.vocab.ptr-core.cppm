@@ -126,6 +126,81 @@ namespace base::vocab::inline ptr {
             self.stored_address_ = source;
             return self;
         }
+        
+        ///@brief Prefix increment: increments the stored address.
+        template<typename Self>
+        constexpr decltype(auto) operator++(this Self&& self) noexcept
+        {
+            ++self.stored_address_;
+            return std::forward<Self>(self);
+        }
+
+        ///@brief Prefix decrement: decrements the stored address.
+        template<typename Self>
+        constexpr decltype(auto) operator--(this Self&& self) noexcept
+        {
+            --self.stored_address_;
+            return std::forward<Self>(self);
+        }
+
+        ///@brief Postfix increment: increments the stored address but return a pointer to the prior stored address.
+        template<typename Self>
+        constexpr auto operator++(this Self&& self, int) noexcept
+        {
+            std::decay_t<Self> old{self};
+            ++self;
+            return old;
+        }
+
+        ///@brief Postfix decrement: decrements the stored address but return a pointer to the prior stored address.
+        template<typename Self>
+        constexpr auto operator--(this Self&& self, int) noexcept
+        {
+            std::decay_t<Self> old{self};
+            --self;
+            return old;
+        }
+
+        ///@brief Addition assignment: increments the stored address by a given distance.
+        template<typename Self>
+        constexpr decltype(auto) operator+=(this Self&& self, typename std::iter_difference_t<AddressType> diff) noexcept
+        {
+            self.stored_address_ += diff;
+            return std::forward<Self>(self);
+        }
+
+        ///@brief Subtraction assignment: decrements the stored address by a given distance.
+        template<typename Self>
+        constexpr decltype(auto) operator-=(this Self&& self, typename std::iter_difference_t<AddressType> diff) noexcept
+        {
+            self.stored_address_ -= diff;
+            return std::forward<Self>(self);
+        }
+#if 0
+        ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
+        friend constexpr address_storage operator+(address_storage ptr, typename std::iter_difference_t<AddressType> diff) noexcept
+        {
+            return ptr += diff;
+        }
+
+        ///@brief Pointer addition (commutative): gets a pointer to an address a given distance after the stored address.
+        friend constexpr address_storage operator+(typename std::iter_difference_t<AddressType> diff, address_storage ptr) noexcept
+        {
+            return ptr += diff;
+        }
+
+        ///@brief Pointer subtraction: gets a pointer to an address a given distance before the stored address.
+        friend constexpr address_storage operator-(address_storage ptr, typename std::iter_difference_t<AddressType> diff) noexcept
+        {
+            return ptr -= diff;
+        }
+
+        ///@brief Pointer subtraction (difference): computes the distance between the addresses stored in two pointers.
+        friend constexpr typename std::iter_difference_t<AddressType> operator-(address_storage lhs, address_storage rhs) noexcept
+        {
+            return lhs.get() - rhs.get();
+        }
+#endif
     };
 
     // Specialization: Null IS allowed. Default initializer provided.
@@ -144,6 +219,56 @@ namespace base::vocab::inline ptr {
         {
             self.stored_address_ = source;
             return self;
+        }
+        
+        ///@brief Prefix increment: increments the stored address.
+        template<typename Self>
+        constexpr decltype(auto) operator++(this Self&& self) noexcept
+        {
+            ++self.stored_address_;
+            return std::forward<Self>(self);
+        }
+
+        ///@brief Prefix decrement: decrements the stored address.
+        template<typename Self>
+        constexpr decltype(auto) operator--(this Self&& self) noexcept
+        {
+            --self.stored_address_;
+            return std::forward<Self>(self);
+        }
+
+        ///@brief Postfix increment: increments the stored address but return a pointer to the prior stored address.
+        template<typename Self>
+        constexpr auto operator++(this Self&& self, int) noexcept
+        {
+            std::decay_t<Self> old{self};
+            ++self;
+            return old;
+        }
+
+        ///@brief Postfix decrement: decrements the stored address but return a pointer to the prior stored address.
+        template<typename Self>
+        constexpr auto operator--(this Self&& self, int) noexcept
+        {
+            std::decay_t<Self> old{self};
+            --self;
+            return old;
+        }
+
+        ///@brief Addition assignment: increments the stored address by a given distance.
+        template<typename Self>
+        constexpr decltype(auto) operator+=(this Self&& self, typename std::iter_difference_t<AddressType> diff) noexcept
+        {
+            self.stored_address_ += diff;
+            return std::forward<Self>(self);
+        }
+
+        ///@brief Subtraction assignment: decrements the stored address by a given distance.
+        template<typename Self>
+        constexpr decltype(auto) operator-=(this Self&& self, typename std::iter_difference_t<AddressType> diff) noexcept
+        {
+            self.stored_address_ -= diff;
+            return std::forward<Self>(self);
         }
     };
 } //namespace base::vocab::inline ptr
