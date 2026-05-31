@@ -122,6 +122,7 @@ namespace base::vocab::inline ptr {
     template<typename AddressType>
     struct basic_address_storage<AddressType, true> {
         constexpr explicit basic_address_storage(AddressType source) : address_{source} {}
+        constexpr basic_address_storage() = default;
     protected:
         AddressType address_{}; ///< @note Value initialized to null.
     };
