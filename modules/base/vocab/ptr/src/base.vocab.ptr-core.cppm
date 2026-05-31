@@ -117,7 +117,7 @@ namespace base::vocab::inline ptr {
         AddressType stored_address_; ///< @note Intentionally uninitialized.
     public:
         constexpr explicit(false) address_storage(AddressType source) : stored_address_{source} {}
-        [[nodiscard]] constexpr explicit(false) operator typename AddressType() { return stored_address_; }
+        [[nodiscard]] constexpr explicit(false) operator AddressType() { return stored_address_; }
     };
 
     // Specialization: Null IS allowed. Default initializer provided.
@@ -128,7 +128,7 @@ namespace base::vocab::inline ptr {
     public:
         constexpr explicit(false) address_storage(AddressType source) : stored_address_{source} {}
         constexpr address_storage() = default;
-        [[nodiscard]] constexpr explicit(false) operator typename AddressType() { return stored_address_; }
+        [[nodiscard]] constexpr explicit(false) operator AddressType() { return stored_address_; }
     };
 } //namespace base::vocab::inline ptr
 
