@@ -177,31 +177,6 @@ namespace base::vocab::inline ptr {
             self.stored_address_ -= diff;
             return std::forward<Self>(self);
         }
-#if 0
-        ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
-        friend constexpr address_storage operator+(address_storage ptr, std::ptrdiff_t diff) noexcept
-        {
-            return ptr += diff;
-        }
-
-        ///@brief Pointer addition (commutative): gets a pointer to an address a given distance after the stored address.
-        friend constexpr address_storage operator+(std::ptrdiff_t diff, address_storage ptr) noexcept
-        {
-            return ptr += diff;
-        }
-
-        ///@brief Pointer subtraction: gets a pointer to an address a given distance before the stored address.
-        friend constexpr address_storage operator-(address_storage ptr, std::ptrdiff_t diff) noexcept
-        {
-            return ptr -= diff;
-        }
-
-        ///@brief Pointer subtraction (difference): computes the distance between the addresses stored in two pointers.
-        friend constexpr std::ptrdiff_t operator-(address_storage lhs, address_storage rhs) noexcept
-        {
-            return lhs.get() - rhs.get();
-        }
-#endif
     };
 
     // Specialization: Null IS allowed. Default initializer provided.
@@ -343,7 +318,7 @@ export namespace base::vocab::inline ptr {
     private:
         using policy_set = PolicySet;
         using metadata   = pointer_metadata<Pointee>;
-        using address_t  = address_storage<typename metadata::pointer, ptr_policies::nullable_v<policy_set>>;
+        using address_t  = typename metadata::pointer; //address_storage<typename metadata::pointer, ptr_policies::nullable_v<policy_set>>;
 
         address_t address_; ///<@brief The stored address used by all concrete pointer types.
 
