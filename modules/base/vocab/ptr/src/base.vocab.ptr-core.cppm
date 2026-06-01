@@ -109,145 +109,6 @@ namespace base::vocab::inline ptr {
     inline constexpr bool is_smart_ptr_convertible_to_v = requires(Source ptr) {
                                                               { std::as_const(ptr).get() } -> std::convertible_to<Target>;
                                                           };
-
-    // Primary template: Null is NOT allowed. No default initializer provided.
-    template<typename AddressType, bool IsNullable>
-        requires std::is_pointer_v<AddressType>
-    class address_storage {
-    private:
-        AddressType stored_address_; ///< @note Intentionally uninitialized.
-    public:
-        constexpr explicit(false) address_storage(AddressType source) noexcept : stored_address_{source} {}
-        [[nodiscard]] constexpr explicit(false) operator AddressType() const noexcept { return stored_address_; }
-
-        template<typename Self>
-            requires (!std::is_const_v<Self>)
-        constexpr Self& operator=(this Self& self, AddressType source) noexcept
-        {
-            self.stored_address_ = source;
-            return self;
-        }
-        
-        ///@brief Prefix increment: increments the stored address.
-        template<typename Self>
-        constexpr decltype(auto) operator++(this Self&& self) noexcept
-        {
-            ++self.stored_address_;
-            return std::forward<Self>(self);
-        }
-
-        ///@brief Prefix decrement: decrements the stored address.
-        template<typename Self>
-        constexpr decltype(auto) operator--(this Self&& self) noexcept
-        {
-            --self.stored_address_;
-            return std::forward<Self>(self);
-        }
-
-        ///@brief Postfix increment: increments the stored address but return a pointer to the prior stored address.
-        template<typename Self>
-        constexpr auto operator++(this Self&& self, int) noexcept
-        {
-            std::decay_t<Self> old{self};
-            ++self;
-            return old;
-        }
-
-        ///@brief Postfix decrement: decrements the stored address but return a pointer to the prior stored address.
-        template<typename Self>
-        constexpr auto operator--(this Self&& self, int) noexcept
-        {
-            std::decay_t<Self> old{self};
-            --self;
-            return old;
-        }
-
-        ///@brief Addition assignment: increments the stored address by a given distance.
-        template<typename Self>
-        constexpr decltype(auto) operator+=(this Self&& self, std::ptrdiff_t diff) noexcept
-        {
-            self.stored_address_ += diff;
-            return std::forward<Self>(self);
-        }
-
-        ///@brief Subtraction assignment: decrements the stored address by a given distance.
-        template<typename Self>
-        constexpr decltype(auto) operator-=(this Self&& self, std::ptrdiff_t diff) noexcept
-        {
-            self.stored_address_ -= diff;
-            return std::forward<Self>(self);
-        }
-    };
-
-    // Specialization: Null IS allowed. Default initializer provided.
-    template<typename AddressType>
-        requires std::is_pointer_v<AddressType>
-    class address_storage<AddressType, true> {
-    private:
-        AddressType stored_address_{}; ///< @note Value initialized to null.
-    public:
-        constexpr address_storage() noexcept = default;
-        constexpr explicit(false) address_storage(AddressType source) noexcept : stored_address_{source} {}
-        [[nodiscard]] constexpr explicit(false) operator AddressType() const noexcept { return stored_address_; }
-
-        template<typename Self>
-            requires (!std::is_const_v<Self>)
-        constexpr Self& operator=(this Self& self, AddressType source) noexcept
-        {
-            self.stored_address_ = source;
-            return self;
-        }
-        
-        ///@brief Prefix increment: increments the stored address.
-        template<typename Self>
-        constexpr decltype(auto) operator++(this Self&& self) noexcept
-        {
-            ++self.stored_address_;
-            return std::forward<Self>(self);
-        }
-
-        ///@brief Prefix decrement: decrements the stored address.
-        template<typename Self>
-        constexpr decltype(auto) operator--(this Self&& self) noexcept
-        {
-            --self.stored_address_;
-            return std::forward<Self>(self);
-        }
-
-        ///@brief Postfix increment: increments the stored address but return a pointer to the prior stored address.
-        template<typename Self>
-        constexpr auto operator++(this Self&& self, int) noexcept
-        {
-            std::decay_t<Self> old{self};
-            ++self;
-            return old;
-        }
-
-        ///@brief Postfix decrement: decrements the stored address but return a pointer to the prior stored address.
-        template<typename Self>
-        constexpr auto operator--(this Self&& self, int) noexcept
-        {
-            std::decay_t<Self> old{self};
-            --self;
-            return old;
-        }
-
-        ///@brief Addition assignment: increments the stored address by a given distance.
-        template<typename Self>
-        constexpr decltype(auto) operator+=(this Self&& self, std::ptrdiff_t diff) noexcept
-        {
-            self.stored_address_ += diff;
-            return std::forward<Self>(self);
-        }
-
-        ///@brief Subtraction assignment: decrements the stored address by a given distance.
-        template<typename Self>
-        constexpr decltype(auto) operator-=(this Self&& self, std::ptrdiff_t diff) noexcept
-        {
-            self.stored_address_ -= diff;
-            return std::forward<Self>(self);
-        }
-    };
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
@@ -318,9 +179,8 @@ export namespace base::vocab::inline ptr {
     private:
         using policy_set = PolicySet;
         using metadata   = pointer_metadata<Pointee>;
-        using address_t  = typename metadata::pointer; //address_storage<typename metadata::pointer, ptr_policies::nullable_v<policy_set>>;
 
-        address_t address_; ///<@brief The stored address used by all concrete pointer types.
+        typename metadata::pointer address_; ///<@brief The stored address used by all concrete pointer types.
 
     public:
         using iterator_concept = std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::contiguous_iterator_tag, void>;
@@ -417,10 +277,9 @@ export namespace base::vocab::inline ptr {
 
         //===== Nullability (Yes) =====
 
-        ///@brief Default constructor initializes to null.
+        ///@brief Default constructor value initializes to null.
         ptr_core() noexcept
             requires ptr_policies::nullable_v<policy_set>
-        //= default;
             : address_{} {}
 
         ///@brief Constructor from `nullptr` initializes to null.
