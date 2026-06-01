@@ -420,7 +420,8 @@ export namespace base::vocab::inline ptr {
         ///@brief Default constructor initializes to null.
         ptr_core() noexcept
             requires ptr_policies::nullable_v<policy_set>
-        = default;
+        //= default;
+            : address_{} {}
 
         ///@brief Constructor from `nullptr` initializes to null.
         ptr_core(std::nullptr_t null) noexcept
