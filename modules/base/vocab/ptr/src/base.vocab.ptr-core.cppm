@@ -208,7 +208,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Swaps addresses.
-        friend constexpr void swap(ptr_core& lhs, ptr_core& rhs) noexcept
+        friend constexpr void swap(ConcretePtr<Pointee>& lhs, ConcretePtr<Pointee>& rhs) noexcept
         {
             using std::swap;
             swap(lhs.address_, rhs.address_);
@@ -552,7 +552,7 @@ export namespace base::vocab::inline ptr {
             return std::forward<Self>(self);
         }
 
-        ///@brief Postfix increment: increments the stored address but return a pointer to the prior stored address.
+        ///@brief Postfix increment: increments the stored address but returns a pointer to the prior stored address.
         template<typename Self>
         constexpr auto operator++(this Self&& self, int) noexcept
             requires base::meta::concepts::CompletePointee<Pointee>
@@ -563,7 +563,7 @@ export namespace base::vocab::inline ptr {
             return old;
         }
 
-        ///@brief Postfix decrement: decrements the stored address but return a pointer to the prior stored address.
+        ///@brief Postfix decrement: decrements the stored address but returns a pointer to the prior stored address.
         template<typename Self>
         constexpr auto operator--(this Self&& self, int) noexcept
             requires base::meta::concepts::CompletePointee<Pointee>
@@ -576,46 +576,46 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Addition assignment: increments the stored address by a given distance.
         template<typename Self>
-        constexpr decltype(auto) operator+=(this Self&& self, metadata::difference_type diff) noexcept
+        constexpr decltype(auto) operator+=(this Self&& self, metadata::difference_type offset) noexcept
             requires base::meta::concepts::CompletePointee<Pointee>
             && ptr_policies::arithmetic_traversal_v<policy_set>
         {
-            self.address_ += diff;
+            self.address_ += offset;
             return std::forward<Self>(self);
         }
 
         ///@brief Subtraction assignment: decrements the stored address by a given distance.
         template<typename Self>
-        constexpr decltype(auto) operator-=(this Self&& self, metadata::difference_type diff) noexcept
+        constexpr decltype(auto) operator-=(this Self&& self, metadata::difference_type offset) noexcept
             requires base::meta::concepts::CompletePointee<Pointee>
             && ptr_policies::arithmetic_traversal_v<policy_set>
         {
-            self.address_ -= diff;
+            self.address_ -= offset;
             return std::forward<Self>(self);
         }
 
         ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
-        friend constexpr ConcretePtr<Pointee> operator+(ConcretePtr<Pointee> ptr, metadata::difference_type diff) noexcept
+        friend constexpr ConcretePtr<Pointee> operator+(ConcretePtr<Pointee> ptr, metadata::difference_type offset) noexcept
             requires base::meta::concepts::CompletePointee<Pointee>
             && ptr_policies::arithmetic_traversal_v<policy_set>
         {
-            return ptr += diff;
+            return ptr += offset;
         }
 
         ///@brief Pointer addition (commutative): gets a pointer to an address a given distance after the stored address.
-        friend constexpr ConcretePtr<Pointee> operator+(metadata::difference_type diff, ConcretePtr<Pointee> ptr) noexcept
+        friend constexpr ConcretePtr<Pointee> operator+(metadata::difference_type offset, ConcretePtr<Pointee> ptr) noexcept
             requires base::meta::concepts::CompletePointee<Pointee>
             && ptr_policies::arithmetic_traversal_v<policy_set>
         {
-            return ptr += diff;
+            return ptr += offset;
         }
 
         ///@brief Pointer subtraction: gets a pointer to an address a given distance before the stored address.
-        friend constexpr ConcretePtr<Pointee> operator-(ConcretePtr<Pointee> ptr, metadata::difference_type diff) noexcept
+        friend constexpr ConcretePtr<Pointee> operator-(ConcretePtr<Pointee> ptr, metadata::difference_type offset) noexcept
             requires base::meta::concepts::CompletePointee<Pointee>
             && ptr_policies::arithmetic_traversal_v<policy_set>
         {
-            return ptr -= diff;
+            return ptr -= offset;
         }
 
         ///@brief Pointer subtraction (difference): computes the distance between the addresses stored in two pointers.
@@ -797,7 +797,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Outputs a `ptr_core` address to a `std::basic_ostream`.
         template<typename CharT, typename Traits>
-        friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& stream, const ptr_core& ptr)
+        friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& stream, const ConcretePtr<Pointee>& ptr)
         {
             // In order to support pointers to arbitrarily cv-qualified objects:
             // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
@@ -821,6 +821,713 @@ export namespace base::vocab::inline ptr {
             return source;  
         }
     }; //class ptr_core
+
+/**
+ * @fn constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept
+ *
+ * @tparam OtherPointee The source pointee type whose address is convertible to `metadata::pointer`.
+ *
+ * @param source The pointer being converted.
+ *
+ * @pre If the selected policies include `nullability::no`, `source` must not be null.
+ * @pre If not null, `source` must point to a valid object that outlives the resulting pointer.
+ * @post `get() == source.get()`.
+ *
+ * @details This single constructor handles:
+ * 1. Derived-to-Base conversion (e.g., `ptr<Derived>` to `ptr<Base>`).
+ * 2. Qualification conversion (e.g., `ptr<T>` to `ptr<const T>`).
+ * 3. Type erasure (e.g., `ptr<T>` to `ptr<void>`).
+ *
+ * @remark Preserves covariance. Converts from pointer-to-derived to pointer-to-base implicitly.
+ * @remark Enables type erasure by converting pointer-to-`OtherPointee` to pointer-to-`void` when applicable.
+ * @remark Enables conversion between compatible specializations of the same concrete pointer type.
+ * @note Enabled regardless of policy selections because conversion between different pointee specializations of the same concrete pointer type preserves all class invariants.
+ */
+/**
+ * @overload constexpr explicit ptr_core(metadata::reference source) noexcept
+ *
+ * @param source The object to reference.
+ *
+ * @pre `source` must refer to a valid object that outlives the constructed pointer.
+ * @post `get() == std::addressof(source)`.
+ *
+ * @details Binds the stored address directly to an existing `source` object
+ * without affecting ownership or pointee lifetime.
+ *
+ * @remark Prevents binding to temporaries via a deleted rvalue-reference overload.
+ * @note Enabled by policy `reference_binding::allowed`.
+ */
+/**
+ * @overload constexpr explicit(std::is_void_v<Pointee>) ptr_core(P&& source)
+ *
+ * @tparam P A raw pointer type which must decay to a type convertible to `metadata::pointer`.
+ *
+ * @param source The raw pointer to bind.
+ *
+ * @pre If the selected policies include `nullability::no`, `source` must not be null.
+ * @pre If not null, `source` must point to a valid object that outlives the resulting pointer.
+ * @post `get() == static_cast<metadata::pointer>(source)`.
+ *
+ * @throws std::invalid_argument if the selected policies include `nullability::no` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
+ *
+ * @details Stores the supplied address after applying the configured nullability
+ * policy. Captures the original argument type prior to decay through a forwarding
+ * reference so that C-array arguments can be diagnosed explicitly rather than
+ * silently decaying to element pointers.
+ *
+ * @note This constructor is constrained to raw pointers to prevent hijacking copy/move operations or accepting arrays.
+ * @remark Explicit when `Pointee` is `void` to prevent unintended implicit type erasure conversion chains.
+ * @remark Binds the stored address without affecting ownership or pointee lifetime.
+ * @note Enabled by policy `pointer_binding::allowed`.
+ */
+/**
+ * @overload constexpr explicit(std::is_void_v<Pointee>) ptr_core(const Pointer<Element, Args...>& source)
+ *
+ * @tparam Pointer A pointer-like class template exposing `get()`.
+ * @tparam Element The element type of the source pointer-like type.
+ * @tparam Args Additional template parameters of the source pointer-like type.
+ *
+ * @param source The pointer-like object providing access to a pointer-compatible address value.
+ *
+ * @pre `source.get()` must be a valid expression convertible to `metadata::pointer`.
+ * @pre If the selected policies include `nullability::no`, `source.get()` must not be null.
+ * @pre If not null, `source.get()` must point to a valid object that outlives the resulting pointer.
+ * @post `get() == static_cast<metadata::pointer>(source.get())`.
+ *
+ * @throws std::invalid_argument if the selected policies include `nullability::no` and `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
+ *
+ * @details Stores the supplied address after applying the configured nullability
+ * policy. Supports covariance, qualification conversion, and type erasure.
+ *
+ * @remark Enables interoperation with pointer-like types that expose a `get()` member.
+ * @remark The source type must not be a specialization of `ConcretePtr` (to avoid ambiguity with existing overloads).
+ * @remark Explicit when `Pointee` is `void` to prevent unintended implicit type erasure conversion chains.
+ * @remark This constructor does not transfer ownership nor affect the lifetime of the pointee object.
+ * @note Enabled by policy `pointer_binding::allowed`.
+ */
+/**
+ * @overload constexpr ptr_core() noexcept
+ *
+ * @post `get() == nullptr`.
+ *
+ * @remark Default-constructs a disengaged pointer by value initialization of the stored address.
+ * @note Enabled by policy `nullability::yes`.
+ */
+/**
+ * @overload constexpr ptr_core(std::nullptr_t null) noexcept
+ *
+ * @param null A `nullptr` literal.
+ *
+ * @post `get() == nullptr`.
+ *
+ * @remark Constructs a disengaged pointer.
+ * @note Enabled by policy `nullability::yes`.
+ */
+
+ 
+ 
+/**
+ * @fn constexpr Self& operator=(this Self& self, const ConcretePtr<OtherPointee>& source) noexcept
+ *
+ * @tparam Self The non-const concrete pointer type deduced from the call site.
+ * @tparam OtherPointee The source pointee type whose address is convertible to `metadata::pointer`.
+ *
+ * @param self The pointer being rebound.
+ * @param source The pointer being converted.
+ *
+ * @return Reference to `self`.
+ *
+ * @pre If the selected policies include `nullability::no`, `source` must not be null.
+ * @pre If not null, `source` must point to a valid object that outlives the resulting pointer.
+ * @post `get() == source.get()`.
+ *
+ * @details This single constructor handles:
+ * 1. Derived-to-Base conversion (e.g., `ptr<Derived>` to `ptr<Base>`).
+ * 2. Qualification conversion (e.g., `ptr<T>` to `ptr<const T>`).
+ * 3. Type erasure (e.g., `ptr<T>` to `ptr<void>`).
+ *
+ * @remark Preserves covariance. Converts from pointer-to-derived to pointer-to-base implicitly.
+ * @remark Enables type erasure by converting pointer-to-`OtherPointee` to pointer-to-`void` when applicable.
+ * @remark Enables conversion between compatible specializations of the same concrete pointer type.
+ * @note Enabled regardless of policy selections because conversion between different pointee specializations of the same concrete pointer type preserves all class invariants.
+ */
+/**
+ * @overload constexpr Self& operator=(this Self& self, metadata::reference source) noexcept
+ *
+ * @tparam Self The non-const concrete pointer type deduced from the call site.
+ *
+ * @param self The pointer being rebound.
+ * @param source The object to reference.
+ *
+ * @return Reference to `self`.
+ *
+ * @pre `source` must refer to a valid object that outlives the pointer.
+ * @post `self.get() == std::addressof(source)`.
+ *
+ * @remark Rebinds the stored address directly to an existing object without affecting ownership or pointee lifetime.
+ * @remark Prevents binding to temporaries via a deleted rvalue-reference overload.
+ * @note Enabled by policy `reference_binding::allowed`.
+ */
+/**
+ * @overload constexpr Self& operator=(this Self& self, P&& source)
+ *
+ * @tparam Self The non-const concrete pointer type deduced from the call site.
+ * @tparam P A raw pointer type which must decay to a type convertible to `metadata::pointer`.
+ *
+ * @param self The pointer being rebound.
+ * @param source The raw pointer to bind.
+ *
+ * @return Reference to `self`.
+ *
+ * @pre If the selected policies include `nullability::no`, `source` must not be null.
+ * @pre If not null, `source` must point to a valid object that outlives the resulting pointer.
+ * @post `get() == static_cast<metadata::pointer>(source)`.
+ *
+ * @throws std::invalid_argument if the selected policies include `nullability::no` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
+ *
+ * @details Stores the supplied address after applying the configured nullability
+ * policy. Captures the original argument type prior to decay through a forwarding
+ * reference so that C-array arguments can be diagnosed explicitly rather than
+ * silently decaying to element pointers.
+ *
+ * @note This assignment operator is constrained to raw pointers to prevent hijacking copy/move operations or accepting arrays.
+ * @remark Rebinds the stored address without affecting ownership or pointee lifetime.
+ * @note Enabled by policy `pointer_binding::allowed`.
+ */
+/**
+ * @overload constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source)
+ *
+ * @tparam Pointer A pointer-like class template exposing `get()`.
+ * @tparam Element The element type of the source pointer-like type.
+ * @tparam Args Additional template parameters of the source pointer-like type.
+ *
+ * @param source The pointer-like object providing access to a pointer-compatible address value.
+ *
+ * @return Reference to `self`.
+ *
+ * @pre `source.get()` must be a valid expression convertible to `metadata::pointer`.
+ * @pre If the selected policies include `nullability::no`, `source.get()` must not be null.
+ * @pre If not null, `source.get()` must point to a valid object that outlives the resulting pointer.
+ * @post `self.get() == static_cast<metadata::pointer>(source.get())`.
+ *
+ * @throws std::invalid_argument if the selected policies include `nullability::no` and `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
+ *
+ * @remark Rebinds the stored address without affecting ownership or pointee lifetime.
+ * @note Enabled by policy `pointer_binding::allowed`.
+ */
+/**
+ * @overload constexpr Self& operator=(this Self& self, std::nullptr_t null) noexcept
+ *
+ * @tparam Self The non-const concrete pointer type deduced from the call site.
+ *
+ * @param self The pointer being rebound.
+ * @param null A `nullptr` literal.
+ *
+ * @return Reference to `self`.
+ *
+ * @post `self.get() == nullptr`.
+ *
+ * @remark Disengages the pointer.
+ * @note Enabled by policy `nullability::yes`.
+ */
+
+
+
+/**
+ * @fn constexpr void swap(ConcretePtr<Pointee>& lhs, ConcretePtr<Pointee>& rhs) noexcept
+ *
+ * @param lhs The first pointer object.
+ * @param rhs The second pointer object.
+ *
+ * @post The stored addresses of `lhs` and `rhs` are exchanged.
+ *
+ * @remark Swaps only the stored addresses.
+ * @remark Does not affect ownership or pointee lifetime.
+ * @remark Provided as a hidden friend for ADL interoperability.
+ */
+ 
+
+
+/**
+ * @fn constexpr metadata::pointer operator->(this auto&& self) noexcept
+ *
+ * @param self The pointer providing member access.
+ *
+ * @return A raw `metadata::pointer` to the stored address for use by the built-in member access operator.
+ *
+ * @pre If the selected policies include `nullability::yes`, `self.get() != nullptr`.
+ * @pre The stored address points to a valid object.
+ *
+ * @remark Provides pointee member access semantics.
+ * @note Available only when `Pointee` satisfies `base::meta::concepts::CompletePointee` (i.e. is a complete object type).
+ */
+
+/**
+ * @fn constexpr auto& operator*(this auto&& self) noexcept
+ *
+ * @param self The pointer being dereferenced.
+ *
+ * @return Reference to the pointee object.
+ *
+ * @pre If the selected policies include `nullability::yes`, `self.get() != nullptr`.
+ * @pre The stored address points to a valid object.
+ *
+ * @note Available only when `Pointee` satisfies `base::meta::concepts::CompletePointee` (i.e. is a complete object type).
+ */
+
+/**
+ * @fn constexpr metadata::pointer get(this auto&& self) noexcept
+ *
+ * @param self The pointer exposing its stored address.
+ *
+ * @post If the selected policies include `nullability::no`, the returned pointer is non-null.
+ *
+ * @return A raw `metadata::pointer` to the stored address.
+ *
+ * @remark Provided for interoperability with pointer-based APIs.
+ */
+
+/**
+ * @fn constexpr operator metadata::pointer() const noexcept
+ *
+ * @post If the selected policies include `nullability::no`, the returned pointer is non-null.
+ *
+ * @return A raw `metadata::pointer` to the stored address.
+ *
+ * @remark Enables seamless interoperability with legacy interfaces expecting raw pointers.
+ * @warning Implicit conversion may obscure pointer semantics; prefer `get()` when clarity is important.
+ */
+
+/**
+ * @fn constexpr Self& rebind(this Self& self, P&& source)
+ *
+ * @tparam Self The non-const concrete pointer type deduced from the call site.
+ * @tparam P A source type assignable to the concrete pointer.
+ *
+ * @param self The pointer being rebound.
+ * @param source The source used to replace the stored address.
+ *
+ * @return Reference to `self`.
+ *
+ * @post Equivalent to `self = std::forward<P>(source)`.
+ *
+ * @remark Replaces the stored address without affecting ownership or pointee lifetime.
+ * @remark Convenience wrapper over assignment for generic pointer-like interoperability.
+ */
+
+/**
+ * @fn constexpr void reset(this Self& self, P&& source)
+ *
+ * @tparam Self The non-const concrete pointer type deduced from the call site.
+ * @tparam P A source type assignable to the concrete pointer.
+ *
+ * @param self The pointer being rebound.
+ * @param source The source used to replace the stored address.
+ *
+ * @post Equivalent to `self = std::forward<P>(source)`.
+ *
+ * @remark Replaces the stored address without affecting ownership or pointee lifetime.
+ * @remark Convenience wrapper over assignment for generic pointer-like interoperability.
+ */
+
+/**
+ * @overload constexpr void reset(this auto& self, std::nullptr_t null = nullptr) noexcept
+ *
+ * @param self The pointer being disengaged.
+ * @param null A `nullptr` literal.
+ *
+ * @post `self.get() == nullptr`.
+ *
+ * @note Due to the default argument to the `null` parameter, this provides nullary invocable ergonomics for the simple null-reset operation.
+ * @remark Disengages the pointer by resetting the stored address to `nullptr`.
+ * @note Enabled by policy `nullability::yes`.
+ */
+
+/**
+ * @fn constexpr metadata::pointer release(this auto&& self) noexcept
+ *
+ * @param self The pointer exposing its stored address and being disengaged.
+ *
+ * @return The previously stored address.
+ *
+ * @post `get() == nullptr`.
+ *
+ * @remark Returns the stored address and disengages the pointer.
+ * @remark Does not affect ownership or pointee lifetime.
+ * @remark Provided for interoperability with generic pointer-like interfaces.
+ * @note Enabled by policy `nullability::yes`.
+ */
+
+/**
+ * @fn constexpr explicit operator bool(this auto&& self) noexcept
+ *
+ * @return `true` if the pointer is engaged; otherwise `false`.
+ *
+ * @remark Satisfies boolean-testable requirements in generic templates and logical contexts.
+ * @remark Models traditional pointer engagement semantics through contextual conversion to `bool`.
+ * @note Enabled by policy `nullability::yes`.
+ */
+/**
+ * @overload constexpr explicit operator bool(this auto&& self) noexcept
+ *
+ * @return `true`. (The pointer is guaranteed by invariant to always be engaged.)
+ *
+ * @post Always evaluates to `true`.
+ *
+ * @remark Satisfies boolean-testable requirements in generic templates and logical contexts.
+ * @remark Models pointer interface through contextual conversion to `bool` despite the absence of a disengaged state.
+ * @note Enabled by policy `nullability::no`.
+ * @note Because this overload always returns `true`, compilers may optimize away engagement checks when the concrete type is known.
+ * @note This does not indicate engagement/optionality as policy `nullability::no` implies no disengaged state.
+ */
+
+
+
+/**
+ * @fn constexpr bool operator==(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee>& rhs) noexcept
+ *
+ * @param lhs The left-hand side pointer.
+ * @param rhs The right-hand side pointer.
+ *
+ * @return `true` if both pointers store the same address; otherwise `false`.
+ *
+ * @remark Compares pointer identity (stored addresses), not pointee object values.
+ * @note Enabled by policy `traversal::rebinding`.
+ */
+/**
+ * @overload constexpr bool operator==(const ConcretePtr<Pointee>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+ *
+ * @tparam DerivedT The element type, derived from `Pointee`, of the right-hand side pointer.
+ *
+ * @param lhs The left-hand side pointer.
+ * @param rhs The right-hand side pointer.
+ *
+ * @return `true` if both pointers store the same address; otherwise `false`.
+ *
+ * @remark Enables equality comparison between pointer specializations of related types when that can't be synthesized by implicit conversion to raw pointers.
+ * @remark Compares pointer identity (stored addresses), not pointee object values.
+ * @note Enabled by policy `traversal::rebinding`.
+ */
+/**
+ * @overload constexpr bool operator==(const ConcretePtr<Pointee>& lhs, std::add_pointer_t<DerivedT> rhs) noexcept
+ *
+ * @tparam DerivedT The element type, derived from `Pointee`, of the raw pointer.
+ *
+ * @param lhs The pointer being compared.
+ * @param rhs The raw pointer being compared.
+ *
+ * @return `true` if `lhs.get() == rhs`; otherwise `false`.
+ *
+ * @remark Enables equality comparison with raw pointers-to-derived when that can't be synthesized by implicit conversion to raw pointers.
+ * @remark Compares pointer identity (stored addresses), not pointee object values.
+ * @note Enabled by policy `traversal::rebinding`.
+ */
+/**
+ * @overload constexpr bool operator==(metadata::pointer lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+ *
+ * @tparam DerivedT The element type, derived from `Pointee`, of the concrete pointer.
+ *
+ * @param lhs The raw pointer being compared.
+ * @param rhs The pointer being compared.
+ *
+ * @return `true` if `lhs == rhs.get()`; otherwise `false`.
+ *
+ * @remark Enables comparison with raw pointers-to-base when that can't be synthesized by implicit conversion to raw pointers.
+ * @remark Compares pointer identity (stored addresses), not pointee object values.
+ * @note Enabled by policy `traversal::rebinding`.
+ */
+/**
+ * @overload constexpr bool operator==(const ConcretePtr<Pointee>& ptr, std::nullptr_t null) noexcept
+ *
+ * @param ptr The pointer being compared.
+ * @param null The null pointer value.
+ *
+ * @return `true` if `ptr` is disengaged; otherwise `false`.
+ *
+ * @remark Tests engagement state by comparing the stored address against `nullptr`.
+ * @remark Equivalent to contextual boolean conversion.
+ * @note Enabled by policy `nullability::yes`.
+ */
+
+
+
+/**
+ * @fn constexpr auto operator<=>(const ConcretePtr<Pointee>& lhs, const ConcretePtr<Pointee>& rhs) noexcept
+ *
+ * @param lhs The left-hand side pointer.
+ * @param rhs The right-hand side pointer.
+ *
+ * @return The three-way comparison result of the stored addresses.
+ *
+ * @remark Compares pointer identity (stored addresses), not pointee object values.
+ * @remark Preserves C++ standard raw pointer address ordering semantics.
+ * @note Enabled by policy `traversal::arithmetic`.
+ */
+/**
+ * @overload constexpr auto operator<=>(const ConcretePtr<Pointee>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+ *
+ * @tparam DerivedT The element type, derived from `Pointee`, of the right-hand side pointer.
+ *
+ * @param lhs The left-hand side pointer.
+ * @param rhs The right-hand side pointer.
+ *
+ * @return The three-way comparison result of the stored addresses.
+ *
+ * @remark Enables ordering comparison between pointer specializations of related types when that can't be synthesized by implicit conversion to raw pointers.
+ * @remark Compares pointer identity (stored addresses), not pointee object values.
+ * @remark Preserves C++ standard raw pointer address ordering semantics.
+ * @note Enabled by policy `traversal::arithmetic`.
+ */
+/**
+ * @overload constexpr auto operator<=>(const ConcretePtr<Pointee>& lhs, std::add_pointer_t<DerivedT> rhs) noexcept
+ *
+ * @tparam DerivedT The element type, derived from `Pointee`, of the raw pointer.
+ *
+ * @param lhs The pointer being compared.
+ * @param rhs The raw pointer being compared.
+ *
+ * @return The three-way comparison result of the stored addresses.
+ *
+ * @remark Enables comparison with raw pointers-to-derived when that can't be synthesized by implicit conversion to raw pointers.
+ * @remark Compares pointer identity (stored addresses), not pointee object values.
+ * @remark Preserves C++ standard raw pointer address ordering semantics.
+ * @note Enabled by policy `traversal::arithmetic`.
+ */
+/**
+ * @overload constexpr auto operator<=>(metadata::pointer lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+ *
+ * @tparam DerivedT The element type, derived from `Pointee`, of the concrete pointer.
+ *
+ * @param lhs The raw pointer being compared.
+ * @param rhs The pointer being compared.
+ *
+ * @return The three-way comparison result of the stored addresses.
+ *
+ * @remark Enables comparison with raw pointers-to-base when that can't be synthesized by implicit conversion to raw pointers.
+ * @remark Compares pointer identity (stored addresses), not pointee object values.
+ * @remark Preserves C++ standard raw pointer address ordering semantics.
+ * @note Enabled by policy `traversal::arithmetic`.
+ */
+
+
+
+/**
+ * @fn constexpr metadata::reference ptr_core::operator[](this auto self, metadata::difference_type offset) noexcept
+ *
+ * @param self The pointer whose stored address is the base of the offset address.
+ * @param offset The offset, in elements, to add to the base address to compute the address to dereference.
+ *
+ * @return Reference to the pointee object located at `self.get() + offset`.
+ *
+ * @note Enabled by policy `traversal::arithmetic`.
+ * @note This operator is provided solely to fulfill the requirements of `std::random_access_iterator`.
+ * @deprecated Applying the subscript operator to a pointer conflates pointers with arrays. Use `*(ptr + offset)` for explicit traversal or consider subscripting the container instead.
+ * @warning Accessing beyond the bounds of the referenced contiguous sequence results in undefined behavior.
+ */
+
+
+
+/**
+ * @fn constexpr decltype(auto) ptr_core::operator++(this Self&& self) noexcept
+ *
+ * @tparam Self The deduced concrete pointer type.
+ *
+ * @param self The pointer whose stored address is incremented.
+ *
+ * @return An lvalue or rvalue reference to `self`, preserving its original value category.
+ *
+ * @pre The stored address does not point past the end of the referenced contiguous sequence.
+ * @post `self.get()` refers to the next contiguous element.
+ *
+ * @remark Advances the stored address using built-in pointer increment semantics.
+ * @note Enabled by policy `traversal::arithmetic`.
+ * @warning Advancing beyond the bounds of the referenced contiguous sequence results in undefined behavior.
+ */
+/**
+ * @overload constexpr auto ptr_core::operator++(this Self&& self, int) noexcept
+ *
+ * @tparam Self The deduced concrete pointer type.
+ *
+ * @param self The pointer whose stored address is incremented.
+ *
+ * @return A copy of the pointer prior to increment.
+ *
+ * @pre The stored address does not point past the end of the referenced contiguous sequence.
+ * @post `self.get()` refers to the next contiguous element.
+ *
+ * @remark Advances the stored address using built-in pointer increment semantics.
+ * @note Enabled by policy `traversal::arithmetic`.
+ * @warning Advancing beyond the bounds of the referenced contiguous sequence results in undefined behavior.
+ */
+/**
+ * @fn constexpr decltype(auto) ptr_core::operator--(this Self&& self) noexcept
+ *
+ * @tparam Self The deduced concrete pointer type.
+ *
+ * @param self The pointer whose stored address is decremented.
+ *
+ * @return An lvalue or rvalue reference to `self`, preserving its original value category.
+ *
+ * @pre The stored address does not point to the beginning of the referenced contiguous sequence.
+ * @post `self.get()` refers to the previous contiguous element.
+ *
+ * @remark Retreats the stored address using built-in pointer decrement semantics.
+ * @note Enabled by policy `traversal::arithmetic`.
+ * @warning Decrementing before the bounds of the referenced contiguous sequence results in undefined behavior.
+ */
+/**
+ * @overload constexpr auto ptr_core::operator--(this Self&& self, int) noexcept
+ *
+ * @tparam Self The deduced concrete pointer type.
+ *
+ * @param self The pointer whose stored address is decremented.
+ *
+ * @return A copy of the pointer prior to decrement.
+ *
+ * @pre The stored address does not point to the beginning of the referenced contiguous sequence.
+ * @post `self.get()` refers to the previous contiguous element.
+ *
+ * @remark Retreats the stored address using built-in pointer decrement semantics.
+ * @note Enabled by policy `traversal::arithmetic`.
+ * @warning Decrementing before the bounds of the referenced contiguous sequence results in undefined behavior.
+ */
+/**
+ * @fn constexpr decltype(auto) ptr_core::operator+=(this Self&& self, metadata::difference_type offset) noexcept
+ *
+ * @tparam Self The deduced concrete pointer type.
+ *
+ * @param self The pointer whose stored address is advanced.
+ * @param diff The signed offset, in elements, to add.
+ *
+ * @return An lvalue or rvalue reference to `self`, preserving its original value category.
+ *
+ * @pre If `diff` is positive, the stored address points at least `diff - 1` elements before the end of the referenced contiguous sequence.
+ * @pre If `diff` is negative, the stored address points at least `-diff` elements after the beginning of the referenced contiguous sequence.
+ * @post `self.get()` refers to the address `diff` elements after its previous value.
+ *
+ * @remark Advances the stored address using built-in pointer arithmetic semantics.
+ * @note Enabled by policy `traversal::arithmetic`.
+ * @warning Traversing outside the bounds of the referenced contiguous sequence results in undefined behavior.
+ */
+/**
+ * @fn constexpr decltype(auto) ptr_core::operator-=(this Self&& self, metadata::difference_type offset) noexcept
+ *
+ * @tparam Self The deduced concrete pointer type.
+ *
+ * @param self The pointer whose stored address is retreated.
+ * @param diff The signed offset, in elements, to subtract.
+ *
+ * @return An lvalue or rvalue reference to `self`, preserving its original value category.
+ *
+ * @pre If `diff` is negative, the stored address points at least `(-diff) - 1` elements before the end of the referenced contiguous sequence.
+ * @pre If `diff` is positive, the stored address points at least `diff` elements after the beginning of the referenced contiguous sequence.
+ * @post `self.get()` refers to the address `diff` elements before its previous value.
+ *
+ * @remark Retreats the stored address using built-in pointer arithmetic semantics.
+ * @note Enabled by policy `traversal::arithmetic`.
+ * @warning Traversing outside the bounds of the referenced contiguous sequence results in undefined behavior.
+ */
+/**
+ * @fn constexpr ConcretePtr<Pointee> operator+(ConcretePtr<Pointee> ptr, metadata::difference_type offset) noexcept
+ *
+ * @param ptr The base pointer.
+ * @param diff The signed offset, in elements, to add.
+ *
+ * @return A new pointer referring to the address `diff` elements after `ptr`.
+ *
+ * @pre If `diff` is positive, the stored address points at least `diff - 1` elements before the end of the referenced contiguous sequence.
+ * @pre If `diff` is negative, the stored address points at least `-diff` elements after the beginning of the referenced contiguous sequence.
+ *
+ * @remark Computes an offset pointer using built-in pointer arithmetic semantics.
+ * @remark Does not modify the original pointer.
+ * @note Enabled by policy `traversal::arithmetic`.
+ * @warning Traversing outside the bounds of the referenced contiguous sequence results in undefined behavior.
+ */
+/**
+ * @overload constexpr ConcretePtr<Pointee> operator+(metadata::difference_type offset, ConcretePtr<Pointee> ptr) noexcept
+ *
+ * @param diff The signed offset, in elements, to add.
+ * @param ptr The base pointer.
+ *
+ * @return A new pointer referring to the address `diff` elements after `ptr`.
+ *
+ * @pre If `diff` is positive, the stored address points at least `diff - 1` elements before the end of the referenced contiguous sequence.
+ * @pre If `diff` is negative, the stored address points at least `-diff` elements after the beginning of the referenced contiguous sequence.
+ *
+ * @remark Provides commutative addition syntax.
+ * @remark Does not modify the original pointer.
+ * @note Enabled by policy `traversal::arithmetic`.
+ * @warning Traversing outside the bounds of the referenced contiguous sequence results in undefined behavior.
+ */
+/**
+ * @fn constexpr ConcretePtr<Pointee> operator-(ConcretePtr<Pointee> ptr, metadata::difference_type offset) noexcept
+ *
+ * @param ptr The base pointer.
+ * @param diff The signed offset, in elements, to subtract.
+ *
+ * @return A new pointer referring to the address `diff` elements before `ptr`.
+ *
+ * @pre If `diff` is negative, the stored address points at least `(-diff) - 1` elements before the end of the referenced contiguous sequence.
+ * @pre If `diff` is positive, the stored address points at least `diff` elements after the beginning of the referenced contiguous sequence.
+ *
+ * @remark Computes an offset pointer using built-in pointer arithmetic semantics.
+ * @remark Does not modify the original pointer.
+ * @note Enabled by policy `traversal::arithmetic`.
+ * @warning Traversing outside the bounds of the referenced contiguous sequence results in undefined behavior.
+ */
+/**
+ * @fn constexpr metadata::difference_type operator-(ConcretePtr<Pointee> lhs, ConcretePtr<Pointee> rhs) noexcept
+ *
+ * @param lhs The left-hand side pointer.
+ * @param rhs The right-hand side pointer.
+ *
+ * @return The distance, in elements, between the stored addresses.
+ *
+ * @pre `lhs` and `rhs` point into the same contiguous sequence.
+ *
+ * @remark Equivalent to `lhs.get() - rhs.get()`.
+ * @remark The result is positive when `lhs` refers to a later element than `rhs`.
+ * @note Enabled by policy `traversal::arithmetic`.
+ * @warning Subtracting pointers that do not point into the same contiguous sequence results in undefined behavior.
+ */
+
+
+/**
+ * @fn std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& stream, const ConcretePtr<Pointee>& ptr)
+ *
+ * @tparam CharT The character type of the stream.
+ * @tparam Traits The character traits type of the stream.
+ *
+ * @param stream The destination output stream.
+ * @param ptr The pointer whose stored address is to be formatted.
+ *
+ * @return `stream`.
+ *
+ * @remark Outputs the stored address using the standard pointer formatting rules of the stream.
+ * @remark Formats pointer identity only; the pointee object is not inspected.
+ * @remark Preserves cv-qualification during conversion to `const void*` before insertion.
+ * @remark Provided as a hidden friend to enable argument-dependent lookup.
+ */
+
+
+
+/**
+ * @fn static constexpr metadata::pointer apply_nullability_policy(metadata::pointer source) noexcept(!ptr_policies::nonnullable_v<policy_set>)
+ *
+ * @param source The address to validate.
+ *
+ * @return The same address if valid according to the selected `nullability` policy.
+ *
+ * @pre The selected policies include `nullability::yes`, or `source != nullptr`.
+ * @post If the selected policies include `nullability::no`, the returned pointer is guaranteed to be non-null.
+ *
+ * @throws std::invalid_argument if the selected policies include `nullability::no` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
+ *
+ * @remark Centralizes enforcement of the non-null invariant when the selected policies include `nullability::no` for all constructors and assignment operators accepting raw or pointer-like inputs.
+ * @note This function does not perform lifetime validation; it assumes the caller ensures the pointee remains valid.
+ * @note Enabled regardless of policy selections because policy-specific rules are applied inside the function body.
+ */
+
 
     /**
      * Post-class method documentation goes here.
@@ -1468,7 +2175,7 @@ export namespace base::vocab::inline ptr {
      * @warning Decrementing before the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr Self& cursor_ptr::operator+=(this Self&& self, difference_type diff) noexcept
+     * @fn constexpr Self& cursor_ptr::operator+=(this Self&& self, difference_type offset) noexcept
      *
      * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
      *
@@ -1483,7 +2190,7 @@ export namespace base::vocab::inline ptr {
      * @warning Advancing outside the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr Self& cursor_ptr::operator-=(this Self&& self, difference_type diff) noexcept
+     * @fn constexpr Self& cursor_ptr::operator-=(this Self&& self, difference_type offset) noexcept
      *
      * @tparam Self The non-const `cursor_ptr` type deduced from the call site.
      *
@@ -1498,7 +2205,7 @@ export namespace base::vocab::inline ptr {
      * @warning Retreating outside the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr cursor_ptr operator+(cursor_ptr ptr, difference_type diff) noexcept
+     * @fn constexpr cursor_ptr operator+(cursor_ptr ptr, difference_type offset) noexcept
      *
      * @param ptr The base `cursor_ptr`.
      * @param diff The signed offset, in elements, to add to the stored address.
@@ -1510,7 +2217,7 @@ export namespace base::vocab::inline ptr {
      * @warning Advancing outside the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @overload constexpr cursor_ptr operator+(difference_type diff, cursor_ptr ptr) noexcept
+     * @overload constexpr cursor_ptr operator+(difference_type offset, cursor_ptr ptr) noexcept
      *
      * @param diff The signed offset, in elements, to add to the stored address.
      * @param ptr The base `cursor_ptr`.
@@ -1522,7 +2229,7 @@ export namespace base::vocab::inline ptr {
      * @warning Advancing outside the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr cursor_ptr operator-(cursor_ptr ptr, difference_type diff) noexcept
+     * @fn constexpr cursor_ptr operator-(cursor_ptr ptr, difference_type offset) noexcept
      *
      * @param ptr The base `cursor_ptr`.
      * @param diff The signed offset, in elements, to subtract from the stored address.
