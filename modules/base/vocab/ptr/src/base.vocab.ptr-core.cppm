@@ -108,7 +108,7 @@ export namespace base::vocab::inline ptr {
      */
     template<template<typename> typename ConcretePtr, typename Pointee, ptr_policies::PtrPolicyList PolicySet>
         requires is_valid_pointee_v<Pointee>
-    class ptr_core : public pointer_metadata<Pointee> {
+    class ptr_core {
     public:
         struct derived_from_ptr_core;
 
