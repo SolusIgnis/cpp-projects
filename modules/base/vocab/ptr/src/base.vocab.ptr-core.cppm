@@ -29,72 +29,10 @@ export module base.vocab.ptr:core;
 
 import std;
 
-import base.meta.sequences;
 import base.meta.traits;
 import base.meta.concepts;
 
 import :metadata;
-
-#ifdef CONTENTS_OF_METADATA_PARTITION_FOR_EXPOSITION_ONLY
-namespace base::vocab::inline ptr {
-    template<typename Pointee>
-    struct pointer_metadata {
-    private:
-        struct void_reference;
-
-    public:
-        /**
-         * @typedef element_type
-         * @brief The stored element type.
-         */
-        using element_type = Pointee;
-
-        /**
-         * @typedef value_type
-         * @brief The unqualified element type (`std::remove_cv_t<Pointee>`).
-         */
-        using value_type = std::remove_cv_t<Pointee>;
-
-        /**
-         * @typedef pointer
-         * @brief The raw pointer type of the stored address (`Pointee*`).
-         */
-        using pointer = std::add_pointer_t<Pointee>;
-
-        /**
-         * @typedef reference
-         * @brief The reference type (`Pointee&`).
-         * @remark When `Pointee` is `void`, uses `void_reference&` because `void` as a function parameter is ill-formed.
-         */
-        using reference = std::conditional_t<
-            std::is_void_v<Pointee>,
-            std::add_lvalue_reference_t<void_reference>,
-            std::add_lvalue_reference_t<Pointee>
-        >;
-
-        /**
-         * @typedef rvalue_reference
-         * @brief The rvalue reference type (`Pointee&&`).
-         *
-         * @remark When `Pointee` is `void`, uses `void_reference&&` because `void` as a function parameter is ill-formed.
-         * @note Used only for deletion of invalid overloads to prevent binding to temporaries.
-         */
-        using rvalue_reference = std::conditional_t<
-            std::is_void_v<Pointee>,
-            std::add_rvalue_reference_t<void_reference>,
-            std::add_rvalue_reference_t<Pointee>
-        >;
-
-        /**
-         * @typedef difference_type
-         * @brief Pointer difference type (`std::ptrdiff_t`).
-         *
-         * @note Provided to model pointer interface even when arithmetic is disabled.
-         */
-        using difference_type = std::ptrdiff_t;
-    }; //struct pointer_metadata
-} //namespace base::vocab::inline ptr
-#endif
 
 export import :policies;
 
@@ -1510,7 +1448,7 @@ struct std::hash<T> {
     {
         return std::hash<typename T::pointer>{}(ptr.get());
     }
-};
+}; //struct std::hash
 
 /**
  * @brief Partial specialization of `std::formatter` for `VocabPtr`s.
@@ -1533,4 +1471,4 @@ struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
             const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx
         );
     }
-};
+}; //struct std::formatter

@@ -28,8 +28,6 @@ export module base.vocab.ptr:policies;
 import std;
 
 import base.meta.sequences;
-import base.meta.traits;
-import base.meta.concepts;
 
 namespace base::vocab::inline ptr::ptr_policies {
     namespace traversal {
