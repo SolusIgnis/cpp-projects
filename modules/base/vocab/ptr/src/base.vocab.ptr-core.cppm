@@ -113,6 +113,8 @@ export namespace base::vocab::inline ptr {
         struct derived_from_ptr_core;
 
     private:
+        using policy_set = PolicySet;
+
         struct void_reference;
 
     public:
@@ -170,8 +172,6 @@ export namespace base::vocab::inline ptr {
         using iterator_category = std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::random_access_iterator_tag, void>;
 
     private:
-        using policy_set = PolicySet;
-
         pointer address_; ///<@brief The stored address used by all concrete pointer types.
 
     public:
