@@ -114,6 +114,7 @@ export namespace base::vocab::inline ptr {
 
     private:
         using policy_set = PolicySet;
+        using concrete_ptr_instance = ConcretePtr<Pointee>;
 
         struct void_reference;
 
@@ -197,7 +198,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Swaps addresses.
-        friend constexpr void swap(ConcretePtr<element_type>& lhs, ConcretePtr<element_type>& rhs) noexcept
+        friend constexpr void swap(concrete_ptr_instance& lhs, concrete_ptr_instance& rhs) noexcept
         {
             using std::swap;
             swap(lhs.address_, rhs.address_);
@@ -486,7 +487,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Compares equality against `nullptr`.
-        [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<element_type>& ptr, std::nullptr_t null) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const concrete_ptr_instance& ptr, std::nullptr_t null) noexcept
             requires ptr_policies::nullable_v<policy_set>
         {
             return (ptr.get() == null);
@@ -584,7 +585,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
-        friend constexpr ConcretePtr<element_type> operator+(ConcretePtr<element_type> ptr, difference_type offset) noexcept
+        friend constexpr concrete_ptr_instance operator+(concrete_ptr_instance ptr, difference_type offset) noexcept
             requires base::meta::concepts::CompletePointee<element_type>
             && ptr_policies::arithmetic_traversal_v<policy_set>
         {
@@ -592,7 +593,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Pointer addition (commutative): gets a pointer to an address a given distance after the stored address.
-        friend constexpr ConcretePtr<element_type> operator+(difference_type offset, ConcretePtr<element_type> ptr) noexcept
+        friend constexpr concrete_ptr_instance operator+(difference_type offset, concrete_ptr_instance ptr) noexcept
             requires base::meta::concepts::CompletePointee<element_type>
             && ptr_policies::arithmetic_traversal_v<policy_set>
         {
@@ -600,7 +601,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Pointer subtraction: gets a pointer to an address a given distance before the stored address.
-        friend constexpr ConcretePtr<element_type> operator-(ConcretePtr<element_type> ptr, difference_type offset) noexcept
+        friend constexpr concrete_ptr_instance operator-(concrete_ptr_instance ptr, difference_type offset) noexcept
             requires base::meta::concepts::CompletePointee<element_type>
             && ptr_policies::arithmetic_traversal_v<policy_set>
         {
@@ -608,7 +609,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Pointer subtraction (difference): computes the distance between the addresses stored in two pointers.
-        friend constexpr difference_type operator-(ConcretePtr<element_type> lhs, ConcretePtr<element_type> rhs) noexcept
+        friend constexpr difference_type operator-(concrete_ptr_instance lhs, concrete_ptr_instance rhs) noexcept
             requires base::meta::concepts::CompletePointee<element_type>
             && ptr_policies::arithmetic_traversal_v<policy_set>
         {
@@ -660,25 +661,25 @@ export namespace base::vocab::inline ptr {
             ;
 
         ///@brief Deleted pointer addition to prevent misuse as an iterator.
-        friend ConcretePtr<element_type> operator+(ConcretePtr<element_type>, difference_type)
+        friend concrete_ptr_instance operator+(concrete_ptr_instance, difference_type)
             requires ptr_policies::rebinding_traversal_v<policy_set>
         = delete /*("Pointer addition deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
             ;
 
         ///@brief Deleted pointer addition to prevent misuse as an iterator.
-        friend ConcretePtr<element_type> operator+(difference_type, ConcretePtr<element_type>)
+        friend concrete_ptr_instance operator+(difference_type, concrete_ptr_instance)
             requires ptr_policies::rebinding_traversal_v<policy_set>
         = delete /*("Pointer addition deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
             ;
 
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
-        friend difference_type operator-(ConcretePtr<element_type>, ConcretePtr<element_type>)
+        friend difference_type operator-(concrete_ptr_instance, concrete_ptr_instance)
             requires ptr_policies::rebinding_traversal_v<policy_set>
         = delete /*("Pointer subtraction deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
             ;
 
         ///@brief Deleted pointer subtraction to prevent misuse as an iterator.
-        friend ConcretePtr<element_type> operator-(ConcretePtr<element_type>, difference_type)
+        friend concrete_ptr_instance operator-(concrete_ptr_instance, difference_type)
             requires ptr_policies::rebinding_traversal_v<policy_set>
         = delete /*("Pointer subtraction deleted by policy `traversal::rebinding` to prevent pointer arithmetic. Use `traversal::arithmetic` pointers for iterators.")*/
             ;
@@ -691,7 +692,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Compares in terms of pointer identity.
         [[nodiscard]] friend constexpr auto
-            operator<=>(const ConcretePtr<element_type>& lhs, const ConcretePtr<element_type>& rhs) noexcept
+            operator<=>(const concrete_ptr_instance& lhs, const concrete_ptr_instance& rhs) noexcept
             requires ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return (lhs.get() <=> rhs.get());
@@ -701,7 +702,7 @@ export namespace base::vocab::inline ptr {
         template<std::derived_from<element_type> DerivedT>
             requires (!std::same_as<DerivedT, element_type>)
         [[nodiscard]] friend constexpr auto
-            operator<=>(const ConcretePtr<element_type>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+            operator<=>(const concrete_ptr_instance& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
             requires ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return (lhs.get() <=> rhs.get());
@@ -710,7 +711,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Covariantly compares a `ConcretePtr`-to-base with a raw pointer-to-derived in terms of pointer identity.
         template<std::derived_from<element_type> DerivedT>
         [[nodiscard]] friend constexpr auto
-            operator<=>(const ConcretePtr<element_type>& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+            operator<=>(const concrete_ptr_instance& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
             requires ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return (lhs.get() <=> rhs);
@@ -725,7 +726,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Deleted comparison against `nullptr`.
-        [[nodiscard]] friend constexpr bool operator==(const ConcretePtr<element_type>&, std::nullptr_t) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const concrete_ptr_instance&, std::nullptr_t) noexcept
             requires ptr_policies::arithmetic_traversal_v<policy_set>
         = delete
             ;
@@ -734,7 +735,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Compares equality in terms of pointer identity.
         [[nodiscard]] friend constexpr bool
-            operator==(const ConcretePtr<element_type>& lhs, const ConcretePtr<element_type>& rhs) noexcept
+            operator==(const concrete_ptr_instance& lhs, const concrete_ptr_instance& rhs) noexcept
             requires ptr_policies::rebinding_traversal_v<policy_set>
         {
             return (lhs.get() == rhs.get());
@@ -744,7 +745,7 @@ export namespace base::vocab::inline ptr {
         template<std::derived_from<element_type> DerivedT>
             requires (!std::same_as<DerivedT, element_type>)
         [[nodiscard]] friend constexpr bool
-            operator==(const ConcretePtr<element_type>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+            operator==(const concrete_ptr_instance& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
             requires ptr_policies::rebinding_traversal_v<policy_set>
         {
             return (lhs.get() == rhs.get());
@@ -753,7 +754,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Covariantly compares equality of an `ConcretePtr`-to-base with a raw pointer-to-derived in terms of pointer identity.
         template<std::derived_from<element_type> DerivedT>
         [[nodiscard]] friend constexpr bool
-            operator==(const ConcretePtr<element_type>& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+            operator==(const concrete_ptr_instance& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
             requires ptr_policies::rebinding_traversal_v<policy_set>
         {
             return (lhs.get() == rhs);
@@ -786,7 +787,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Outputs a `ptr_core` address to a `std::basic_ostream`.
         template<typename CharT, typename Traits>
-        friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& stream, const ConcretePtr<element_type>& ptr)
+        friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& stream, const concrete_ptr_instance& ptr)
         {
             // In order to support pointers to arbitrarily cv-qualified objects:
             // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
@@ -1017,7 +1018,7 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `nullability::yes`.
      */
     /**
-     * @fn constexpr void swap(ConcretePtr<element_type>& lhs, ConcretePtr<element_type>& rhs) noexcept
+     * @fn constexpr void swap(concrete_ptr_instance& lhs, concrete_ptr_instance& rhs) noexcept
      *
      * @param lhs The first pointer object.
      * @param rhs The second pointer object.
@@ -1153,7 +1154,7 @@ export namespace base::vocab::inline ptr {
      * @note This does not indicate engagement/optionality as policy `nullability::no` implies no disengaged state.
      */
     /**
-     * @fn constexpr bool operator==(const ConcretePtr<element_type>& lhs, const ConcretePtr<element_type>& rhs) noexcept
+     * @fn constexpr bool operator==(const concrete_ptr_instance& lhs, const concrete_ptr_instance& rhs) noexcept
      *
      * @param lhs The left-hand side pointer.
      * @param rhs The right-hand side pointer.
@@ -1164,7 +1165,7 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `traversal::rebinding`.
      */
     /**
-     * @overload constexpr bool operator==(const ConcretePtr<element_type>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+     * @overload constexpr bool operator==(const concrete_ptr_instance& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
      *
      * @tparam DerivedT The element type, derived from `element_type`, of the right-hand side pointer.
      *
@@ -1178,7 +1179,7 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `traversal::rebinding`.
      */
     /**
-     * @overload constexpr bool operator==(const ConcretePtr<element_type>& lhs, std::add_pointer_t<DerivedT> rhs) noexcept
+     * @overload constexpr bool operator==(const concrete_ptr_instance& lhs, std::add_pointer_t<DerivedT> rhs) noexcept
      *
      * @tparam DerivedT The element type, derived from `element_type`, of the raw pointer.
      *
@@ -1206,7 +1207,7 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `traversal::rebinding`.
      */
     /**
-     * @overload constexpr bool operator==(const ConcretePtr<element_type>& ptr, std::nullptr_t null) noexcept
+     * @overload constexpr bool operator==(const concrete_ptr_instance& ptr, std::nullptr_t null) noexcept
      *
      * @param ptr The pointer being compared.
      * @param null The null pointer value.
@@ -1218,7 +1219,7 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `nullability::yes`.
      */
     /**
-     * @fn constexpr auto operator<=>(const ConcretePtr<element_type>& lhs, const ConcretePtr<element_type>& rhs) noexcept
+     * @fn constexpr auto operator<=>(const concrete_ptr_instance& lhs, const concrete_ptr_instance& rhs) noexcept
      *
      * @param lhs The left-hand side pointer.
      * @param rhs The right-hand side pointer.
@@ -1230,7 +1231,7 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `traversal::arithmetic`.
      */
     /**
-     * @overload constexpr auto operator<=>(const ConcretePtr<element_type>& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+     * @overload constexpr auto operator<=>(const concrete_ptr_instance& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
      *
      * @tparam DerivedT The element type, derived from `element_type`, of the right-hand side pointer.
      *
@@ -1245,7 +1246,7 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `traversal::arithmetic`.
      */
     /**
-     * @overload constexpr auto operator<=>(const ConcretePtr<element_type>& lhs, std::add_pointer_t<DerivedT> rhs) noexcept
+     * @overload constexpr auto operator<=>(const concrete_ptr_instance& lhs, std::add_pointer_t<DerivedT> rhs) noexcept
      *
      * @tparam DerivedT The element type, derived from `element_type`, of the raw pointer.
      *
@@ -1388,7 +1389,7 @@ export namespace base::vocab::inline ptr {
      * @warning Traversing outside the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr ConcretePtr<element_type> operator+(ConcretePtr<element_type> ptr, difference_type offset) noexcept
+     * @fn constexpr concrete_ptr_instance operator+(concrete_ptr_instance ptr, difference_type offset) noexcept
      *
      * @param ptr The base pointer.
      * @param offset The signed offset, in elements, to add.
@@ -1404,7 +1405,7 @@ export namespace base::vocab::inline ptr {
      * @warning Traversing outside the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @overload constexpr ConcretePtr<element_type> operator+(difference_type offset, ConcretePtr<element_type> ptr) noexcept
+     * @overload constexpr concrete_ptr_instance operator+(difference_type offset, concrete_ptr_instance ptr) noexcept
      *
      * @param offset The signed offset, in elements, to add.
      * @param ptr The base pointer.
@@ -1420,7 +1421,7 @@ export namespace base::vocab::inline ptr {
      * @warning Traversing outside the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr ConcretePtr<element_type> operator-(ConcretePtr<element_type> ptr, difference_type offset) noexcept
+     * @fn constexpr concrete_ptr_instance operator-(concrete_ptr_instance ptr, difference_type offset) noexcept
      *
      * @param ptr The base pointer.
      * @param offset The signed offset, in elements, to subtract.
@@ -1436,7 +1437,7 @@ export namespace base::vocab::inline ptr {
      * @warning Traversing outside the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr difference_type operator-(ConcretePtr<element_type> lhs, ConcretePtr<element_type> rhs) noexcept
+     * @fn constexpr difference_type operator-(concrete_ptr_instance lhs, concrete_ptr_instance rhs) noexcept
      *
      * @param lhs The left-hand side pointer.
      * @param rhs The right-hand side pointer.
@@ -1451,7 +1452,7 @@ export namespace base::vocab::inline ptr {
      * @warning Subtracting pointers that do not point into the same contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& stream, const ConcretePtr<element_type>& ptr)
+     * @fn std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& stream, const concrete_ptr_instance& ptr)
      *
      * @tparam CharT The character type of the stream.
      * @tparam Traits The character traits type of the stream.
