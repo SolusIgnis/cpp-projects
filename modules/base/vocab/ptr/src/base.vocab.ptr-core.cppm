@@ -1508,7 +1508,7 @@ struct std::hash<T> {
     ///@brief Hashes the pointer based on the underlying address.
     [[nodiscard]] constexpr std::size_t operator()(const T& ptr) const noexcept
     {
-        return std::hash<typename T::pointer>{}(ptr.get());
+        return std::hash<typename T::pointer>{}(nullptr);
     }
 };
 
