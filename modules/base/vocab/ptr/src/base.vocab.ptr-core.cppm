@@ -1276,7 +1276,7 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `traversal::arithmetic`.
      */
     /**
-     * @fn constexpr reference ptr_core::operator[](this auto self, difference_type offset) noexcept
+     * @fn constexpr auto& operator[](this auto self, difference_type offset) noexcept
      *
      * @param self The pointer whose stored address is the base of the offset address.
      * @param offset The offset, in elements, to add to the base address to compute the address to dereference.
@@ -1289,7 +1289,7 @@ export namespace base::vocab::inline ptr {
      * @warning Accessing beyond the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr decltype(auto) ptr_core::operator++(this Self&& self) noexcept
+     * @fn constexpr decltype(auto) operator++(this Self&& self) noexcept
      *
      * @tparam Self The deduced concrete pointer type.
      *
@@ -1305,7 +1305,7 @@ export namespace base::vocab::inline ptr {
      * @warning Advancing beyond the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @overload constexpr auto ptr_core::operator++(this Self&& self, int) noexcept
+     * @overload constexpr auto operator++(this Self&& self, int) noexcept
      *
      * @tparam Self The deduced concrete pointer type.
      *
@@ -1321,7 +1321,7 @@ export namespace base::vocab::inline ptr {
      * @warning Advancing beyond the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr decltype(auto) ptr_core::operator--(this Self&& self) noexcept
+     * @fn constexpr decltype(auto) operator--(this Self&& self) noexcept
      *
      * @tparam Self The deduced concrete pointer type.
      *
@@ -1337,7 +1337,7 @@ export namespace base::vocab::inline ptr {
      * @warning Decrementing before the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @overload constexpr auto ptr_core::operator--(this Self&& self, int) noexcept
+     * @overload constexpr auto operator--(this Self&& self, int) noexcept
      *
      * @tparam Self The deduced concrete pointer type.
      *
@@ -1353,7 +1353,7 @@ export namespace base::vocab::inline ptr {
      * @warning Decrementing before the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr decltype(auto) ptr_core::operator+=(this Self&& self, difference_type offset) noexcept
+     * @fn constexpr decltype(auto) operator+=(this Self&& self, difference_type offset) noexcept
      *
      * @tparam Self The deduced concrete pointer type.
      *
@@ -1371,7 +1371,7 @@ export namespace base::vocab::inline ptr {
      * @warning Traversing outside the bounds of the referenced contiguous sequence results in undefined behavior.
      */
     /**
-     * @fn constexpr decltype(auto) ptr_core::operator-=(this Self&& self, difference_type offset) noexcept
+     * @fn constexpr decltype(auto) operator-=(this Self&& self, difference_type offset) noexcept
      *
      * @tparam Self The deduced concrete pointer type.
      *
