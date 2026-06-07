@@ -40,8 +40,10 @@
  *   - `nullable`
  *   - `always_engaged`
  *
- * A valid `PtrPolicyList` selects exactly one policy from each
- * group. This partition also provides facilities for validating
+ * Each policy exposes a `policy_group` alias identifying the
+ * semantic/behavioral axis to which it belongs. A valid
+ * `PtrPolicyList` selects exactly one policy from each group.
+ * This partition also provides facilities for validating
  * policy lists, querying active policies, and mapping policy
  * groups to their selected policy states.
  */
@@ -55,7 +57,7 @@ import base.meta.sequences;
 
 namespace base::vocab::inline ptr::ptr_policies {
     namespace traversal {
-        ///@brief Policy-group marker for `traversal` policies.
+        ///@brief `policy_group` marker for `traversal` policies.
         struct group;
 
         /**
@@ -83,7 +85,7 @@ namespace base::vocab::inline ptr::ptr_policies {
     } //namespace traversal
 
     namespace reference_binding {
-        ///@brief Policy-group marker for `reference_binding` policies.
+        ///@brief `policy_group` marker for `reference_binding` policies.
         struct group;
 
         /**
@@ -111,7 +113,7 @@ namespace base::vocab::inline ptr::ptr_policies {
     } //namespace reference_binding
 
     namespace pointer_binding {
-        ///@brief Policy-group marker for `pointer_binding` policies.
+        ///@brief `policy_group` marker for `pointer_binding` policies.
         struct group;
 
         /**
@@ -138,7 +140,7 @@ namespace base::vocab::inline ptr::ptr_policies {
     } //namespace pointer_binding
 
     namespace nullability {
-        ///@brief Policy-group marker for `nullability` policies.
+        ///@brief `policy_group` marker for `nullability` policies.
         struct group;
 
         /**
@@ -241,6 +243,10 @@ namespace base::vocab::inline ptr::ptr_policies {
     template<TypeSequence GroupList, TypeSequence PolicyList>
     struct valid_policy_list;
 
+    /**
+     * @brief Implementation of `valid_policy_list` decomposing a concrete group sequence.
+     * @internal
+     */
     template<typename... Groups, TypeSequence PolicyList>
     struct valid_policy_list<type_list<Groups...>, PolicyList>
         : std::bool_constant<(... && exactly_one_policy_v<Groups, PolicyList>)> {};
@@ -252,6 +258,9 @@ namespace base::vocab::inline ptr::ptr_policies {
      *
      * @details A valid pointer policy list is a `TypeSequence`
      * containing exactly one policy from each policy group.
+     * This guarantees that every behavioral axis has a single
+     * compile-time selection and prevents conflicting policy
+     * combinations.
      *
      * @see `policy_groups` for the canonical group list, `TypeSequence`, and `valid_policy_list`.
      */
