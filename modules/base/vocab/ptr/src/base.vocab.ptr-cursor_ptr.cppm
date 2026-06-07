@@ -99,7 +99,7 @@ export namespace base::vocab::inline ptr {
         cursor_ptr,
         Pointee,
         ptr_policies::type_list<
-            ptr_policies::nullability::no,
+            ptr_policies::nullability::always_engaged,
             ptr_policies::pointer_binding::allowed,
             ptr_policies::reference_binding::allowed,
             ptr_policies::traversal::arithmetic

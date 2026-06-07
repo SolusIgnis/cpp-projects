@@ -289,19 +289,19 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Default constructor value initializes to null.
         ptr_core() noexcept
-            requires ptr_policies::nullable_v<policy_set>
+            requires ptr_policies::nullable_nullability_v<policy_set>
             : address_{} {}
 
         ///@brief Constructor from `nullptr` initializes to null.
         ptr_core(std::nullptr_t null) noexcept
-            requires ptr_policies::nullable_v<policy_set>
+            requires ptr_policies::nullable_nullability_v<policy_set>
             : address_{null} {}
 
         ///@brief Assignment from `nullptr` rebinds to null.
         template<typename Self>
             requires (!std::is_const_v<Self>)
         Self& operator=(this Self& self, std::nullptr_t null) noexcept
-            requires ptr_policies::nullable_v<policy_set>
+            requires ptr_policies::nullable_nullability_v<policy_set>
         {
             self.address_ = null;
             return self;
@@ -315,21 +315,21 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Deleted default constructor to prevent sources of null initialization.
         ptr_core()
-            requires ptr_policies::nonnullable_v<policy_set>
-        = delete /*("Default constructor deleted by policy `nullability::no` to prevent null initialization. Use `std::optional<ptr_type<T>>` for default-constructible optional pointers.")*/
+            requires ptr_policies::always_engaged_nullability_v<policy_set>
+        = delete /*("Default constructor deleted by policy `nullability::always_engaged` to prevent null initialization. Use `std::optional<ptr_type<T>>` for default-constructible optional pointers.")*/
             ;
 
         ///@brief Deleted constructor from `nullptr` to prevent sources of null initialization.
         ptr_core(std::nullptr_t)
-            requires ptr_policies::nonnullable_v<policy_set>
+            requires ptr_policies::always_engaged_nullability_v<policy_set>
         = delete /*("Constructor from `nullptr` deleted to prevent null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
         ///@brief Deleted assignment from `nullptr` to prevent sources of invalid null rebinding.
         template<typename Self>
         Self& operator=(this Self&&, std::nullptr_t)
-            requires ptr_policies::nonnullable_v<policy_set>
-        = delete /*("Assignment from `nullptr` deleted by policy `nullability::no` to prevent null rebinding. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+            requires ptr_policies::always_engaged_nullability_v<policy_set>
+        = delete /*("Assignment from `nullptr` deleted by policy `nullability::always_engaged` to prevent null rebinding. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
         //===== Pointer Binding (Forbidden) =====
@@ -496,33 +496,33 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Reset the pointer to `nullptr`.
         constexpr void reset(this auto& self, std::nullptr_t null = nullptr) noexcept
-            requires ptr_policies::nullable_v<policy_set>
+            requires ptr_policies::nullable_nullability_v<policy_set>
         { self = null; }
 
         ///@brief Returns a raw pointer to the stored address while disengaging the pointer.
         [[nodiscard]] constexpr pointer release(this auto&& self) noexcept
-            requires ptr_policies::nullable_v<policy_set>
+            requires ptr_policies::nullable_nullability_v<policy_set>
         {
             return std::exchange(self.address_, nullptr);
         }
 
         ///@brief Compares equality against `nullptr`.
         [[nodiscard]] friend constexpr bool operator==(const concrete_ptr_instance& ptr, std::nullptr_t null) noexcept
-            requires ptr_policies::nullable_v<policy_set>
+            requires ptr_policies::nullable_nullability_v<policy_set>
         {
             return (ptr.get() == null);
         }
 
         ///@brief Contextually converts to `bool` to test if the pointer is engaged.
         [[nodiscard]] constexpr explicit operator bool(this auto&& self) noexcept
-            requires ptr_policies::nullable_v<policy_set>
+            requires ptr_policies::nullable_nullability_v<policy_set>
         { return (self.get() != nullptr); }
 
         //===== Nullability (No) =====
 
         ///@brief Contextually converts to `bool` to "test" if the pointer is engaged. Always returns `true` to confirm invariant.
         [[nodiscard]] constexpr explicit operator bool(this auto&&) noexcept
-            requires ptr_policies::nonnullable_v<policy_set>
+            requires ptr_policies::always_engaged_nullability_v<policy_set>
         { return true; }
 
         //================================================================================
@@ -817,14 +817,14 @@ export namespace base::vocab::inline ptr {
         }
 
     private:
-        ///@brief Enforces the non-null invariant for `nullability::no` pointers by only passing the address through when it is not null but allows unchecked pass-through otherwise.  
+        ///@brief Enforces the non-null invariant for `nullability::always_engaged` pointers by only passing the address through when it is not null but allows unchecked pass-through otherwise.  
         [[nodiscard]] static constexpr pointer apply_nullability_policy(pointer source)
-            noexcept(!ptr_policies::nonnullable_v<policy_set>)
+            noexcept(!ptr_policies::always_engaged_nullability_v<policy_set>)
         {  
-            if constexpr (ptr_policies::nonnullable_v<policy_set>) {  
+            if constexpr (ptr_policies::always_engaged_nullability_v<policy_set>) {  
                 if (source == nullptr) [[unlikely]] {  
                     throw std::invalid_argument(  
-                        "`nullability::no` pointers cannot be constructed or assigned from a null pointer."  
+                        "`nullability::always_engaged` pointers cannot be constructed or assigned from a null pointer."  
                     );  
                 }  
             }  
@@ -839,7 +839,7 @@ export namespace base::vocab::inline ptr {
      *
      * @param source The pointer being converted.
      *
-     * @pre If the selected policies include `nullability::no`, `source` must not be null.
+     * @pre If the selected policies include `nullability::always_engaged`, `source` must not be null.
      * @pre If not null, `source` must point to a valid object that outlives the resulting pointer.
      * @post `get() == source.get()`.
      *
@@ -874,11 +874,11 @@ export namespace base::vocab::inline ptr {
      *
      * @param source The raw pointer to bind.
      *
-     * @pre If the selected policies include `nullability::no`, `source` must not be null.
+     * @pre If the selected policies include `nullability::always_engaged`, `source` must not be null.
      * @pre If not null, `source` must point to a valid object that outlives the resulting pointer.
      * @post `get() == static_cast<pointer>(source)`.
      *
-     * @throws std::invalid_argument if the selected policies include `nullability::no` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
+     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
      * @details Stores the supplied address after applying the configured nullability
      * policy. Captures the original argument type prior to decay through a forwarding
@@ -900,11 +900,11 @@ export namespace base::vocab::inline ptr {
      * @param source The pointer-like object providing access to a pointer-compatible address value.
      *
      * @pre `source.get()` must be a valid expression convertible to `pointer`.
-     * @pre If the selected policies include `nullability::no`, `source.get()` must not be null.
+     * @pre If the selected policies include `nullability::always_engaged`, `source.get()` must not be null.
      * @pre If not null, `source.get()` must point to a valid object that outlives the resulting pointer.
      * @post `get() == static_cast<pointer>(source.get())`.
      *
-     * @throws std::invalid_argument if the selected policies include `nullability::no` and `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
+     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
      * @details Stores the supplied address after applying the configured nullability
      * policy. Supports covariance, qualification conversion, and type erasure.
@@ -921,7 +921,7 @@ export namespace base::vocab::inline ptr {
      * @post `get() == nullptr`.
      *
      * @remark Default-constructs a disengaged pointer by value initialization of the stored address.
-     * @note Enabled by policy `nullability::yes`.
+     * @note Enabled by policy `nullability::nullable`.
      */
     /**
      * @overload constexpr ptr_core(std::nullptr_t null) noexcept
@@ -931,7 +931,7 @@ export namespace base::vocab::inline ptr {
      * @post `get() == nullptr`.
      *
      * @remark Constructs a disengaged pointer.
-     * @note Enabled by policy `nullability::yes`.
+     * @note Enabled by policy `nullability::nullable`.
      */
     /**
      * @fn constexpr Self& operator=(this Self& self, const ConcretePtr<OtherPointee>& source) noexcept
@@ -944,7 +944,7 @@ export namespace base::vocab::inline ptr {
      *
      * @return Reference to `self`.
      *
-     * @pre If the selected policies include `nullability::no`, `source` must not be null.
+     * @pre If the selected policies include `nullability::always_engaged`, `source` must not be null.
      * @pre If not null, `source` must point to a valid object that outlives the resulting pointer.
      * @post `self.get() == source.get()`.
      *
@@ -986,11 +986,11 @@ export namespace base::vocab::inline ptr {
      *
      * @return Reference to `self`.
      *
-     * @pre If the selected policies include `nullability::no`, `source` must not be null.
+     * @pre If the selected policies include `nullability::always_engaged`, `source` must not be null.
      * @pre If not null, `source` must point to a valid object that outlives the resulting pointer.
      * @post `self.get() == static_cast<pointer>(source)`.
      *
-     * @throws std::invalid_argument if the selected policies include `nullability::no` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
+     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
      * @details Stores the supplied address after applying the configured nullability
      * policy. Captures the original argument type prior to decay through a forwarding
@@ -1013,11 +1013,11 @@ export namespace base::vocab::inline ptr {
      * @return Reference to `self`.
      *
      * @pre `source.get()` must be a valid expression convertible to `pointer`.
-     * @pre If the selected policies include `nullability::no`, `source.get()` must not be null.
+     * @pre If the selected policies include `nullability::always_engaged`, `source.get()` must not be null.
      * @pre If not null, `source.get()` must point to a valid object that outlives the resulting pointer.
      * @post `self.get() == static_cast<pointer>(source.get())`.
      *
-     * @throws std::invalid_argument if the selected policies include `nullability::no` and `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
+     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
      * @remark Rebinds the stored address without affecting ownership or pointee lifetime.
      * @note Enabled by policy `pointer_binding::allowed`.
@@ -1035,7 +1035,7 @@ export namespace base::vocab::inline ptr {
      * @post `self.get() == nullptr`.
      *
      * @remark Disengages the pointer.
-     * @note Enabled by policy `nullability::yes`.
+     * @note Enabled by policy `nullability::nullable`.
      */
     /**
      * @fn constexpr void swap(concrete_ptr_instance& lhs, concrete_ptr_instance& rhs) noexcept
@@ -1056,7 +1056,7 @@ export namespace base::vocab::inline ptr {
      *
      * @return A raw `pointer` to the stored address for use by the built-in member access operator.
      *
-     * @pre If the selected policies include `nullability::yes`, `self.get() != nullptr`.
+     * @pre If the selected policies include `nullability::nullable`, `self.get() != nullptr`.
      * @pre The stored address points to a valid object.
      *
      * @remark Provides pointee member access semantics.
@@ -1069,7 +1069,7 @@ export namespace base::vocab::inline ptr {
      *
      * @return Reference to the pointee object.
      *
-     * @pre If the selected policies include `nullability::yes`, `self.get() != nullptr`.
+     * @pre If the selected policies include `nullability::nullable`, `self.get() != nullptr`.
      * @pre The stored address points to a valid object.
      *
      * @note Available only when `element_type` satisfies `base::meta::concepts::CompletePointee` (i.e. is a complete object type).
@@ -1079,7 +1079,7 @@ export namespace base::vocab::inline ptr {
      *
      * @param self The pointer exposing its stored address.
      *
-     * @post If the selected policies include `nullability::no`, the returned pointer is non-null.
+     * @post If the selected policies include `nullability::always_engaged`, the returned pointer is non-null.
      *
      * @return A raw `pointer` to the stored address.
      *
@@ -1088,7 +1088,7 @@ export namespace base::vocab::inline ptr {
     /**
      * @fn constexpr operator pointer() const noexcept
      *
-     * @post If the selected policies include `nullability::no`, the returned pointer is non-null.
+     * @post If the selected policies include `nullability::always_engaged`, the returned pointer is non-null.
      *
      * @return A raw `pointer` to the stored address.
      *
@@ -1135,7 +1135,7 @@ export namespace base::vocab::inline ptr {
      *
      * @note Due to the default argument to the `null` parameter, this provides nullary invocable ergonomics for the simple null-reset operation.
      * @remark Disengages the pointer by resetting the stored address to `nullptr`.
-     * @note Enabled by policy `nullability::yes`.
+     * @note Enabled by policy `nullability::nullable`.
      */
     /**
      * @fn constexpr pointer release(this auto&& self) noexcept
@@ -1149,7 +1149,7 @@ export namespace base::vocab::inline ptr {
      * @remark Returns the stored address and disengages the pointer.
      * @remark Does not affect ownership or pointee lifetime.
      * @remark Provided for interoperability with generic pointer-like interfaces.
-     * @note Enabled by policy `nullability::yes`.
+     * @note Enabled by policy `nullability::nullable`.
      */
     /**
      * @fn constexpr explicit operator bool(this auto&& self) noexcept
@@ -1158,7 +1158,7 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Satisfies boolean-testable requirements in generic templates and logical contexts.
      * @remark Models traditional pointer engagement semantics through contextual conversion to `bool`.
-     * @note Enabled by policy `nullability::yes`.
+     * @note Enabled by policy `nullability::nullable`.
      */
     /**
      * @overload constexpr explicit operator bool(this auto&& self) noexcept
@@ -1169,9 +1169,9 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Satisfies boolean-testable requirements in generic templates and logical contexts.
      * @remark Models pointer interface through contextual conversion to `bool` despite the absence of a disengaged state.
-     * @note Enabled by policy `nullability::no`.
+     * @note Enabled by policy `nullability::always_engaged`.
      * @note Because this overload always returns `true`, compilers may optimize away engagement checks when the concrete type is known.
-     * @note This does not indicate engagement/optionality as policy `nullability::no` implies no disengaged state.
+     * @note This does not indicate engagement/optionality as policy `nullability::always_engaged` implies no disengaged state.
      */
     /**
      * @fn constexpr bool operator==(const concrete_ptr_instance& lhs, const concrete_ptr_instance& rhs) noexcept
@@ -1236,7 +1236,7 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Tests engagement state by comparing the stored address against `nullptr`.
      * @remark Equivalent to contextual boolean conversion.
-     * @note Enabled by policy `nullability::yes`.
+     * @note Enabled by policy `nullability::nullable`.
      */
     /**
      * @fn constexpr auto operator<=>(const concrete_ptr_instance& lhs, const concrete_ptr_instance& rhs) noexcept
@@ -1488,18 +1488,18 @@ export namespace base::vocab::inline ptr {
      * @remark Provided as a hidden friend to enable argument-dependent lookup.
      */
     /**
-     * @fn static constexpr pointer apply_nullability_policy(pointer source) noexcept(!ptr_policies::nonnullable_v<policy_set>)
+     * @fn static constexpr pointer apply_nullability_policy(pointer source) noexcept(!ptr_policies::always_engaged_nullability_v<policy_set>)
      *
      * @param source The address to validate.
      *
      * @return The same address if valid according to the selected `nullability` policy.
      *
-     * @pre The selected policies include `nullability::yes`, or `source != nullptr`.
-     * @post If the selected policies include `nullability::no`, the returned pointer is guaranteed to be non-null.
+     * @pre The selected policies include `nullability::nullable`, or `source != nullptr`.
+     * @post If the selected policies include `nullability::always_engaged`, the returned pointer is guaranteed to be non-null.
      *
-     * @throws std::invalid_argument if the selected policies include `nullability::no` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
+     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
-     * @remark Centralizes enforcement of the non-null invariant when the selected policies include `nullability::no` for all constructors and assignment operators accepting raw or pointer-like inputs.
+     * @remark Centralizes enforcement of the non-null invariant when the selected policies include `nullability::always_engaged` for all constructors and assignment operators accepting raw or pointer-like inputs.
      * @note This function does not perform lifetime validation; it assumes the caller ensures the pointee remains valid.
      * @note Enabled regardless of policy selections because policy-specific rules are applied inside the function body.
      */

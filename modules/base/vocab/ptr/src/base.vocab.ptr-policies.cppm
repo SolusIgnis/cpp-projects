@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-policies.cppm
  * @version 0.6.0
- * @date May 28, 2026
+ * @date June 6, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -21,30 +21,27 @@
  *
  * @brief Pointer vocabulary policy infrastructure.
  *
- * Policy Group        | Policy State                   | Invariant / Interface Changes
- * ------------------- | ------------------------------ | -----------------------------------------------------------------------
- * `traversal`         | `traversal::rebinding`         | Exposes purely invariant identity comparison (`operator==`). Deletes
- *                     |                                | all pointer arithmetic and ordering operators (`operator<=>`,
- *                     |                                | `operator++`, etc.).
- *                     | `traversal::arithmetic`        | Models `std::contiguous_iterator`. Exposes full relational operators,
- *                     |                                | displacement operators (`operator+=`, `operator+`), and defines valid
- *                     |                                | standard iterator tags.
- * `pointer_binding`   | `pointer_binding::allowed`     | Synthesizes constructors and assignment operators from matching raw
- *                     |                                | pointers and compatible smart pointers.
- *                     | `pointer_binding::forbidden`   | Explicitly deletes raw pointer constructors to enforce alternate
- *                     |                                | initialization sequences (e.g., forcing reference-only binding).
- * `reference_binding` | `reference_binding::allowed`   | Synthesizes constructors and assignment operators from matching
- *                     |                                | lvalue references while deleting them from rvalue references to
- *                     |                                | eliminate a source of reference dangling (binding to a temporary).
- *                     | `reference_binding::forbidden` | Deletes consteuction and assignment from both lvalue and rvalue
- *                     |                                | references.
- * `nullability`       | `nullability::yes`             | Provides `nullptr` constructors/assignments, `release()`, a `nullptr`
- *                     |                                | sensitive `reset()`, and contextual conversion to `bool` checking for
- *                     |                                | engagement.
- *                     | `nullability::no`              | Deletes `nullptr_t` overloads, deletes the default constructor, and
- *                     |                                | forces a contextual conversion to `bool` that unconditionally returns
- *                     |                                | `true` to optimize validation paths.
+ * @details Defines the policy vocabulary used by `ptr_core` to synthesize
+ * pointer behavior at compile time as well as the policy validation and
+ * compile-time querying facilities used throughout the pointer vocabulary
+ * implementation.
  *
+ * Policy groups:
+ * - `traversal`
+ *   - `arithmetic`
+ *   - `rebinding`
+ * - `reference_binding`
+ *   - `allowed`
+ *   - `forbidden`
+ * - `pointer_binding`
+ *   - `allowed`
+ *   - `forbidden`
+ * - `nullability`
+ *   - `nullable`
+ *   - `always_engaged`
+ *
+ * A valid `PtrPolicyList` selects exactly one policy from each
+ * group. This partition also provides 
  */
 
 //Module partition interface unit
@@ -56,64 +53,157 @@ import base.meta.sequences;
 
 namespace base::vocab::inline ptr::ptr_policies {
     namespace traversal {
+        ///@brief Policy-group marker for `traversal` policies.
         struct group;
 
+        /**
+         * @brief Enables arithmetic traversal semantics.
+         *
+         * @details Pointers using this policy allow ordered comparisons
+         * and pointer arithmetic, and they satisfy the requirements of
+         * contiguous iterators.
+         */
         struct arithmetic {
             using policy_group = group;
-        }; //class arithmetic
+        }; //struct arithmetic
 
+        /**
+         * @brief Enables rebinding-only traversal semantics.
+         *
+         * @details Pointers using this policy allow data structure
+         * traversal via rebinding to different addresses (i.e., pointer
+         * chasing) but do not support pointer arithmetic or address
+         * ordering operations. These pointers are not iterators.
+         */
         struct rebinding {
             using policy_group = group;
-        }; //class rebinding
+        }; //struct rebinding
     } //namespace traversal
 
     namespace reference_binding {
+        ///@brief Policy-group marker for `reference_binding` policies.
         struct group;
 
+        /**
+         * @brief Allows binding (construction) and rebinding (assignment) from references.
+         *
+         * @details Pointers using this policy may be initialized or
+         * rebound directly from lvalue references. Binding from
+         * rvalue references (i.e. temporaries) remains prohibited to
+         * reduce opportunities for dangling pointers.
+         */
         struct allowed {
             using policy_group = group;
-        }; //class allowed
+        }; //struct allowed
 
+        /**
+         * @brief Forbids binding (construction) and rebinding (assignment) from references.
+         *
+         * @details Pointers using this policy may not be initialized
+         * or rebound from references and must instead support obtaining
+         * their addresses through other mechanisms.
+         */
         struct forbidden {
             using policy_group = group;
-        }; //class forbidden
+        }; //struct forbidden
     } //namespace reference_binding
 
     namespace pointer_binding {
+        ///@brief Policy-group marker for `pointer_binding` policies.
         struct group;
 
+        /**
+         * @brief Allows binding (construction) and rebinding (assignment) from pointers.
+         *
+         * @details Pointers using this policy may be initialized
+         * or rebound from raw pointers and compatible pointer-like
+         * types exposing a suitable `get()` interface.
+         */
         struct allowed {
             using policy_group = group;
-        }; //class allowed
+        }; //struct allowed
 
+        /**
+         * @brief Forbids binding (construction) and rebinding (assignment) from pointers.
+         *
+         * @details Pointers using this policy reject raw pointer
+         * and pointer-like inputs, allowing alternative binding
+         * mechanisms to enforce stronger initialization invariants.
+         */
         struct forbidden {
             using policy_group = group;
-        }; //class forbidden
+        }; //struct forbidden
     } //namespace pointer_binding
 
     namespace nullability {
+        ///@brief Policy-group marker for `nullability` policies.
         struct group;
 
-        struct yes {
+        /**
+         * @brief Enables null pointer states.
+         *
+         * @details Pointers using this policy may be default
+         * constructed, assigned from `nullptr`, released, and
+         * tested for engagement through contextual conversion
+         * to `bool`.
+         */
+        struct nullable {
             using policy_group = group;
-        }; //class yes
+        }; //struct nullable
 
-        struct no {
+        /**
+         * @brief Enforces an always-engaged (i.e. non-null) invariant.
+         *
+         * @details Pointers using this policy cannot be default
+         * constructed or assigned from `nullptr`. All instances
+         * are required to remain bound to a valid address for
+         * their entire lifetime.
+         */
+        struct always_engaged {
             using policy_group = group;
-        }; //class no
+        }; //struct always_engaged
     } //namespace nullability
 
+    /**
+     * @brief Alias for a `type_list` metaprogramming container.
+     * @tparam Elements The elements of the list.
+     * @see `base::meta::sequences::type_list`
+     * @internal
+     */
     template<typename... Elements>
     using type_list = base::meta::sequences::type_list<Elements...>;
 
+    /**
+     * @brief Alias concept using the `TypeSequence` concept from `base.meta.sequences`.
+     * @tparam T The candidate type.
+     * @see `base::meta::sequences::TypeSequence`
+     * @internal
+     */
     template<typename T>
     concept TypeSequence = base::meta::sequences::TypeSequence<T>;
 
+    ///@brief The canonical list of policy group tags defined in namespaces within `ptr_policies`.
     using policy_groups = type_list<traversal::group, reference_binding::group, pointer_binding::group, nullability::group>;
 
+    /**
+     * @brief Identifies policy-group marker types.
+     *
+     * @tparam T The candidate type.
+     *
+     * @details Satisfied when `T` is one of the policy-group tags
+     * defining the mutually exclusive categories for pointer policies.
+     *
+     * @see `policy_groups`
+     * @internal
+     */
     template<typename T>
     concept PtrPolicyGroup = base::meta::sequences::contains_type_v<policy_groups, T>;
 
+    /**
+     * @brief Metafunction producing a unary type predicate that compares its argument's policy group against the expected group bound here.
+     *
+     * @tparam ExpectedPolicyGroup The `PtrPolicyGroup` to bind into the `predicate` template for comparison.
+     */
     template<PtrPolicyGroup ExpectedPolicyGroup>
     struct in_policy_group {
         template<typename T>
@@ -121,9 +211,10 @@ namespace base::vocab::inline ptr::ptr_policies {
         struct predicate : std::bool_constant<std::same_as<typename T::policy_group, ExpectedPolicyGroup>> {};
     };
 
+    
     template<PtrPolicyGroup Group, TypeSequence PolicyList>
     inline constexpr bool exactly_one_policy_v =
-        (base::meta::sequences::count_type_if_v<PolicyList, in_policy_group<Group>::template predicate> == 1);
+        base::meta::sequences::exactly_one_type_if_v<PolicyList, in_policy_group<Group>::template predicate>;
 
     template<TypeSequence GroupList, TypeSequence PolicyList>
     struct valid_policy_list;
@@ -163,10 +254,10 @@ namespace base::vocab::inline ptr::ptr_policies {
         std::same_as<ptr_policies::group_policy_t<Policies, pointer_binding::group>, pointer_binding::forbidden>;
 
     template<PtrPolicyList Policies>
-    inline constexpr bool nullable_v =
-        std::same_as<ptr_policies::group_policy_t<Policies, nullability::group>, nullability::yes>;
+    inline constexpr bool nullable_nullability_v =
+        std::same_as<ptr_policies::group_policy_t<Policies, nullability::group>, nullability::nullable>;
 
     template<PtrPolicyList Policies>
-    inline constexpr bool nonnullable_v =
-        std::same_as<ptr_policies::group_policy_t<Policies, nullability::group>, nullability::no>;
+    inline constexpr bool always_engaged_nullability_v =
+        std::same_as<ptr_policies::group_policy_t<Policies, nullability::group>, nullability::always_engaged>;
 } //namespace base::vocab::inline ptr::ptr_policies
