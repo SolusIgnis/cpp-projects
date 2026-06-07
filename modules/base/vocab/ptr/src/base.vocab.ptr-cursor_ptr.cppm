@@ -66,7 +66,6 @@ import std;
 import base.meta.traits;
 import base.meta.concepts;
 
-#ifndef LEGACY_POINTER_IMPLEMENTATION
 import :core;
 
 export namespace base::vocab::inline ptr {
@@ -132,4 +131,3 @@ export namespace base::vocab::inline ptr {
     template<typename T>
     cursor_ptr(T*) -> cursor_ptr<T>;
 } //namespace base::vocab::inline ptr
-#endif
