@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-core.cppm
  * @version 0.6.0
- * @date June 2, 2026
+ * @date June 6, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -19,9 +19,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief Core pointer vocabulary infrastructure.
+ * @brief Core infrastructure for policy-driven vocabulary pointer types.
  *
- * @note Deleted overloads intentionally use forwarding explicit object parameters to ensure policy diagnostics dominate value-category diagnostics during overload resolution.
+ * @details This partition forms the structural foundation of the vocabulary
+ * pointer suite, defining shared facilities including the `ptr_core`
+ * implementation, supporting concepts and traits, and interoperability utilities.
+ * Behavioral capabilities such as traversability, binding, and nullability are
+ * selected through compile-time policy composition, allowing multiple pointer
+ * abstractions to share their common implementation details while enforcing
+ * distinct semantic invariants.
+ *
+ * `ptr_core` centralizes address storage, pointer operations, and policy-driven
+ * interface selection. `VocabPtr` uses a public nested tag type to identify
+ * concrete pointer types derived from `ptr_core` specializations.
+ * `is_valid_pointee_v` allows `ptr_core` and the concrete pointer types to
+ * validate their pointee template parameter domain. `is_smart_ptr_convertible_to_v`
+ * enables `ptr_core` to generally interface with other pointer(-like) types.
+ * The `std::hash` and `std::formatter` specializations leverage `VocabPtr` to
+ * provide hashing and formatting facilities to all of the concrete vocabulary
+ * pointers.
+ *
+ * This partition is primarily intended for implementers of vocabulary pointer
+ * types. End users will typically interact with the concrete pointer abstractions
+ * defined in other partitions rather than with `ptr_core` directly.
  */
 
 //Module partition interface unit
@@ -35,12 +55,49 @@ import base.meta.concepts;
 export import :policies;
 
 namespace base::vocab::inline ptr {
+    /**
+     * @brief Detects vocabulary pointer types built on `ptr_core`.
+     *
+     * @tparam T The type being tested.
+     *
+     * @details Satisfied when `T` exposes the marker type `derived_from_ptr_core`, which is inherited by all
+     * concrete vocabulary pointer specializations.
+     *
+     * @remark Primarily serves to constrain specializations of generic facilities to the vocabulary pointer domain.
+     *
+     * @internal
+     */
     template<typename T>
     concept VocabPtr = requires { typename T::derived_from_ptr_core; };
 
+    /**
+     * @brief Determines whether a type may be used as a vocabulary pointer pointee.
+     *
+     * @tparam Pointee The candidate pointee type.
+     *
+     * @details Rejects reference types because pointing to them is ill-formed and rejects
+     * any pointer hierarchies that ultimately resolve to function types because vocabulary
+     * pointers model data object addresses rather than callable instructions.
+     *
+     * @remark Enforces the fundamental domain of valid vocabulary pointer specializations.
+     *
+     * @internal
+     */
     template<typename Pointee>
     inline constexpr bool is_valid_pointee_v = (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>);
 
+    /**
+     * @brief Detects pointer-like types exposing a compatible `get()` member.
+     *
+     * @tparam Source The candidate pointer-like type.
+     * @tparam Target The required pointer target type.
+     *
+     * @details Evaluates to `true` when an object of type `Source` has a `get()` method whose result is convertible to `Target`.
+     *
+     * @remark Facilitates interoperability with other pointer(-like) abstractions without depending on specific library implementations.
+     *
+     * @internal
+     */
     template<typename Source, typename Target>
     inline constexpr bool is_smart_ptr_convertible_to_v = requires(Source ptr) {
                                                               { std::as_const(ptr).get() } -> std::convertible_to<Target>;
@@ -49,62 +106,25 @@ namespace base::vocab::inline ptr {
 
 export namespace base::vocab::inline ptr {
     /**
-     * @class ptr_core
      * @brief Policy-driven foundational layer for the vocabulary pointer suite.
      *
-     * @tparam ConcretePtr The derived template pointer specialization (CRTP-like template-template pattern).
+     * @tparam ConcretePtr The derived pointer class template (CRTP-like template-template pattern).
      * @tparam Pointee The type of the object being pointed to.
-     * @tparam PolicySet A type-list configuration enforcing rules across traversability, binding, and nullability axes.
+     * @tparam PolicySet A `PtrPolicyList` type-list configuration selecting one policy from each of the `ptr_policies::traversal`, `ptr_policies::reference_binding`, `ptr_policies::pointer_binding`, and `ptr_policies::nullability` groups.
      *
-     * ### Architecture & Design Intent
-     * `ptr_core` centralizes universal raw pointer management and structural type-traits to prevent API and implementation
-     * drift among specialized types (`alias_ptr`, `required_ptr`, `dependency_ptr`, and `cursor_ptr`). Rather than using 
-     * classic polymorphic inheritance or verbose mixins, it leverages a **Nybble-driven Policy Mapping System** to selectively
-     * expose or `= delete` fundamental operations at compile time based on the structural requirements of the concrete type.
+     * @details `ptr_core` is a policy-configurable foundation for non-owning vocabulary pointer types. It centralizes
+     * stored address management, pointer traits, and universal pointer operations while selectively enabling operations
+     * that match the policy-configured semantic contract of the concrete pointer type. As the policies are resolved
+     * at template instantiation time, this process introduces no runtime overhead.
      *
-     * ### Structural Policy Propagation
-     * Behavior is customized statically through boolean flags embedded within the `PolicySet`. This approach yields zero
-     * runtime overhead via Empty Base Optimization (EBO) and compiler optimization of constrained overloads:
+     * @see `:policies`
      *
-     * Policy Group        | Policy State                   | Invariant / Interface Changes
-     * ------------------- | ------------------------------ | -----------------------------------------------------------------------
-     * `traversal`         | `traversal::rebinding`         | Exposes purely invariant identity comparison (`operator==`). Deletes
-     *                     |                                | all pointer arithmetic and ordering operators (`operator<=>`,
-     *                     |                                | `operator++`, etc.).
-     *                     | `traversal::arithmetic`        | Models `std::contiguous_iterator`. Exposes full relational operators,
-     *                     |                                | displacement operators (`operator+=`, `operator+`), and defines valid
-     *                     |                                | standard iterator tags.
-     * `pointer_binding`   | `pointer_binding::allowed`     | Synthesizes constructors and assignment operators from matching raw
-     *                     |                                | pointers and compatible smart pointers.
-     *                     | `pointer_binding::forbidden`   | Explicitly deletes raw pointer constructors to enforce alternate
-     *                     |                                | initialization sequences (e.g., forcing reference-only binding).
-     * `reference_binding` | `reference_binding::allowed`   | Synthesizes constructors and assignment operators from matching
-     *                     |                                | lvalue references while deleting them from rvalue references to
-     *                     |                                | eliminate a source of reference dangling (binding to a temporary).
-     *                     | `reference_binding::forbidden` | Deletes consteuction and assignment from both lvalue and rvalue
-     *                     |                                | references.
-     * `nullability`       | `nullability::yes`             | Provides `nullptr` constructors/assignments, `release()`, a `nullptr`
-     *                     |                                | sensitive `reset()`, and contextual conversion to `bool` checking for
-     *                     |                                | engagement.
-     *                     | `nullability::no`              | Deletes `nullptr_t` overloads, deletes the default constructor, and
-     *                     |                                | forces a contextual conversion to `bool` that unconditionally returns
-     *                     |                                | `true` to optimize validation paths.
+     * @remark **Array Decay Prevention:** Constructors taking raw C-arrays are explicitly intercepted and deleted for pointer-binding configurations to block inadvertent pointer-decay errors when targeting blocks of contiguous memory.
+     * @remark **Temporary Binding Prevention:** Direct binding from temporary variables (including `rvalue_reference`s and pointer-like temporaries) is structurally blocked using deleted sinks, eliminating a primary vector for dangling pointers at the library boundary.
+     * @remark **Layout Guarantee:** `ptr_core` maintains a strict standard-layout representation, allowing the concrete pointers derived from it to preserve the structural properties of a scalar raw pointer.
      *
-     * ### Explicit Object Parameters ("Deducing This")
-     * This facade utilizes C++23 explicit object parameters across its interface. By abstracting the value category and 
-     * cv-qualification of the calling instance via `this auto&& self`, the class eliminates the traditional explosion of 
-     * four-way cv/ref qualifiers for accessors (`get()`, `operator*()`, `operator->()`). 
-     * * @note Deletion signatures deliberately use forwarding explicit object parameters (`this Self&&`). This architectural choice 
-     * ensures that during overload resolution, explicit policy-driven diagnostic errors cleanly dominate over casual 
-     * value-category mismatches, providing readable compiler errors.
-     *
-     * ### Memory Safety & Invariants
-     * - **Array Decay Prevention:** Constructors taking raw C-arrays are explicitly intercepted and deleted for binding-enabled
-     * configurations to block inadvertent pointer-decay errors when targeting blocks of contiguous memory.
-     * - **Lifetime Sanitization:** Direct binding from temporary variables (`rvalue_references` or pointer-like temporaries) 
-     * is structurally blocked using deleted sinks, eliminating a primary vector for dangling pointers at the library boundary.
-     * - **Layout Guarantee:** Concrete pointers derived from `ptr_core` maintain a strict `static_assert(std::is_standard_layout_v)`
-     * footprint, preserving the visual and physical properties of a scalar raw pointer.
+     * @remark This interface uses C++23 explicit object parameters (e.g., `this auto&& self`) to avoid cv/ref-qualified overload duplication while preserving correct value-category propagation.
+     * @note Deleted overloads deliberately use forwarding explicit object parameters (`this Self&&`) so policy-driven diagnostics take precedence over value-category mismatches during overload resolution.
      */
     template<template<typename> typename ConcretePtr, typename Pointee, ptr_policies::PtrPolicyList PolicySet>
         requires is_valid_pointee_v<Pointee>

@@ -20,6 +20,31 @@
  * limitations under the License. @endparblock
  *
  * @brief Pointer vocabulary policy infrastructure.
+ *
+ * Policy Group        | Policy State                   | Invariant / Interface Changes
+ * ------------------- | ------------------------------ | -----------------------------------------------------------------------
+ * `traversal`         | `traversal::rebinding`         | Exposes purely invariant identity comparison (`operator==`). Deletes
+ *                     |                                | all pointer arithmetic and ordering operators (`operator<=>`,
+ *                     |                                | `operator++`, etc.).
+ *                     | `traversal::arithmetic`        | Models `std::contiguous_iterator`. Exposes full relational operators,
+ *                     |                                | displacement operators (`operator+=`, `operator+`), and defines valid
+ *                     |                                | standard iterator tags.
+ * `pointer_binding`   | `pointer_binding::allowed`     | Synthesizes constructors and assignment operators from matching raw
+ *                     |                                | pointers and compatible smart pointers.
+ *                     | `pointer_binding::forbidden`   | Explicitly deletes raw pointer constructors to enforce alternate
+ *                     |                                | initialization sequences (e.g., forcing reference-only binding).
+ * `reference_binding` | `reference_binding::allowed`   | Synthesizes constructors and assignment operators from matching
+ *                     |                                | lvalue references while deleting them from rvalue references to
+ *                     |                                | eliminate a source of reference dangling (binding to a temporary).
+ *                     | `reference_binding::forbidden` | Deletes consteuction and assignment from both lvalue and rvalue
+ *                     |                                | references.
+ * `nullability`       | `nullability::yes`             | Provides `nullptr` constructors/assignments, `release()`, a `nullptr`
+ *                     |                                | sensitive `reset()`, and contextual conversion to `bool` checking for
+ *                     |                                | engagement.
+ *                     | `nullability::no`              | Deletes `nullptr_t` overloads, deletes the default constructor, and
+ *                     |                                | forces a contextual conversion to `bool` that unconditionally returns
+ *                     |                                | `true` to optimize validation paths.
+ *
  */
 
 //Module partition interface unit
