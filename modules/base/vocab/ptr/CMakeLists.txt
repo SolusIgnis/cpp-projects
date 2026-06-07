@@ -12,7 +12,6 @@ trace_me()
 add_named_module(base.vocab.ptr
   LIB_TYPE STATIC
   PARTITIONS
-    src/base.vocab.ptr-metadata.cppm
     src/base.vocab.ptr-policies.cppm
     src/base.vocab.ptr-core.cppm
     src/base.vocab.ptr-alias_ptr.cppm
