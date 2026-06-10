@@ -86,7 +86,7 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename Pointee>
-    inline constexpr bool is_valid_pointee_v = (!std::is_reference_v<Pointee> && !is_array_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>);
+    inline constexpr bool is_valid_pointee_v = (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>);
 
     /**
      * @brief Detects pointer-like types exposing a compatible `get()` member.
