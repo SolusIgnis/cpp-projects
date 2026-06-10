@@ -35,8 +35,6 @@
  * `cursor_ptr`, it is unsuitable for arithmetic iteration over blocks of
  * contiguous memory; rather, it is suited to discrete object-to-object
  * rebinding path traversal (such as linked nodes).
- *
- * @todo Future Development: Use `= delete("reason")` instead of the C-style comments once the C++26 feature becomes available.
  */
 
 //Module partition interface unit

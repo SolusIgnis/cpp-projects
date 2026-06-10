@@ -42,6 +42,8 @@
  * This partition is primarily intended for implementers of vocabulary pointer
  * types. End users will typically interact with the concrete pointer abstractions
  * defined in other partitions rather than with `ptr_core` directly.
+ *
+ * @todo Future Development: Use `= delete("reason")` instead of the C-style comments once the C++26 feature becomes available.
  */
 
 //Module partition interface unit

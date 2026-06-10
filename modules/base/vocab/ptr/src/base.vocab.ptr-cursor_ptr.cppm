@@ -32,8 +32,6 @@
  * discrete object-to-object rebinding path traversal. However, it still
  * offers full pointer- and reference-binding capabilities for fluid
  * interoperability and cross-sequence rebinding.
- *
- * @todo Future Development: Use `= delete("reason")` once the C++26 feature becomes available.
  */
 
 //Module partition interface unit
@@ -94,7 +92,7 @@ export namespace base::vocab::inline ptr {
         >
     > {
     private:
-        using base_type = cursor_ptr::ptr_core;
+        using base_type = typename cursor_ptr::ptr_core;
     public:
         using base_type::base_type;
         using base_type::operator=;
