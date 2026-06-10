@@ -381,7 +381,7 @@ export namespace base::vocab::inline ptr {
         template<typename AnyCArray>
             requires std::is_array_v<AnyCArray>
         ptr_core(AnyCArray&)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set> && (!std::same_as<std::remove_cvref_t<AnyCArray>, value_type>)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set> && (!std::convertible_to<std::add_lvalue_reference_t<AnyCArray>, reference>)
         = delete /*("Constructor from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
@@ -389,7 +389,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self, typename AnyCArray>
             requires std::is_array_v<AnyCArray>
         Self& operator=(this Self&&, AnyCArray&)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+            requires ptr_policies::allowed_pointer_binding_v<policy_set> && (!std::convertible_to<std::add_lvalue_reference_t<AnyCArray>, reference>)
         = delete /*("Assignment from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
