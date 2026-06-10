@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-dependency_ptr.cppm
  * @version 0.6.0
- * @date May 3, 2026
+ * @date June 9, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -19,19 +19,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief `dependency_ptr`: A non-owning, non-nullable, non-arithmetic, non-void-permitting pointer type for a required dependency.
+ * @brief `dependency_ptr`: A compile-time validated, reference-bound, required-dependency alias pointer type.
  *
- * @details `dependency_ptr` acts like a rebindable reference with pointer syntax. It
- * expresses a mandatory dependency that must exist for the duration of the consumer's
- * lifetime. It naturally composes as `std::optional<dependency_ptr<T>>` to represent
- * a contextually optional dependency decoupled from the pointer itself.
+ * @details This pointer provides a zero-overhead core vocabulary primitive
+ * for dependency injection, modeling a required-dependency alias with standard
+ * pointer ergonomics. It expresses a mandatory dependency that must outlive
+ * its consumer. It is intended to replace non-static reference data members to
+ * preserve class assignability. It also directly replaces raw pointers to
+ * dependency objects and provides an alternative to `std::reference_wrapper`.
  *
- * By utilizing structural constraints (deleted constructors for `nullptr_t` and raw
- * `pointer`), it enforces validity at the point of construction. It is intended to replace:
- * - Non-static reference data members (which make a class non-assignable).
- * - Raw pointers used as dependencies (which are semantically muddy regarding optionality and ownership).
- * - `std::reference_wrapper` (when pointer-like `->` access is preferred).
- * - `required_ptr` or `alias_ptr` when used for dependency injection.
+ * By utilizing structural constraints (specifically restricting initialization
+ * and rebinding exclusively to references to the pointee), it enforces validity
+ * entirely at compilation. Unlike `required_ptr`, it completely eliminates the
+ * necessity and cost of runtime validation. Unlike `cursor_ptr`, it operates
+ * solely on discrete object identities and rejects pointer arithmetic entirely.
+ *
+ * To represent a contextually optional dependency, it composes naturally as 
+ * `std::optional<dependency_ptr<T>>`, cleanly decoupling the optionality from
+ * the pointer itself. 
  *
  * @todo Future Development: Use `= delete("reason")` instead of the C-style comments once the C++26 feature becomes available.
  */
@@ -48,29 +53,36 @@ import :core;
 
 export namespace base::vocab::inline ptr {
     /**
-     * @brief Pointer type representing a required dependency.
+     * @brief Pointer type aliasing a required dependency.
      *
-     * @tparam T The pointed-to type (must not be a reference type per "C++ standard [dcl.ptr]", `void`, nor a function pointer).
+     * @tparam Pointee The type of the required dependency. Must be a non-void valid pointee type (non-reference and no degree of indirection over a function).
      *
-     * @details `dependency_ptr` models a non-owning, non-nullable, non-arithmetic, non-void-permitting
-     * pointer abstraction. It is designed for dependency injection scenarios, where a dependency is
-     * required to exist and outlive the consumer. It serves as a replacement for references as nonstatic
+     * @details `dependency_ptr` models a non-owning, always-engaged, non-arithmetic, non-void-permitting
+     * pointer abstraction that supports rebinding traversal and only binds from object references rather
+     * than other pointers. It is designed for dependency injection scenarios, where a dependency is
+     * required to exist and outlive the consumer. It serves as a replacement for references as non-static
      * data members and in other cases where rebinding, pointer semantics, or interoperability with
      * pointer-based APIs is desirable. Optional dependencies naturally compose with `dependency_ptr` as
-     * `std::optional<dependency_ptr<T>>`.
+     * `std::optional<dependency_ptr<Pointee>>`.
+     *
+     * The invariants and behavioral contract of `dependency_ptr` are determined by the policies selected
+     * in the `ptr_core` specialization from which it is derived:
+     * - `nullability::always_engaged`
+     * - `pointer_binding::forbidden`
+     * - `reference_binding::allowed`
+     * - `traversal::rebinding`
+     *
+     * @see `ptr_core`
+     * @see `ptr_policies`
      *
      * @note Semantically equivalent to a rebindable reference with a pointer interface.
      * @note Standard Layout type with size and alignment of a raw pointer.
-     * @invariant Always engaged: a `dependency_ptr` always refers to a valid object; there is no null/disengaged representation. The wrapped pointer is guaranteed to be non-null by construction.
-     * @remark This type does not own the referenced object and does not participate in lifetime management.
-     * @remark Copying and assignment rebind the pointer without affecting the lifetime of the underlying object.
-     * @note Construction or assignment from `nullptr` is ill-formed.
-     * @remark Marked `[[nodiscard]]` to prevent accidental construction of unused dependency objects. Intentional discards should use `[[maybe_unused]]` to document intent.
-     * @remark Construction requires an lvalue reference, preventing null initialization and discouraging dangling by rejecting direct binding to temporaries.
-     * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator.
-     * @remark Implicit conversion to raw pointer is provided for interoperability with legacy or low-level APIs.
-     * @note All operations provide the no-throw guarantee; operations consist exclusively of non-throwing pointer manipulation.
-     * @remark Explicit equality comparison overloads are provided only where built-in pointer comparison cannot be reached through the implicit raw-pointer conversion operator alone.
+     * @invariant Always engaged: a `dependency_ptr` always stores a valid memory address; there is no null/disengaged representation.
+     * @note The stored address is guaranteed to be non-null by construction without need for runtime validation.
+     * @remark This type does not own the pointee object and does not participate in lifetime management.
+     * @remark Copying and assignment rebind the pointer without affecting either pointee.
+     * @remark Marked `[[nodiscard]]` to prevent accidental dropping of required dependency handles. Intentional discards should use `[[maybe_unused]]` to document intent.
+     * @note All operations provide the No-Fail Guarantee, performing exclusively non-allocating, non-throwing pointer manipulations.
      *
      * @warning The referenced object MUST outlive the `dependency_ptr`. Violating this results in undefined behavior.
      *

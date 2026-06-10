@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-alias_ptr.cppm
  * @version 0.6.0
- * @date May 7, 2026
+ * @date June 9, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -19,54 +19,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief `alias_ptr`: A non-owning, nullable, non-arithmetic, void-permitting pointer type.
+ * @brief `alias_ptr`: A general-purpose, void-permitting, nullable object-alias pointer type.
  *
- * @details
+ * @details This pointer provides a zero-overhead replacement for raw
+ * pointers as a core vocabulary type for non-owning object aliases. It
+ * should be preferred over `required_ptr` in contexts where an unengaged 
+ * (null) state meaningfully exists, cleanly representing optionality
+ * without introducing a wrapper.
  *
- * `alias_ptr` is a vocabulary pointer type representing a non-owning,
- * nullable, object alias without traversal semantics.
- *
- * Unlike owning smart pointers, `alias_ptr` does not participate in
- * object lifetime management. Unlike iterators or built-in pointers,
- * it intentionally disables pointer arithmetic and ordering comparisons
- * so that it models object association rather than memory traversal.
- *
- * The type exists to provide an explicit semantic alternative to direct
- * use of built-in pointers in codebases where pointer intent is treated
- * as part of the type system. In particular, `alias_ptr` communicates:
- *
- * - nullable engagement,
- * - non-ownership,
- * - stable object association,
- * - and non-iterative usage.
- *
- * `alias_ptr` preserves interoperability with existing pointer-based APIs
- * through implicit conversion to its nested `pointer` type and through
- * `get()`, while still enabling APIs and generic code to distinguish
- * semantic object references from ownership-bearing or traversal-oriented
- * pointer abstractions.
- *
- * The interface intentionally rejects several categories of operations:
- * - binding to temporaries,
- * - implicit C-array decay,
- * - pointer arithmetic,
- * - and address ordering comparisons.
- *
- * These restrictions exist to reduce accidental misuse and to reinforce
- * the intended semantic role of the type as an object alias rather than
- * a generalized memory navigation primitive.
- *
- * `alias_ptr` forms the nullable foundation of the pointer vocabulary
- * hierarchy:
- *
- * - `alias_ptr`        : nullable object alias
- * - `required_ptr`     : non-null object alias
- * - `dependency_ptr`   : structurally non-null injected dependency
- * - `cursor_ptr`       : traversal-oriented non-null pointer
- *
- * This separation allows APIs to express pointer expectations directly
- * in their type signatures while remaining lightweight, zero-overhead,
- * and interoperable with existing pointer-based interfaces.
+ * Unlike `dependency_ptr` and `required_ptr`, `alias_ptr` models a
+ * nullable (optionally engaged) pointer concept and defers address
+ * validation to explicit engagement checks at the point of use. It
+ * fully supports fluid initialization and rebinding from other pointers
+ * without the overhead of a null-check at the encapsulation boundary.
+ * Unlike `cursor_ptr`, it is unsuitable for arithmetic iteration over
+ * blocks of contiguous memory; rather, it is suited to discrete object-
+ * to-object rebinding path traversal (such as linked nodes).
  *
  * @todo Future Development: Use `= delete("reason")` once the C++26 feature becomes available.
  */
@@ -83,19 +51,31 @@ import :core;
 
 export namespace base::vocab::inline ptr {
     /**
-     * @brief Pointer type representing a potentially null object alias.
+     * @brief Nullable pointer type aliasing an object.
      *
-     * @tparam T The pointed-to type (must not be a reference type per "C++ standard [dcl.ptr]" nor a function pointer).
+     * @tparam Pointee The pointed-to type. Must be a valid pointee type (non-reference and no degree of indirection over a function).
      *
-     * @details `alias_ptr` models a non-owning, nullable, non-arithmetic, void-permitting
-     * pointer abstraction.
+     * @details `alias_ptr` models a non-owning, nullable, non-arithmetic, void-permitting pointer
+     * abstraction that supports rebinding traversal and may bind from object references as well as
+     * other pointers. It is designed as a general-purpose object alias in scenarios where there may
+     * be no valid pointee object. The pointer's owner has the responsibility to track the pointee
+     * lifetime and update the pointer accordingly.
+     *
+     * The invariants and behavioral contract of `alias_ptr` are determined by the policies selected
+     * in the `ptr_core` specialization from which it is derived:
+     * - `nullability::nullable`
+     * - `pointer_binding::allowed`
+     * - `reference_binding::allowed`
+     * - `traversal::rebinding`
+     *
+     * @see `ptr_core`
+     * @see `ptr_policies`
      *
      * @note Standard Layout type with size and alignment of a raw pointer.
-     * @remark This type does not own the referenced object and does not participate in lifetime management.
-     * @remark Copying and assignment rebind the stored address without affecting pointee lifetime.
-     * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator. @see cursor_ptr for traversal/iteration semantics.
-     * @note `alias_ptr<void>` reuses the primary template rather than introducing a specialization. Placeholder reference aliases based on `std::monostate` are used solely to keep deleted overload declarations well-formed.
-     * @remark Explicit equality comparison overloads are provided only where implicit conversion to the nested `pointer` type is insufficient to enable the desired comparison.
+     * @remark This type does not own the pointee object and does not participate in lifetime management.
+     * @remark Copying and assignment rebind the pointer without affecting either pointee.
+     * @note Supports type-erased aliasing by permitting `void` pointees through the primary template rather than introducing a specialization. Placeholder reference aliases based on a private nested incomplete type are used solely to keep deleted overload declarations well-formed.
+     * @note All operations provide the No-Fail Guarantee, performing exclusively non-allocating, non-throwing pointer manipulations.
      *
      * @warning The referenced object MUST outlive the `alias_ptr`. Violating this results in undefined behavior.
      *

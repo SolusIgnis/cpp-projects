@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-required_ptr.cppm
  * @version 0.6.0
- * @date May 3, 2026
+ * @date June 9, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -19,38 +19,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief `required_ptr`: A non-owning, non-nullable, non-arithmetic, void-permitting pointer type.
+ * @brief `required_ptr`: A general-purpose, void-permitting, required-object alias pointer type.
  *
- * @details `required_ptr` is a vocabulary pointer type representing
- * a non-owning, structurally non-null object alias. It is intended to
- * replace raw pointers as non-owning object aliases and should be
- * preferred over `alias_ptr` in contexts where the alias is required
- * to be non-null as a precondition or invariant.
+ * @details This pointer provides a zero-overhead replacement for raw
+ * pointers as a core vocabulary type for non-owning object aliases. It
+ * should be preferred over `alias_ptr` in contexts where the alias is
+ * required to point to a valid memory address as a precondition or
+ * invariant since it enforces that validity at the type boundary to
+ * avoid unnecessary revalidation.
  *
- * Unlike raw pointers, `required_ptr` cannot be default-constructed,
- * assigned `nullptr`, or participate in pointer arithmetic. These
- * restrictions intentionally model "required object alias" semantics
- * rather than general-purpose address manipulation.
- *
- * The type preserves pointer-like ergonomics through dereference,
- * member access, raw-pointer interoperability, and covariant conversion
- * between compatible pointee types while enforcing a permanent engaged
- * invariant.
- *
- * Construction and rebinding from raw or pointer-like sources perform
- * runtime null validation and throw `std::invalid_argument` when a null
- * value is supplied.
- *
- * `required_ptr` does not own the referenced object and performs no
- * lifetime management. Users are responsible for ensuring the referenced
- * object outlives all aliases.
- *
- * Ordering comparisons and pointer arithmetic are intentionally deleted
- * to discourage misuse as an iterator or contiguous traversal type.
- *
- * `required_ptr<void>` is supported through the primary template to
- * enable type-erased non-null aliasing without introducing a dedicated
- * specialization.
+ * By utilizing a mix of structural constraints and runtime validation,
+ * it enforces engagement at the point of construction or rebinding.
+ * Unlike `dependency_ptr`, `required_ptr` supports fluid initialization 
+ * and rebinding from other pointers, increasing its versatility. Unlike
+ * `cursor_ptr`, it is unsuitable for arithmetic iteration over blocks of
+ * contiguous memory; rather, it is suited to discrete object-to-object
+ * rebinding path traversal (such as linked nodes).
  *
  * @todo Future Development: Use `= delete("reason")` instead of the C-style comments once the C++26 feature becomes available.
  */
@@ -67,22 +51,35 @@ import :core;
 
 export namespace base::vocab::inline ptr {
     /**
-     * @brief Pointer type representing a required object alias.
+     * @brief Pointer type aliasing a required object.
      *
-     * @tparam T The pointed-to type (must not be a reference type per "C++ standard [dcl.ptr]" nor a function pointer).
+     * @tparam Pointee The pointed-to type. Must be a valid pointee type (non-reference and no degree of indirection over a function).
      *
-     * @details `required_ptr` models a non-owning, non-nullable, non-arithmetic, void-permitting
-     * pointer abstraction.
+     * @details `required_ptr` models a non-owning, always-engaged, non-arithmetic, void-permitting
+     * pointer abstraction that supports rebinding traversal and may bind from object references as
+     * well as other pointers. It is designed as a general-purpose object alias in scenarios where
+     * the aliased object is required to exist and outlive the alias. By enforcing address validity
+     * at the encapsulation boundary, it saves downstream consumers from branching to verify at the
+     * point of dereference while maintaining full initialization and rebinding interoperability with
+     * other pointers.
+     *
+     * The invariants and behavioral contract of `required_ptr` are determined by the policies selected
+     * in the `ptr_core` specialization from which it is derived:
+     * - `nullability::always_engaged`
+     * - `pointer_binding::allowed`
+     * - `reference_binding::allowed`
+     * - `traversal::rebinding`
+     *
+     * @see `ptr_core`
+     * @see `ptr_policies`
      *
      * @note Standard Layout type with size and alignment of a raw pointer.
-     * @invariant Always engaged: a `required_ptr` always refers to a valid object; there is no null/disengaged representation. Attempts to construct/assign from another pointer throw on null.
-     * @remark This type does not own the referenced object and does not participate in lifetime management.
-     * @remark Copying and assignment rebind the pointer without affecting the lifetime of the underlying object.
-     * @note Construction or assignment from `nullptr` is ill-formed.
-     * @note Construction or assignment from raw pointer values performs runtime validation and throws `std::invalid_argument` on null. All operations provide the Strong Exception Safety Guarantee.
-     * @note Non-arithmetic Pointer: Pointer arithmetic and ordering comparisons are intentionally disabled to prevent misuse as an iterator.
-     * @note `required_ptr<void>` reuses the primary template rather than introducing a specialization. Placeholder reference aliases based on `std::monostate` are used solely to keep deleted overload declarations well-formed.
-     * @remark Explicit equality comparison overloads are provided only where built-in pointer comparison cannot be reached through the implicit raw-pointer conversion operator alone.
+     * @invariant Always engaged: a `required_ptr` always stores a valid memory address; there is no null/disengaged representation.
+     * @remark Initialization or rebinding from other pointers performs runtime validation and throws `std::invalid_argument` when a null value is supplied.
+     * @remark This type does not own the pointee object and does not participate in lifetime management.
+     * @remark Copying and assignment rebind the pointer without affecting either pointee.
+     * @note Supports type-erased aliasing by permitting `void` pointees through the primary template rather than introducing a specialization. Placeholder reference aliases based on a private nested incomplete type are used solely to keep deleted overload declarations well-formed.
+     * @note Construction and assignment/rebinding from other pointers provide the Strong Exception Safety Guarantee. All other operations provide the No-Fail Guarantee, performing exclusively non-allocating, non-throwing pointer manipulations.
      *
      * @warning The referenced object MUST outlive the `required_ptr`. Violating this results in undefined behavior.
      *

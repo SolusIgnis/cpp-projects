@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-cursor_ptr.cppm
  * @version 0.6.0
- * @date May 7, 2026
+ * @date June 9, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -19,41 +19,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief `cursor_ptr`: non-owning, non-nullable, arithmetic, non-void-permitting
+ * @brief `cursor_ptr`: A universal memory-cursor pointer type.
  *
- * @details
+ * @details This pointer provides a zero-overhead core vocabulary primitive
+ * for contiguous memory traversal. It is intended to replace raw pointers
+ * as the memory cursor underlying random-access and contiguous iterators.
  *
- * `cursor_ptr` provides a vocabulary pointer type representing a non-owning,
- * non-null cursor into contiguous memory. Unlike stable aliasing pointer
- * abstractions, `cursor_ptr` intentionally exposes traversal semantics through
- * pointer arithmetic, ordering, and iterator interoperability.
- *
- * This type models a lightweight random-access and contiguous iterator over
- * existing storage while preserving explicit non-ownership semantics. It is
- * intended for APIs where nullable states are invalid by construction and where
- * pointer traversal is semantically meaningful.
- *
- * The abstraction preserves the operational behavior of raw pointers while
- * constraining several historically error-prone language behaviors:
- * - Null construction and rebinding are prohibited structurally.
- * - Direct binding to temporaries is rejected to discourage dangling.
- * - C-array decay is rejected to prevent implicit loss of extent information.
- * - Ownership transfer semantics are intentionally absent.
- *
- * `cursor_ptr` is suitable for:
- * - Traversing contiguous object sequences.
- * - Expressing non-null iterator-like API contracts.
- * - Interoperating with low-level and legacy pointer-based interfaces.
- * - Generic code requiring contiguous or random-access iterator semantics.
- *
- * `cursor_ptr` is not intended to model:
- * - Ownership or lifetime management.
- * - Optional/disengaged pointer states.
- * - Stable aliases to a single object independent of surrounding storage.
- *
- * As with raw pointers and iterators, validity depends entirely on external
- * lifetime and storage guarantees. Operations that invalidate the underlying
- * contiguous storage also invalidate all associated `cursor_ptr` instances.
+ * By utilizing a mix of structural constraints and runtime validation,
+ * it enforces engagement at the point of construction or rebinding.
+ * Unlike `dependency_ptr`, `required_ptr`, and `alias_ptr`, it is suited
+ * to arithmetic iteration over blocks of contiguous memory rather than
+ * discrete object-to-object rebinding path traversal. However, it still
+ * offers full pointer- and reference-binding capabilities for fluid
+ * interoperability and cross-sequence rebinding.
  *
  * @todo Future Development: Use `= delete("reason")` once the C++26 feature becomes available.
  */
@@ -70,22 +48,33 @@ import :core;
 
 export namespace base::vocab::inline ptr {
     /**
-     * @brief Pointer type representing a non-null cursor/iterator.
+     * @brief Pointer type representing a contiguous memory cursor.
      *
-     * @tparam T The pointed-to type (must not be a reference type per "C++ standard [dcl.ptr]", `void`, nor a function pointer).
+     * @tparam Pointee The pointed-to type. Must be a non-void valid pointee type (non-reference and no degree of indirection over a function).
      *
-     * @details `cursor_ptr` models a non-owning, non-nullable, arithmetic, non-void-permitting
-     * pointer abstraction. It is designed for random-access and contiguous iteration over objects
-     * stored in contiguous memory. Because it exposes memory traversal semantics (pointer
-     * arithmetic and ordering), it is not a stable alias to a single object.
+     * @details `cursor_ptr` models a non-owning, always-engaged, arithmetic, non-void-
+     * permitting pointer abstraction. It is designed for random-access and contiguous
+     * iteration over objects stored in contiguous memory. Because it exposes memory
+     * traversal semantics (pointer arithmetic and ordering), it serves as a cursor into
+     * a sequence rather than a stable alias to a single object.
+     *
+     * The invariants and behavioral contract of `cursor_ptr` are determined by the policies selected
+     * in the `ptr_core` specialization from which it is derived:
+     * - `nullability::always_engaged`
+     * - `pointer_binding::allowed`
+     * - `reference_binding::allowed`
+     * - `traversal::arithmetic`
+     *
+     * @see `ptr_core`
+     * @see `ptr_policies`
      *
      * @note Standard Layout type with size and alignment of a raw pointer.
-     * @invariant Always engaged: a `cursor_ptr` always stores a valid memory address; there is no null/disengaged representation. Attempts to construct/assign from another pointer throw on null.
+     * @invariant Always engaged: a `cursor_ptr` always stores a valid memory address; there is no null/disengaged representation.
+     * @remark Initialization or rebinding from other pointers performs runtime validation and throws `std::invalid_argument` when a null value is supplied.
      * @remark This type does not own the pointee object and does not participate in lifetime management.
-     * @remark Copying and assignment rebind the stored address without affecting pointee lifetime.
-     * @note Construction or assignment from `nullptr` is ill-formed.
-     * @note Construction or assignment from pointers and pointer-like values performs runtime validation and throws `std::invalid_argument` on null. All operations provide the Strong Exception Safety Guarantee.
-     * @remark Explicit comparison overloads are provided only where implicit conversion to the nested `pointer` type is insufficient to enable the desired comparison.
+     * @remark Copying and assignment perform potentially cross-sequence rebinding of the pointer without affecting either sequence.
+     * @note Because arithmetic traversal requires a complete type to compute `sizeof(Pointee)`, `void` pointees are semantically incompatible.
+     * @note Construction and assignment/rebinding from other pointers provide the Strong Exception Safety Guarantee. All other operations provide the No-Fail Guarantee, performing exclusively non-allocating, non-throwing pointer manipulations.
      *
      * @warning The referenced object MUST outlive the `cursor_ptr`. Violating this results in undefined behavior.
      * @warning Any operation that invalidates the underlying contiguous storage also invalidates associated `cursor_ptr` instances.
