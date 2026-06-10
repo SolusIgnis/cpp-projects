@@ -86,7 +86,7 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename Pointee>
-    inline constexpr bool is_valid_pointee_v = (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>);
+    inline constexpr bool is_valid_pointee_v = (!std::is_reference_v<Pointee> && !is_array_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>);
 
     /**
      * @brief Detects pointer-like types exposing a compatible `get()` member.
@@ -381,7 +381,7 @@ export namespace base::vocab::inline ptr {
         template<typename AnyCArray>
             requires std::is_array_v<AnyCArray>
         ptr_core(AnyCArray&)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+            requires ptr_policies::allowed_pointer_binding_v<policy_set> && (!std::same_as<std::remove_cvref_t<AnyCArray>, value_type>)
         = delete /*("Constructor from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
