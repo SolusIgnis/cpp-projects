@@ -370,9 +370,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted constructor from another pointer-like type to structurally guarantee non-null initialization.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
-                     }
+                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
                      ptr_core(const Pointer<Element, Args...>&)
                          requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Constructor from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
@@ -381,9 +379,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted assignment from another pointer-like type to structurally guarantee non-null rebinding.
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
-                     }
+                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
                      Self& operator=(this Self&&, const Pointer<Element, Args...>&)
                          requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Assignment from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
