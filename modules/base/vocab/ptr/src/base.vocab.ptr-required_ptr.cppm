@@ -96,7 +96,7 @@ export namespace base::vocab::inline ptr {
         >
     > {
     private:
-        using base_type = required_ptr::ptr_core;
+        using base_type = typename required_ptr::ptr_core;
     public:
         using base_type::base_type;
         using base_type::operator=;

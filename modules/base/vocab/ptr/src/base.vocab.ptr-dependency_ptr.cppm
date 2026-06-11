@@ -37,8 +37,6 @@
  * To represent a contextually optional dependency, it composes naturally as 
  * `std::optional<dependency_ptr<T>>`, cleanly decoupling the optionality from
  * the pointer itself. 
- *
- * @todo Future Development: Use `= delete("reason")` instead of the C-style comments once the C++26 feature becomes available.
  */
 
 //Module partition interface unit
@@ -101,7 +99,7 @@ export namespace base::vocab::inline ptr {
         >
     > {
     private:
-        using base_type = dependency_ptr::ptr_core;
+        using base_type = typename dependency_ptr::ptr_core;
     public:
         using base_type::base_type;
         using base_type::operator=;
