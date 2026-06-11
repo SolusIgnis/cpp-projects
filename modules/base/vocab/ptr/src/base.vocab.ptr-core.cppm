@@ -32,12 +32,13 @@
  * `ptr_core` centralizes address storage, pointer operations, and policy-driven
  * interface selection. `VocabPtr` uses a public nested tag type to identify
  * concrete pointer types derived from `ptr_core` specializations.
- * `is_valid_pointee_v` allows `ptr_core` and the concrete pointer types to
- * validate their pointee template parameter domain. `is_smart_ptr_convertible_to_v`
- * enables `ptr_core` to generally interface with other pointer(-like) types.
- * The `std::hash` and `std::formatter` specializations leverage `VocabPtr` to
- * provide hashing and formatting facilities to all of the concrete vocabulary
- * pointers.
+ * `CompatibleRawPtr` enables `ptr_core` to constrain raw pointer interactions to
+ * address types convertible to the type of its stored address. `is_valid_pointee_v`
+ * allows `ptr_core` and the concrete pointer types to validate their pointee
+ * template parameter domain. `is_smart_ptr_convertible_to_v` enables `ptr_core` to
+ * generally interface with other pointer(-like) types. The `std::hash` and
+ * `std::formatter` specializations leverage `VocabPtr` to provide hashing and
+ * formatting facilities to all of the concrete vocabulary pointers.
  *
  * This partition is primarily intended for implementers of vocabulary pointer
  * types. End users will typically interact with the concrete pointer abstractions
