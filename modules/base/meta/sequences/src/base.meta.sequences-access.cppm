@@ -102,7 +102,7 @@ namespace base::meta::sequences {
 namespace base::meta::sequences {
     template<typename T>
     struct dependently_false : std::false_type {};
-    
+
     template<typename T>
     inline constexpr bool dependently_false_v = dependently_false<T>::value;
 
@@ -127,13 +127,16 @@ namespace base::meta::sequences {
     struct find_type_if_impl<false, T, Seq, UnaryTypePredicate> {
         using type = typename find_type_if<Seq, UnaryTypePredicate>::type;
     };
-    
+
     /**
      * @brief Base case for empty type sequences.
      */
     template<template<typename> typename UnaryTypePredicate>
     struct find_type_if<type_list<>, UnaryTypePredicate> {
-        static_assert(dependently_false_v<type_list<>>, "find_if failure: result not found; use try_find_if for optional results");
+        static_assert(
+            dependently_false_v<type_list<>>,
+            "find_if failure: result not found; use try_find_if for optional results"
+        );
     };
 
     /**
@@ -141,13 +144,7 @@ namespace base::meta::sequences {
      */
     template<typename T, typename... Rest, template<typename> typename UnaryTypePredicate>
     struct find_type_if<type_list<T, Rest...>, UnaryTypePredicate>
-        : find_type_if_impl<
-            UnaryTypePredicate<T>::value,
-            T,
-            type_list<Rest...>,
-            UnaryTypePredicate
-        >
-    {};
+        : find_type_if_impl<UnaryTypePredicate<T>::value, T, type_list<Rest...>, UnaryTypePredicate> {};
 
     /**
      * @brief Finds the first value satisfying a unary value predicate.

@@ -23,7 +23,7 @@
  *
  * @details This pointer provides a zero-overhead replacement for raw
  * pointers as a core vocabulary type for non-owning object aliases. It
- * should be preferred over `required_ptr` in contexts where an unengaged 
+ * should be preferred over `required_ptr` in contexts where an unengaged
  * (null) state meaningfully exists, cleanly representing optionality
  * without introducing a wrapper.
  *
@@ -82,17 +82,18 @@ export namespace base::vocab::inline ptr {
     template<typename Pointee>
         requires is_valid_pointee_v<Pointee>
     class alias_ptr final : public ptr_core<
-        alias_ptr,
-        Pointee,
-        ptr_policies::type_list<
-            ptr_policies::nullability::nullable,
-            ptr_policies::pointer_binding::allowed,
-            ptr_policies::reference_binding::allowed,
-            ptr_policies::traversal::rebinding
-        >
-    > {
+                                alias_ptr,
+                                Pointee,
+                                ptr_policies::type_list<
+                                    ptr_policies::nullability::nullable,
+                                    ptr_policies::pointer_binding::allowed,
+                                    ptr_policies::reference_binding::allowed,
+                                    ptr_policies::traversal::rebinding
+                                >
+                            > {
     private:
         using base_type = typename alias_ptr::core_type;
+
     public:
         using base_type::base_type;
         using base_type::operator=;

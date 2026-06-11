@@ -86,7 +86,8 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename Pointee>
-    inline constexpr bool is_valid_pointee_v = (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>);
+    inline constexpr bool is_valid_pointee_v =
+        (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>);
 
     /**
      * @brief Detects pointer-like types exposing a compatible `get()` member.
@@ -138,7 +139,7 @@ export namespace base::vocab::inline ptr {
         using core_type = ptr_core;
 
     private:
-        using policy_set = PolicySet;
+        using policy_set            = PolicySet;
         using concrete_ptr_instance = ConcretePtr<Pointee>;
 
         struct void_reference;
@@ -194,8 +195,10 @@ export namespace base::vocab::inline ptr {
          */
         using difference_type = std::ptrdiff_t;
 
-        using iterator_concept = std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::contiguous_iterator_tag, void>;
-        using iterator_category = std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::random_access_iterator_tag, void>;
+        using iterator_concept =
+            std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::contiguous_iterator_tag, void>;
+        using iterator_category =
+            std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::random_access_iterator_tag, void>;
 
     private:
         pointer address_; ///<@brief The stored address used by all concrete pointer types.
@@ -209,13 +212,15 @@ export namespace base::vocab::inline ptr {
 
         ///@brief (Conversion) Implicitly converts from another `ConcretePtr` specialization according to nested `pointer` type conversions.
         template<typename OtherPointee>
-            requires (!std::same_as<OtherPointee, element_type>) && std::convertible_to<std::add_pointer_t<OtherPointee>, pointer>
+            requires (!std::same_as<OtherPointee, element_type>)
+                  && std::convertible_to<std::add_pointer_t<OtherPointee>, pointer>
         constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept : address_{source.get()}
         {}
 
         ///@brief (Conversion) Assigns from another `ConcretePtr` specialization according to nested `pointer` type conversions.
         template<typename Self, typename OtherPointee>
-            requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, element_type>) && std::convertible_to<std::add_pointer_t<OtherPointee>, pointer>
+            requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, element_type>)
+                  && std::convertible_to<std::add_pointer_t<OtherPointee>, pointer>
         constexpr Self& operator=(this Self& self, const ConcretePtr<OtherPointee>& source) noexcept
         {
             self.address_ = source.get();
@@ -253,8 +258,10 @@ export namespace base::vocab::inline ptr {
         template<typename P>
             requires std::is_pointer_v<std::remove_cvref_t<P>>
                   && std::convertible_to<std::decay_t<P>, pointer>
-        constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(noexcept(apply_nullability_policy(std::forward<P>(source))))
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                     constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(
+                         noexcept(apply_nullability_policy(std::forward<P>(source)))
+                     )
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_{apply_nullability_policy(std::forward<P>(source))}
         {}
 
@@ -262,8 +269,10 @@ export namespace base::vocab::inline ptr {
         template<typename Self, typename P>
             requires (!std::is_const_v<Self>) && std::is_pointer_v<std::remove_cvref_t<P>>
                   && std::convertible_to<std::decay_t<P>, pointer>
-        constexpr Self& operator=(this Self& self, P&& source) noexcept(noexcept(apply_nullability_policy(std::forward<P>(source))))
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                     constexpr Self& operator=(this Self& self, P&& source) noexcept(
+                         noexcept(apply_nullability_policy(std::forward<P>(source)))
+                     )
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = apply_nullability_policy(std::forward<P>(source));
             return self;
@@ -273,8 +282,10 @@ export namespace base::vocab::inline ptr {
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
                   && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
-        constexpr explicit(std::is_void_v<element_type>) ptr_core(const Pointer<Element, Args...>& source) noexcept(noexcept(apply_nullability_policy(source.get())))
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                     constexpr explicit(std::is_void_v<element_type>) ptr_core(
+                         const Pointer<Element, Args...>& source
+                     ) noexcept(noexcept(apply_nullability_policy(source.get())))
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_{apply_nullability_policy(source.get())}
         {}
 
@@ -283,8 +294,10 @@ export namespace base::vocab::inline ptr {
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
                   && (!std::is_const_v<Self>)
                   && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
-        constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source) noexcept(noexcept(apply_nullability_policy(source.get())))
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                     constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source) noexcept(
+                         noexcept(apply_nullability_policy(source.get()))
+                     )
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = apply_nullability_policy(source.get());
             return self;
@@ -295,12 +308,14 @@ export namespace base::vocab::inline ptr {
         ///@brief Default constructor value initializes to null.
         ptr_core() noexcept
             requires ptr_policies::nullable_nullability_v<policy_set>
-            : address_{} {}
+            : address_{}
+        {}
 
         ///@brief Constructor from `nullptr` initializes to null.
         ptr_core(std::nullptr_t null) noexcept
             requires ptr_policies::nullable_nullability_v<policy_set>
-            : address_{null} {}
+            : address_{null}
+        {}
 
         ///@brief Assignment from `nullptr` rebinds to null.
         template<typename Self>
@@ -358,8 +373,8 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-        ptr_core(const Pointer<Element, Args...>&)
-            requires ptr_policies::forbidden_pointer_binding_v<policy_set>
+                     ptr_core(const Pointer<Element, Args...>&)
+                         requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Constructor from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
@@ -369,8 +384,8 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-        Self& operator=(this Self&&, const Pointer<Element, Args...>&)
-            requires ptr_policies::forbidden_pointer_binding_v<policy_set>
+                     Self& operator=(this Self&&, const Pointer<Element, Args...>&)
+                         requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Assignment from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
@@ -384,7 +399,8 @@ export namespace base::vocab::inline ptr {
         template<typename AnyCArray>
             requires std::is_array_v<AnyCArray>
         ptr_core(AnyCArray&)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set> && (!std::convertible_to<std::add_lvalue_reference_t<AnyCArray>, reference>)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                      && (!std::convertible_to<std::add_lvalue_reference_t<AnyCArray>, reference>)
         = delete /*("Constructor from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
@@ -392,7 +408,8 @@ export namespace base::vocab::inline ptr {
         template<typename Self, typename AnyCArray>
             requires std::is_array_v<AnyCArray>
         Self& operator=(this Self&&, AnyCArray&)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set> && (!std::convertible_to<std::add_lvalue_reference_t<AnyCArray>, reference>)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                      && (!std::convertible_to<std::add_lvalue_reference_t<AnyCArray>, reference>)
         = delete /*("Assignment from C-array deleted to prevent array-to-pointer decay. To point to the first element, alias it explicitly.")*/
             ;
 
@@ -423,8 +440,8 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-        ptr_core(std::add_rvalue_reference_t<Pointer<Element, Args...>>)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                     ptr_core(std::add_rvalue_reference_t<Pointer<Element, Args...>>)
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         = delete /*("Constructor from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
@@ -434,8 +451,8 @@ export namespace base::vocab::inline ptr {
                   && requires(Pointer<Element, Args...> ptr) {
                          { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
                      }
-        Self& operator=(this Self&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                     Self& operator=(this Self&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>)
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         = delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
             ;
 
@@ -502,7 +519,9 @@ export namespace base::vocab::inline ptr {
         ///@brief Reset the pointer to `nullptr`.
         constexpr void reset(this auto& self, std::nullptr_t null = nullptr) noexcept
             requires ptr_policies::nullable_nullability_v<policy_set>
-        { self = null; }
+        {
+            self = null;
+        }
 
         ///@brief Returns a raw pointer to the stored address while disengaging the pointer.
         [[nodiscard]] constexpr pointer release(this auto&& self) noexcept
@@ -521,14 +540,18 @@ export namespace base::vocab::inline ptr {
         ///@brief Contextually converts to `bool` to test if the pointer is engaged.
         [[nodiscard]] constexpr explicit operator bool(this auto&& self) noexcept
             requires ptr_policies::nullable_nullability_v<policy_set>
-        { return (self.get() != nullptr); }
+        {
+            return (self.get() != nullptr);
+        }
 
         //===== Nullability (No) =====
 
         ///@brief Contextually converts to `bool` to "test" if the pointer is engaged. Always returns `true` to confirm invariant.
         [[nodiscard]] constexpr explicit operator bool(this auto&&) noexcept
             requires ptr_policies::always_engaged_nullability_v<policy_set>
-        { return true; }
+        {
+            return true;
+        }
 
         //================================================================================
         // Arithmetic Operators: Implemented for Iteration, Deleted Otherwise
@@ -541,8 +564,7 @@ export namespace base::vocab::inline ptr {
             "Subscript operator conflates pointers with arrays. Use `*(ptr + offset)` for explicit traversal or consider subscripting the container instead."
         )]]
         constexpr auto& operator[](this auto self, difference_type offset) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
-            && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return *(self + offset);
         }
@@ -550,8 +572,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Prefix increment: increments the stored address.
         template<typename Self>
         constexpr decltype(auto) operator++(this Self&& self) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
-            && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             ++self.address_;
             return std::forward<Self>(self);
@@ -560,8 +581,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Prefix decrement: decrements the stored address.
         template<typename Self>
         constexpr decltype(auto) operator--(this Self&& self) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
-            && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             --self.address_;
             return std::forward<Self>(self);
@@ -570,8 +590,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Postfix increment: increments the stored address but returns a pointer to the prior stored address.
         template<typename Self>
         constexpr auto operator++(this Self&& self, int) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
-            && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             std::decay_t<Self> old{self};
             ++self;
@@ -581,8 +600,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Postfix decrement: decrements the stored address but returns a pointer to the prior stored address.
         template<typename Self>
         constexpr auto operator--(this Self&& self, int) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
-            && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             std::decay_t<Self> old{self};
             --self;
@@ -592,8 +610,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Addition assignment: increments the stored address by a given distance.
         template<typename Self>
         constexpr decltype(auto) operator+=(this Self&& self, difference_type offset) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
-            && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             self.address_ += offset;
             return std::forward<Self>(self);
@@ -602,8 +619,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Subtraction assignment: decrements the stored address by a given distance.
         template<typename Self>
         constexpr decltype(auto) operator-=(this Self&& self, difference_type offset) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
-            && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             self.address_ -= offset;
             return std::forward<Self>(self);
@@ -611,32 +627,28 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
         friend constexpr concrete_ptr_instance operator+(concrete_ptr_instance ptr, difference_type offset) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
-            && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return ptr += offset;
         }
 
         ///@brief Pointer addition (commutative): gets a pointer to an address a given distance after the stored address.
         friend constexpr concrete_ptr_instance operator+(difference_type offset, concrete_ptr_instance ptr) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
-            && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return ptr += offset;
         }
 
         ///@brief Pointer subtraction: gets a pointer to an address a given distance before the stored address.
         friend constexpr concrete_ptr_instance operator-(concrete_ptr_instance ptr, difference_type offset) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
-            && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return ptr -= offset;
         }
 
         ///@brief Pointer subtraction (difference): computes the distance between the addresses stored in two pointers.
         friend constexpr difference_type operator-(concrete_ptr_instance lhs, concrete_ptr_instance rhs) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
-            && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return lhs.get() - rhs.get();
         }
@@ -753,8 +765,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted comparison against `nullptr`.
         [[nodiscard]] friend constexpr bool operator==(const concrete_ptr_instance&, std::nullptr_t) noexcept
             requires ptr_policies::arithmetic_traversal_v<policy_set>
-        = delete
-            ;
+        = delete;
 
         //===== Traversal (Rebinding) =====
 
@@ -812,7 +823,8 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Outputs a `ptr_core` address to a `std::basic_ostream`.
         template<typename CharT, typename Traits>
-        friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& stream, const concrete_ptr_instance& ptr)
+        friend std::basic_ostream<CharT, Traits>&
+            operator<<(std::basic_ostream<CharT, Traits>& stream, const concrete_ptr_instance& ptr)
         {
             // In order to support pointers to arbitrarily cv-qualified objects:
             // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
@@ -822,18 +834,18 @@ export namespace base::vocab::inline ptr {
         }
 
     private:
-        ///@brief Enforces the non-null invariant for `nullability::always_engaged` pointers by only passing the address through when it is not null but allows unchecked pass-through otherwise.  
-        [[nodiscard]] static constexpr pointer apply_nullability_policy(pointer source)
-            noexcept(!ptr_policies::always_engaged_nullability_v<policy_set>)
-        {  
-            if constexpr (ptr_policies::always_engaged_nullability_v<policy_set>) {  
-                if (source == nullptr) [[unlikely]] {  
-                    throw std::invalid_argument(  
-                        "`nullability::always_engaged` pointers cannot be constructed or assigned from a null pointer."  
-                    );  
-                }  
-            }  
-            return source;  
+        ///@brief Enforces the non-null invariant for `nullability::always_engaged` pointers by only passing the address through when it is not null but allows unchecked pass-through otherwise.
+        [[nodiscard]] static constexpr pointer
+            apply_nullability_policy(pointer source) noexcept(!ptr_policies::always_engaged_nullability_v<policy_set>)
+        {
+            if constexpr (ptr_policies::always_engaged_nullability_v<policy_set>) {
+                if (source == nullptr) [[unlikely]] {
+                    throw std::invalid_argument(
+                        "`nullability::always_engaged` pointers cannot be constructed or assigned from a null pointer."
+                    );
+                }
+            }
+            return source;
         }
     }; //class ptr_core
 

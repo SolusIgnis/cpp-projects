@@ -915,12 +915,14 @@ namespace {
             //Ensure binding to the element is equivalent to expected array-to-pointer decay with pointer offset arithmetic
             expect(eq(ptr.get(), array + 1));
         };
-        
+
         "not constructible, convertible, nor assignable from C-array decay when pointing to an array"_test = [] mutable {
-            std::int32_t array[3][3] = {{0, 1, 2},
-                                        {3, 4, 5},
-                                        {6, 7, 8}};
-            
+            std::int32_t array[3][3] = {
+                {0, 1, 2},
+                {3, 4, 5},
+                {6, 7, 8}
+            };
+
             //alias_ptr<std::int32_t[3]> should_fail{array};
 
             expect(eq(std::convertible_to<decltype(array), alias_ptr<std::int32_t[3]>>, false));

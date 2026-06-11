@@ -34,9 +34,9 @@
  * necessity and cost of runtime validation. Unlike `cursor_ptr`, it operates
  * solely on discrete object identities and rejects pointer arithmetic entirely.
  *
- * To represent a contextually optional dependency, it composes naturally as 
+ * To represent a contextually optional dependency, it composes naturally as
  * `std::optional<dependency_ptr<T>>`, cleanly decoupling the optionality from
- * the pointer itself. 
+ * the pointer itself.
  */
 
 //Module partition interface unit
@@ -89,17 +89,18 @@ export namespace base::vocab::inline ptr {
     template<typename Pointee>
         requires is_valid_pointee_v<Pointee> && (!std::is_void_v<Pointee>)
     class [[nodiscard]] dependency_ptr final : public ptr_core<
-        dependency_ptr,
-        Pointee,
-        ptr_policies::type_list<
-            ptr_policies::nullability::always_engaged,
-            ptr_policies::pointer_binding::forbidden,
-            ptr_policies::reference_binding::allowed,
-            ptr_policies::traversal::rebinding
-        >
-    > {
+                                                   dependency_ptr,
+                                                   Pointee,
+                                                   ptr_policies::type_list<
+                                                       ptr_policies::nullability::always_engaged,
+                                                       ptr_policies::pointer_binding::forbidden,
+                                                       ptr_policies::reference_binding::allowed,
+                                                       ptr_policies::traversal::rebinding
+                                                   >
+                                               > {
     private:
         using base_type = typename dependency_ptr::core_type;
+
     public:
         using base_type::base_type;
         using base_type::operator=;

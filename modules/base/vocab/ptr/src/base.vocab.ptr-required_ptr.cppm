@@ -30,7 +30,7 @@
  *
  * By utilizing a mix of structural constraints and runtime validation,
  * it enforces engagement at the point of construction or rebinding.
- * Unlike `dependency_ptr`, `required_ptr` supports fluid initialization 
+ * Unlike `dependency_ptr`, `required_ptr` supports fluid initialization
  * and rebinding from other pointers, increasing its versatility. Unlike
  * `cursor_ptr`, it is unsuitable for arithmetic iteration over blocks of
  * contiguous memory; rather, it is suited to discrete object-to-object
@@ -86,17 +86,18 @@ export namespace base::vocab::inline ptr {
     template<typename Pointee>
         requires is_valid_pointee_v<Pointee>
     class required_ptr final : public ptr_core<
-        required_ptr,
-        Pointee,
-        ptr_policies::type_list<
-            ptr_policies::nullability::always_engaged,
-            ptr_policies::pointer_binding::allowed,
-            ptr_policies::reference_binding::allowed,
-            ptr_policies::traversal::rebinding
-        >
-    > {
+                                   required_ptr,
+                                   Pointee,
+                                   ptr_policies::type_list<
+                                       ptr_policies::nullability::always_engaged,
+                                       ptr_policies::pointer_binding::allowed,
+                                       ptr_policies::reference_binding::allowed,
+                                       ptr_policies::traversal::rebinding
+                                   >
+                               > {
     private:
         using base_type = typename required_ptr::core_type;
+
     public:
         using base_type::base_type;
         using base_type::operator=;
