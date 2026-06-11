@@ -84,8 +84,7 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T, typename OtherPointer>
-    concept CompatibleRawPtr = std::is_pointer_v<std::remove_cvref_t<T>>
-                            && std::convertible_to<std::decay_t<T>, OtherPointer>;
+    concept CompatibleRawPtr = std::is_pointer_v<std::remove_cvref_t<T>> && std::convertible_to<std::decay_t<T>, OtherPointer>;
 
     /**
      * @brief Determines whether a type may be used as a vocabulary pointer pointee.
@@ -281,9 +280,8 @@ export namespace base::vocab::inline ptr {
         ///@brief Assigns from a raw `pointer`.
         template<typename Self, CompatibleRawPtr<pointer> P>
             requires (!std::is_const_v<Self>)
-        constexpr Self& operator=(this Self& self, P&& source) noexcept(
-            noexcept(apply_nullability_policy(std::forward<P>(source)))
-        )
+        constexpr Self&
+            operator=(this Self& self, P&& source) noexcept(noexcept(apply_nullability_policy(std::forward<P>(source))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = apply_nullability_policy(std::forward<P>(source));
