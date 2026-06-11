@@ -134,6 +134,9 @@ export namespace base::vocab::inline ptr {
     public:
         struct derived_from_ptr_core;
 
+    protected:
+        using core_type = ptr_core;
+
     private:
         using policy_set = PolicySet;
         using concrete_ptr_instance = ConcretePtr<Pointee>;

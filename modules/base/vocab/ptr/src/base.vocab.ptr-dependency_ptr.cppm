@@ -79,7 +79,7 @@ export namespace base::vocab::inline ptr {
      * @note The stored address is guaranteed to be non-null by construction without need for runtime validation.
      * @remark This type does not own the pointee object and does not participate in lifetime management.
      * @remark Copying and assignment rebind the pointer without affecting either pointee.
-     * @remark Marked `[[nodiscard]]` to prevent accidental dropping of required dependency handles. Intentional discards should use `[[maybe_unused]]` to document intent.
+     * @remark Marked `[[nodiscard]]` to prevent accidental dropping of required dependency handles. Intentional discards should be cast to `void` to document intent.
      * @note All operations provide the No-Fail Guarantee, performing exclusively non-allocating, non-throwing pointer manipulations.
      *
      * @warning The referenced object MUST outlive the `dependency_ptr`. Violating this results in undefined behavior.
@@ -99,7 +99,7 @@ export namespace base::vocab::inline ptr {
         >
     > {
     private:
-        using base_type = typename dependency_ptr::ptr_core;
+        using base_type = typename dependency_ptr::core_type;
     public:
         using base_type::base_type;
         using base_type::operator=;
