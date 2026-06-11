@@ -303,7 +303,7 @@ export namespace base::vocab::inline ptr {
             return self;
         }
 
-        //===== Nullability (Yes) =====
+        //===== Nullability (Nullable) =====
 
         ///@brief Default constructor value initializes to null.
         ptr_core() noexcept
@@ -331,7 +331,7 @@ export namespace base::vocab::inline ptr {
         // Deleted Constructors and Assignment Operators: Non-Null Structural Invariant
         //================================================================================
 
-        //===== Nullability (No) =====
+        //===== Nullability (Always Engaged) =====
 
         ///@brief Deleted default constructor to prevent sources of null initialization.
         ptr_core()
@@ -437,9 +437,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted constructor from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
-                     }
+                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
                      ptr_core(std::add_rvalue_reference_t<Pointer<Element, Args...>>)
                          requires ptr_policies::allowed_pointer_binding_v<policy_set>
         = delete /*("Constructor from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
@@ -448,9 +446,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && requires(Pointer<Element, Args...> ptr) {
-                         { std::as_const(ptr).get() } -> std::convertible_to<pointer>;
-                     }
+                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
                      Self& operator=(this Self&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>)
                          requires ptr_policies::allowed_pointer_binding_v<policy_set>
         = delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
@@ -514,7 +510,7 @@ export namespace base::vocab::inline ptr {
             self = std::forward<P>(source);
         }
 
-        //===== Nullability (Yes) =====
+        //===== Nullability (Nullable) =====
 
         ///@brief Reset the pointer to `nullptr`.
         constexpr void reset(this auto& self, std::nullptr_t null = nullptr) noexcept
@@ -544,7 +540,7 @@ export namespace base::vocab::inline ptr {
             return (self.get() != nullptr);
         }
 
-        //===== Nullability (No) =====
+        //===== Nullability (Always Engaged) =====
 
         ///@brief Contextually converts to `bool` to "test" if the pointer is engaged. Always returns `true` to confirm invariant.
         [[nodiscard]] constexpr explicit operator bool(this auto&&) noexcept
@@ -762,9 +758,11 @@ export namespace base::vocab::inline ptr {
             return (lhs <=> rhs.get());
         }
 
+        //===== Nullability (Always Engaged) =====
+
         ///@brief Deleted comparison against `nullptr`.
         [[nodiscard]] friend constexpr bool operator==(const concrete_ptr_instance&, std::nullptr_t) noexcept
-            requires ptr_policies::arithmetic_traversal_v<policy_set>
+            requires ptr_policies::always_engaged_nullability_v<policy_set>
         = delete;
 
         //===== Traversal (Rebinding) =====
