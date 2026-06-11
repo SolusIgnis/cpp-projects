@@ -31,7 +31,8 @@
  * to arithmetic iteration over blocks of contiguous memory rather than
  * discrete object-to-object rebinding path traversal. However, it still
  * offers full pointer- and reference-binding capabilities for fluid
- * interoperability and cross-sequence rebinding.
+ * interoperability and relocation of the cursor into a different
+ * contiguous memory sequence.
  */
 
 //Module partition interface unit
@@ -70,7 +71,7 @@ export namespace base::vocab::inline ptr {
      * @invariant Always engaged: a `cursor_ptr` always stores a valid memory address; there is no null/disengaged representation.
      * @remark Initialization or rebinding from other pointers performs runtime validation and throws `std::invalid_argument` when a null value is supplied.
      * @remark This type does not own the pointee object and does not participate in lifetime management.
-     * @remark Copying and assignment perform potentially cross-sequence rebinding of the pointer without affecting either sequence.
+     * @remark Copying and assignment perform rebinding, potentially to a different contiguous sequence, of the pointer without affecting either sequence.
      * @note Because arithmetic traversal requires a complete type to compute `sizeof(Pointee)`, `void` pointees are semantically incompatible.
      * @note Construction and assignment/rebinding from other pointers provide the Strong Exception Safety Guarantee. All other operations provide the No-Fail Guarantee, performing exclusively non-allocating, non-throwing pointer manipulations.
      *

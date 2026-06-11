@@ -29,10 +29,11 @@
  * dependency objects and provides an alternative to `std::reference_wrapper`.
  *
  * By utilizing structural constraints (specifically restricting initialization
- * and rebinding exclusively to references to the pointee), it enforces validity
- * entirely at compilation. Unlike `required_ptr`, it completely eliminates the
- * necessity and cost of runtime validation. Unlike `cursor_ptr`, it operates
- * solely on discrete object identities and rejects pointer arithmetic entirely.
+ * and rebinding exclusively to references to the pointee), it enforces address
+ * validity entirely at compilation. Unlike `required_ptr`, it completely
+ * eliminates the necessity and cost of runtime validation. Unlike `cursor_ptr`,
+ * it operates solely on discrete object identities and rejects pointer
+ * arithmetic entirely.
  *
  * To represent a contextually optional dependency, it composes naturally as
  * `std::optional<dependency_ptr<T>>`, cleanly decoupling the optionality from
