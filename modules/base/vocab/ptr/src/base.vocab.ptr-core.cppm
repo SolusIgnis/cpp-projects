@@ -73,6 +73,20 @@ namespace base::vocab::inline ptr {
     concept VocabPtr = requires { typename T::derived_from_ptr_core; };
 
     /**
+     * @brief Determines whether a type is a pointer compatible with another pointer.
+     *
+     * @tparam T The type being tested.
+     * @tparam OtherPointer The pointer with which compatibility is being tested.
+     *
+     * @details Satisfied when `T` is a raw pointer that is convertible after decay to `OtherPointer`.
+     *
+     * @internal
+     */
+    template<typename T, typename OtherPointer>
+    concept CompatibleRawPtr = std::is_pointer_v<std::remove_cvref_t<T>>
+                            && std::convertible_to<std::decay_t<T>, OtherPointer>;
+
+    /**
      * @brief Determines whether a type may be used as a vocabulary pointer pointee.
      *
      * @tparam Pointee The candidate pointee type.
@@ -255,24 +269,21 @@ export namespace base::vocab::inline ptr {
         //===== Pointer Binding (Allowed)  =====
 
         ///@brief Implicitly converts from a raw `pointer`. Explicit when `element_type` is void to avoid implicit conversion chaining.
-        template<typename P>
-            requires std::is_pointer_v<std::remove_cvref_t<P>>
-                  && std::convertible_to<std::decay_t<P>, pointer>
-                     constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(
-                         noexcept(apply_nullability_policy(std::forward<P>(source)))
-                     )
-                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        template<CompatibleRawPtr<pointer> P>
+        constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(
+            noexcept(apply_nullability_policy(std::forward<P>(source)))
+        )
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : address_{apply_nullability_policy(std::forward<P>(source))}
         {}
 
         ///@brief Assigns from a raw `pointer`.
-        template<typename Self, typename P>
-            requires (!std::is_const_v<Self>) && std::is_pointer_v<std::remove_cvref_t<P>>
-                  && std::convertible_to<std::decay_t<P>, pointer>
-                     constexpr Self& operator=(this Self& self, P&& source) noexcept(
-                         noexcept(apply_nullability_policy(std::forward<P>(source)))
-                     )
-                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        template<typename Self, CompatibleRawPtr<pointer> P>
+            requires (!std::is_const_v<Self>)
+        constexpr Self& operator=(this Self& self, P&& source) noexcept(
+            noexcept(apply_nullability_policy(std::forward<P>(source)))
+        )
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = apply_nullability_policy(std::forward<P>(source));
             return self;
@@ -354,17 +365,18 @@ export namespace base::vocab::inline ptr {
 
         //===== Pointer Binding (Forbidden) =====
 
-        ///@brief Deleted constructor from `pointer` to structurally guarantee non-null initialization.
-        ptr_core(pointer)
+        ///@brief Deleted constructor from raw pointers to structurally guarantee non-null initialization.
+        template<CompatibleRawPtr<pointer> P>
+        ptr_core(P)
             requires ptr_policies::forbidden_pointer_binding_v<policy_set>
-        = delete /*("Constructor from `pointer` deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+        = delete /*("Constructor from raw pointers deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization by the reference-binding constructor. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
-        ///@brief Deleted assignment from `pointer` to structurally guarantee non-null rebinding.
-        template<typename Self>
-        Self& operator=(this Self&&, pointer)
+        ///@brief Deleted assignment from raw pointers to structurally guarantee non-null rebinding.
+        template<typename Self, CompatibleRawPtr<pointer> P>
+        Self& operator=(this Self&&, P)
             requires ptr_policies::forbidden_pointer_binding_v<policy_set>
-        = delete /*("Assignment from `pointer` deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+        = delete /*("Assignment from raw pointers deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null assignment by the reference-binding assignment operator. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
         ///@brief Deleted constructor from another pointer-like type to structurally guarantee non-null initialization.
@@ -373,7 +385,7 @@ export namespace base::vocab::inline ptr {
                   && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
                      ptr_core(const Pointer<Element, Args...>&)
                          requires ptr_policies::forbidden_pointer_binding_v<policy_set>
-        = delete /*("Constructor from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+        = delete /*("Constructor from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization by the reference-binding constructor. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
         ///@brief Deleted assignment from another pointer-like type to structurally guarantee non-null rebinding.
@@ -382,7 +394,7 @@ export namespace base::vocab::inline ptr {
                   && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
                      Self& operator=(this Self&&, const Pointer<Element, Args...>&)
                          requires ptr_policies::forbidden_pointer_binding_v<policy_set>
-        = delete /*("Assignment from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+        = delete /*("Assignment from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null assignment by the reference-binding assignment operator. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
         //================================================================================
@@ -802,13 +814,13 @@ export namespace base::vocab::inline ptr {
         template<typename Self>
         auto operator<=>(this Self&&, Self)
             requires ptr_policies::rebinding_traversal_v<policy_set>
-        = delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/
+        = delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. Use `traversal::arithmetic` pointers for iterators.")*/
             ;
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
         auto operator<=>(const pointer) const
             requires ptr_policies::rebinding_traversal_v<policy_set>
-        = delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. ConcretePtrUse `traversal::arithmetic` pointers for iterators.")*/
+        = delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. Use `traversal::arithmetic` pointers for iterators.")*/
             ;
 
         //================================================================================
