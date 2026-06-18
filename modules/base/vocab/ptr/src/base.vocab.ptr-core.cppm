@@ -269,7 +269,7 @@ export namespace base::vocab::inline ptr {
         //===== Pointer Binding (Allowed)  =====
 
         ///@brief Implicitly converts from a raw `address_type`. Explicit when `element_type` is void to avoid implicit conversion chaining.
-        template<CompatibleRawPtr<pointer> P>
+        template<CompatibleRawPtr<address_type> P>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(
             noexcept(apply_nullability_policy(std::forward<P>(source)))
         )
@@ -278,7 +278,7 @@ export namespace base::vocab::inline ptr {
         {}
 
         ///@brief Assigns from a raw `address_type`.
-        template<typename Self, CompatibleRawPtr<pointer> P>
+        template<typename Self, CompatibleRawPtr<address_type> P>
             requires (!std::is_const_v<Self>)
         constexpr Self&
             operator=(this Self& self, P&& source) noexcept(noexcept(apply_nullability_policy(std::forward<P>(source))))
@@ -365,14 +365,14 @@ export namespace base::vocab::inline ptr {
         //===== Pointer Binding (Forbidden) =====
 
         ///@brief Deleted constructor from raw pointers to structurally guarantee non-null initialization.
-        template<CompatibleRawPtr<pointer> P>
+        template<CompatibleRawPtr<address_type> P>
         ptr_core(P)
             requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Constructor from raw pointers deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization by the reference-binding constructor. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
         ///@brief Deleted assignment from raw pointers to structurally guarantee non-null rebinding.
-        template<typename Self, CompatibleRawPtr<pointer> P>
+        template<typename Self, CompatibleRawPtr<address_type> P>
         Self& operator=(this Self&&, P)
             requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Assignment from raw pointers deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null assignment by the reference-binding assignment operator. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
@@ -898,7 +898,7 @@ export namespace base::vocab::inline ptr {
      *
      * @pre If the selected policies include `nullability::always_engaged`, `source` must not be null.
      * @pre If not null, `source` must point to a valid object that outlives the resulting pointer.
-     * @post `get() == static_cast<pointer>(source)`.
+     * @post `get() == static_cast<address_type>(source)`.
      *
      * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
@@ -924,7 +924,7 @@ export namespace base::vocab::inline ptr {
      * @pre `source.get()` must be a valid expression convertible to `address_type`.
      * @pre If the selected policies include `nullability::always_engaged`, `source.get()` must not be null.
      * @pre If not null, `source.get()` must point to a valid object that outlives the resulting pointer.
-     * @post `get() == static_cast<pointer>(source.get())`.
+     * @post `get() == static_cast<address_type>(source.get())`.
      *
      * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
@@ -1010,7 +1010,7 @@ export namespace base::vocab::inline ptr {
      *
      * @pre If the selected policies include `nullability::always_engaged`, `source` must not be null.
      * @pre If not null, `source` must point to a valid object that outlives the resulting pointer.
-     * @post `self.get() == static_cast<pointer>(source)`.
+     * @post `self.get() == static_cast<address_type>(source)`.
      *
      * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
@@ -1037,7 +1037,7 @@ export namespace base::vocab::inline ptr {
      * @pre `source.get()` must be a valid expression convertible to `address_type`.
      * @pre If the selected policies include `nullability::always_engaged`, `source.get()` must not be null.
      * @pre If not null, `source.get()` must point to a valid object that outlives the resulting pointer.
-     * @post `self.get() == static_cast<pointer>(source.get())`.
+     * @post `self.get() == static_cast<address_type>(source.get())`.
      *
      * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
      *
