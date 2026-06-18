@@ -759,7 +759,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Covariantly compares a raw pointer-to-base with a `ConcretePtr`-to-derived in terms of pointer identity.
         template<std::derived_from<element_type> DerivedT>
-        [[nodiscard]] friend constexpr auto operator<=>(const pointer lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator<=>(const address_type lhs, const ConcretePtr<DerivedT>& rhs) noexcept
             requires ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return (lhs <=> rhs.get());
@@ -803,7 +803,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Covariantly compares equality of a raw pointer-to-base with an `ConcretePtr`-to-derived in terms of pointer identity.
         template<std::derived_from<element_type> DerivedT>
-        [[nodiscard]] friend constexpr bool operator==(const pointer lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const address_type lhs, const ConcretePtr<DerivedT>& rhs) noexcept
             requires ptr_policies::rebinding_traversal_v<policy_set>
         {
             return (lhs == rhs.get());
@@ -1235,7 +1235,7 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `traversal::rebinding`.
      */
     /**
-     * @overload constexpr bool operator==(pointer lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+     * @overload constexpr bool operator==(const address_type lhs, const ConcretePtr<DerivedT>& rhs) noexcept
      *
      * @tparam DerivedT The element type, derived from `element_type`, of the concrete pointer.
      *
@@ -1303,7 +1303,7 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `traversal::arithmetic`.
      */
     /**
-     * @overload constexpr auto operator<=>(pointer lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+     * @overload constexpr auto operator<=>(const address_type lhs, const ConcretePtr<DerivedT>& rhs) noexcept
      *
      * @tparam DerivedT The element type, derived from `element_type`, of the concrete pointer.
      *
