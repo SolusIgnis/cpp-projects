@@ -136,9 +136,9 @@ export namespace base::vocab::inline ptr {
      *
      * @see `:policies`
      *
-     * @remark **Array Decay Prevention:** Constructors taking raw C-arrays are explicitly intercepted and deleted for pointer-binding configurations to block inadvertent pointer-decay errors when targeting blocks of contiguous memory.
-     * @remark **Temporary Binding Prevention:** Direct binding from temporary variables (including `rvalue_reference`s and pointer-like temporaries) is structurally blocked using deleted sinks, eliminating a primary vector for dangling pointers at the library boundary.
-     * @remark **Layout Guarantee:** `ptr_core` maintains a strict standard-layout representation, allowing the concrete pointers derived from it to preserve the structural properties of a scalar raw pointer.
+     * @remark Array Decay Prevention: Operations taking raw C-arrays are explicitly intercepted and deleted for pointer-binding configurations to block pointer-decay errors when targeting blocks of contiguous memory.
+     * @remark Temporary Binding Prevention: Direct binding from temporary variables (including `rvalue_reference`s and pointer-like temporaries) is structurally blocked using deleted sinks, eliminating a primary vector for dangling pointers.
+     * @remark Layout Guarantee: `ptr_core` maintains a strict standard-layout representation, allowing the concrete pointers derived from it to preserve the structural properties of a scalar raw pointer.
      *
      * @remark This interface uses C++23 explicit object parameters (e.g., `this auto&& self`) to avoid cv/ref-qualified overload duplication while preserving correct value-category propagation.
      * @note Deleted overloads deliberately use forwarding explicit object parameters (`this Self&&`) so policy-driven diagnostics take precedence over value-category mismatches during overload resolution.
@@ -172,10 +172,10 @@ export namespace base::vocab::inline ptr {
         using value_type = std::remove_cv_t<element_type>;
 
         /**
-         * @typedef pointer
+         * @typedef address_type
          * @brief The raw pointer type of the stored address (`element_type*`).
          */
-        using pointer = std::add_pointer_t<element_type>;
+        using address_type = std::add_pointer_t<element_type>;
 
         /**
          * @typedef reference
@@ -215,7 +215,7 @@ export namespace base::vocab::inline ptr {
             std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::random_access_iterator_tag, void>;
 
     private:
-        pointer address_; ///<@brief The stored address used by all concrete pointer types.
+        address_type address_; ///<@brief The stored address used by all concrete pointer types.
 
     public:
         //================================================================================
@@ -224,17 +224,17 @@ export namespace base::vocab::inline ptr {
 
         //===== Universal Core =====
 
-        ///@brief (Conversion) Implicitly converts from another `ConcretePtr` specialization according to nested `pointer` type conversions.
+        ///@brief (Conversion) Implicitly converts from another `ConcretePtr` specialization according to nested `address_type` type conversions.
         template<typename OtherPointee>
             requires (!std::same_as<OtherPointee, element_type>)
-                  && std::convertible_to<std::add_pointer_t<OtherPointee>, pointer>
+                  && std::convertible_to<std::add_pointer_t<OtherPointee>, address_type>
         constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept : address_{source.get()}
         {}
 
-        ///@brief (Conversion) Assigns from another `ConcretePtr` specialization according to nested `pointer` type conversions.
+        ///@brief (Conversion) Assigns from another `ConcretePtr` specialization according to nested `address_type` type conversions.
         template<typename Self, typename OtherPointee>
             requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, element_type>)
-                  && std::convertible_to<std::add_pointer_t<OtherPointee>, pointer>
+                  && std::convertible_to<std::add_pointer_t<OtherPointee>, address_type>
         constexpr Self& operator=(this Self& self, const ConcretePtr<OtherPointee>& source) noexcept
         {
             self.address_ = source.get();
@@ -268,7 +268,7 @@ export namespace base::vocab::inline ptr {
 
         //===== Pointer Binding (Allowed)  =====
 
-        ///@brief Implicitly converts from a raw `pointer`. Explicit when `element_type` is void to avoid implicit conversion chaining.
+        ///@brief Implicitly converts from a raw `address_type`. Explicit when `element_type` is void to avoid implicit conversion chaining.
         template<CompatibleRawPtr<pointer> P>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(
             noexcept(apply_nullability_policy(std::forward<P>(source)))
@@ -277,7 +277,7 @@ export namespace base::vocab::inline ptr {
             : address_{apply_nullability_policy(std::forward<P>(source))}
         {}
 
-        ///@brief Assigns from a raw `pointer`.
+        ///@brief Assigns from a raw `address_type`.
         template<typename Self, CompatibleRawPtr<pointer> P>
             requires (!std::is_const_v<Self>)
         constexpr Self&
@@ -291,7 +291,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Implicitly converts from another pointer-like type. Explicit when `element_type` is void to avoid implicit conversion chaining.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
+                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, address_type>
                      constexpr explicit(std::is_void_v<element_type>) ptr_core(
                          const Pointer<Element, Args...>& source
                      ) noexcept(noexcept(apply_nullability_policy(source.get())))
@@ -303,7 +303,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
                   && (!std::is_const_v<Self>)
-                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
+                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, address_type>
                      constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source) noexcept(
                          noexcept(apply_nullability_policy(source.get()))
                      )
@@ -381,7 +381,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted constructor from another pointer-like type to structurally guarantee non-null initialization.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
+                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, address_type>
                      ptr_core(const Pointer<Element, Args...>&)
                          requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Constructor from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization by the reference-binding constructor. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
@@ -390,7 +390,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted assignment from another pointer-like type to structurally guarantee non-null rebinding.
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
+                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, address_type>
                      Self& operator=(this Self&&, const Pointer<Element, Args...>&)
                          requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Assignment from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null assignment by the reference-binding assignment operator. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
@@ -444,7 +444,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted constructor from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
+                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, address_type>
                      ptr_core(std::add_rvalue_reference_t<Pointer<Element, Args...>>)
                          requires ptr_policies::allowed_pointer_binding_v<policy_set>
         = delete /*("Constructor from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
@@ -453,7 +453,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
             requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, pointer>
+                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, address_type>
                      Self& operator=(this Self&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>)
                          requires ptr_policies::allowed_pointer_binding_v<policy_set>
         = delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
@@ -481,7 +481,7 @@ export namespace base::vocab::inline ptr {
         //===== Universal Core =====
 
         ///@brief Provides member access to the pointee object.
-        [[nodiscard]] constexpr pointer operator->(this auto&& self) noexcept
+        [[nodiscard]] constexpr address_type operator->(this auto&& self) noexcept
             requires base::meta::concepts::CompletePointee<element_type>
         {
             return self.address_;
@@ -495,10 +495,10 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Returns a raw pointer to the stored address.
-        [[nodiscard]] constexpr pointer get(this auto&& self) noexcept { return self.address_; }
+        [[nodiscard]] constexpr address_type get(this auto&& self) noexcept { return self.address_; }
 
-        ///@brief Implicitly converts to the nested `pointer` type.
-        [[nodiscard]] constexpr explicit(false) operator pointer() const noexcept { return this->get(); }
+        ///@brief Implicitly converts to the nested `address_type` type.
+        [[nodiscard]] constexpr explicit(false) operator address_type() const noexcept { return this->get(); }
 
         ///@brief Rebinding passes through to assignment.
         template<typename Self, typename P>
@@ -527,7 +527,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Returns a raw pointer to the stored address while disengaging the pointer.
-        [[nodiscard]] constexpr pointer release(this auto&& self) noexcept
+        [[nodiscard]] constexpr address_type release(this auto&& self) noexcept
             requires ptr_policies::nullable_nullability_v<policy_set>
         {
             return std::exchange(self.address_, nullptr);
@@ -857,7 +857,7 @@ export namespace base::vocab::inline ptr {
     /**
      * @fn constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept
      *
-     * @tparam OtherPointee The source pointee type whose address is convertible to `pointer`.
+     * @tparam OtherPointee The source pointee type whose address is convertible to `address_type`.
      *
      * @param source The pointer being converted.
      *
@@ -892,7 +892,7 @@ export namespace base::vocab::inline ptr {
     /**
      * @overload constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source)
      *
-     * @tparam P A raw pointer type which must decay to a type convertible to `pointer`.
+     * @tparam P A raw pointer type which must decay to a type convertible to `address_type`.
      *
      * @param source The raw pointer to bind.
      *
@@ -921,7 +921,7 @@ export namespace base::vocab::inline ptr {
      *
      * @param source The pointer-like object providing access to a pointer-compatible address value.
      *
-     * @pre `source.get()` must be a valid expression convertible to `pointer`.
+     * @pre `source.get()` must be a valid expression convertible to `address_type`.
      * @pre If the selected policies include `nullability::always_engaged`, `source.get()` must not be null.
      * @pre If not null, `source.get()` must point to a valid object that outlives the resulting pointer.
      * @post `get() == static_cast<pointer>(source.get())`.
@@ -959,7 +959,7 @@ export namespace base::vocab::inline ptr {
      * @fn constexpr Self& operator=(this Self& self, const ConcretePtr<OtherPointee>& source) noexcept
      *
      * @tparam Self The non-const concrete pointer type deduced from the call site.
-     * @tparam OtherPointee The source pointee type whose address is convertible to `pointer`.
+     * @tparam OtherPointee The source pointee type whose address is convertible to `address_type`.
      *
      * @param self The pointer being rebound.
      * @param source The pointer being converted.
@@ -1001,7 +1001,7 @@ export namespace base::vocab::inline ptr {
      * @overload constexpr Self& operator=(this Self& self, P&& source)
      *
      * @tparam Self The non-const concrete pointer type deduced from the call site.
-     * @tparam P A raw pointer type which must decay to a type convertible to `pointer`.
+     * @tparam P A raw pointer type which must decay to a type convertible to `address_type`.
      *
      * @param self The pointer being rebound.
      * @param source The raw pointer to bind.
@@ -1034,7 +1034,7 @@ export namespace base::vocab::inline ptr {
      *
      * @return Reference to `self`.
      *
-     * @pre `source.get()` must be a valid expression convertible to `pointer`.
+     * @pre `source.get()` must be a valid expression convertible to `address_type`.
      * @pre If the selected policies include `nullability::always_engaged`, `source.get()` must not be null.
      * @pre If not null, `source.get()` must point to a valid object that outlives the resulting pointer.
      * @post `self.get() == static_cast<pointer>(source.get())`.
@@ -1076,7 +1076,7 @@ export namespace base::vocab::inline ptr {
      *
      * @param self The pointer providing member access.
      *
-     * @return A raw `pointer` to the stored address for use by the built-in member access operator.
+     * @return A raw `address_type` to the stored address for use by the built-in member access operator.
      *
      * @pre If the selected policies include `nullability::nullable`, `self.get() != nullptr`.
      * @pre The stored address points to a valid object.
@@ -1103,7 +1103,7 @@ export namespace base::vocab::inline ptr {
      *
      * @post If the selected policies include `nullability::always_engaged`, the returned pointer is non-null.
      *
-     * @return A raw `pointer` to the stored address.
+     * @return A raw `address_type` to the stored address.
      *
      * @remark Provided for interoperability with pointer-based APIs.
      */
@@ -1112,7 +1112,7 @@ export namespace base::vocab::inline ptr {
      *
      * @post If the selected policies include `nullability::always_engaged`, the returned pointer is non-null.
      *
-     * @return A raw `pointer` to the stored address.
+     * @return A raw `address_type` to the stored address.
      *
      * @remark Enables seamless interoperability with legacy interfaces expecting raw pointers.
      * @warning Implicit conversion may obscure pointer semantics; prefer `get()` when clarity is important.
@@ -1550,7 +1550,7 @@ struct std::hash<T> {
  * @tparam T The concrete pointer type.
  * @tparam CharT The character type used by the format string.
  *
- * @remark Formats the stored address according to the rules for its nested `pointer` type.
+ * @remark Formats the stored address according to the rules for its nested `address_type` type.
  */
 export template<base::vocab::ptr::VocabPtr T, typename CharT>
 struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
