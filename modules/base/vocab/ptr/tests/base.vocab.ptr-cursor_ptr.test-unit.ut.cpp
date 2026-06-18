@@ -125,7 +125,7 @@ namespace {
 
             constexpr bool element = std::same_as<T::element_type, const std::int32_t>;
             constexpr bool value   = std::same_as<T::value_type, std::int32_t>;
-            constexpr bool pointer = std::same_as<T::pointer, const std::int32_t*>;
+            constexpr bool pointer = std::same_as<T::address_type, const std::int32_t*>;
             constexpr bool ref     = std::same_as<T::reference, const std::int32_t&>;
             constexpr bool rref    = std::same_as<T::rvalue_reference, const std::int32_t&&>;
             constexpr bool ptrdiff = std::same_as<T::difference_type, std::ptrdiff_t>;
@@ -792,10 +792,10 @@ namespace {
             expect(eq(x, 10));
         };
 
-        "`pointer` nested type preserves top-level const"_test = [] mutable {
+        "`address_type` nested type preserves top-level const"_test = [] mutable {
             using T = cursor_ptr<const std::int32_t>;
 
-            expect(eq(std::same_as<typename T::pointer, const std::int32_t*>, true));
+            expect(eq(std::same_as<typename T::address_type, const std::int32_t*>, true));
         };
 
         "`reference` nested type preserves const"_test = [] mutable {
