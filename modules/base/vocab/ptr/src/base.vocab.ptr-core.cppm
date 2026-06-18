@@ -817,7 +817,7 @@ export namespace base::vocab::inline ptr {
             ;
 
         ///@brief Deleted comparison operators to prevent misuse as an iterator or ordered value type.
-        auto operator<=>(const pointer) const
+        auto operator<=>(const address_type) const
             requires ptr_policies::rebinding_traversal_v<policy_set>
         = delete /*("Comparison operators deleted by policy `traversal::rebinding` to prevent address comparisons. Use `traversal::arithmetic` pointers for iterators.")*/
             ;
