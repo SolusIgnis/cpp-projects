@@ -840,8 +840,8 @@ export namespace base::vocab::inline ptr {
 
     private:
         ///@brief Enforces the non-null invariant for `nullability::always_engaged` pointers by only passing the address through when it is not null but allows unchecked pass-through otherwise.
-        [[nodiscard]] static constexpr pointer
-            apply_nullability_policy(pointer source) noexcept(!ptr_policies::always_engaged_nullability_v<policy_set>)
+        [[nodiscard]] static constexpr address_type
+            apply_nullability_policy(address_type source) noexcept(!ptr_policies::always_engaged_nullability_v<policy_set>)
         {
             if constexpr (ptr_policies::always_engaged_nullability_v<policy_set>) {
                 if (source == nullptr) [[unlikely]] {
@@ -1510,7 +1510,7 @@ export namespace base::vocab::inline ptr {
      * @remark Provided as a hidden friend to enable argument-dependent lookup.
      */
     /**
-     * @fn static constexpr pointer apply_nullability_policy(pointer source) noexcept(!ptr_policies::always_engaged_nullability_v<policy_set>)
+     * @fn static constexpr address_type apply_nullability_policy(address_type source) noexcept(!ptr_policies::always_engaged_nullability_v<policy_set>)
      *
      * @param source The address to validate.
      *
