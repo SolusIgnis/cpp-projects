@@ -155,40 +155,54 @@ namespace base::meta::sequences {
     template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
     struct find_value_if;
 
+    template<bool, auto Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    struct find_value_if_impl;
+
+    template<auto Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    struct find_value_if_impl<true, Element, Seq, UnaryValuePredicate> {
+        static constexpr auto value = Element;
+    };
+
+    template<auto Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    struct find_value_if_impl<false, Element, Seq, UnaryValuePredicate> {
+        static constexpr auto value = find_value_if<Seq, UnaryValuePredicate>::value;
+    };
+
     /**
      * @brief Base case for empty heterogeneous value sequences.
      */
     template<template<auto> typename UnaryValuePredicate>
     struct find_value_if<value_list<>, UnaryValuePredicate> {
-        static_assert(false, "find_if failure: result not found; use try_find_if for optional results");
+        static_assert(
+            dependently_false_v<value_list<>>,
+            "find_if failure: result not found; use try_find_if for optional results"
+        );
     };
 
     /**
      * @brief Recursive short-circuit search over heterogeneous values.
      */
     template<auto Element, auto... Rest, template<auto> typename UnaryValuePredicate>
-    struct find_value_if<value_list<Element, Rest...>, UnaryValuePredicate> {
-        static constexpr auto value =
-            (UnaryValuePredicate<Element>::value ? Element : find_value_if<value_list<Rest...>, UnaryValuePredicate>::value);
-    };
+    struct find_value_if<value_list<Element, Rest...>, UnaryValuePredicate>
+        : find_value_if_impl<UnaryValuePredicate<Element>::value, Element, value_list<Rest...>, UnaryValuePredicate> {};
 
     /**
      * @brief Base case for empty uniform value sequences.
      */
     template<typename T, template<auto> typename UnaryValuePredicate>
     struct find_value_if<uniform_value_list<T>, UnaryValuePredicate> {
-        static_assert(false, "find_if failure: result not found; use try_find_if for optional results");
+        static_assert(
+            dependently_false_v<uniform_value_list<T>>,
+            "find_if failure: result not found; use try_find_if for optional results"
+        );
     };
 
     /**
      * @brief Recursive short-circuit search over uniform values.
      */
     template<typename T, T Element, T... Rest, template<auto> typename UnaryValuePredicate>
-    struct find_value_if<uniform_value_list<T, Element, Rest...>, UnaryValuePredicate> {
-        static constexpr T value =
-            (UnaryValuePredicate<Element>::value ? Element
-                                                 : find_value_if<uniform_value_list<T, Rest...>, UnaryValuePredicate>::value);
-    };
+    struct find_value_if<uniform_value_list<T, Element, Rest...>, UnaryValuePredicate>
+        : find_value_if_impl<UnaryValuePredicate<Element>::value, Element, uniform_value_list<T, Rest...>, UnaryValuePredicate> {};
 
     /**
      * @brief Alias for the first type satisfying a predicate.

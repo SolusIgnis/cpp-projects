@@ -94,7 +94,6 @@ namespace base::meta::sequences {
 
     export template<TypeSequence Seq, typename Query>
     inline constexpr bool contains_type_v = contains_type<std::remove_cvref_t<Seq>, Query>::value;
-    ;
 
     export template<ValueSequence Seq, auto Query>
     inline constexpr bool contains_value_v = contains_value<std::remove_cvref_t<Seq>, Query>::value;
