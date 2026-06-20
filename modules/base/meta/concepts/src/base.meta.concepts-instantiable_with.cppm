@@ -19,7 +19,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief `instantiable_with`: A `concept` that determines if a type template can be instantiated by substituting a given set of arguments.
+ * @brief `InstantiableWith`: A `concept` that determines if a type template can be instantiated by substituting a given set of arguments.
  */
 
 //Module partition interface unit
@@ -29,7 +29,7 @@ import std;
 
 export namespace base::meta::concepts {
     /**
-     * @brief `instantiable_with`: Determines whether a type template can be formed with a given set of arguments.
+     * @brief `InstantiableWith`: Determines whether a type template can be formed with a given set of arguments.
      *
      * @tparam Template A class template taking type parameters.
      * @tparam Args The template arguments to test.
@@ -43,5 +43,5 @@ export namespace base::meta::concepts {
      * @remark Useful for constraining templates based on the availability of a specialization without instantiating or requiring full semantic validity.
      */
     template<template<typename...> typename Template, typename... Args>
-    concept instantiable_with = requires { typename Template<Args...>; };
+    concept InstantiableWith = requires { typename Template<Args...>; };
 } //namespace base::meta::concepts

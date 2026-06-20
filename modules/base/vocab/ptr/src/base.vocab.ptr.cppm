@@ -3,8 +3,8 @@
 /**
  * @module base.vocab.ptr
  * @file base.vocab.ptr.cppm
- * @version 0.3.0
- * @date March 11, 2026
+ * @version 0.6.0
+ * @date June 6, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -22,10 +22,10 @@
  *
  * @brief Primary module interface for the pointer vocabulary module.
  * @details Exports partitions for:
- *   - `:alias_ptr`      = Non-owning non-arithmetic nullable alias pointer.
- *   - `:cursor_ptr`     = Non-owning arithmetic nullable pointer suitable for use as an iterator.
+ *   - `:alias_ptr`      = General-purpose nullable object alias pointer.
+ *   - `:cursor_ptr`     = Non-owning arithmetic never-null pointer suitable for contiguous memory traversal.
  *   - `:dependency_ptr` = Non-owning non-arithmetic never-null pointer for dependency injection.
- *   - `:required_ptr`   = Non-owning non-arithmetic never-null alias pointer.
+ *   - `:required_ptr`   = General-purpose required-object alias pointer.
  */
 
 //Primary module interface unit

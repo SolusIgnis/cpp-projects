@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 # ===========================================================================
-# //modules/base/vocab/ptr/CMakeLists.txt
+# //modules/base/meta/sequences/CMakeLists.txt
 # ===========================================================================
 
 cmake_minimum_required(VERSION 4.1.2)
@@ -9,19 +9,15 @@ cmake_minimum_required(VERSION 4.1.2)
 
 trace_me()
 
-add_named_module(base.vocab.ptr
+add_named_module(base.meta.sequences
   LIB_TYPE STATIC
   PARTITIONS
-    src/base.vocab.ptr-policies.cppm
-    src/base.vocab.ptr-core.cppm
-    src/base.vocab.ptr-alias_ptr.cppm
-    src/base.vocab.ptr-cursor_ptr.cppm
-    src/base.vocab.ptr-dependency_ptr.cppm
-    src/base.vocab.ptr-required_ptr.cppm
-  IMPORTS
-    base.meta.sequences
-    base.meta.traits
-    base.meta.concepts
-  TEST_DEPENDENCIES
-    base.meta.concepts
+    src/base.meta.sequences-core.cppm
+    src/base.meta.sequences-access.cppm
+    src/base.meta.sequences-query.cppm
+    src/base.meta.sequences-select.cppm
+#    src/base.meta.sequences-modify.cppm
+#    src/base.meta.sequences-transform.cppm
+#    src/base.meta.sequences-reduce.cppm
+#    src/base.meta.sequences-invoke.cppm
 )

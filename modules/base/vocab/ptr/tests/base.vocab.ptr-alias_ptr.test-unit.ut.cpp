@@ -59,20 +59,20 @@ namespace {
         //============================================================
 
         "template instantiation checks"_test = [] mutable {
-            using base::meta::concepts::instantiable_with;
-            expect(eq(instantiable_with<alias_ptr, std::int32_t>, true));
-            expect(eq(instantiable_with<alias_ptr, std::int32_t*>, true));
-            expect(eq(instantiable_with<alias_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
+            using base::meta::concepts::InstantiableWith;
+            expect(eq(InstantiableWith<alias_ptr, std::int32_t>, true));
+            expect(eq(InstantiableWith<alias_ptr, std::int32_t*>, true));
+            expect(eq(InstantiableWith<alias_ptr, std::map<std::string, std::vector<std::int32_t>>>, true));
 
-            expect(eq(instantiable_with<alias_ptr, void>, true));
+            expect(eq(InstantiableWith<alias_ptr, void>, true));
 
-            expect(eq(instantiable_with<alias_ptr, std::int32_t&>, false));
-            expect(eq(instantiable_with<alias_ptr, std::int32_t&&>, false));
-            expect(eq(instantiable_with<alias_ptr, void(int)>, false));
-            expect(eq(instantiable_with<alias_ptr, void (&)(int)>, false));
-            expect(eq(instantiable_with<alias_ptr, void (*)(int, float)>, false));
-            expect(eq(instantiable_with<alias_ptr, void (**)(std::string, int)>, false));
-            expect(eq(instantiable_with<alias_ptr, void (*******)(int)>, false));
+            expect(eq(InstantiableWith<alias_ptr, std::int32_t&>, false));
+            expect(eq(InstantiableWith<alias_ptr, std::int32_t&&>, false));
+            expect(eq(InstantiableWith<alias_ptr, void(int)>, false));
+            expect(eq(InstantiableWith<alias_ptr, void (&)(int)>, false));
+            expect(eq(InstantiableWith<alias_ptr, void (*)(int, float)>, false));
+            expect(eq(InstantiableWith<alias_ptr, void (**)(std::string, int)>, false));
+            expect(eq(InstantiableWith<alias_ptr, void (*******)(int)>, false));
         };
 
         //============================================================
@@ -126,7 +126,7 @@ namespace {
 
             constexpr bool element = std::same_as<T::element_type, const std::int32_t>;
             constexpr bool value   = std::same_as<T::value_type, std::int32_t>;
-            constexpr bool pointer = std::same_as<T::pointer, const std::int32_t*>;
+            constexpr bool pointer = std::same_as<T::address_type, const std::int32_t*>;
             constexpr bool ref     = std::same_as<T::reference, const std::int32_t&>;
             constexpr bool rref    = std::same_as<T::rvalue_reference, const std::int32_t&&>;
             constexpr bool ptrdiff = std::same_as<T::difference_type, std::ptrdiff_t>;
@@ -807,10 +807,10 @@ namespace {
             expect(eq(x, 10));
         };
 
-        "`pointer` nested type preserves top-level const"_test = [] mutable {
+        "`address_type` nested type preserves top-level const"_test = [] mutable {
             using T = alias_ptr<const std::int32_t>;
 
-            expect(eq(std::same_as<typename T::pointer, const std::int32_t*>, true));
+            expect(eq(std::same_as<typename T::address_type, const std::int32_t*>, true));
         };
 
         "`reference` nested type preserves const"_test = [] mutable {
@@ -916,6 +916,28 @@ namespace {
             expect(eq(ptr.get(), array + 1));
         };
 
+        "not constructible, convertible, nor assignable from C-array decay when pointing to an array"_test = [] mutable {
+            std::int32_t array[3][3] = {
+                {0, 1, 2},
+                {3, 4, 5},
+                {6, 7, 8}
+            };
+
+            //alias_ptr<std::int32_t[3]> should_fail{array};
+
+            expect(eq(std::convertible_to<decltype(array), alias_ptr<std::int32_t[3]>>, false));
+            expect(eq(std::constructible_from<alias_ptr<std::int32_t[3]>, decltype(array)>, false));
+            expect(eq(std::is_assignable_v<alias_ptr<std::int32_t[3]>&, decltype(array)>, false));
+
+            expect(eq(std::constructible_from<alias_ptr<std::int32_t[3]>, decltype(array[0])>, true));
+            expect(eq(std::is_assignable_v<alias_ptr<std::int32_t[3]>&, decltype(array[0])>, true));
+
+            alias_ptr<std::int32_t[3]> ptr{array[1]};
+
+            //Ensure binding to the element is equivalent to expected array-to-pointer decay with pointer offset arithmetic
+            expect(eq(ptr.get(), array + 1));
+        };
+
         //============================================================
         // `void` support
         //============================================================
@@ -925,16 +947,12 @@ namespace {
 
             constexpr bool element = std::same_as<T::element_type, void>;
             constexpr bool value   = std::same_as<T::value_type, void>;
-            constexpr bool pointer = std::same_as<T::pointer, void*>;
-            constexpr bool ref     = std::same_as<T::reference, std::monostate&>;
-            constexpr bool rref    = std::same_as<T::rvalue_reference, std::monostate&&>;
+            constexpr bool pointer = std::same_as<T::address_type, void*>;
             constexpr bool ptrdiff = std::same_as<T::difference_type, std::ptrdiff_t>;
 
             expect(eq(element, true));
             expect(eq(value, true));
             expect(eq(pointer, true));
-            expect(eq(ref, true));
-            expect(eq(rref, true));
             expect(eq(ptrdiff, true));
         };
 
