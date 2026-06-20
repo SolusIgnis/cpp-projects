@@ -201,8 +201,11 @@ namespace base::meta::sequences {
      * @brief Recursive short-circuit search over uniform values.
      */
     template<typename T, T Element, T... Rest, template<auto> typename UnaryValuePredicate>
-    struct find_value_if<uniform_value_list<T, Element, Rest...>, UnaryValuePredicate>
-        : find_value_if_impl<UnaryValuePredicate<Element>::value, Element, uniform_value_list<T, Rest...>, UnaryValuePredicate> {};
+    struct find_value_if<
+        uniform_value_list<T, Element, Rest...>,
+        UnaryValuePredicate
+    > : find_value_if_impl<UnaryValuePredicate<Element>::value, Element, uniform_value_list<T, Rest...>, UnaryValuePredicate> {
+    };
 
     /**
      * @brief Alias for the first type satisfying a predicate.

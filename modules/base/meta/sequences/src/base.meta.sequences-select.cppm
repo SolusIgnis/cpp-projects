@@ -130,7 +130,13 @@ namespace base::meta::sequences {
      */
     template<typename T, T Element, T... Rest, template<auto> typename UnaryValuePredicate>
     struct try_find_value_if<uniform_value_list<T, Element, Rest...>, UnaryValuePredicate>
-        : try_find_uniform_value_if_impl<T, UnaryValuePredicate<Element>::value, Element, uniform_value_list<T, Rest...>, UnaryValuePredicate> {};
+        : try_find_uniform_value_if_impl<
+              T,
+              UnaryValuePredicate<Element>::value,
+              Element,
+              uniform_value_list<T, Rest...>,
+              UnaryValuePredicate
+          > {};
 
     /**
      * @brief Alias for the first type satisfying a predicate.
