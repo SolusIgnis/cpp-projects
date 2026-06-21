@@ -36,6 +36,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Tooling_Targets
 include(CompilerValidation)
 
 # ===========================================================================
+# Enable any requested sanitizers.
+# ===========================================================================
+include(SanitizerSetup)
+
+# ===========================================================================
 # Test Framework Dependencies
 # ===========================================================================
 include(FetchContent)
