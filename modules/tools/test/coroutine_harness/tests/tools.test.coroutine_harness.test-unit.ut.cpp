@@ -439,7 +439,9 @@ suite coroutine_harness_tests = [] mutable {
     "stalled coroutine detected"_test = [] mutable {
         coroutine_probe probe;
 
-        auto task = [&]() -> test_task<void> { co_await std::suspend_always{}; }();
+        auto make_task = [&]() -> test_task<void> { co_await std::suspend_always{}; };
+
+        auto task = make_task();
 
         task.set_probe(&probe);
 
@@ -477,7 +479,7 @@ suite coroutine_harness_tests = [] mutable {
         // Factory for rvalue task
         auto make_taskC = []() -> test_task<int> { co_return co_await echo(subtrahend); };
 
-        auto taskE = [&]() -> test_task<int> {
+        auto make_taskE = [&]() -> test_task<int> {
             int quotient; //42 / 7 == 6
             co_await (
                 [&]() -> test_task<void> {
@@ -489,7 +491,8 @@ suite coroutine_harness_tests = [] mutable {
 
             const auto difference = quotient - co_await make_taskC().set_probe(&probeC); //6 - 1 == 5
             co_return difference;                                                        //5
-        }();
+        };
+        auto taskE = make_taskE();
         taskE.set_probe(&probeE);
 
         const int result = run(taskE);
