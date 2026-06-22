@@ -230,12 +230,14 @@ suite net_telnet_awaitables_integration_tests = [] mutable {
 
         auto leaf = echo(start);
 
-        auto middle = [&]() mutable -> test_wrapper_int {
+        auto make_middle = [&]() mutable -> test_wrapper_int {
             int res         = co_await std::move(leaf);
             auto exec       = co_await asio::this_coro::executor;
             ran_on_executor = (exec == ctx.get_executor());
             co_return res + inc;
-        }();
+        };
+
+        auto middle = make_middle();
 
         auto top = [&]() mutable -> asio::awaitable<int> {
             int res = co_await std::move(middle).get();
