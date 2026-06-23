@@ -119,7 +119,8 @@ suite net_telnet_awaitables_integration_tests = [] mutable {
 
         auto leaf = echo(expected);
 
-        auto wrapped_leaf = [&]() mutable -> test_wrapper_int { co_return co_await std::move(leaf); }();
+        auto wrap_leaf    = [&]() mutable -> test_wrapper_int { co_return co_await std::move(leaf); };
+        auto wrapped_leaf = wrap_leaf();
 
         auto fut = asio::co_spawn(ctx, std::move(wrapped_leaf).get(), asio::use_future);
 
@@ -137,10 +138,12 @@ suite net_telnet_awaitables_integration_tests = [] mutable {
 
         bool executed = false;
 
-        test_wrapper_void wrapped = [&]() mutable -> asio::awaitable<void> {
+        auto wrap = [&]() mutable -> asio::awaitable<void> {
             executed = true;
             co_return;
-        }();
+        };
+
+        test_wrapper_void wrapped = wrap();
 
         auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::use_future);
 
@@ -159,11 +162,13 @@ suite net_telnet_awaitables_integration_tests = [] mutable {
         using net::telnet::option;
         using net::telnet::byte_t;
 
-        subnegotiation_awaitable wrapped = []() mutable -> subnegotiation_awaitable {
+        auto wrap = []() mutable -> subnegotiation_awaitable {
             co_return std::tuple<option, std::vector<byte_t>>{
                 option::id_num::echo, std::vector<byte_t>{1, 2, 3}
             };
-        }();
+        };
+
+        subnegotiation_awaitable wrapped = wrap();
 
         auto fut = asio::co_spawn(
             ctx,
@@ -192,12 +197,14 @@ suite net_telnet_awaitables_integration_tests = [] mutable {
 
         asio::io_context ctx;
 
-        auto wrapped = [&]() mutable -> test_wrapper_int {
+        auto wrap = [&]() mutable -> test_wrapper_int {
             auto exec = co_await asio::this_coro::executor;
 
             ran_on_executor = (exec == ctx.get_executor());
             co_return expected;
-        }();
+        };
+
+        auto wrapped = wrap();
 
         auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::use_future);
 
@@ -223,12 +230,14 @@ suite net_telnet_awaitables_integration_tests = [] mutable {
 
         auto leaf = echo(start);
 
-        auto middle = [&]() mutable -> test_wrapper_int {
+        auto make_middle = [&]() mutable -> test_wrapper_int {
             int res         = co_await std::move(leaf);
             auto exec       = co_await asio::this_coro::executor;
             ran_on_executor = (exec == ctx.get_executor());
             co_return res + inc;
-        }();
+        };
+
+        auto middle = make_middle();
 
         auto top = [&]() mutable -> asio::awaitable<int> {
             int res = co_await std::move(middle).get();

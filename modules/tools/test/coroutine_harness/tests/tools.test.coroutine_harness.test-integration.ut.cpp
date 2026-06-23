@@ -67,7 +67,7 @@ suite coroutine_harness_integration_tests = [] mutable {
         // -------------------------------
         // Nested composition task
         // -------------------------------
-        auto nested = [&]() -> test_task<int> {
+        auto make_nested = [&]() -> test_task<int> {
             trace.push_back(first);
 
             int valL = co_await leafIntL().set_probe(&probeIntLvalue);            // 42
@@ -86,7 +86,9 @@ suite coroutine_harness_integration_tests = [] mutable {
 
             trace.push_back(seventh);
             co_return valL + valR + *ptr; // 42 + 58 + 99 == 199
-        }();
+        };
+
+        auto nested = make_nested();
 
         nested.set_probe(&probeNested);
 
