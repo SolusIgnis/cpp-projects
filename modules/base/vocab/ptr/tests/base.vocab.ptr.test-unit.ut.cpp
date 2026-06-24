@@ -52,7 +52,7 @@ namespace {
     template<template<typename> typename Ptr>
     struct pointer_test_traits : pointer_test_traits_base<Ptr>
     {
-        static constexpr bool permits_void_pointee = !pointer_test_traits_base<Ptr>::has_arithmetic_traversal && pointer_test_traits_base<Ptr>::allows_pointer_binding;
+        static constexpr bool permits_void_pointee = pointer_test_traits_base<Ptr>::has_arithmetic_traversal && pointer_test_traits_base<Ptr>::allows_pointer_binding;
     };
 
     template<typename Lambda>
