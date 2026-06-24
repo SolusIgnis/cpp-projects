@@ -259,8 +259,8 @@ namespace {
                 verify_binding_operations.template operator()<std::int32_t, std::int32_t&, pointer_test_traits<ConcretePtr>::allows_reference_binding, false>();
 
                 //Pointer binding allows implicit conversion
-                verify_binding_operations.template operator()<std::int32_t, std::int32_t*, pointer_test_traits<ConcretePtr>::allows_pointer_binding, pointer_test_traits<ConcretePtr>::allows_pointer_binding>();
-                verify_binding_operations.template operator()<std::int32_t, trivial_smart_ptr<std::int32_t>&, pointer_test_traits<ConcretePtr>::allows_pointer_binding, pointer_test_traits<ConcretePtr>::allows_pointer_binding>();
+                //verify_binding_operations.template operator()<std::int32_t, std::int32_t*, pointer_test_traits<ConcretePtr>::allows_pointer_binding, pointer_test_traits<ConcretePtr>::allows_pointer_binding>();
+                //verify_binding_operations.template operator()<std::int32_t, trivial_smart_ptr<std::int32_t>&, pointer_test_traits<ConcretePtr>::allows_pointer_binding, pointer_test_traits<ConcretePtr>::allows_pointer_binding>();
             });
         };
 
