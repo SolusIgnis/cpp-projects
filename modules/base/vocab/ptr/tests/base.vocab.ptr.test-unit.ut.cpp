@@ -170,12 +170,12 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 using T = ConcretePtr<const std::int32_t>;
 
-                constexpr bool element = std::same_as<T::element_type, const std::int32_t>;
-                constexpr bool value   = std::same_as<T::value_type, std::int32_t>;
-                constexpr bool pointer = std::same_as<T::address_type, const std::int32_t*>;
-                constexpr bool lref    = std::same_as<T::reference, const std::int32_t&>;
-                constexpr bool rref    = std::same_as<T::rvalue_reference, const std::int32_t&&>;
-                constexpr bool ptrdiff = std::same_as<T::difference_type, std::ptrdiff_t>;
+                constexpr bool element = std::same_as<typename T::element_type, const std::int32_t>;
+                constexpr bool value   = std::same_as<typename T::value_type, std::int32_t>;
+                constexpr bool pointer = std::same_as<typename T::address_type, const std::int32_t*>;
+                constexpr bool lref    = std::same_as<typename T::reference, const std::int32_t&>;
+                constexpr bool rref    = std::same_as<typename T::rvalue_reference, const std::int32_t&&>;
+                constexpr bool ptrdiff = std::same_as<typename T::difference_type, std::ptrdiff_t>;
 
                 expect(eq(element, true));
                 expect(eq(value, true));
