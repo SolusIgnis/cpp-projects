@@ -846,6 +846,130 @@ namespace {
             });
         };
 
+        //============================================================
+        // CV-correctness propagation
+        //============================================================
+
+        "const element forbids mutation through dereference"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    const std::int32_t x{};
+                    ConcretePtr<const std::int32_t> ptr{x};
+
+                    // Compile-time: *ptr must NOT be assignable
+                    constexpr bool can_assign = std::is_assignable_v<decltype(*ptr), std::int32_t>;
+
+                    expect(eq(can_assign, false));
+                }
+            });
+        };
+
+        "non-const element allows mutation"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    const std::int32_t x{};
+                    std::int32_t x = 5;
+                    ConcretePtr<std::int32_t> ptr{x};
+
+                    *ptr = 10;
+
+                    expect(eq(x, 10));
+                }
+            });
+        };
+
+        "`address_type` nested type preserves top-level const"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                using T = ConcretePtr<const std::int32_t>;
+
+                expect(eq(std::same_as<typename T::address_type, const std::int32_t*>, true));
+            });
+        };
+
+        "`reference` nested type preserves const"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                using T = ConcretePtr<const std::int32_t>;
+
+                expect(eq(std::same_as<typename T::reference, const std::int32_t&>, true));
+            });
+        };
+
+        "const alias_ptr prevents rebinding but not mutation"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    const std::int32_t x{};
+                    std::int32_t x{};
+
+                    const ConcretePtr<std::int32_t> ptr{x};
+
+                    *ptr = 10; // allowed
+
+                    constexpr bool can_rebind = std::is_assignable_v<const ConcretePtr<std::int32_t>&, std::int32_t&>;
+
+                    expect(eq(x, 10));
+                    expect(eq(can_rebind, false));
+                }
+            });
+        };
+
+        "qualification climbing construction and assignment"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    const std::int32_t x{};
+                    std::int32_t value{42};
+                    std::int32_t other{};
+                    ConcretePtr<std::int32_t> mutable_ptr{value};
+                    ConcretePtr<const std::int32_t> const_ptr{other};
+
+                    //Qualification climbing (Assignment)
+                    const_ptr = mutable_ptr;
+                    expect(eq(const_ptr.get() == mutable_ptr.get(), true));
+
+                    //Qualification climbing (Construction)
+                    ConcretePtr<const std::int32_t> const_copy{mutable_ptr};
+                    expect(eq(const_copy.get() == mutable_ptr.get(), true));
+                }
+            });
+        };
+
+        "volatile qualifier preservation"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    const std::int32_t x{};
+                    volatile std::int32_t hardware_register = 0xAA;
+                    ConcretePtr<volatile std::int32_t> ptr{hardware_register};
+
+                    //Ensure the raw pointer retrieved is also volatile
+                    expect(eq(std::same_as<decltype(ptr.get()), volatile std::int32_t*>, true));
+
+                    //Ensure conversion to raw pointer preserves volatile
+                    volatile int* raw = ptr;
+                    expect(eq(raw, std::addressof(hardware_register)));
+
+                    //Ensure dereference preserves volatile
+                    decltype(auto) dereferenced = *ptr;
+                    expect(eq(std::is_volatile_v<std::remove_reference_t<decltype(dereferenced)>>, true));
+                    expect(eq(dereferenced, hardware_register));
+                }
+            });
+        };
+
+        "common_type preserves const qualification"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                using common_t = std::common_type_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>;
+
+                expect(eq(std::same_as<common_t, ConcretePtr<const std::int32_t>>, true));
+            });
+        };
+
+        "common_reference preserves const qualification"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                using common_ref = std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>;
+
+                expect(eq(std::same_as<common_ref, ConcretePtr<const std::int32_t>>, true));
+            });
+        };
+
         
     };
 } //namespace
