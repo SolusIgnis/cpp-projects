@@ -1566,3 +1566,15 @@ struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
         );
     }
 }; //struct std::formatter
+
+template<base::vocab::ptr::VocabPtr T, typename OtherPointee, template<typename> typename TQual, template<typename> typename OtherQual>
+    requires std::common_reference_with<TQual<typename T::address_type>, OtherQual<OtherPointee*>>
+struct std::basic_common_reference<T, OtherPointee*, TQual, OtherQual> {
+    using type = std::common_reference_t<TQual<typename T::address_type>, OtherQual<OtherPointee*>>;
+};
+
+template<base::vocab::ptr::VocabPtr T, typename OtherPointee, template<typename> typename TQual, template<typename> typename OtherQual>
+    requires std::common_reference_with<OtherQual<OtherPointee*>, TQual<typename T::address_type>>
+struct std::basic_common_reference<OtherPointee*, T, OtherQual, TQual> {
+    using type = std::common_reference_t<OtherQual<OtherPointee*>, TQual<typename T::address_type>>;
+};
