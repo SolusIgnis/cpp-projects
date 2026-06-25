@@ -381,6 +381,86 @@ namespace {
             });
         };
 
+        //============================================================
+        // Rebinding
+        //============================================================
+
+        "rebind via assignment from reference"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    const int a{};
+                    const int b = 2;
+
+                    cursor_ptr<const std::int32_t> ptr{a};
+                    ptr = b;
+
+                    expect(eq(*ptr, 2));
+                    expect(eq(ptr.get(), std::addressof(b)));
+                }
+            });
+        };
+
+        "rebind via `rebind` call with reference argument"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    const int a{};
+                    const int b = 2;
+
+                    cursor_ptr<const std::int32_t> ptr{a};
+                    ptr.rebind(b);
+
+                    expect(eq(*ptr, 2));
+                    expect(eq(ptr.get(), std::addressof(b)));
+                }
+            });
+        };
+
+        "rebind via `reset` call with reference argument"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    const int a{};
+                    const int b = 2;
+
+                    cursor_ptr<const std::int32_t> ptr{a};
+                    ptr.reset(b);
+
+                    expect(eq(*ptr, 2));
+                    expect(eq(ptr.get(), std::addressof(b)));
+                }
+            });
+        };
+
+        "moved-from object may be rebound"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    std::int32_t a = 1;
+                    std::int32_t b = 2;
+
+                    cursor_ptr<std::int32_t> source{a};
+                    cursor_ptr<std::int32_t> target{std::move(source)};
+
+                    //Rebind moved-from `source` to reference `b`
+                    source = b;
+
+                    expect(eq(*target, a));
+                    expect(eq(*source, b));
+                }
+            });
+        };
+
+        "rebind via `reset()` disengages the pointer"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                    const int a{};
+
+                    ConcretePtr<const std::int32_t> ptr{a};
+                    ptr.reset();
+
+                    expect(eq(!ptr, true));
+                }
+            });
+        };
+
         
     };
 } //namespace
