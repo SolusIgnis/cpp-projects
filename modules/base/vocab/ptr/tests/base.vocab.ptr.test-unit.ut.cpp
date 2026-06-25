@@ -461,6 +461,172 @@ namespace {
             });
         };
 
+        //============================================================
+        // Nullability-based exception throwing
+        //============================================================
+
+        "constructing from null raw pointer throws according to policy"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
+                    const std::int32_t value{42};
+                    const std::int32_t* const bound_source{std::addressof(value)};
+                    const std::int32_t* const null_source{};
+
+                    bool threw_when_bound = false;
+                    try {
+                        const ConcretePtr<const std::int32_t> ptr{bound_source};
+        
+                        expect(eq(*ptr, value));
+                        expect(eq(ptr.get(), bound_source));
+                    } catch (...) {
+                        threw_when_bound = true;
+                    }
+
+                    expect(eq(threw_when_bound, false));
+
+                    bool threw_when_null = false;
+                    bool wrong_exception = false;
+                    try {
+                        [[maybe_unused]] ConcretePtr<const std::int32_t> dummy_ptr{null_source};
+                    } catch (const std::invalid_argument&) {
+                        threw_when_null = true;
+                    } catch (...) {
+                        wrong_exception = true;
+                    }
+
+                    expect(eq(threw_when_null, !pointer_test_traits<ConcretePtr>::is_nullable));
+                    expect(eq(wrong_exception, false));
+                }
+            });
+        };
+
+        "constructing from null smart pointer throws according to policy"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
+                    const std::int32_t value{42};
+                    const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
+                    const trivial_smart_ptr<const std::int32_t> null_source{};
+
+                    bool threw_when_bound = false;
+                    try {
+                        const ConcretePtr<const std::int32_t> ptr{bound_source};
+        
+                        expect(eq(*ptr, value));
+                        expect(eq(ptr.get(), bound_source.get()));
+                    } catch (...) {
+                        threw_when_bound = true;
+                    }
+
+                    expect(eq(threw_when_bound, false));
+
+                    bool threw_when_null = false;
+                    bool wrong_exception = false;
+                    try {
+                        [[maybe_unused]] ConcretePtr<const std::int32_t> dummy_ptr{null_source};
+                    } catch (const std::invalid_argument&) {
+                        threw_when_null = true;
+                    } catch (...) {
+                        wrong_exception = true;
+                    }
+
+                    expect(eq(threw_when_null, !pointer_test_traits<ConcretePtr>::is_nullable));
+                    expect(eq(wrong_exception, false));
+                }
+            });
+        };
+
+        "assigning from null raw pointer throws according to policy"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
+                    const std::int32_t value{42};
+                    const std::int32_t other{};
+
+                    const std::int32_t* const bound_source{std::addressof(value)};
+                    const std::int32_t* const null_source{nullptr};
+
+                    ConcretePtr<const std::int32_t> ptr{other};
+
+                    bool threw_when_bound = false;
+                    try {
+                        ptr = bound_source;
+                    } catch (...) {
+                        threw_when_bound = true;
+                    }
+
+                    expect(eq(threw_when_bound, false));
+                    expect(eq(*ptr, *bound_source));
+                    expect(eq(ptr.get(), bound_source));
+
+                    bool threw_when_null = false;
+                    bool wrong_exception = false;
+                    try {
+                        ptr = null_source;
+                    } catch (const std::invalid_argument&) {
+                        threw_when_null = true;
+                    } catch (...) {
+                        wrong_exception = true;
+                    }
+
+                    expect(eq(threw_when_null, !pointer_test_traits<ConcretePtr>::is_nullable));
+                    expect(eq(wrong_exception, false));
+
+                    if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                        expect(eq(ptr.get(), null_source));
+                    } else {
+                        //Invariant preserved after failed assignment
+                        expect(eq(*ptr, *bound_source));
+                        expect(eq(ptr.get(), bound_source));
+                    }
+                }
+            });
+        };
+
+        "assigning from null smart pointer throws according to policy"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
+                    const std::int32_t value{42};
+                    const std::int32_t other{};
+
+                    const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
+                    const trivial_smart_ptr<std::int32_t> null_source{};
+
+                    ConcretePtr<const std::int32_t> ptr{other};
+
+                    bool threw_when_bound = false;
+                    try {
+                        ptr = bound_source;
+                    } catch (...) {
+                        threw_when_bound = true;
+                    }
+
+                    expect(eq(threw_when_bound, false));
+                    expect(eq(*ptr, value));
+                    expect(eq(ptr.get(), bound_source.get()));
+
+                    bool threw_when_null = false;
+                    bool wrong_exception = false;
+                    try {
+                        ptr = null_source;
+                    } catch (const std::invalid_argument&) {
+                        threw_when_null = true;
+                    } catch (...) {
+                        wrong_exception = true;
+                    }
+
+                    expect(eq(threw_when_null, !pointer_test_traits<ConcretePtr>::is_nullable));
+                    expect(eq(wrong_exception, false));
+
+                    if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                        expect(eq(ptr.get() == null_source.get(), true));
+                    } else {
+                        //Invariant preserved after failed assignment
+                        expect(eq(*ptr, value));
+                        expect(eq(ptr.get(), bound_source.get()));
+                    }
+                }
+            });
+        };
+
         
     };
 } //namespace
