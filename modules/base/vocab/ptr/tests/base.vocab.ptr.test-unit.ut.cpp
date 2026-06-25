@@ -697,7 +697,7 @@ namespace {
             });
         };
 
-        "null alias_ptr compares equal to null alias_ptr"_test = [] mutable {
+        "null pointers of same pointer type compare equal"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     ConcretePtr<std::int32_t> lhs{nullptr};
@@ -705,6 +705,107 @@ namespace {
 
                     expect(eq(lhs == rhs, true));
                     expect(eq(lhs != rhs, false));
+                }
+            });
+        };
+
+        //============================================================
+        // Covariance
+        //============================================================
+
+        "construct base from derived pointer"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    derived_type d;
+                    ConcretePtr<derived_type> dptr{d};
+
+                    ConcretePtr<base_type> bptr{dptr};
+
+                    expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
+                }
+            });
+        };
+
+        "construct base from derived reference"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    derived_type d;
+
+                    ConcretePtr<base_type> bptr{d};
+
+                    expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
+                }
+            });
+        };
+
+        "assign base from derived pointer"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    derived_type d;
+                    ConcretePtr<derived_type> dptr{d};
+
+                    base_type b;
+                    ConcretePtr<base_type> bptr{b};
+
+                    bptr = dptr;
+
+                    expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
+                }
+            });
+        };
+
+        "rebind base from derived reference"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    derived_type d;
+
+                    base_type b;
+                    ConcretePtr<base_type> bptr{b};
+
+                    bptr = d;
+
+                    expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
+                }
+            });
+        };
+
+        "assign const base from derived pointer"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    derived_type d;
+                    ConcretePtr<derived_type> dptr{d};
+
+                    base_type b;
+                    ConcretePtr<const base_type> bptr{b};
+
+                    bptr = dptr;
+
+                    expect(eq(bptr.get(), static_cast<const base_type*>(std::addressof(d))));
+                }
+            });
+        };
+
+        "rebind const base from derived reference"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    derived_type d;
+
+                    base_type b;
+                    ConcretePtr<const base_type> bptr{b};
+
+                    bptr = d;
+
+                    expect(eq(bptr.get(), static_cast<const base_type*>(std::addressof(d))));
+                }
+            });
+        };
+
+        "covariant equality comparison"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    expect(eq(std::equality_comparable_with<ConcretePtr<base_type>, ConcretePtr<derived_type>>, true));
+                    expect(eq(std::equality_comparable_with<ConcretePtr<base_type>, derived_type*>, true));
+                    expect(eq(std::equality_comparable_with<base_type*, ConcretePtr<derived_type>>, true));
                 }
             });
         };
