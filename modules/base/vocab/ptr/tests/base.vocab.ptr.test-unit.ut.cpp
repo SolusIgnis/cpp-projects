@@ -847,6 +847,90 @@ namespace {
         };
 
         //============================================================
+        // Traversal identity
+        //============================================================
+
+        "pointer arithmetic preserves native traversal semantics"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    int values[] = {10, 20, 30, 40};
+
+                    ConcretePtr<int> ptr{values[0]};
+
+                    auto advanced = ptr + 2;
+
+                    expect(eq(*advanced, 30));
+                    expect(eq(advanced.get(), values + 2));
+                }
+            });
+        };
+
+        "difference matches raw pointer semantics"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    int values[] = {10, 20, 30, 40};
+
+                    ConcretePtr<int> first{values[0]};
+                    ConcretePtr<int> last{values[3]};
+
+                    expect(eq(last - first, 3L));
+                }
+            });
+        };
+
+        "increment and decrement traverse correctly"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    int values[] = {1, 2, 3};
+
+                    ConcretePtr<int> ptr{values[0]};
+
+                    ++ptr;
+                    expect(eq(*ptr, 2));
+
+                    ptr++;
+                    expect(eq(*ptr, 3));
+
+                    --ptr;
+                    expect(eq(*ptr, 2));
+
+                    ptr--;
+                    expect(eq(*ptr, 1));
+                }
+            });
+        };
+
+        "subscript matches raw pointer indexing"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    int values[] = {5, 6, 7, 8};
+
+                    ConcretePtr<int> ptr{values[0]};
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+                    expect(eq(ptr[0], 5));
+                    expect(eq(ptr[1], 6));
+                    expect(eq(ptr[2], 7));
+#pragma GCC diagnostic pop
+                }
+            });
+        };
+
+        "mixed raw and cursor arithmetic produce identical addresses"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    int values[] = {1, 2, 3, 4};
+
+                    ConcretePtr<int> ptr{values[0]};
+
+                    expect(eq((ptr + 3).get(), values + 3));
+                    expect(eq((3 + ptr).get(), values + 3));
+                }
+            });
+        };
+
+        //============================================================
         // CV-correctness propagation
         //============================================================
 
@@ -1090,10 +1174,10 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
                     using T = ConcretePtr<void>;
 
-                    constexpr bool element = std::same_as<T::element_type, void>;
-                    constexpr bool value   = std::same_as<T::value_type, void>;
-                    constexpr bool pointer = std::same_as<T::address_type, void*>;
-                    constexpr bool ptrdiff = std::same_as<T::difference_type, std::ptrdiff_t>;
+                    constexpr bool element = std::same_as<typename T::element_type, void>;
+                    constexpr bool value   = std::same_as<typename T::value_type, void>;
+                    constexpr bool pointer = std::same_as<typename T::address_type, void*>;
+                    constexpr bool ptrdiff = std::same_as<typename T::difference_type, std::ptrdiff_t>;
 
                     expect(eq(element, true));
                     expect(eq(value, true));
