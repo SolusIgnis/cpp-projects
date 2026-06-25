@@ -1285,7 +1285,238 @@ namespace {
             });
         };
 
+        //============================================================
+        // Constant Expression Usage
+        //============================================================
+
+        "constexpr construction and dereference"_test = [] {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    static constexpr int value = 42;
+
+                    constexpr ConcretePtr<const int> ptr{value};
+
+                    expect(eq(*ptr, value));
+                }
+            });
+        };
+
+        "constexpr arithmetic"_test = [] {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    static constexpr int values[] = {2, 4, 6};
+
+                    constexpr ConcretePtr<const int> ptr{values[0]};
+
+                    constexpr auto next = ptr + 1;
+                    expect(eq(*next, 4));
+                }
+            });
+        };
+
+        "constexpr get and boolean conversion"_test = [] {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    static constexpr int value = 7;
+
+                    constexpr ConcretePtr<const int> ptr{value};
+
+                    expect(eq(ptr.get(), std::addressof(value)));
+                    expect(eq(static_cast<bool>(ptr), true));
+                }
+            });
+        };
+
+        "constexpr equality"_test = [] {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    static constexpr int value = 11;
+
+                    constexpr ConcretePtr<const int> a{value};
+                    constexpr ConcretePtr<const int> b{value};
+
+                    expect(eq(a == b, true));
+                }
+            });
+        };
+
+        "constexpr rebinding"_test = [] {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    static constexpr int a = 1;
+                    static constexpr int b = 2;
+
+                    constexpr auto rebound = std::invoke([] {
+                        ConcretePtr<const int> ptr{a};
+                        ptr = b;
+                        return ptr;
+                    });
+
+                    expect(eq(*rebound, 2));
+                    expect(eq(rebound.get(), std::addressof(b)));
+                }
+            });
+        };
+
+        "constexpr swap"_test = [] {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    static constexpr int a = 1;
+                    static constexpr int b = 2;
+
+                    constexpr auto swapped = std::invoke([] {
+                        ConcretePtr<const int> lhs{a};
+                        ConcretePtr<const int> rhs{b};
         
+                        using std::swap;
+                        swap(lhs, rhs);
+        
+                        return std::pair{lhs, rhs};
+                    });
+
+                    expect(eq(*swapped.first, 2));
+                    expect(eq(*swapped.second, 1));
+                }
+            });
+        };
+
+        //============================================================
+        // Hash Support
+        //============================================================
+
+        "hash matches raw pointer hash"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+            std::int32_t value{};
+
+            ConcretePtr<std::int32_t> ptr{value};
+
+            const auto ptr_hash = std::hash<ConcretePtr<std::int32_t>>{}(ptr);
+            const auto raw_hash = std::hash<std::int32_t*>{}(std::addressof(value));
+
+            expect(eq(ptr_hash, raw_hash));
+                }
+            });
+        };
+
+        "equal pointers produce equal hashes"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+            std::int32_t value{};
+
+            ConcretePtr<std::int32_t> lhs{value};
+            ConcretePtr<const std::int32_t> rhs{value};
+
+            const auto lhs_hash = std::hash<ConcretePtr<std::int32_t>>{}(lhs);
+            const auto rhs_hash = std::hash<ConcretePtr<const std::int32_t>>{}(rhs);
+
+            expect(eq(lhs == rhs, true));
+            expect(eq(lhs_hash == rhs_hash, true));
+                }
+            });
+        };
+
+        //============================================================
+        // Formatting and output stream support
+        //============================================================
+
+        "std::formatter formats as raw pointer"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+            std::int32_t value{};
+
+            ConcretePtr<std::int32_t> ptr{value};
+
+            const auto formatted_ptr = std::format("{}", ptr);
+
+            const auto formatted_raw = std::format<void*>("{}", std::addressof(value));
+
+            expect(eq(formatted_ptr, formatted_raw));
+                }
+            });
+        };
+
+        "std::formatter formats null equivalently to raw pointer"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+            ConcretePtr<std::int32_t> ptr{nullptr};
+
+            const auto formatted_ptr = std::format("{}", ptr);
+
+            const auto formatted_raw = std::format<void*>("{}", nullptr);
+
+            expect(eq(formatted_ptr, formatted_raw));
+                }
+            });
+        };
+
+        "std::formatter supports cv-qualified element types"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+            const std::int32_t value{};
+
+            ConcretePtr<const std::int32_t> ptr{value};
+
+            const auto formatted_ptr = std::format("{}", ptr);
+
+            const auto formatted_raw = std::format<const void*>("{}", std::addressof(value));
+
+            expect(eq(formatted_ptr, formatted_raw));
+                }
+            });
+        };
+
+        "ostream insertion outputs raw pointer representation"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+            std::int32_t value{};
+
+            ConcretePtr<std::int32_t> ptr{value};
+
+            std::ostringstream ptr_stream;
+            std::ostringstream raw_stream;
+
+            ptr_stream << ptr;
+            raw_stream << std::addressof(value);
+
+            expect(eq(ptr_stream.str(), raw_stream.str()));
+                }
+            });
+        };
+
+        "ostream insertion outputs null equivalently to raw pointer"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+            ConcretePtr<std::int32_t> ptr{nullptr};
+
+            std::ostringstream ptr_stream;
+            std::ostringstream raw_stream;
+
+            ptr_stream << ptr;
+            raw_stream << static_cast<std::int32_t*>(nullptr);
+
+            expect(eq(ptr_stream.str(), raw_stream.str()));
+                }
+            });
+        };
+
+        "ostream insertion supports cv-qualified element types"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+            volatile std::int32_t value{};
+
+            ConcretePtr<volatile std::int32_t> ptr{value};
+
+            std::ostringstream ptr_stream;
+            std::ostringstream raw_stream;
+
+            ptr_stream << ptr;
+            raw_stream << std::addressof(value);
+
+            expect(eq(ptr_stream.str(), raw_stream.str()));
+                }
+            });
+        };
     };
 } //namespace
 
