@@ -303,6 +303,84 @@ namespace {
         // Pointer semantics
         //============================================================
 
+        "operator* dereferences correctly"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                int x = 55;
+                ConcretePtr<std::int32_t> ptr{x};
+
+                expect(eq(*ptr, 55));
+            });
+        };
+
+        "operator-> provides member access"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                base_type obj{123};
+                ConcretePtr<base_type> ptr{obj};
+
+                expect(eq(ptr->value, 123));
+            });
+        };
+
+        "implicit conversion to raw pointer"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                using test_type = std::int32_t;
+
+                expect(eq(std::convertible_to<ConcretePtr<test_type>, test_type*>, true));
+                expect(eq(std::convertible_to<ConcretePtr<test_type>, const test_type*>, true));
+                expect(eq(std::convertible_to<ConcretePtr<test_type>, volatile test_type*>, true));
+                expect(eq(std::convertible_to<ConcretePtr<test_type>, const volatile test_type*>, true));
+                expect(eq(std::convertible_to<ConcretePtr<const test_type>, test_type*>, false));
+                expect(eq(std::convertible_to<ConcretePtr<const test_type>, const test_type*>, true));
+                expect(eq(std::convertible_to<ConcretePtr<const test_type>, volatile test_type*>, false));
+                expect(eq(std::convertible_to<ConcretePtr<const test_type>, const volatile test_type*>, true));
+                expect(eq(std::convertible_to<ConcretePtr<volatile test_type>, test_type*>, false));
+                expect(eq(std::convertible_to<ConcretePtr<volatile test_type>, const test_type*>, false));
+                expect(eq(std::convertible_to<ConcretePtr<volatile test_type>, volatile test_type*>, true));
+                expect(eq(std::convertible_to<ConcretePtr<volatile test_type>, const volatile test_type*>, true));
+                expect(eq(std::convertible_to<ConcretePtr<const volatile test_type>, test_type*>, false));
+                expect(eq(std::convertible_to<ConcretePtr<const volatile test_type>, const test_type*>, false));
+                expect(eq(std::convertible_to<ConcretePtr<const volatile test_type>, volatile test_type*>, false));
+                expect(eq(std::convertible_to<ConcretePtr<const volatile test_type>, const volatile test_type*>, true));
+            });
+        };
+
+        "conversion to raw pointer preserves address"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                const int x{};
+                ConcretePtr<const std::int32_t> ptr{x};
+
+                const std::int32_t* raw = ptr;
+
+                expect(eq(raw, std::addressof(x)));
+            });
+        };
+
+        "get returns raw pointer"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                const int x{};
+                ConcretePtr<const std::int32_t> ptr{x};
+
+                expect(eq(ptr.get(), std::addressof(x)));
+            });
+        };
+
+        "contextual boolean conversion is supported"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                expect(eq(std::constructible_from<bool, ConcretePtr<std::int32_t>>, true));
+
+                const int x{};
+                ConcretePtr<const std::int32_t> ptr{x};
+
+                bool converted{false};
+                if (ptr)
+                    converted = true;
+
+                expect(eq(static_cast<bool>(ptr), true));
+                expect(eq(!ptr, false));
+                expect(eq(converted, true));
+            });
+        };
+
         
     };
 } //namespace
