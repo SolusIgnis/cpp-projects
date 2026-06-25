@@ -171,13 +171,13 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 using simple_t = std::int32_t;
 
-                expect(eq(sizeof(ConcretePtr<simple_t>) == sizeof(simple_t*), true));
-                expect(eq(alignof(ConcretePtr<simple_t>) == alignof(simple_t*), true));
+                expect(eq(sizeof(ConcretePtr<simple_t>), sizeof(simple_t*)));
+                expect(eq(alignof(ConcretePtr<simple_t>), alignof(simple_t*)));
 
                 using complex_t = std::map<std::string, std::vector<std::int32_t>>;
 
-                expect(eq(sizeof(ConcretePtr<complex_t>) == sizeof(complex_t*), true));
-                expect(eq(alignof(ConcretePtr<complex_t>) == alignof(complex_t*), true));
+                expect(eq(sizeof(ConcretePtr<complex_t>), sizeof(complex_t*)));
+                expect(eq(alignof(ConcretePtr<complex_t>), alignof(complex_t*)));
             });
         };
 
