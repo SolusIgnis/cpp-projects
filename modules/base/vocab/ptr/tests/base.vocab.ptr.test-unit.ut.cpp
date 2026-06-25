@@ -1044,6 +1044,43 @@ namespace {
             });
         };
 
+        //============================================================
+        // Incomplete types
+        //============================================================
+
+        struct incomplete_type;
+
+        "incomplete type support"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
+                    expect(eq(base::meta::concepts::InstantiableWith<cursor_ptr, incomplete_type>, true));
+
+                    incomplete_type* raw = reinterpret_cast<incomplete_type*>(0x1234);
+
+                    ConcretePtr<incomplete_type> ptr{raw};
+
+                    expect(eq(ptr.get(), raw));
+                }
+            });
+        };
+
+        struct incomplete_type {
+            int value;
+        };
+
+        "incomplete type becomes usable after completion"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    incomplete_type obj{42};
+
+                    ConcretePtr<incomplete_type> ptr{obj};
+
+                    expect(eq(ptr->value, 42));
+                    expect(eq((*ptr).value, 42));
+                }
+            });
+        };
+
         
     };
 } //namespace
