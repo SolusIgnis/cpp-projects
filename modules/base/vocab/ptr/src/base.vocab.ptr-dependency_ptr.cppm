@@ -94,7 +94,7 @@ export namespace base::vocab::inline ptr {
                                                    Pointee,
                                                    ptr_policies::type_list<
                                                        ptr_policies::nullability::always_engaged,
-                                                       ptr_policies::pointer_binding::forbidden,
+                                                       ptr_policies::pointer_binding::allowed,
                                                        ptr_policies::reference_binding::allowed,
                                                        ptr_policies::traversal::rebinding
                                                    >
