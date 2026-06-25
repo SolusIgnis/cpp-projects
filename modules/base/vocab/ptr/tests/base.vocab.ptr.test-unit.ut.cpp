@@ -650,6 +650,65 @@ namespace {
             });
         };
 
+        //============================================================
+        // Equality semantics
+        //============================================================
+
+        "equality compares pointer identity"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    expect(eq(std::equality_comparable<ConcretePtr<std::int32_t>>, true));
+
+                    std::int32_t x = 1;
+                    std::int32_t y = 1;
+
+                    ConcretePtr<const std::int32_t> a{x};
+                    ConcretePtr<std::int32_t> b{x};
+                    ConcretePtr<std::int32_t> c{y};
+
+                    expect(eq(a == b, true));
+                    expect(eq(a == c, false));
+                    expect(eq(b == c, false));
+                }
+            });
+        };
+
+        "nullable comparisons with nullptr"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding && pointer_test_traits<ConcretePtr>::is_nullable) {
+                    std::int32_t value{};
+
+                    ConcretePtr<std::int32_t> bound{std::addressof(value)};
+                    ConcretePtr<std::int32_t> null{nullptr};
+
+                    //Expecting both operator== and operator!= to be synthesized correctly
+                    expect(eq(bound == nullptr, false));
+                    expect(eq(nullptr == bound, false));
+
+                    expect(eq(bound != nullptr, true));
+                    expect(eq(nullptr != bound, true));
+
+                    expect(eq(null == nullptr, true));
+                    expect(eq(nullptr == null, true));
+
+                    expect(eq(null != nullptr, false));
+                    expect(eq(nullptr != null, false));
+                }
+            });
+        };
+
+        "null alias_ptr compares equal to null alias_ptr"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                    ConcretePtr<std::int32_t> lhs{nullptr};
+                    ConcretePtr<const std::int32_t> rhs{nullptr};
+
+                    expect(eq(lhs == rhs, true));
+                    expect(eq(lhs != rhs, false));
+                }
+            });
+        };
+
         
     };
 } //namespace
