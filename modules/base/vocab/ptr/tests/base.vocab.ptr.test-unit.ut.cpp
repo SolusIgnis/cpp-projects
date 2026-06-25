@@ -1303,7 +1303,7 @@ namespace {
 
         "constexpr arithmetic"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding && pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     static constexpr int values[] = {2, 4, 6};
 
                     constexpr ConcretePtr<const int> ptr{values[0]};
