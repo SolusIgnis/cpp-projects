@@ -92,7 +92,7 @@ export namespace base::vocab::inline ptr {
                                        ptr_policies::nullability::always_engaged,
                                        ptr_policies::pointer_binding::allowed,
                                        ptr_policies::reference_binding::allowed,
-                                       ptr_policies::traversal::arithmetic
+                                       ptr_policies::traversal::rebinding
                                    >
                                > {
     private:
