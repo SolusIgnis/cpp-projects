@@ -1053,7 +1053,7 @@ namespace {
         "incomplete type support"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
-                    expect(eq(base::meta::concepts::InstantiableWith<cursor_ptr, incomplete_type>, true));
+                    expect(eq(base::meta::concepts::InstantiableWith<ConcretePtr, incomplete_type>, true));
 
                     incomplete_type* raw = reinterpret_cast<incomplete_type*>(0x1234);
 
@@ -1077,6 +1077,106 @@ namespace {
 
                     expect(eq(ptr->value, 42));
                     expect(eq((*ptr).value, 42));
+                }
+            });
+        };
+
+        //============================================================
+        // `void` support
+        //============================================================
+
+        "type aliases are correct for `void`"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
+                    using T = ConcretePtr<void>;
+
+                    constexpr bool element = std::same_as<T::element_type, void>;
+                    constexpr bool value   = std::same_as<T::value_type, void>;
+                    constexpr bool pointer = std::same_as<T::address_type, void*>;
+                    constexpr bool ptrdiff = std::same_as<T::difference_type, std::ptrdiff_t>;
+
+                    expect(eq(element, true));
+                    expect(eq(value, true));
+                    expect(eq(pointer, true));
+                    expect(eq(ptrdiff, true));
+                }
+            });
+        };
+
+        "void specialization supports type erasure"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    std::int32_t x{};
+
+                    ConcretePtr<std::int32_t> typed{x};
+                    ConcretePtr<void> erased{typed};
+
+                    expect(eq(erased.get(), static_cast<void*>(std::addressof(x))));
+                }
+            });
+        };
+
+        "void specialization disables dereference operators"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
+                    expect(eq(Dereferenceable<ConcretePtr<std::int32_t>>, true));
+                    expect(eq(ArrowAccessible<ConcretePtr<std::int32_t>>, true));
+
+                    expect(eq(Dereferenceable<ConcretePtr<void>>, false));
+                    expect(eq(ArrowAccessible<ConcretePtr<void>>, false));
+                }
+            });
+        };
+
+        "construction from void raw pointer is explicit"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
+                    expect(eq(std::convertible_to<void*, ConcretePtr<void>>, false));
+                    expect(eq(std::constructible_from<ConcretePtr<void>, void*>, true));
+                }
+            });
+        };
+
+        "construction from void smart pointer is explicit"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
+                    expect(eq(std::convertible_to<trivial_smart_ptr<void>&, ConcretePtr<void>>, false));
+                    expect(eq(std::constructible_from<ConcretePtr<void>, trivial_smart_ptr<void>&>, true));
+                }
+            });
+        };
+
+        "void pointer constructs implicitly from typed pointer"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    expect(eq(std::convertible_to<ConcretePtr<std::int32_t>, ConcretePtr<void>>, true));
+                    expect(eq(std::convertible_to<ConcretePtr<void>, ConcretePtr<std::int32_t>>, false));
+
+                    const std::int32_t value{42};
+                    ConcretePtr<const std::int32_t> typed_ptr{value};
+
+                    // Should be implicit (convertible)
+                    auto takes_void = [](ConcretePtr<const void> ptr) { return ptr.get(); };
+                    expect(eq(takes_void(typed_ptr), static_cast<const void*>(std::addressof(value))));
+                }
+            });
+        };
+
+        "void pointer is equality comparable"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee && pointer_test_traits<ConcretePtr>::allows_pointer_binding && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    const std::int32_t value{42};
+                    ConcretePtr<const std::int32_t> typed_ptr{value};
+                    const std::int32_t* typed_raw = std::addressof(value);
+                    const void* erased_raw        = std::addressof(value);
+
+                    ConcretePtr<const void> erased_ptr1{typed_raw};
+                    ConcretePtr<const void> erased_ptr2{typed_ptr};
+
+                    expect(eq(erased_ptr1 == erased_ptr2, true));
+                    expect(eq(erased_ptr1 == typed_ptr, true));
+                    expect(eq(erased_ptr1 == erased_raw, true));
+                    expect(eq(erased_ptr1 == typed_raw, true));
                 }
             });
         };
