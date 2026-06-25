@@ -1265,6 +1265,24 @@ namespace {
             });
         };
 
+        //============================================================
+        // CTAD Guide
+        //============================================================
+
+        "deduction guides work"_test = [] mutable {
+            constexpr std::int32_t value{};
+
+            if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                ConcretePtr ptr1{value};
+                expect(eq(ptr1.get(), std::addressof(value)));
+            }
+
+            if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
+                ConcretePtr ptr2{std::addressof(value)};
+                expect(eq(ptr2.get(), std::addressof(value)));
+            }
+        };
+
         
     };
 } //namespace
