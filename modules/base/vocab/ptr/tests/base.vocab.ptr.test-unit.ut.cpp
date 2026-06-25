@@ -867,7 +867,6 @@ namespace {
         "non-const element allows mutation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    const std::int32_t x{};
                     std::int32_t x = 5;
                     ConcretePtr<std::int32_t> ptr{x};
 
@@ -894,10 +893,9 @@ namespace {
             });
         };
 
-        "const alias_ptr prevents rebinding but not mutation"_test = [] mutable {
+        "const pointer prevents rebinding but not mutation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    const std::int32_t x{};
                     std::int32_t x{};
 
                     const ConcretePtr<std::int32_t> ptr{x};
@@ -915,7 +913,6 @@ namespace {
         "qualification climbing construction and assignment"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    const std::int32_t x{};
                     std::int32_t value{42};
                     std::int32_t other{};
                     ConcretePtr<std::int32_t> mutable_ptr{value};
@@ -935,7 +932,6 @@ namespace {
         "volatile qualifier preservation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    const std::int32_t x{};
                     volatile std::int32_t hardware_register = 0xAA;
                     ConcretePtr<volatile std::int32_t> ptr{hardware_register};
 
@@ -967,6 +963,84 @@ namespace {
                 using common_ref = std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>;
 
                 expect(eq(std::same_as<common_ref, ConcretePtr<const std::int32_t>>, true));
+            });
+        };
+
+        //============================================================
+        // Interoperability with raw pointer APIs
+        //============================================================
+
+        "implicit conversion works with raw pointer API"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    auto takes_ptr = [](std::int32_t* p) { return *p; };
+
+                    std::int32_t x = 3;
+                    ConcretePtr<std::int32_t> ptr{x};
+
+                    expect(eq(takes_ptr(ptr), 3));
+                }
+            });
+        };
+
+        "get() works with raw pointer API"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    auto takes_ptr = [](std::int32_t* p) { return *p; };
+
+                    std::int32_t x = 4;
+                    ConcretePtr<std::int32_t> ptr{x};
+
+                    expect(eq(takes_ptr(ptr.get()), 4));
+                }
+            });
+        };
+
+        "not constructible, convertible, nor assignable from C-array decay"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    std::int32_t array[3] = {0, 1, 2};
+
+                    //ConcretePtr<std::int32_t> should_fail{array};
+
+                    expect(eq(std::convertible_to<decltype(array), ConcretePtr<std::int32_t>>, false));
+                    expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, decltype(array)>, false));
+                    expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, decltype(array)>, false));
+
+                    expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, decltype(array[0])>, true));
+                    expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, decltype(array[0])>, true));
+
+                    ConcretePtr<std::int32_t> ptr{array[1]};
+
+                    //Ensure binding to the element is equivalent to expected array-to-pointer decay with pointer offset arithmetic
+                    expect(eq(ptr.get(), array + 1));
+                }
+            });
+        };
+
+        "not constructible, convertible, nor assignable from C-array decay when pointing to an array"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                    std::int32_t array[3][3] = {
+                        {0, 1, 2},
+                        {3, 4, 5},
+                        {6, 7, 8}
+                    };
+
+                    //ConcretePtr<std::int32_t[3]> should_fail{array};
+
+                    expect(eq(std::convertible_to<decltype(array), ConcretePtr<std::int32_t[3]>>, false));
+                    expect(eq(std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array)>, false));
+                    expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t[3]>&, decltype(array)>, false));
+
+                    expect(eq(std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array[0])>, true));
+                    expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t[3]>&, decltype(array[0])>, true));
+
+                    ConcretePtr<std::int32_t[3]> ptr{array[1]};
+
+                    //Ensure binding to the element is equivalent to expected array-to-pointer decay with pointer offset arithmetic
+                    expect(eq(ptr.get(), array + 1));
+                }
             });
         };
 
