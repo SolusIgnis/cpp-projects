@@ -391,7 +391,7 @@ namespace {
                     const int a{};
                     const int b = 2;
 
-                    cursor_ptr<const std::int32_t> ptr{a};
+                    ConcretePtr<const std::int32_t> ptr{a};
                     ptr = b;
 
                     expect(eq(*ptr, 2));
@@ -406,7 +406,7 @@ namespace {
                     const int a{};
                     const int b = 2;
 
-                    cursor_ptr<const std::int32_t> ptr{a};
+                    ConcretePtr<const std::int32_t> ptr{a};
                     ptr.rebind(b);
 
                     expect(eq(*ptr, 2));
@@ -421,7 +421,7 @@ namespace {
                     const int a{};
                     const int b = 2;
 
-                    cursor_ptr<const std::int32_t> ptr{a};
+                    ConcretePtr<const std::int32_t> ptr{a};
                     ptr.reset(b);
 
                     expect(eq(*ptr, 2));
@@ -436,8 +436,8 @@ namespace {
                     std::int32_t a = 1;
                     std::int32_t b = 2;
 
-                    cursor_ptr<std::int32_t> source{a};
-                    cursor_ptr<std::int32_t> target{std::move(source)};
+                    ConcretePtr<std::int32_t> source{a};
+                    ConcretePtr<std::int32_t> target{std::move(source)};
 
                     //Rebind moved-from `source` to reference `b`
                     source = b;
