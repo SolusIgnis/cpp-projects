@@ -305,10 +305,10 @@ namespace {
 
         "operator* dereferences correctly"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
-                int x = 55;
-                ConcretePtr<std::int32_t> ptr{x};
+                int value = 55;
+                ConcretePtr<std::int32_t> ptr{value};
 
-                expect(eq(*ptr, 55));
+                expect(eq(*ptr, value));
             });
         };
 
@@ -317,7 +317,7 @@ namespace {
                 base_type obj{123};
                 ConcretePtr<base_type> ptr{obj};
 
-                expect(eq(ptr->value, 123));
+                expect(eq(ptr->value, obj.value));
             });
         };
 
@@ -346,21 +346,21 @@ namespace {
 
         "conversion to raw pointer preserves address"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
-                const int x{};
-                ConcretePtr<const std::int32_t> ptr{x};
+                const int value{};
+                ConcretePtr<const std::int32_t> ptr{value};
 
                 const std::int32_t* raw = ptr;
 
-                expect(eq(raw, std::addressof(x)));
+                expect(eq(raw, std::addressof(value)));
             });
         };
 
         "get returns raw pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
-                const int x{};
-                ConcretePtr<const std::int32_t> ptr{x};
+                const int value{};
+                ConcretePtr<const std::int32_t> ptr{value};
 
-                expect(eq(ptr.get(), std::addressof(x)));
+                expect(eq(ptr.get(), std::addressof(value)));
             });
         };
 
@@ -368,8 +368,8 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 expect(eq(std::constructible_from<bool, ConcretePtr<std::int32_t>>, true));
 
-                const int x{};
-                ConcretePtr<const std::int32_t> ptr{x};
+                const int value{};
+                ConcretePtr<const std::int32_t> ptr{value};
 
                 bool converted{false};
                 if (ptr)
@@ -394,7 +394,7 @@ namespace {
                     ConcretePtr<const std::int32_t> ptr{a};
                     ptr = b;
 
-                    expect(eq(*ptr, 2));
+                    expect(eq(*ptr, b));
                     expect(eq(ptr.get(), std::addressof(b)));
                 }
             });
@@ -409,7 +409,7 @@ namespace {
                     ConcretePtr<const std::int32_t> ptr{a};
                     ptr.rebind(b);
 
-                    expect(eq(*ptr, 2));
+                    expect(eq(*ptr, b));
                     expect(eq(ptr.get(), std::addressof(b)));
                 }
             });
@@ -424,7 +424,7 @@ namespace {
                     ConcretePtr<const std::int32_t> ptr{a};
                     ptr.reset(b);
 
-                    expect(eq(*ptr, 2));
+                    expect(eq(*ptr, b));
                     expect(eq(ptr.get(), std::addressof(b)));
                 }
             });
@@ -859,7 +859,7 @@ namespace {
 
                     auto advanced = ptr + 2;
 
-                    expect(eq(*advanced, 30));
+                    expect(eq(*advanced, values[2]));
                     expect(eq(advanced.get(), values + 2));
                 }
             });
@@ -909,9 +909,9 @@ namespace {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-                    expect(eq(ptr[0], 5));
-                    expect(eq(ptr[1], 6));
-                    expect(eq(ptr[2], 7));
+                    expect(eq(ptr[0], values[0]));
+                    expect(eq(ptr[1], values[1]));
+                    expect(eq(ptr[2], values[2]));
 #pragma GCC diagnostic pop
                 }
             });
@@ -937,8 +937,8 @@ namespace {
         "const element forbids mutation through dereference"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    const std::int32_t x{};
-                    ConcretePtr<const std::int32_t> ptr{x};
+                    const std::int32_t value{};
+                    ConcretePtr<const std::int32_t> ptr{value};
 
                     // Compile-time: *ptr must NOT be assignable
                     constexpr bool can_assign = std::is_assignable_v<decltype(*ptr), std::int32_t>;
@@ -951,12 +951,12 @@ namespace {
         "non-const element allows mutation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    std::int32_t x = 5;
-                    ConcretePtr<std::int32_t> ptr{x};
+                    std::int32_t value = 5;
+                    ConcretePtr<std::int32_t> ptr{value};
 
                     *ptr = 10;
 
-                    expect(eq(x, 10));
+                    expect(eq(value, 10));
                 }
             });
         };
@@ -980,7 +980,7 @@ namespace {
         "const pointer prevents rebinding but not mutation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    std::int32_t x{};
+                    std::int32_t value{};
 
                     const ConcretePtr<std::int32_t> ptr{x};
 
@@ -988,7 +988,7 @@ namespace {
 
                     constexpr bool can_rebind = std::is_assignable_v<const ConcretePtr<std::int32_t>&, std::int32_t&>;
 
-                    expect(eq(x, 10));
+                    expect(eq(value, 10));
                     expect(eq(can_rebind, false));
                 }
             });
@@ -1059,10 +1059,10 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
                     auto takes_ptr = [](std::int32_t* p) { return *p; };
 
-                    std::int32_t x = 3;
-                    ConcretePtr<std::int32_t> ptr{x};
+                    std::int32_t value = 3;
+                    ConcretePtr<std::int32_t> ptr{value};
 
-                    expect(eq(takes_ptr(ptr), 3));
+                    expect(eq(takes_ptr(ptr), value));
                 }
             });
         };
@@ -1072,10 +1072,10 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
                     auto takes_ptr = [](std::int32_t* p) { return *p; };
 
-                    std::int32_t x = 4;
-                    ConcretePtr<std::int32_t> ptr{x};
+                    std::int32_t value = 4;
+                    ConcretePtr<std::int32_t> ptr{value};
 
-                    expect(eq(takes_ptr(ptr.get()), 4));
+                    expect(eq(takes_ptr(ptr.get()), value));
                 }
             });
         };
@@ -1159,8 +1159,8 @@ namespace {
 
                     ConcretePtr<incomplete_type> ptr{obj};
 
-                    expect(eq(ptr->value, 42));
-                    expect(eq((*ptr).value, 42));
+                    expect(eq(ptr->value, obj.value));
+                    expect(eq((*ptr).value, obj.value));
                 }
             });
         };
@@ -1387,14 +1387,14 @@ namespace {
         "hash matches raw pointer hash"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-            std::int32_t value{};
+                    std::int32_t value{};
 
-            ConcretePtr<std::int32_t> ptr{value};
+                    ConcretePtr<std::int32_t> ptr{value};
 
-            const auto ptr_hash = std::hash<ConcretePtr<std::int32_t>>{}(ptr);
-            const auto raw_hash = std::hash<std::int32_t*>{}(std::addressof(value));
+                    const auto ptr_hash = std::hash<ConcretePtr<std::int32_t>>{}(ptr);
+                    const auto raw_hash = std::hash<std::int32_t*>{}(std::addressof(value));
 
-            expect(eq(ptr_hash, raw_hash));
+                    expect(eq(ptr_hash, raw_hash));
                 }
             });
         };
@@ -1402,16 +1402,16 @@ namespace {
         "equal pointers produce equal hashes"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-            std::int32_t value{};
+                    std::int32_t value{};
 
-            ConcretePtr<std::int32_t> lhs{value};
-            ConcretePtr<const std::int32_t> rhs{value};
+                    ConcretePtr<std::int32_t> lhs{value};
+                    ConcretePtr<const std::int32_t> rhs{value};
 
-            const auto lhs_hash = std::hash<ConcretePtr<std::int32_t>>{}(lhs);
-            const auto rhs_hash = std::hash<ConcretePtr<const std::int32_t>>{}(rhs);
+                    const auto lhs_hash = std::hash<ConcretePtr<std::int32_t>>{}(lhs);
+                    const auto rhs_hash = std::hash<ConcretePtr<const std::int32_t>>{}(rhs);
 
-            expect(eq(lhs == rhs, true));
-            expect(eq(lhs_hash == rhs_hash, true));
+                    expect(eq(lhs == rhs, true));
+                    expect(eq(lhs_hash == rhs_hash, true));
                 }
             });
         };
@@ -1423,15 +1423,14 @@ namespace {
         "std::formatter formats as raw pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-            std::int32_t value{};
+                    std::int32_t value{};
 
-            ConcretePtr<std::int32_t> ptr{value};
+                    ConcretePtr<std::int32_t> ptr{value};
 
-            const auto formatted_ptr = std::format("{}", ptr);
+                    const auto formatted_ptr = std::format("{}", ptr);
+                    const auto formatted_raw = std::format<void*>("{}", std::addressof(value));
 
-            const auto formatted_raw = std::format<void*>("{}", std::addressof(value));
-
-            expect(eq(formatted_ptr, formatted_raw));
+                    expect(eq(formatted_ptr, formatted_raw));
                 }
             });
         };
@@ -1439,13 +1438,12 @@ namespace {
         "std::formatter formats null equivalently to raw pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-            ConcretePtr<std::int32_t> ptr{nullptr};
+                    ConcretePtr<std::int32_t> ptr{nullptr};
 
-            const auto formatted_ptr = std::format("{}", ptr);
+                    const auto formatted_ptr = std::format("{}", ptr);
+                    const auto formatted_raw = std::format<void*>("{}", nullptr);
 
-            const auto formatted_raw = std::format<void*>("{}", nullptr);
-
-            expect(eq(formatted_ptr, formatted_raw));
+                    expect(eq(formatted_ptr, formatted_raw));
                 }
             });
         };
@@ -1453,15 +1451,14 @@ namespace {
         "std::formatter supports cv-qualified element types"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-            const std::int32_t value{};
+                    const std::int32_t value{};
 
-            ConcretePtr<const std::int32_t> ptr{value};
+                    ConcretePtr<const std::int32_t> ptr{value};
 
-            const auto formatted_ptr = std::format("{}", ptr);
+                    const auto formatted_ptr = std::format("{}", ptr);
+                    const auto formatted_raw = std::format<const void*>("{}", std::addressof(value));
 
-            const auto formatted_raw = std::format<const void*>("{}", std::addressof(value));
-
-            expect(eq(formatted_ptr, formatted_raw));
+                    expect(eq(formatted_ptr, formatted_raw));
                 }
             });
         };
@@ -1469,17 +1466,17 @@ namespace {
         "ostream insertion outputs raw pointer representation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-            std::int32_t value{};
+                    std::int32_t value{};
 
-            ConcretePtr<std::int32_t> ptr{value};
+                    ConcretePtr<std::int32_t> ptr{value};
 
-            std::ostringstream ptr_stream;
-            std::ostringstream raw_stream;
+                    std::ostringstream ptr_stream;
+                    std::ostringstream raw_stream;
 
-            ptr_stream << ptr;
-            raw_stream << std::addressof(value);
+                    ptr_stream << ptr;
+                    raw_stream << std::addressof(value);
 
-            expect(eq(ptr_stream.str(), raw_stream.str()));
+                    expect(eq(ptr_stream.str(), raw_stream.str()));
                 }
             });
         };
@@ -1487,15 +1484,15 @@ namespace {
         "ostream insertion outputs null equivalently to raw pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-            ConcretePtr<std::int32_t> ptr{nullptr};
+                    ConcretePtr<std::int32_t> ptr{nullptr};
 
-            std::ostringstream ptr_stream;
-            std::ostringstream raw_stream;
+                    std::ostringstream ptr_stream;
+                    std::ostringstream raw_stream;
 
-            ptr_stream << ptr;
-            raw_stream << static_cast<std::int32_t*>(nullptr);
+                    ptr_stream << ptr;
+                    raw_stream << static_cast<std::int32_t*>(nullptr);
 
-            expect(eq(ptr_stream.str(), raw_stream.str()));
+                    expect(eq(ptr_stream.str(), raw_stream.str()));
                 }
             });
         };
@@ -1503,17 +1500,17 @@ namespace {
         "ostream insertion supports cv-qualified element types"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-            volatile std::int32_t value{};
+                    volatile std::int32_t value{};
 
-            ConcretePtr<volatile std::int32_t> ptr{value};
+                    ConcretePtr<volatile std::int32_t> ptr{value};
 
-            std::ostringstream ptr_stream;
-            std::ostringstream raw_stream;
+                    std::ostringstream ptr_stream;
+                    std::ostringstream raw_stream;
 
-            ptr_stream << ptr;
-            raw_stream << std::addressof(value);
+                    ptr_stream << ptr;
+                    raw_stream << std::addressof(value);
 
-            expect(eq(ptr_stream.str(), raw_stream.str()));
+                    expect(eq(ptr_stream.str(), raw_stream.str()));
                 }
             });
         };
