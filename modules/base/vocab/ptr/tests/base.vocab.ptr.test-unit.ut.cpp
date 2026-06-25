@@ -810,6 +810,42 @@ namespace {
             });
         };
 
+        //============================================================
+        // Arithmetic operations
+        //============================================================
+
+        "pointer arithmetic operations according to policy"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                using T = ConcretePtr<std::int32_t>;
+
+                expect(eq(HasAddition<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasSubtraction<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasDifference<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasPreIncrement<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasPostIncrement<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasPreDecrement<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasPostDecrement<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+            });
+        };
+
+        "ordering comparisons according to policy"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                expect(eq(std::three_way_comparable<ConcretePtr<std::int32_t>>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                //expect(eq(std::three_way_comparable_with<ConcretePtr<std::int32_t>, std::int32_t*>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal)); //TODO: this needs common_type or basic_common_reference work
+                expect(eq(std::three_way_comparable<ConcretePtr<base_type>>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(std::three_way_comparable_with<ConcretePtr<base_type>, ConcretePtr<derived_type>>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(std::three_way_comparable_with<ConcretePtr<base_type>, derived_type*>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(std::three_way_comparable_with<base_type*, ConcretePtr<derived_type>>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+            });
+        };
+
+        "input_or _output_iterator according to policy"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                //note: all other iterator concepts subsume this one and thus are implicitly false when it is false
+                expect(eq(std::input_or_output_iterator<ConcretePtr<std::int32_t>>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+            });
+        };
+
         
     };
 } //namespace
