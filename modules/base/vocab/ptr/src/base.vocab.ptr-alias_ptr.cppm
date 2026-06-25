@@ -86,9 +86,9 @@ export namespace base::vocab::inline ptr {
                                 Pointee,
                                 ptr_policies::type_list<
                                     ptr_policies::nullability::nullable,
-                                    ptr_policies::pointer_binding::allowed,
+                                    ptr_policies::pointer_binding::forbidden,
                                     ptr_policies::reference_binding::allowed,
-                                    ptr_policies::traversal::rebinding
+                                    ptr_policies::traversal::arithmetic
                                 >
                             > {
     private:
