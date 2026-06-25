@@ -1309,7 +1309,7 @@ namespace {
                     constexpr ConcretePtr<const int> ptr{values[0]};
 
                     constexpr auto next = ptr + 1;
-                    expect(eq(*next, 4));
+                    expect(eq(*next, values[1]));
                 }
             });
         };
@@ -1352,7 +1352,7 @@ namespace {
                         return ptr;
                     });
 
-                    expect(eq(*rebound, 2));
+                    expect(eq(*rebound, b));
                     expect(eq(rebound.get(), std::addressof(b)));
                 }
             });
@@ -1374,8 +1374,8 @@ namespace {
                         return std::pair{lhs, rhs};
                     });
 
-                    expect(eq(*swapped.first, 2));
-                    expect(eq(*swapped.second, 1));
+                    expect(eq(*swapped.first, b));
+                    expect(eq(*swapped.second, a));
                 }
             });
         };
