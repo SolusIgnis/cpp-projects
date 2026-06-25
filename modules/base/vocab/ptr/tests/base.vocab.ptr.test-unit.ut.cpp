@@ -59,25 +59,6 @@ namespace {
         test_impl.template operator()<base::vocab::ptr::cursor_ptr>();
     }
 
-    struct ref_tag;
-    struct ptr_tag;
-    struct smart_ptr_tag;
-    
-    template<typename T, typename Tag>
-    struct source_category;
-    
-    template<typename T>
-    struct source_category<T, ref_tag> { using type = std::add_lvalue_reference_t<T>; };
-    
-    template<typename T>
-    struct source_category<T, ptr_tag> { using type = std::add_pointer_t<T>; };
-    
-    template<typename T>
-    struct source_category<T, smart_ptr_tag> { using type = trivial_smart_ptr<T>; };
-    
-    template<typename T, typename Tag>
-    using source_t = typename source_category<T, Tag>::type;
-   
     template<typename T>
     concept HasAddition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
 
@@ -120,6 +101,25 @@ namespace {
         T* get() const { return address; }
     };
 
+    struct ref_tag;
+    struct ptr_tag;
+    struct smart_ptr_tag;
+    
+    template<typename T, typename Tag>
+    struct source_category;
+    
+    template<typename T>
+    struct source_category<T, ref_tag> { using type = std::add_lvalue_reference_t<T>; };
+    
+    template<typename T>
+    struct source_category<T, ptr_tag> { using type = std::add_pointer_t<T>; };
+    
+    template<typename T>
+    struct source_category<T, smart_ptr_tag> { using type = trivial_smart_ptr<T>; };
+    
+    template<typename T, typename Tag>
+    using source_t = typename source_category<T, Tag>::type;
+   
     suite concrete_pointer_parameterized_tests = [] mutable {
         //============================================================
         // Template Constraint Validation
