@@ -982,7 +982,7 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
                     std::int32_t value{};
 
-                    const ConcretePtr<std::int32_t> ptr{x};
+                    const ConcretePtr<std::int32_t> ptr{value};
 
                     *ptr = 10; // allowed
 
