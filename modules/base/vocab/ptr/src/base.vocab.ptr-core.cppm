@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-core.cppm
- * @version 0.7.0
+ * @version 0.7.1
  * @date June 6, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
