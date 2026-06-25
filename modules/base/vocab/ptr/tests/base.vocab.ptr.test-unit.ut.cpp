@@ -627,6 +627,29 @@ namespace {
             });
         };
 
+        //============================================================
+        // Swap
+        //============================================================
+
+        "swap exchanges bindings"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
+                const std::int32_t a = 1;
+                const std::int32_t b = 2;
+
+                ConcretePtr<const std::int32_t> lhs{a};
+                ConcretePtr<const std::int32_t> rhs{b};
+
+                using std::swap;
+                swap(lhs, rhs);
+
+                expect(eq(lhs.get(), std::addressof(b)));
+                expect(eq(rhs.get(), std::addressof(a)));
+
+                expect(eq(*lhs, b));
+                expect(eq(*rhs, a));
+            });
+        };
+
         
     };
 } //namespace
