@@ -1535,7 +1535,7 @@ export namespace base::vocab::inline ptr {
  * @remark Hashes the stored address rather than pointee object state or values.
  * @remark Consistent with `ptr_core` equality semantics.
  */
-export template<base::vocab::ptr::VocabPtr T>
+template<base::vocab::ptr::VocabPtr T>
 struct std::hash<T> {
     ///@brief Hashes the pointer based on the underlying address.
     [[nodiscard]] constexpr std::size_t operator()(const T& ptr) const noexcept
@@ -1552,7 +1552,7 @@ struct std::hash<T> {
  *
  * @remark Formats the stored address according to the rules for its nested `address_type` type.
  */
-export template<base::vocab::ptr::VocabPtr T, typename CharT>
+template<base::vocab::ptr::VocabPtr T, typename CharT>
 struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
     ///@brief Formats as a raw pointer to the stored address.
     auto format(const T& ptr, auto& ctx) const
@@ -1582,7 +1582,7 @@ struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
  *
  * @remark Determines the common reference pointee exactly like raw pointers do when finding their common reference.
  */
-export template<template<typename> typename ConcretePtr, typename T, typename U, template <typename> typename TQual, template <typename> typename UQual>
+template<template<typename> typename ConcretePtr, typename T, typename U, template <typename> typename TQual, template <typename> typename UQual>
     requires (!std::same_as<T, U>)
           && base::vocab::ptr::VocabPtr<ConcretePtr<T>>
           && base::vocab::ptr::VocabPtr<ConcretePtr<U>>
@@ -1610,7 +1610,7 @@ public:
  * @tparam TQual An internal standard library alias template applying the cv/ref qualifiers of `T`.
  * @tparam UQual An internal standard library alias template applying the cv/ref qualifiers of `U`.
  */
-export template<base::vocab::ptr::VocabPtr T, base::vocab::ptr::VocabPtr U, template <typename> typename TQual, template <typename> typename UQual>
+template<base::vocab::ptr::VocabPtr T, base::vocab::ptr::VocabPtr U, template <typename> typename TQual, template <typename> typename UQual>
     requires (!std::same_as<T, U>) && std::common_reference_with<TQual<typename T::address_type>, UQual<typename U::address_type>>
 struct std::basic_common_reference<T, U, TQual, UQual> {
     using type = std::common_reference_t<TQual<typename T::address_type>, UQual<typename U::address_type>>;
@@ -1627,7 +1627,7 @@ struct std::basic_common_reference<T, U, TQual, UQual> {
  * @tparam TQual An internal standard library alias template applying the cv/ref qualifiers of `T`.
  * @tparam OtherQual An internal standard library alias template applying the cv/ref qualifiers of `OtherPointee*`.
  */
-export template<base::vocab::ptr::VocabPtr T, typename OtherPointee, template<typename> typename TQual, template<typename> typename OtherQual>
+template<base::vocab::ptr::VocabPtr T, typename OtherPointee, template<typename> typename TQual, template<typename> typename OtherQual>
     requires std::common_reference_with<TQual<typename T::address_type>, OtherQual<OtherPointee*>>
 struct std::basic_common_reference<T, OtherPointee*, TQual, OtherQual> {
     using type = std::common_reference_t<TQual<typename T::address_type>, OtherQual<OtherPointee*>>;
@@ -1644,7 +1644,7 @@ struct std::basic_common_reference<T, OtherPointee*, TQual, OtherQual> {
  * @tparam TQual An internal standard library alias template applying the cv/ref qualifiers of `T`.
  * @tparam OtherQual An internal standard library alias template applying the cv/ref qualifiers of `OtherPointee*`.
  */
-export template<base::vocab::ptr::VocabPtr T, typename OtherPointee, template<typename> typename TQual, template<typename> typename OtherQual>
+template<base::vocab::ptr::VocabPtr T, typename OtherPointee, template<typename> typename TQual, template<typename> typename OtherQual>
     requires std::common_reference_with<OtherQual<OtherPointee*>, TQual<typename T::address_type>>
 struct std::basic_common_reference<OtherPointee*, T, OtherQual, TQual> {
     using type = std::common_reference_t<OtherQual<OtherPointee*>, TQual<typename T::address_type>>;
