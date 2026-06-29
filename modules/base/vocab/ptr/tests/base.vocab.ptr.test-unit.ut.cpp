@@ -867,15 +867,15 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 expect(eq(
                     std::same_as<
-                        std::common_reference_t<std::add_lvalue_reference_t<ConcretePtr<std::int32_t>>, std::add_lvalue_reference_t<ConcretePtr<const std::int32_t>>>,
-                        std::add_lvalue_reference_t<ConcretePtr<const std::int32_t>>
+                        std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>,
+                        ConcretePtr<const std::int32_t>&
                     >,
                     true
                 ));
                 expect(eq(
                     std::same_as<
-                        std::common_reference_t<std::add_rvalue_reference_t<ConcretePtr<std::int32_t>>, std::add_rvalue_reference_t<ConcretePtr<const std::int32_t>>>,
-                        std::add_rvalue_reference_t<ConcretePtr<const std::int32_t>>
+                        std::common_reference_t<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>,
+                        ConcretePtr<const std::int32_t>&&
                     >,
                     true
                 ));
