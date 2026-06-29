@@ -814,7 +814,7 @@ namespace {
         // Common Reference
         //============================================================
 
-        "basic_common_reference preserves concrete pointer type with cv-qualifications"_test = [] {
+        "basic_common_reference preserves concrete pointer type with cv-qualifications"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 expect(eq(
                     std::same_as<
@@ -863,7 +863,7 @@ namespace {
             });
         };
 
-        "basic_common_reference preserves reference value category"_test = [] {
+        "basic_common_reference preserves reference value category"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 expect(eq(
                     std::same_as<
@@ -882,7 +882,7 @@ namespace {
             });
         };
 
-        "basic_common_reference matches raw pointer common_reference"_test = [] {
+        "basic_common_reference matches raw pointer common_reference"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 expect(eq(
                     std::same_as<
@@ -906,7 +906,7 @@ namespace {
             });
         };
 
-        "vocabulary pointer and raw pointer share raw pointer common reference"_test = [] {
+        "vocabulary pointer and raw pointer share raw pointer common reference"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 expect(eq(
                     std::same_as<
@@ -925,7 +925,7 @@ namespace {
             });
         };
 
-        "common_reference supports covariance"_test = [] {
+        "common_reference supports covariance"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 expect(eq(
                     std::same_as<
