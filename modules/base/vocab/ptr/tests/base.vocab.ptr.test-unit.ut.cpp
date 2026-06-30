@@ -868,20 +868,14 @@ namespace {
                 expect(eq(std::same_as<std::common_reference_t<int*&, const int*&>, const int*>, true));
                 expect(eq(std::same_as<std::common_reference_t<int*&&, const int*&&>, const int*>, true));
                 
-                expect(eq(std::same_as<std::common_reference_t<const int*&, int*&&>, const int*&>, true));
                 expect(eq(std::same_as<std::common_reference_t<const int*&, int*&&>, const int* const&>, true));
-                expect(eq(std::same_as<std::common_reference_t<const int*&, int*&&>, int* const&>, true));
-                expect(eq(std::same_as<std::common_reference_t<const int*&, int*&&>, const int*>, true));
-                expect(eq(std::same_as<std::common_reference_t<int*const&, int*&&>, const int*&>, true));
-                expect(eq(std::same_as<std::common_reference_t<int*const&, int*&&>, const int* const&>, true));
                 expect(eq(std::same_as<std::common_reference_t<int*const&, int*&&>, int* const&>, true));
-                expect(eq(std::same_as<std::common_reference_t<int*const&, int*&&>, const int*>, true));
                 
                 expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>,
-                        ConcretePtr<const std::int32_t>&
+                        ConcretePtr<const std::int32_t>
                     >,
                     true
                 ));
@@ -890,7 +884,7 @@ namespace {
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>,
-                        ConcretePtr<const std::int32_t>&&
+                        ConcretePtr<const std::int32_t>
                     >,
                     true
                 ));
