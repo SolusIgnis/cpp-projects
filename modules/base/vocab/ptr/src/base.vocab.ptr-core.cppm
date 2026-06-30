@@ -1590,13 +1590,16 @@ template<template<typename> typename ConcretePtr, typename T, typename U, templa
 struct std::basic_common_reference<ConcretePtr<T>, ConcretePtr<U>, TQual, UQual> {
 private:
     using raw_common_ref = std::common_reference_t<TQual<T*>, UQual<U*>>;
-    using common_pointee = std::remove_pointer_t<std::remove_cvref_t<raw_common_ref>>;
+    using common_cv_type = std::remove_reference_t<raw_common_ref>;
+    using common_pointee = std::remove_pointer_t<std::remove_cv_t<common_cv_type>>;
     using base_pointer   = ConcretePtr<common_pointee>;
+    using cq_pointer     = std::conditional_t<std::is_const_v<common_cv_type>, std::add_const_t<base_pointer>, base_pointer>;
+    using cv_pointer     = std::conditional_t<std::is_volatile_v<common_cv_type>, std::add_volatile_t<cq_pointer>, cq_pointer>;
     
 public:
-    using type = std::conditional_t<std::is_lvalue_reference_v<raw_common_ref>, base_pointer&,
-                 std::conditional_t<std::is_rvalue_reference_v<raw_common_ref>, base_pointer&&,
-                 base_pointer>>;
+    using type = std::conditional_t<std::is_lvalue_reference_v<raw_common_ref>, std::add_lvalue_reference_t<cv_pointer>,
+                 std::conditional_t<std::is_rvalue_reference_v<raw_common_ref>, std::add_rvalue_reference_t<cv_pointer>,
+                 cv_pointer>>;
 };
 
 /**
