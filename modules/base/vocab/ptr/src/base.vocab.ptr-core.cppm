@@ -737,7 +737,7 @@ export namespace base::vocab::inline ptr {
         {
             return (lhs.get() <=> rhs.get());
         }
-/*
+//*
         ///@brief Compares with raw pointer in terms of pointer identity.
         [[nodiscard]] friend constexpr auto
             operator<=>(const concrete_ptr_instance& ptr, address_type raw) noexcept
@@ -745,7 +745,7 @@ export namespace base::vocab::inline ptr {
         {
             return (ptr.get() <=> raw);
         }
-*/
+//*/
         ///@brief Covariantly compares in terms of pointer identity.
         template<std::derived_from<element_type> DerivedT>
             requires (!std::same_as<DerivedT, element_type>)
