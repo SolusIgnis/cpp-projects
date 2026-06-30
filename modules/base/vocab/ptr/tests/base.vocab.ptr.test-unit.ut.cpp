@@ -865,6 +865,15 @@ namespace {
 
         "basic_common_reference uses reference-to-pointer value category propagation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                expect(eq(std::same_as<std::common_reference_t<int*&, const int*&>, const int*&>, true));
+                expect(eq(std::same_as<std::common_reference_t<int*&, const int*&>, int*&>, true));
+                expect(eq(std::same_as<std::common_reference_t<int*&, const int*&>, const int*>, true));
+                expect(eq(std::same_as<std::common_reference_t<int*&, const int*&>, int*>, true));
+                expect(eq(std::same_as<std::common_reference_t<int*&&, const int*&&>, const int*&&>, true));
+                expect(eq(std::same_as<std::common_reference_t<int*&&, const int*&&>, int*&&>, true));
+                expect(eq(std::same_as<std::common_reference_t<int*&&, const int*&&>, const int*>, true));
+                expect(eq(std::same_as<std::common_reference_t<int*&&, const int*&&>, int*>, true));
+                
                 expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, true));
                 expect(eq(
                     std::same_as<
