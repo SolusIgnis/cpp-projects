@@ -1281,6 +1281,18 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `traversal::arithmetic`.
      */
     /**
+     * @overload constexpr auto operator<=>(const concrete_ptr_instance& ptr, const address_type rhs) noexcept
+     *
+     * @param ptr The vocabulary pointer pointer.
+     * @param raw The raw pointer.
+     *
+     * @return The three-way comparison result of the stored addresses.
+     *
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
+     * @remark Preserves C++ standard raw pointer address ordering semantics.
+     * @note Enabled by policy `traversal::arithmetic`.
+     */
+    /**
      * @overload constexpr auto operator<=>(const concrete_ptr_instance& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
      *
      * @tparam DerivedT The element type, derived from `element_type`, of the right-hand side pointer.
