@@ -934,20 +934,20 @@ namespace {
 
         "vocabulary pointer and raw pointer share raw pointer common reference"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                expect(eq(std::common_reference_with<ConcretePtr<const std::int32_t>, std::int32_t*>, true));
+                expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, std::int32_t*>, true));
                 expect(eq(
                     std::same_as<
-                        std::common_reference_t<ConcretePtr<const std::int32_t>, std::int32_t*>,
-                        const std::int32_t*
+                        std::common_reference_t<ConcretePtr<std::int32_t>, std::int32_t*>,
+                        std::int32_t*
                     >,
                     true
                 ));
 
-                expect(eq(std::common_reference_with<std::int32_t*, ConcretePtr<const std::int32_t>>, true));
+                expect(eq(std::common_reference_with<std::int32_t*, ConcretePtr<std::int32_t>>, true));
                 expect(eq(
                     std::same_as<
-                        std::common_reference_t<std::int32_t*, ConcretePtr<const std::int32_t>>,
-                        const std::int32_t*
+                        std::common_reference_t<std::int32_t*, ConcretePtr<std::int32_t>>,
+                        std::int32_t*
                     >,
                     true
                 ));
