@@ -737,15 +737,15 @@ export namespace base::vocab::inline ptr {
         {
             return (lhs.get() <=> rhs.get());
         }
-//*
+
         ///@brief Compares with raw pointer in terms of pointer identity.
         [[nodiscard]] friend constexpr auto
-            operator<=>(const concrete_ptr_instance& ptr, address_type raw) noexcept
+            operator<=>(const concrete_ptr_instance& ptr, const address_type raw) noexcept
             requires ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return (ptr.get() <=> raw);
         }
-//*/
+
         ///@brief Covariantly compares in terms of pointer identity.
         template<std::derived_from<element_type> DerivedT>
             requires (!std::same_as<DerivedT, element_type>)
