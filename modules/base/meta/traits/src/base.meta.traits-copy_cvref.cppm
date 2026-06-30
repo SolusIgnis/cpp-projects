@@ -23,7 +23,7 @@
  */
 
 //Module partition interface unit
-export module base.meta.traits:remove_indirection;
+export module base.meta.traits:copy_cvref;
 
 import std;
 
