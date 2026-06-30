@@ -1042,7 +1042,7 @@ namespace {
         "ordering comparisons according to policy"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 expect(eq(std::three_way_comparable<ConcretePtr<std::int32_t>>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(std::three_way_comparable_with<ConcretePtr<std::int32_t>, std::int32_t*>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal)); //TODO: this needs common_type or basic_common_reference work
+                expect(eq(std::three_way_comparable_with<ConcretePtr<std::int32_t>, std::int32_t*>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
                 expect(eq(std::three_way_comparable<ConcretePtr<base_type>>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
                 expect(eq(std::three_way_comparable_with<ConcretePtr<base_type>, ConcretePtr<derived_type>>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
                 expect(eq(std::three_way_comparable_with<ConcretePtr<base_type>, derived_type*>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
@@ -1064,14 +1064,27 @@ namespace {
         "pointer arithmetic preserves native traversal semantics"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>(){
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    int values[] = {10, 20, 30, 40};
+                    std::int32_t values[] = {10, 20, 30, 40};
 
-                    ConcretePtr<int> ptr{values[0]};
+                    constexpr std::ptrdiff_t step = 2;
 
-                    auto advanced = ptr + 2;
+                    ConcretePtr<std::int32_t> ptr{values[0]};
 
-                    expect(eq(*advanced, values[2]));
-                    expect(eq(advanced.get(), values + 2));
+                    auto advanced = ptr + step;
+                    auto clone    = ptr;
+                    
+                    expect(eq(clone, ptr));
+                    expect(neq(clone, advanced));
+                    
+                    clone += step;
+
+                    expect(neq(clone, ptr));
+                    expect(eq(clone, advanced));
+
+                    expect(eq(*advanced, values[step]));
+                    expect(eq(advanced.get(), values + step));
+                    expect(eq(ptr < advanced, true));
+                    expect(eq(advanced > ptr, true));
                 }
             });
         };
