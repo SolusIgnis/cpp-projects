@@ -28,12 +28,6 @@ export module base.meta.traits:copy_cvref;
 import std;
 
 export namespace base::meta::traits::inline transformation {
-    ///@brief Apply the reference value category of `Source` to `Target`.
-    template<typename Source, typename Target>
-    using copy_ref_t = std::conditional_t<std::is_lvalue_reference_v<Source>, std::add_lvalue_reference_t<Target>,
-                       std::conditional_t<std::is_rvalue_reference_v<Source>, std::add_rvalue_reference_t<Target>,
-                       Target>>;
-
     ///@brief Apply the const qualification of `Source` to `Target`.
     template<typename Source, typename Target>
     using copy_const_t = std::conditional_t<std::is_const_v<Source>, std::add_const_t<Target>, Target>;
@@ -46,7 +40,13 @@ export namespace base::meta::traits::inline transformation {
     template<typename Source, typename Target>
     using copy_cv_t = copy_volatile_t<Source, copy_const_t<Source, Target>>;
 
+    ///@brief Apply the reference value category of `Source` to `Target`.
+    template<typename Source, typename Target>
+    using copy_reference_t = std::conditional_t<std::is_lvalue_reference_v<Source>, std::add_lvalue_reference_t<Target>,
+                             std::conditional_t<std::is_rvalue_reference_v<Source>, std::add_rvalue_reference_t<Target>,
+                             Target>>;
+
     ///@brief Apply the reference value category and cv-qualifications of `Source` to `Target`.
     template<typename Source, typename Target>
-    using copy_cvref_t = copy_ref_t<Source, copy_cv_t<std::remove_reference_t<Source>, Target>>;
+    using copy_cvref_t = copy_reference_t<Source, copy_cv_t<std::remove_reference_t<Source>, Target>>;
 } //namespace base::meta::traits::inline transformation
