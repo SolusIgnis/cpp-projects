@@ -1085,6 +1085,7 @@ namespace {
                     expect(eq(advanced.get(), values + step));
                     expect(eq(ptr < advanced, true));
                     expect(eq(advanced > ptr, true));
+                    expect(eq(advanced >= (values + step/2), true));
                 }
             });
         };
