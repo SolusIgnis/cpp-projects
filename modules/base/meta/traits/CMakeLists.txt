@@ -12,6 +12,7 @@ trace_me()
 add_named_module(base.meta.traits
   LIB_TYPE STATIC
   PARTITIONS
+    src/base.meta.traits-copy_cvref.cppm
     src/base.meta.traits-remove_indirection.cppm
     src/base.meta.traits-remove_all_indirections.cppm
     src/base.meta.traits-is_indirection.cppm
