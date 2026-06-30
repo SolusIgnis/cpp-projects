@@ -816,22 +816,16 @@ namespace {
 
         "basic_common_reference preserves concrete pointer type with cv-qualifications"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, true));
                 expect(eq(
                     std::same_as<
-                        std::common_reference_t<ConcretePtr<std::int32_t>,ConcretePtr<const std::int32_t>>,
+                        std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>,
                         ConcretePtr<const std::int32_t>
                     >,
                     true
                 ));
-                expect(eq(
-                    std::same_as<
-                        std::common_reference_t<
-                            ConcretePtr<std::int32_t>,
-                            ConcretePtr<const std::int32_t>>,
-                        ConcretePtr<const std::int32_t>
-                    >,
-                    true
-                ));
+
+                expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<volatile std::int32_t>>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<volatile std::int32_t>>,
@@ -839,6 +833,8 @@ namespace {
                     >,
                     true
                 ));
+
+                expect(eq(std::common_reference_with<ConcretePtr<const std::int32_t>, ConcretePtr<const volatile std::int32_t>>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<const std::int32_t>, ConcretePtr<const volatile std::int32_t>>,
@@ -846,6 +842,8 @@ namespace {
                     >,
                     true
                 ));
+
+                expect(eq(std::common_reference_with<ConcretePtr<volatile std::int32_t>, ConcretePtr<const volatile std::int32_t>>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const volatile std::int32_t>>,
@@ -853,6 +851,8 @@ namespace {
                     >,
                     true
                 ));
+
+                expect(eq(std::common_reference_with<ConcretePtr<volatile std::int32_t>, ConcretePtr<const std::int32_t>>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const std::int32_t>>,
@@ -863,8 +863,9 @@ namespace {
             });
         };
 
-        "basic_common_reference preserves reference value category"_test = [] mutable {
+        "basic_common_reference uses reference-to-pointer value category propagation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>,
@@ -872,6 +873,8 @@ namespace {
                     >,
                     true
                 ));
+
+                expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>,
@@ -884,6 +887,7 @@ namespace {
 
         "basic_common_reference matches raw pointer common_reference"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const volatile std::int32_t>>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<
@@ -908,6 +912,7 @@ namespace {
 
         "vocabulary pointer and raw pointer share raw pointer common reference"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                expect(eq(std::common_reference_with<ConcretePtr<const std::int32_t>, std::int32_t*>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<const std::int32_t>, std::int32_t*>,
@@ -915,6 +920,8 @@ namespace {
                     >,
                     true
                 ));
+
+                expect(eq(std::common_reference_with<std::int32_t*, ConcretePtr<const std::int32_t>>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<std::int32_t*, ConcretePtr<const std::int32_t>>,
@@ -927,6 +934,7 @@ namespace {
 
         "common_reference supports covariance"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                expect(eq(std::common_reference_with<ConcretePtr<derived_type>, ConcretePtr<base_type>>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<derived_type>, ConcretePtr<base_type>>,
@@ -934,6 +942,8 @@ namespace {
                     >,
                     true
                 ));
+
+                expect(eq(std::common_reference_with<ConcretePtr<const derived_type>, ConcretePtr<base_type>>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<const derived_type>, ConcretePtr<base_type>>,
@@ -941,6 +951,8 @@ namespace {
                     >,
                     true
                 ));
+
+                expect(eq(std::common_reference_with<ConcretePtr<derived_type>,ConcretePtr<const base_type>>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<derived_type>,ConcretePtr<const base_type>>,
@@ -948,6 +960,8 @@ namespace {
                     >,
                     true
                 ));
+
+                expect(eq(std::common_reference_with<ConcretePtr<const derived_type>, ConcretePtr<volatile base_type>>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<const derived_type>, ConcretePtr<volatile base_type>>,
@@ -955,13 +969,17 @@ namespace {
                     >,
                     true
                 ));
+
+                expect(eq(std::common_reference_with<ConcretePtr<derived_type>, base_type*>, true));
                 expect(eq(
                     std::same_as<
-                        std::common_reference_t<ConcretePtr<derived_type>,base_type*>,
+                        std::common_reference_t<ConcretePtr<derived_type>, base_type*>,
                         base_type*
                     >,
                     true
                 ));
+
+                expect(eq(std::common_reference_with<derived_type*, ConcretePtr<base_type>>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<derived_type*, ConcretePtr<base_type>>,
@@ -969,6 +987,8 @@ namespace {
                     >,
                     true
                 ));
+
+                expect(eq(std::common_reference_with<ConcretePtr<const derived_type>, volatile base_type*>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<const derived_type>, volatile base_type*>,
