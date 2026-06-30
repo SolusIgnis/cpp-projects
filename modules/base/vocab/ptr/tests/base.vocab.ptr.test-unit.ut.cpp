@@ -865,12 +865,7 @@ namespace {
 
         "basic_common_reference uses reference-to-pointer value category propagation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                expect(eq(std::same_as<std::common_reference_t<int*&, const int*&>, const int*>, true));
-                expect(eq(std::same_as<std::common_reference_t<int*&&, const int*&&>, const int*>, true));
-                
-                expect(eq(std::same_as<std::common_reference_t<const int*&, int*&&>, const int* const&>, true));
-                expect(eq(std::same_as<std::common_reference_t<int*const&, int*&&>, int* const&>, true));
-                
+                static_assert(std::same_as<std::common_reference_t<std::int32_t*&, const std::int32_t*&>, const std::int32_t*>, "Sanity check for raw pointer common_reference_t<T*&, const T*&> -> const T*");
                 expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, true));
                 expect(eq(
                     std::same_as<
@@ -880,11 +875,32 @@ namespace {
                     true
                 ));
 
+                static_assert(std::same_as<std::common_reference_t<std::int32_t*&&, const std::int32_t*&&>, const std::int32_t*>, "Sanity check for raw pointer common_reference_t<T*&&, const T*&&> -> const T*");
                 expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>, true));
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>,
                         ConcretePtr<const std::int32_t>
+                    >,
+                    true
+                ));
+
+                static_assert(std::same_as<std::common_reference_t<const std::int32_t*&, std::int32_t*&&>, const std::int32_t* const &>, "Sanity check for raw pointer common_reference_t<const T*&, T*&&> -> const T* const &");
+                expect(eq(std::common_reference_with<ConcretePtr<const std::int32_t>&, ConcretePtr<std::int32_t>&&>, true));
+                expect(eq(
+                    std::same_as<
+                        std::common_reference_t<ConcretePtr<const std::int32_t>&, ConcretePtr<std::int32_t>&&>,
+                        const ConcretePtr<const std::int32_t>&
+                    >,
+                    true
+                ));
+
+                static_assert(std::same_as<std::common_reference_t<std::int32_t* const &, std::int32_t*&&>, std::int32_t* const &>, "Sanity check for raw pointer common_reference_t<T* const &, T*&&> -> T* const &");
+                expect(eq(std::common_reference_with<const ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&&>, true));
+                expect(eq(
+                    std::same_as<
+                        std::common_reference_t<const ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&&>,
+                        const ConcretePtr<const std::int32_t>&
                     >,
                     true
                 ));
