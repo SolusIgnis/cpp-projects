@@ -42,7 +42,7 @@ namespace {
             template<typename U>
             constexpr bool operator==(cursor_ptr<U> other) const { return end_pos_ && (*end_pos_ == other); }
             template<typename U>
-            constexpr bool operator<=>(cursor_ptr<U> other) const { return end_pos_ && (*end_pos_ <=> other); }
+            constexpr auto operator<=>(cursor_ptr<U> other) const { return end_pos_ ? (*end_pos_ <=> other) : std::strong_ordering::unordered; }
         };
         
         element_type storage[N]{};
