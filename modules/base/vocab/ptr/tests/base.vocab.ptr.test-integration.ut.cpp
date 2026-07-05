@@ -40,6 +40,8 @@ namespace {
             constexpr explicit sentinel_t(const_iterator start) noexcept
                 : end_pos_{start + N} {}
             template<typename U>
+            constexpr bool operator==(cursor_ptr<U> other) const { return end_pos_ && (*end_pos_ == other); }
+            template<typename U>
             constexpr bool operator<=>(cursor_ptr<U> other) const { return end_pos_ && (*end_pos_ <=> other); }
         };
         
