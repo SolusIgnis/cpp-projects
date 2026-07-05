@@ -33,7 +33,7 @@ namespace {
 
     private:
         class sentinel_t {
-            std::optional<const_iterator> end_pos_;
+            std::optional<const_iterator> end_pos_{};
 
         public:
             constexpr sentinel_t() noexcept = default;
@@ -78,6 +78,7 @@ namespace {
             std::copy(source.begin(), source.end(), buffer.data());
 
             // Reverse with cursor_ptr iterators in and out
+            static_assert(std::sentinel_for<decltype(buffer.begin()), decltype(buffer.end())>);
             static_buffer<std::int32_t, 8> reverse_result;
             std::ranges::reverse_copy(buffer, reverse_result.begin());
             expect(eq(std::ranges::equal(reverse_result, expected_reversed), true));
