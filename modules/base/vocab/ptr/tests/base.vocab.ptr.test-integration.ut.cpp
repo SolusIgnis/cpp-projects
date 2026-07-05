@@ -32,6 +32,16 @@ namespace {
         using difference_type = typename pointer::difference_type;
 
     private:
+        class sentinel_t {
+            std::optional<const_iterator> end_pos_;
+
+        public:
+            constexpr sentinel_t() noexcept = default;
+            constexpr explicit sentinel_t(const_iterator start) noexcept
+                : end_pos_{start + N} {}
+            friend constexpr bool operator<=>(sentinel_t self, const_iterator other) { return self.end_pos_ && (*self.end_pos_ <=> other); }
+        };
+        
         element_type storage[N]{};
 
     public:
@@ -39,26 +49,17 @@ namespace {
         constexpr bool empty() const noexcept { return N == 0; }
 
         constexpr iterator begin() noexcept { return cursor_ptr{storage[0]}; }
-        constexpr iterator end() noexcept { return begin() + N; }
+        constexpr sentinel_t end() noexcept { return sentinel_t{begin()}; }
 
         constexpr const_iterator begin() const noexcept { return cursor_ptr{storage[0]}; }
-        constexpr const_iterator end() const noexcept { return begin() + N; }
+        constexpr sentinel_t end() const noexcept { return sentinel_t{begin()}; }
     
         constexpr const_iterator cbegin() const noexcept { return begin(); }
-        constexpr const_iterator cend() const noexcept { return end(); }
+        constexpr sentinel_t cend() const noexcept { return end(); }
 
         constexpr pointer data() noexcept { return begin(); }
         constexpr const_pointer data() const noexcept { return begin(); }
         constexpr const_pointer cdata() const noexcept { return cbegin(); }
-/*
-        friend constexpr iterator begin(static_buffer& buf) { return buf.begin(); }
-        friend constexpr const_iterator begin(const static_buffer& buf) { return buf.begin(); }
-        friend constexpr const_iterator cbegin(const static_buffer& buf) { return buf.cbegin(); }
-
-        friend constexpr iterator end(static_buffer& buf) { return buf.end(); }
-        friend constexpr const_iterator end(const static_buffer& buf) { return buf.end(); }
-        friend constexpr const_iterator cend(const static_buffer& buf) { return buf.cend(); }
-*/
     };
    
     suite vocabulary_pointer_integration_tests = [] mutable {
