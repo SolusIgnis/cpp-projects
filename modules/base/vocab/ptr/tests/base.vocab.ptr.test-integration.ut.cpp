@@ -50,7 +50,7 @@ namespace {
         constexpr pointer data() noexcept { return begin(); }
         constexpr const_pointer data() const noexcept { return begin(); }
         constexpr const_pointer cdata() const noexcept { return cbegin(); }
-
+/*
         friend constexpr iterator begin(static_buffer& buf) { return buf.begin(); }
         friend constexpr const_iterator begin(const static_buffer& buf) { return buf.begin(); }
         friend constexpr const_iterator cbegin(const static_buffer& buf) { return buf.cbegin(); }
@@ -58,6 +58,7 @@ namespace {
         friend constexpr iterator end(static_buffer& buf) { return buf.end(); }
         friend constexpr const_iterator end(const static_buffer& buf) { return buf.end(); }
         friend constexpr const_iterator cend(const static_buffer& buf) { return buf.cend(); }
+*/
     };
    
     suite vocabulary_pointer_integration_tests = [] mutable {
