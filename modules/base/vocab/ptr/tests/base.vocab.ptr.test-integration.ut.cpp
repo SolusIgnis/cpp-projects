@@ -39,7 +39,8 @@ namespace {
             constexpr sentinel_t() noexcept = default;
             constexpr explicit sentinel_t(const_iterator start) noexcept
                 : end_pos_{start + N} {}
-            friend constexpr bool operator<=>(sentinel_t self, const_iterator other) { return self.end_pos_ && (*self.end_pos_ <=> other); }
+            template<typename U>
+            constexpr bool operator<=>(cursor_ptr<U> other) const { return end_pos_ && (*end_pos_ <=> other); }
         };
         
         element_type storage[N]{};
