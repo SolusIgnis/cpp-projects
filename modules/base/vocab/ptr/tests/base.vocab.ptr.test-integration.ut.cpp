@@ -66,7 +66,7 @@ namespace {
         };
 
         "`cursor_ptr` and `iterator_ptr` interoperate with standard algorithms"_test = [] mutable {
-            std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
+            constexpr std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
 
             auto expected_sorted = source;
             std::ranges::sort(expected_sorted);
@@ -118,7 +118,7 @@ namespace {
         };
 
         "`iterator_ptr` iterators interoperate with standard views"_test = [] mutable {
-            std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
+            constexpr std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
 
             auto is_even = [](int x) { return x % 2 == 0; };
             auto expected = source
