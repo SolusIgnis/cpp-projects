@@ -65,7 +65,7 @@ namespace {
             expect(eq(std::contiguous_iterator<iterator_ptr<std::int32_t>>, true));
         };
 
-        "`cursor_ptr` and `iterator_ptr` iterators interoperate with standard algorithms"_test = [] mutable {
+        "`cursor_ptr` and `iterator_ptr` interoperate with standard algorithms"_test = [] mutable {
             std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
 
             auto expected_sorted = source;
@@ -76,39 +76,39 @@ namespace {
 
             static_buffer<std::int32_t, 8> buffer;
 
-            // Copy raw-pointer iterators -> cursor_ptr
+            // Copy raw-pointer iterators -> `cursor_ptr` into underlying memory sequence
             std::copy(source.begin(), source.end(), buffer.data());
 
-            // Reverse with iterator_ptr iterators in and out
+            // Reverse with `iterator_ptr` iterators in and out
             static_assert(std::sentinel_for<decltype(buffer.end()), decltype(buffer.begin())>);
             static_buffer<std::int32_t, 8> reverse_result;
             std::ranges::reverse_copy(buffer, reverse_result.begin());
             expect(eq(std::ranges::equal(reverse_result, expected_reversed), true));
 
-            // Search using iterator_ptr iterators
+            // Search using `iterator_ptr` iterators
             auto fpos = std::ranges::find(buffer, 7);
             expect(eq(fpos != buffer.end(), true));
             if (fpos != buffer.end()) {
                 expect(eq(*fpos, 7));
             }
 
-            // Sort using iterator_ptr iterators
+            // Sort using `iterator_ptr` iterators
             std::ranges::sort(buffer);
 
-            // Binary search using iterator_ptr iterators
+            // Binary search using `iterator_ptr` iterators
             auto lbpos = std::ranges::lower_bound(buffer, 6);
             expect(eq(lbpos != buffer.end(), true));
             if (lbpos != buffer.end()) {
                 expect(eq(*lbpos, 6));
             }
 
-            // Copy iterator_ptr -> raw-pointer iterator
+            // Copy `iterator_ptr` iterator -> raw-pointer iterator
             std::vector<std::int32_t> sort_result;
             std::ranges::copy(buffer, std::back_inserter(sort_result));
 
             expect(eq(std::ranges::equal(sort_result, expected_sorted), true));
 
-            // Partition the buffer by evenness
+            // Partition the buffer by evenness: `iterator_ptr` iterators form a valid range
             auto is_even = [](int x) { return x % 2 == 0; };
             auto remainder = std::ranges::partition(buffer, is_even);
 
@@ -119,16 +119,25 @@ namespace {
 
         "`iterator_ptr` iterators interoperate with standard views"_test = [] mutable {
             std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
-            static_buffer<std::int32_t, 8> buffer;
-            std::vector expected{2, 8, 4, 6};
 
+            auto is_even = [](int x) { return x % 2 == 0; };
+            auto expected = buffer
+                          | std::views::filter(is_even)
+                          | std::ranges::to<std::vector>()
+                          ;
+
+            static_buffer<std::int32_t, 8> buffer;
+            
+            // Fill the buffer.
             std::ranges::copy(source, buffer.begin());
 
+            // Build a filtering view with the buffer's `iterator_ptr` iterators and materialize the range into a vector.
             auto even_values = buffer
-                             | std::views::filter([](int x) { return x % 2 == 0; })
+                             | std::views::filter(is_even)
                              | std::ranges::to<std::vector>()
                              ;
 
+            // The result when filtering with `iterator_ptr` iterators should be the same as when filtering with raw-pointer iterators.
             expect(eq(std::ranges::equal(even_values, expected), true));
         };
     };
