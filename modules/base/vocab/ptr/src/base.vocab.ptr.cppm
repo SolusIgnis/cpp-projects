@@ -4,7 +4,7 @@
  * @module base.vocab.ptr
  * @file base.vocab.ptr.cppm
  * @version 0.7.1
- * @date June 6, 2026
+ * @date July 5, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -25,6 +25,7 @@
  *   - `:alias_ptr`      = General-purpose nullable object alias pointer.
  *   - `:cursor_ptr`     = Non-owning arithmetic never-null pointer suitable for contiguous memory traversal.
  *   - `:dependency_ptr` = Non-owning non-arithmetic never-null pointer for dependency injection.
+ *   - `:iterator_ptr`   = Non-owning arithmetic nullable pointer compatible with standard iterator concepts.
  *   - `:required_ptr`   = General-purpose required-object alias pointer.
  */
 
@@ -35,4 +36,5 @@ export module base.vocab.ptr;
 export import :alias_ptr;      ///< @see "base.vocab.ptr-alias_ptr.cppm"
 export import :cursor_ptr;     ///< @see "base.vocab.ptr-cursor_ptr.cppm"
 export import :dependency_ptr; ///< @see "base.vocab.ptr-dependency_ptr.cppm"
+export import :iterator_ptr;   ///< @see "base.vocab.ptr-iterator_ptr.cppm"
 export import :required_ptr;   ///< @see "base.vocab.ptr-required_ptr.cppm"

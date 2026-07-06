@@ -25,48 +25,34 @@ namespace {
         using size_type       = std::size_t;
         using pointer         = cursor_ptr<T>;
         using const_pointer   = cursor_ptr<const T>;
-        using iterator        = pointer;
-        using const_iterator  = const_pointer;
+        using iterator        = iterator_ptr<T>;
+        using const_iterator  = iterator_ptr<const T>;
         using element_type    = typename pointer::element_type;
         using value_type      = typename pointer::value_type;
-        using difference_type = typename pointer::difference_type;
 
     private:
-        class sentinel_t {
-            std::optional<const_iterator> end_pos_{};
-
-        public:
-            constexpr sentinel_t() noexcept = default;
-            constexpr explicit sentinel_t(const_iterator start) noexcept
-                : end_pos_{start + N} {}
-            template<typename U>
-            constexpr bool operator==(cursor_ptr<U> other) const { return end_pos_ && (*end_pos_ == other); }
-            template<typename U>
-            constexpr std::partial_ordering operator<=>(cursor_ptr<U> other) const { return end_pos_ ? (*end_pos_ <=> other) : std::partial_ordering::unordered; }
-        };
-        
         element_type storage[N]{};
 
     public:
         constexpr size_type size() const noexcept { return N; }
         constexpr bool empty() const noexcept { return N == 0; }
 
-        constexpr iterator begin() noexcept { return cursor_ptr{storage[0]}; }
-        constexpr sentinel_t end() noexcept { return sentinel_t{begin()}; }
+        constexpr iterator begin() noexcept { return iterator_ptr{storage[0]}; }
+        constexpr iterator end() noexcept { return begin() + N; }
 
-        constexpr const_iterator begin() const noexcept { return cursor_ptr{storage[0]}; }
-        constexpr sentinel_t end() const noexcept { return sentinel_t{begin()}; }
+        constexpr const_iterator begin() const noexcept { return iterator_ptr{storage[0]}; }
+        constexpr const_iterator end() const noexcept { return begin() + N; }
     
         constexpr const_iterator cbegin() const noexcept { return begin(); }
-        constexpr sentinel_t cend() const noexcept { return end(); }
+        constexpr const_iterator cend() const noexcept { return end(); }
 
-        constexpr pointer data() noexcept { return begin(); }
-        constexpr const_pointer data() const noexcept { return begin(); }
-        constexpr const_pointer cdata() const noexcept { return cbegin(); }
+        constexpr pointer data() noexcept { return cursor_ptr{storage[0]}; }
+        constexpr const_pointer data() const noexcept { return cursor_ptr{storage[0]}; }
+        constexpr const_pointer cdata() const noexcept { return data(); }
     };
    
     suite vocabulary_pointer_integration_tests = [] mutable {
-        "`cursor_ptr` iterators interoperate with standard algorithms"_test = [] mutable {
+        "`cursor_ptr` and `iterator_ptr` iterators interoperate with standard algorithms"_test = [] mutable {
             std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
 
             auto expected_sorted = source;
@@ -80,30 +66,30 @@ namespace {
             // Copy raw-pointer iterators -> cursor_ptr
             std::copy(source.begin(), source.end(), buffer.data());
 
-            // Reverse with cursor_ptr iterators in and out
+            // Reverse with iterator_ptr iterators in and out
             static_assert(std::sentinel_for<decltype(buffer.end()), decltype(buffer.begin())>);
             static_buffer<std::int32_t, 8> reverse_result;
             std::ranges::reverse_copy(buffer, reverse_result.begin());
             expect(eq(std::ranges::equal(reverse_result, expected_reversed), true));
 
-            // Search using cursor_ptr iterators
+            // Search using iterator_ptr iterators
             auto fpos = std::ranges::find(buffer, 7);
             expect(eq(fpos != buffer.end(), true));
             if (fpos != buffer.end()) {
                 expect(eq(*fpos, 7));
             }
 
-            // Sort using cursor_ptr iterators
+            // Sort using iterator_ptr iterators
             std::ranges::sort(buffer);
 
-            // Binary search using cursor_ptr iterators
+            // Binary search using iterator_ptr iterators
             auto lbpos = std::ranges::lower_bound(buffer, 6);
             expect(eq(lbpos != buffer.end(), true));
             if (lbpos != buffer.end()) {
                 expect(eq(*lbpos, 6));
             }
 
-            // Copy cursor_ptr -> raw-pointer iterator
+            // Copy iterator_ptr -> raw-pointer iterator
             std::vector<std::int32_t> sort_result;
             std::ranges::copy(buffer, std::back_inserter(sort_result));
 
@@ -118,7 +104,7 @@ namespace {
             expect(eq(std::ranges::none_of(mid, buffer.end(), is_even), true));
         };
 
-        "`cursor_ptr` iterators interoperate with standard views"_test = [] mutable {
+        "`iterator_ptr` iterators interoperate with standard views"_test = [] mutable {
             std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
             static_buffer<std::int32_t, 8> buffer;
             std::vector expected{2, 8, 4, 6};

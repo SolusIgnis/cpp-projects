@@ -81,7 +81,7 @@ export namespace base::vocab::inline ptr {
      *
      * @warning The referenced object MUST outlive the `required_ptr`. Violating this results in undefined behavior.
      *
-     * @see `alias_ptr` for nullable aliasing, `dependency_ptr` for dependency injection structural non-nullability, `cursor_ptr` for non-null iteration/traversal, `std::unique_ptr` and `std::shared_ptr` for ownership.
+     * @see `alias_ptr` for nullable aliasing, `dependency_ptr` for dependency injection structural non-nullability, `cursor_ptr` for non-null arithmetic traversal, `iterator_ptr` for nullable arithmetic traversal, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */
     template<typename Pointee>
         requires is_valid_pointee_v<Pointee>
