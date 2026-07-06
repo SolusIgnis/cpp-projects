@@ -56,8 +56,8 @@ namespace {
             expect(eq(std::input_or_output_iterator<iterator_ptr<std::int32_t>>, true));
             expect(eq(std::input_iterator<iterator_ptr<std::int32_t>>, true));
             expect(eq(std::input_iterator<iterator_ptr<const std::int32_t>>, true));
-            expect(eq(std::output_iterator<iterator_ptr<std::int32_t>>, true));
-            expect(eq(std::output_iterator<iterator_ptr<const std::int32_t>>, false));
+            expect(eq(std::output_iterator<iterator_ptr<std::int32_t>, std::int32_t>, true));
+            expect(eq(std::output_iterator<iterator_ptr<const std::int32_t>, std::int32_t>, false));
             expect(eq(std::sized_sentinel_for<iterator_ptr<std::int32_t>, iterator_ptr<std::int32_t>>, true));
             expect(eq(std::forward_iterator<iterator_ptr<std::int32_t>>, true));
             expect(eq(std::bidirectional_iterator<iterator_ptr<std::int32_t>>, true));
