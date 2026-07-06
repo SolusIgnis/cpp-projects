@@ -97,11 +97,11 @@ namespace {
 
             // Partition the buffer by evenness
             auto is_even = [](int x) { return x % 2 == 0; };
-            auto mid = std::ranges::partition(buffer, is_even);
+            auto remainder = std::ranges::partition(buffer, is_even);
 
             // Expect everything before and nothing after the partition point to be even
-            expect(eq(std::ranges::all_of(buffer.begin(), mid, is_even), true));
-            expect(eq(std::ranges::none_of(mid, buffer.end(), is_even), true));
+            expect(eq(std::ranges::all_of(buffer.begin(), remainder.begin(), is_even), true));
+            expect(eq(std::ranges::none_of(remainder, is_even), true));
         };
 
         "`iterator_ptr` iterators interoperate with standard views"_test = [] mutable {
