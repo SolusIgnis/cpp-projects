@@ -96,7 +96,7 @@ namespace {
             expect(eq(std::ranges::equal(sort_result, expected_sorted), true));
 
             // Partition the buffer by evenness
-            auto is_even = [](int x) { return x % 2 == 0; }
+            auto is_even = [](int x) { return x % 2 == 0; };
             auto mid = std::ranges::partition(buffer, is_even);
 
             // Expect everything before and nothing after the partition point to be even
