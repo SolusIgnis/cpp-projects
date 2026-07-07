@@ -26,6 +26,7 @@ namespace {
 
     template<typename T, std::size_t N>
     class static_buffer {
+        static_assert(N > 0, "Why would you want an empty `static_buffer`?"); 
     public:
         using size_type       = std::size_t;
         using pointer         = cursor_ptr<T>;
@@ -42,10 +43,10 @@ namespace {
         constexpr size_type size() const noexcept { return N; }
         constexpr bool empty() const noexcept { return N == 0; }
 
-        constexpr iterator begin() noexcept { return iterator_ptr{storage[0]}; }
+        constexpr iterator begin() noexcept { return iterator_ptr{std::addressof(storage[0])}; }
         constexpr iterator end() noexcept { return begin() + N; }
 
-        constexpr const_iterator begin() const noexcept { return iterator_ptr{storage[0]}; }
+        constexpr const_iterator begin() const noexcept { return iterator_ptr{std::addressof(storage[0])}; }
         constexpr const_iterator end() const noexcept { return begin() + N; }
     
         constexpr const_iterator cbegin() const noexcept { return begin(); }
@@ -117,6 +118,21 @@ namespace {
             alias->value = 1;
             expect(eq(dt1.value, 1));
             expect(eq(alias->bar(), 42));
+        };
+
+        "vocabulary pointers interoperate as keys to unordered containers"_test = [] mutable {
+            std::unordered_set<alias_ptr<const char>> test_set;
+            std::unordered_map<required_ptr<const char>, std::int32_t> test_map;
+
+            constexpr auto data = "This is a test.";
+            std::string_view sview{data};
+            
+            for (cursor_ptr<const char> datum{data[0]}; *datum != '\0'; ++datum) {
+                //Convert the `cursor_ptr` to `required_ptr` to index the map.
+                test_map[datum] = std::ranges::count(sview, *datum);
+            }
+            
+            expect(eq(test_map[data + 5], 2));
         };
 
         "`common_reference_t` with mixed vocabulary pointer types resolves correctly"_test = [] mutable {
