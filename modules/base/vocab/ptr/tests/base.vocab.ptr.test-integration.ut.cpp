@@ -76,16 +76,46 @@ namespace {
             expect(eq(*dummy_ptr->counter, 0zu));
 
             required_ptr local_counter = dummy_ptr->counter;
-            ++*local_counter;
+            (*local_counter)++;
 
             expect(eq(*dummy_ptr->counter, 1zu));
             
-            ++*dummy_obj.counter;
+            (*dummy_obj.counter)++;
+
             expect(eq(*dummy_ptr->counter, 2zu));
             expect(eq(count, 2zu));
 
-            expect(eq(dummy_ptr->foo(), sizeof(derived_type)));
-            expect(eq(dummy_ptr->bar(), expected_bar_val));
+            expect(eq(dummy_ptr->service->foo(), sizeof(derived_type)));
+            expect(eq(dummy_ptr->service->bar(), expected_bar_val));
+        };
+
+        ""_test = [] mutable {
+            base_type bt1;
+            base_type bt2;
+            derived_type dt1;
+            derived_type dt2;
+
+            std::vector<required_ptr<base_type>> vec;
+
+            dependency_ptr<base_type> dpbt1{bt1};
+
+            vec.push_back(dpbt1);
+            vec.push_back(required_ptr{dt1});
+            vec.push_back(std::addressof(bt2));
+            vec.push_back(std::addressof(dt2));
+
+            auto unwrap = [](required_ptr<required_ptr<base_type>> param){ return *param; };
+
+            for(cursor_ptr cursor = vec.data(), auto i = 0; i < 4; ++cursor, ++i) {
+                bool is_derived = (i % 2) != 0;
+                expect(eq(unwrap(cursor)->value, 0));
+                expect(eq(unwrap(cursor)->bar(), (is_derived ? 42 : 0)));
+            }
+
+            alias_ptr alias = vec[1];
+            alias->value = 1;
+            expect(eq(dt1.value, 1));
+            expect(eq(alias->bar(), 42));
         };
 
         "`iterator_ptr` is a contiguous iterator"_test = [] mutable {
@@ -151,6 +181,18 @@ namespace {
             // Expect everything before and nothing after the partition point to be even
             expect(eq(std::ranges::all_of(buffer.begin(), remainder.begin(), is_even), true));
             expect(eq(std::ranges::none_of(remainder, is_even), true));
+        };
+
+        "`cursor_ptr` interoperates with `std::span`"_test = [] mutable {
+            constexpr std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
+            static_buffer<std::int32_t, 8> buffer;
+
+            std::ranges::copy(source, buffer.data());
+
+            std::span view(buffer.data(), buffer.size());
+
+            expect(eq(view.front(), source.front()));
+            expect(eq(view.back(), source.back()));
         };
 
         "`iterator_ptr` iterators interoperate with standard views"_test = [] mutable {
