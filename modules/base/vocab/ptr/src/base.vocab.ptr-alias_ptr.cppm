@@ -118,4 +118,16 @@ export namespace base::vocab::inline ptr {
      */
     template<typename T>
     alias_ptr(T*) -> alias_ptr<T>;
+
+    /**
+     * @brief Deduction guide for `alias_ptr`.
+     *
+     * @tparam Pointer A concrete vocabulary pointer template.
+     * @tparam T The type of the pointee.
+     *
+     * @remark Deduces `T` from the pointee, preserving cv-qualification.
+     */
+    template<template<typename> typename Pointer, typename T>
+        requires VocabPtr<Pointer<T>>
+    alias_ptr(Pointer<T>) -> alias_ptr<T>;
 } //namespace base::vocab::inline ptr

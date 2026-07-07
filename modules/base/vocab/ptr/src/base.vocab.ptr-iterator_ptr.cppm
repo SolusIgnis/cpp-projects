@@ -121,4 +121,16 @@ export namespace base::vocab::inline ptr {
      */
     template<typename T>
     iterator_ptr(T*) -> iterator_ptr<T>;
+
+    /**
+     * @brief Deduction guide for `iterator_ptr`.
+     *
+     * @tparam Pointer A concrete vocabulary pointer template.
+     * @tparam T The type of the pointee.
+     *
+     * @remark Deduces `T` from the pointee, preserving cv-qualification.
+     */
+    template<template<typename> typename Pointer, typename T>
+        requires VocabPtr<Pointer<T>>
+    iterator_ptr(Pointer<T>) -> iterator_ptr<T>;
 } //namespace base::vocab::inline ptr
