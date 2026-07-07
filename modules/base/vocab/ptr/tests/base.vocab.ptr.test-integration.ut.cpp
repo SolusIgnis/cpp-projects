@@ -21,7 +21,7 @@ namespace {
     struct derived_type : base_type {
         std::int32_t extra{42};
         
-        override std::int32_t bar() { return extra; }
+        std::int32_t bar() override { return extra; }
     };
 
     template<typename T, std::size_t N>
@@ -75,11 +75,11 @@ namespace {
             expect(eq(*dummy_ptr->counter, 0zu));
 
             required_ptr local_counter = dummy_ptr->counter;
-            *local_counter++;
+            ++*local_counter;
 
             expect(eq(*dummy_ptr->counter, 1zu));
             
-            *dummy_obj.counter++
+            ++*dummy_obj.counter;
             expect(eq(*dummy_ptr->counter, 2zu));
             expect(eq(count, 2zu));
 
