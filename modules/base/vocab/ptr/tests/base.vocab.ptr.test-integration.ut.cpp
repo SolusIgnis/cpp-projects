@@ -75,7 +75,7 @@ namespace {
 
             expect(eq(*dummy_ptr->counter, 0zu));
 
-            required_ptr local_counter = dummy_ptr->counter;
+            required_ptr<std::size_t> local_counter = dummy_ptr->counter;
             (*local_counter)++;
 
             expect(eq(*dummy_ptr->counter, 1zu));
@@ -106,7 +106,7 @@ namespace {
 
             auto unwrap = [](required_ptr<required_ptr<base_type>> param){ return *param; };
 
-            for(cursor_ptr cursor = vec.data(), auto i = 0; i < 4; ++cursor, ++i) {
+            for(cursor_ptr cursor = vec.data(), auto i = 0zu; i < vec.size(); ++cursor, ++i) {
                 bool is_derived = (i % 2) != 0;
                 expect(eq(unwrap(cursor)->value, 0));
                 expect(eq(unwrap(cursor)->bar(), (is_derived ? 42 : 0)));
