@@ -57,16 +57,17 @@ namespace {
     };
    
     suite vocabulary_pointer_integration_tests = [] mutable {
-        ""_test = [] mutable {
+        "vocabulary pointers interoperate to model object relationships"_test = [] mutable {
             struct dummy_type {
                 dependency_ptr<base_type> service;
                 alias_ptr<std::size_t> counter = {};
             };
 
             constexpr std::int32_t expected_bar_val = 11;
-            derived_type derived_service{ .extra = expected_bar_val };
+            derived_type derived_service;
+            derived_service.extra = expected_bar_val;
             std::size_t count = 0;
-            dummy_type dummy_obj{ .service = derived_service };
+            dummy_type dummy_obj{ .service = dependency_ptr{derived_service} };
             required_ptr dummy_ptr = std::addressof(dummy_obj);
 
             expect(eq(dummy_ptr->counter == nullptr, true));
