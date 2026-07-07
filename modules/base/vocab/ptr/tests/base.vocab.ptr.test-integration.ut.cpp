@@ -75,7 +75,7 @@ namespace {
 
             expect(eq(*dummy_ptr->counter, 0zu));
 
-            required_ptr<std::size_t> local_counter = dummy_ptr->counter;
+            required_ptr local_counter = dummy_ptr->counter;
             (*local_counter)++;
 
             expect(eq(*dummy_ptr->counter, 1zu));
@@ -113,7 +113,7 @@ namespace {
                 expect(eq(unwrap(cursor)->bar(), (is_derived ? 42 : 0)));
             }
 
-            alias_ptr<base_type> alias = vec[1];
+            alias_ptr alias = vec[1];
             alias->value = 1;
             expect(eq(dt1.value, 1));
             expect(eq(alias->bar(), 42));
