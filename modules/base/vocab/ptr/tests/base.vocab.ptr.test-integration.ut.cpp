@@ -113,7 +113,7 @@ namespace {
                 expect(eq(unwrap(cursor)->bar(), (is_derived ? 42 : 0)));
             }
 
-            alias_ptr alias = vec[1];
+            alias_ptr<base_type> alias = vec[1];
             alias->value = 1;
             expect(eq(dt1.value, 1));
             expect(eq(alias->bar(), 42));
