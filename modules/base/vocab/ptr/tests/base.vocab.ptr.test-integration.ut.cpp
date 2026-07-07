@@ -122,14 +122,16 @@ namespace {
 
         "vocabulary pointers work as keys to unordered associative containers"_test = [] mutable {
             std::unordered_set<alias_ptr<const char>> test_set;
+            //Note, we get an automatic null check when converting to `required_ptr` to access the map.
             std::unordered_map<required_ptr<const char>, std::int32_t> test_map;
 
             constexpr auto data = "This is a test.";
             std::string_view sview{data};
             
             for (cursor_ptr<const char> datum{data[0]}; *datum != '\0'; ++datum) {
-                //Convert the `cursor_ptr` to `required_ptr` to index the map.
+                //Convert the `cursor_ptr` to `required_ptr` to populate the map.
                 test_map.emplace(datum, std::ranges::count(sview, *datum));
+                //Convert the `cursor_ptr` to `alias_ptr` to populate the set.
                 test_set.emplace(datum);
             }
 
@@ -156,6 +158,14 @@ namespace {
 
             expect(eq(test_set.contains(lookup), true));
             expect(eq(test_set.size(), sview.size()));
+
+            test_set.emplace(lookup);
+
+            expect(eq(test_set.size(), sview.size()));
+
+            test_set.emplace(nullptr);
+
+            expect(eq(test_set.size(), sview.size() + 1));
         };
 
         "`common_reference_t` with mixed vocabulary pointer types resolves correctly"_test = [] mutable {
