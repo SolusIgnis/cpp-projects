@@ -125,7 +125,7 @@ namespace {
             //Note, we get an automatic null check when converting to `required_ptr` to access the map.
             std::unordered_map<required_ptr<const char>, std::int32_t> test_map;
 
-            constexpr auto data = "This is a test.";
+            constexpr char data[] = "This is a test.";
             std::string_view sview{data};
             
             for (cursor_ptr<const char> datum{data[0]}; *datum != '\0'; ++datum) {
@@ -156,7 +156,7 @@ namespace {
 
             expect(eq(test_map[lookup], 2));
             expect(eq(test_map[required_ptr{data[6]}], 3));
-            expect(eq(test_map[cursor_ptr<const char[]>{data}], 1));
+            expect(eq(test_map[cursor_ptr{data}], 1));
 
             expect(eq(test_set.contains(lookup), true));
             expect(eq(test_set.size(), sview.size()));
