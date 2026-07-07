@@ -89,7 +89,7 @@ namespace {
             expect(eq(dummy_ptr->service->bar(), expected_bar_val));
         };
 
-        ""_test = [] mutable {
+        "vocabulary pointers compose through conversion, container storage, and iteration"_test = [] mutable {
             base_type bt1;
             base_type bt2;
             derived_type dt1;
@@ -183,7 +183,7 @@ namespace {
             expect(eq(std::ranges::all_of(buffer.begin(), remainder.begin(), is_even), true));
             expect(eq(std::ranges::none_of(remainder, is_even), true));
         };
-/*
+
         "`cursor_ptr` interoperates with `std::span`"_test = [] mutable {
             constexpr std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
             static_buffer<std::int32_t, 8> buffer;
@@ -195,7 +195,7 @@ namespace {
             expect(eq(view.front(), source.front()));
             expect(eq(view.back(), source.back()));
         };
-*/
+
         "`iterator_ptr` iterators interoperate with standard views"_test = [] mutable {
             constexpr std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
 
