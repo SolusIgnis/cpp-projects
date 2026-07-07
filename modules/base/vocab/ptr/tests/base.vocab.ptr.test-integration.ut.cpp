@@ -119,8 +119,19 @@ namespace {
             expect(eq(alias->bar(), 42));
         };
 
-        "basic_common_reference with mixed vocabulary pointer types"_test = [] mutable {
+        "`common_reference_t` with mixed vocabulary pointer types resolves correctly"_test = [] mutable {
             using simple_t = std::int32_t;
+
+            expect(eq(std::common_reference_with<dependency_ptr<simple_t>, required_ptr<simple_t>>, true));
+            expect(eq(std::common_reference_with<dependency_ptr<simple_t>, alias_ptr<simple_t>>, true));
+            expect(eq(std::common_reference_with<dependency_ptr<simple_t>, cursor_ptr<simple_t>>, true));
+            expect(eq(std::common_reference_with<dependency_ptr<simple_t>, iterator_ptr<simple_t>>, true));
+            expect(eq(std::common_reference_with<required_ptr<simple_t>, alias_ptr<simple_t>>, true));
+            expect(eq(std::common_reference_with<required_ptr<simple_t>, cursor_ptr<simple_t>>, true));
+            expect(eq(std::common_reference_with<required_ptr<simple_t>, iterator_ptr<simple_t>>, true));
+            expect(eq(std::common_reference_with<alias_ptr<simple_t>, cursor_ptr<simple_t>>, true));
+            expect(eq(std::common_reference_with<alias_ptr<simple_t>, iterator_ptr<simple_t>>, true));
+            expect(eq(std::common_reference_with<cursor_ptr<simple_t>, iterator_ptr<simple_t>>, true));
 
             expect(eq(std::same_as<std::common_reference_t<dependency_ptr<simple_t>, dependency_ptr<simple_t>>, dependency_ptr<simple_t>>, true));
             expect(eq(std::same_as<std::common_reference_t<dependency_ptr<simple_t>, required_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
