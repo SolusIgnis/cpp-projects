@@ -132,8 +132,30 @@ namespace {
                 test_map.emplace(datum, std::ranges::count(sview, *datum));
                 test_set.emplace(datum);
             }
-            
-            expect(eq(test_map[data + 5], 2));
+
+            alias_ptr<const char> lookup;
+
+            {
+                bool threw_when_null = false;
+                bool wrong_exception = false;
+                try {
+                    [[maybe_unused]] std::int32_t unused = test_map[lookup];
+                } catch (const std::invalid_argument&) {
+                    threw_when_null = true;
+                } catch (...) {
+                    wrong_exception = true;
+                }
+
+                expect(eq(threw_when_null, true));
+                expect(eq(wrong_exception, false));
+            }
+
+            lookup = (data + 5);
+
+            expect(eq(test_map[lookup], 2));
+
+            expect(eq(test_set.contains(lookup), true));
+            expect(eq(test_set.size(), sview.size()));
         };
 
         "`common_reference_t` with mixed vocabulary pointer types resolves correctly"_test = [] mutable {
