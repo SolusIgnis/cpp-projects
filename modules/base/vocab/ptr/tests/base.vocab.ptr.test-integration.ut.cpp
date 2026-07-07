@@ -66,15 +66,15 @@ namespace {
             constexpr std::int32_t expected_bar_val = 11;
             derived_type derived_service{ .extra = expected_bar_val };
             std::size_t count = 0;
-            required_ptr local_counter = std::addressof(count);
             dummy_type dummy_obj{ .service = derived_service };
             required_ptr dummy_ptr = std::addressof(dummy_obj);
 
             expect(eq(dummy_ptr->counter == nullptr, true));
-            dummy_ptr->counter = local_counter;
+            dummy_ptr->counter = std::addressof(count);
 
             expect(eq(*dummy_ptr->counter, 0z));
 
+            required_ptr local_counter = dummy_ptr->counter;
             *local_counter++;
 
             expect(eq(*dummy_ptr->counter, 1z));
