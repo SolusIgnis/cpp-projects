@@ -12,11 +12,16 @@ using namespace base::vocab::ptr;
 
 namespace {
     struct base_type {
-        int value{0};
+        std::int32_t value{0};
+        
+        std::int32_t foo(this auto&& self) { return sizeof(self); }
+        virtual std::int32_t bar() { return value; }
     };
 
     struct derived_type : base_type {
-        int extra{42};
+        std::int32_t extra{42};
+        
+        override std::int32_t bar() { return extra; }
     };
 
     template<typename T, std::size_t N>
@@ -52,6 +57,36 @@ namespace {
     };
    
     suite vocabulary_pointer_integration_tests = [] mutable {
+        ""_test = [] mutable {
+            struct dummy_type {
+                dependency_ptr<base_type> service;
+                alias_ptr<std::size_t> counter = {};
+            };
+
+            constexpr std::int32_t expected_bar_val = 11;
+            derived_type derived_service{ .extra = expected_bar_val };
+            std::size_t count = 0;
+            required_ptr local_counter = std::addressof(count);
+            dummy_type dummy_obj{ .service = derived_service };
+            required_ptr dummy_ptr = std::addressof(dummy_obj);
+
+            expect(eq(dummy_ptr->counter == nullptr, true));
+            dummy_ptr->counter = local_counter;
+
+            expect(eq(*dummy_ptr->counter, 0z));
+
+            *local_counter++;
+
+            expect(eq(*dummy_ptr->counter, 1z));
+            
+            *dummy_obj.counter++
+            expect(eq(*dummy_ptr->counter, 2z));
+            expect(eq(count, 2z));
+
+            expect(eq(dummy_ptr->foo(), sizeof(derived_type)));
+            expect(eq(dummy_ptr->bar(), expected_bar_val));
+        };
+
         "`iterator_ptr` is a contiguous iterator"_test = [] mutable {
             expect(eq(std::input_or_output_iterator<iterator_ptr<std::int32_t>>, true));
             expect(eq(std::input_iterator<iterator_ptr<std::int32_t>>, true));
