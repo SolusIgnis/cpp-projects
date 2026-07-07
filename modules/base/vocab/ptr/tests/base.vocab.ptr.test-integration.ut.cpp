@@ -120,7 +120,7 @@ namespace {
             expect(eq(alias->bar(), 42));
         };
 
-        "vocabulary pointers interoperate as keys to unordered containers"_test = [] mutable {
+        "vocabulary pointers work as keys to unordered associative containers"_test = [] mutable {
             std::unordered_set<alias_ptr<const char>> test_set;
             std::unordered_map<required_ptr<const char>, std::int32_t> test_map;
 
@@ -129,7 +129,8 @@ namespace {
             
             for (cursor_ptr<const char> datum{data[0]}; *datum != '\0'; ++datum) {
                 //Convert the `cursor_ptr` to `required_ptr` to index the map.
-                test_map[datum] = std::ranges::count(sview, *datum);
+                test_map.emplace(datum, std::ranges::count(sview, *datum));
+                test_set.emplace(datum);
             }
             
             expect(eq(test_map[data + 5], 2));
