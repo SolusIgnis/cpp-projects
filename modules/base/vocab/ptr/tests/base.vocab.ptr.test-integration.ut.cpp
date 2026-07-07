@@ -119,6 +119,10 @@ namespace {
             expect(eq(alias->bar(), 42));
         };
 
+        "basic_common_reference with mixed vocabulary pointer types"_test = [] mutable {
+            
+        };
+
         "`iterator_ptr` is a contiguous iterator"_test = [] mutable {
             expect(eq(std::input_or_output_iterator<iterator_ptr<std::int32_t>>, true));
             expect(eq(std::input_iterator<iterator_ptr<std::int32_t>>, true));
@@ -184,13 +188,13 @@ namespace {
             expect(eq(std::ranges::none_of(remainder, is_even), true));
         };
 
-        "`cursor_ptr` interoperates with `std::span`"_test = [] mutable {
+        "`iterator_ptr` interoperates with `std::span`"_test = [] mutable {
             constexpr std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
             static_buffer<std::int32_t, 8> buffer;
 
             std::ranges::copy(source, buffer.data());
 
-            std::span view(buffer.data(), buffer.size());
+            std::span view(buffer);
 
             expect(eq(view.front(), source.front()));
             expect(eq(view.back(), source.back()));
