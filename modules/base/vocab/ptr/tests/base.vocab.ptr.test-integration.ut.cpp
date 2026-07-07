@@ -156,7 +156,7 @@ namespace {
 
             expect(eq(test_map[lookup], 2));
             expect(eq(test_map[required_ptr{data[6]}], 3));
-            expect(eq(test_map[cursor_ptr{data}], 1));
+            expect(eq(test_map[cursor_ptr<const char[]>{data}], 1));
 
             expect(eq(test_set.contains(lookup), true));
             expect(eq(test_set.size(), sview.size()));
