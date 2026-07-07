@@ -72,16 +72,16 @@ namespace {
             expect(eq(dummy_ptr->counter == nullptr, true));
             dummy_ptr->counter = std::addressof(count);
 
-            expect(eq(*dummy_ptr->counter, 0z));
+            expect(eq(*dummy_ptr->counter, 0zu));
 
             required_ptr local_counter = dummy_ptr->counter;
             *local_counter++;
 
-            expect(eq(*dummy_ptr->counter, 1z));
+            expect(eq(*dummy_ptr->counter, 1zu));
             
             *dummy_obj.counter++
-            expect(eq(*dummy_ptr->counter, 2z));
-            expect(eq(count, 2z));
+            expect(eq(*dummy_ptr->counter, 2zu));
+            expect(eq(count, 2zu));
 
             expect(eq(dummy_ptr->foo(), sizeof(derived_type)));
             expect(eq(dummy_ptr->bar(), expected_bar_val));
