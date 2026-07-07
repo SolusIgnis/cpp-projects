@@ -14,7 +14,7 @@ namespace {
     struct base_type {
         std::int32_t value{0};
         
-        std::int32_t foo(this auto&& self) { return sizeof(self); }
+        std::size_t foo(this auto&& self) { return sizeof(self); }
         virtual std::int32_t bar() { return value; }
     };
 
