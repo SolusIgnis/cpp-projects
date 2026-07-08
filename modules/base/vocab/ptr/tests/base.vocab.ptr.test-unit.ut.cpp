@@ -524,21 +524,6 @@ namespace {
             });
         };
 
-        "rebind via `rebind` call with reference argument"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    const int a{};
-                    const int b = 2;
-
-                    ConcretePtr<const std::int32_t> ptr{a};
-                    ptr.rebind(b);
-
-                    expect(eq(*ptr, b));
-                    expect(eq(ptr.get(), std::addressof(b)));
-                }
-            });
-        };
-
         "rebind via `reset` call with reference argument"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {

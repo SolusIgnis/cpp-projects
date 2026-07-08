@@ -515,14 +515,6 @@ export namespace base::vocab::inline ptr {
         ///@brief Implicitly converts to the nested `address_type` type.
         [[nodiscard]] constexpr explicit(false) operator address_type() const noexcept { return this->get(); }
 
-        ///@brief Rebinding passes through to assignment.
-        template<typename Self, typename P>
-        Self& rebind(this Self& self, P&& source) noexcept(std::is_nothrow_assignable_v<Self&, P>)
-            requires std::is_assignable_v<Self&, P>
-        {
-            return self = std::forward<P>(source);
-        }
-
         ///@brief Resets the pointer to a new address.
         template<typename Self, typename P>
             requires (!std::same_as<P, std::nullptr_t>)
@@ -1138,22 +1130,6 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Enables seamless interoperability with legacy interfaces expecting raw pointers.
      * @warning Implicit conversion may obscure pointer semantics; prefer `get()` when clarity is important.
-     */
-    /**
-     * @fn constexpr Self& rebind(this Self& self, P&& source)
-     *
-     * @tparam Self The non-const concrete pointer type deduced from the call site.
-     * @tparam P A source type assignable to the concrete pointer.
-     *
-     * @param self The pointer being rebound.
-     * @param source The source used to replace the stored address.
-     *
-     * @return Reference to `self`.
-     *
-     * @post Equivalent to `self = std::forward<P>(source)`.
-     *
-     * @remark Replaces the stored address without affecting ownership or pointee lifetime.
-     * @remark Convenience wrapper over assignment for generic pointer-like interoperability.
      */
     /**
      * @fn constexpr void reset(this Self& self, P&& source)
