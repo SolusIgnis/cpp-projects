@@ -120,12 +120,12 @@ namespace {
             expect(eq(alias->bar(), 42));
         };
 
-        "vocabulary pointers work as keys to unordered associative containers"_test = [] mutable {
+        "vocabulary pointers interoperate with unordered associative containers"_test = [] mutable {
             std::unordered_set<alias_ptr<const char>> test_set;
             //Note, we get an automatic null check when converting to `required_ptr` to access the map.
             std::unordered_map<required_ptr<const char>, std::int32_t> test_map;
 
-            constexpr char data[] = "This is a test.";
+            constexpr auto data = "This is a test.";
             std::string_view sview{data};
             
             for (cursor_ptr<const char> datum{data[0]}; *datum != '\0'; ++datum) {
@@ -156,7 +156,7 @@ namespace {
 
             expect(eq(test_map[lookup], 2));
             expect(eq(test_map[required_ptr{data[6]}], 3));
-            expect(eq(test_map[cursor_ptr{data}], 1));
+            expect(eq(test_map[cursor_ptr{data} + 10], 2));
 
             expect(eq(test_set.contains(lookup), true));
             expect(eq(test_set.size(), sview.size()));
@@ -167,6 +167,7 @@ namespace {
 
             test_set.emplace(nullptr);
 
+            expect(eq(test_set.contains(nullptr), true));
             expect(eq(test_set.size(), sview.size() + 1));
         };
 
