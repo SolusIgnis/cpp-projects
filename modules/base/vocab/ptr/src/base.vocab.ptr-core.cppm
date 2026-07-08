@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-core.cppm
- * @version 0.7.0
- * @date June 6, 2026
+ * @version 0.8.0
+ * @date June 30, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -218,6 +218,8 @@ export namespace base::vocab::inline ptr {
         address_type address_; ///<@brief The stored address used by all concrete pointer types.
 
     public:
+        static constexpr bool is_nullable = ptr_policies::nullable_nullability_v<policy_set>;
+
         //================================================================================
         // Construction, Assignment, and Swap
         //================================================================================
@@ -736,6 +738,13 @@ export namespace base::vocab::inline ptr {
             requires ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return (lhs.get() <=> rhs.get());
+        }
+
+        ///@brief Compares with raw pointer in terms of pointer identity.
+        [[nodiscard]] friend constexpr auto operator<=>(const concrete_ptr_instance& ptr, const address_type raw) noexcept
+            requires ptr_policies::arithmetic_traversal_v<policy_set>
+        {
+            return (ptr.get() <=> raw);
         }
 
         ///@brief Covariantly compares in terms of pointer identity.
@@ -1273,6 +1282,18 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `traversal::arithmetic`.
      */
     /**
+     * @overload constexpr auto operator<=>(const concrete_ptr_instance& ptr, const address_type rhs) noexcept
+     *
+     * @param ptr The vocabulary pointer pointer.
+     * @param raw The raw pointer.
+     *
+     * @return The three-way comparison result of the stored addresses.
+     *
+     * @remark Compares pointer identity (stored addresses), not pointee object values.
+     * @remark Preserves C++ standard raw pointer address ordering semantics.
+     * @note Enabled by policy `traversal::arithmetic`.
+     */
+    /**
      * @overload constexpr auto operator<=>(const concrete_ptr_instance& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
      *
      * @tparam DerivedT The element type, derived from `element_type`, of the right-hand side pointer.
@@ -1530,12 +1551,12 @@ export namespace base::vocab::inline ptr {
 /**
  * @brief Partial specialization of `std::hash` for `VocabPtr`s.
  *
- * @tparam T The concrete pointer type.
+ * @tparam T The concrete pointer specialization.
  *
- * @remark Hashes the underlying stored address rather than pointee object state or values.
+ * @remark Hashes the stored address rather than pointee object state or values.
  * @remark Consistent with `ptr_core` equality semantics.
  */
-export template<base::vocab::ptr::VocabPtr T>
+template<base::vocab::ptr::VocabPtr T>
 struct std::hash<T> {
     ///@brief Hashes the pointer based on the underlying address.
     [[nodiscard]] constexpr std::size_t operator()(const T& ptr) const noexcept
@@ -1547,12 +1568,12 @@ struct std::hash<T> {
 /**
  * @brief Partial specialization of `std::formatter` for `VocabPtr`s.
  *
- * @tparam T The concrete pointer type.
+ * @tparam T The concrete pointer specialization.
  * @tparam CharT The character type used by the format string.
  *
  * @remark Formats the stored address according to the rules for its nested `address_type` type.
  */
-export template<base::vocab::ptr::VocabPtr T, typename CharT>
+template<base::vocab::ptr::VocabPtr T, typename CharT>
 struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
     ///@brief Formats as a raw pointer to the stored address.
     auto format(const T& ptr, auto& ctx) const
@@ -1566,3 +1587,103 @@ struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
         );
     }
 }; //struct std::formatter
+
+/**
+ * @brief Partial specialization of `std::basic_common_reference` for two specializations of the same concrete pointer template with different pointee types.
+ *
+ * This customization point establishes that the common reference between `ConcretePtr<T>`
+ * and `ConcretePtr<U>` is a specialization of that same `ConcretePtr` template, whose
+ * pointee type is the common reference of their pointee types.
+ *
+ * @tparam ConcretePtr The concrete pointer template.
+ * @tparam T The pointee type of the left-hand pointer.
+ * @tparam U The pointee type of the right-hand pointer.
+ * @tparam TQual An internal standard library alias template applying the qualifiers of the left-hand argument.
+ * @tparam UQual An internal standard library alias template applying the qualifiers of the right-hand argument.
+ *
+ * @remark Determines the common reference pointee exactly like raw pointers do when finding their common reference.
+ */
+template<
+    template<typename> typename ConcretePtr,
+    typename T,
+    typename U,
+    template<typename> typename TQual,
+    template<typename> typename UQual
+>
+    requires (!std::same_as<T, U>) && base::vocab::ptr::VocabPtr<ConcretePtr<T>> && base::vocab::ptr::VocabPtr<ConcretePtr<U>>
+          && std::common_reference_with<TQual<T*>, UQual<U*>>
+struct std::basic_common_reference<ConcretePtr<T>, ConcretePtr<U>, TQual, UQual> {
+private:
+    using raw_common_ref = std::common_reference_t<TQual<T*>, UQual<U*>>;
+
+public:
+    using type = base::meta::traits::
+        copy_cvref_t<raw_common_ref, ConcretePtr<std::remove_pointer_t<std::remove_cvref_t<raw_common_ref>>>>;
+};
+
+/**
+ * @brief Partial specialization of `std::basic_common_reference` for two distinct `VocabPtr` types.
+ *
+ * This customization point resolves the common reference between two specializations of different
+ * vocabulary pointers to the common reference of their nested `address_type`s.
+ *
+ * @tparam T The first concrete pointer specialization.
+ * @tparam U The second concrete pointer specialization.
+ * @tparam TQual An internal standard library alias template applying the cv/ref qualifiers of `T`.
+ * @tparam UQual An internal standard library alias template applying the cv/ref qualifiers of `U`.
+ */
+template<
+    base::vocab::ptr::VocabPtr T,
+    base::vocab::ptr::VocabPtr U,
+    template<typename> typename TQual,
+    template<typename> typename UQual
+>
+    requires (!std::same_as<T, U>)
+          && std::common_reference_with<TQual<typename T::address_type>, UQual<typename U::address_type>>
+struct std::basic_common_reference<T, U, TQual, UQual> {
+    using type = std::common_reference_t<TQual<typename T::address_type>, UQual<typename U::address_type>>;
+};
+
+/**
+ * @brief Partial specialization of `std::basic_common_reference` for `VocabPtr`s with raw pointers.
+ *
+ * This customization point establishes that the common reference domain between a `VocabPtr` and a
+ * raw pointer is equivalent to the common reference of their respective raw address types.
+ *
+ * @tparam T The concrete pointer specialization.
+ * @tparam OtherPointee The raw pointer's pointee type whose address shares a common reference with `T::address_type`.
+ * @tparam TQual An internal standard library alias template applying the cv/ref qualifiers of `T`.
+ * @tparam OtherQual An internal standard library alias template applying the cv/ref qualifiers of `OtherPointee*`.
+ */
+template<
+    base::vocab::ptr::VocabPtr T,
+    typename OtherPointee,
+    template<typename> typename TQual,
+    template<typename> typename OtherQual
+>
+    requires std::common_reference_with<TQual<typename T::address_type>, OtherQual<OtherPointee*>>
+struct std::basic_common_reference<T, OtherPointee*, TQual, OtherQual> {
+    using type = std::common_reference_t<TQual<typename T::address_type>, OtherQual<OtherPointee*>>;
+};
+
+/**
+ * @brief Partial specialization of `std::basic_common_reference` for raw pointers with `VocabPtr`s.
+ *
+ * This customization point establishes that the common reference domain between a raw pointer and
+ * a `VocabPtr` and a is equivalent to the common reference of their respective raw address types.
+ *
+ * @tparam T The concrete pointer specialization.
+ * @tparam OtherPointee The raw pointer's pointee type whose address shares a common reference with `T::address_type`.
+ * @tparam TQual An internal standard library alias template applying the cv/ref qualifiers of `T`.
+ * @tparam OtherQual An internal standard library alias template applying the cv/ref qualifiers of `OtherPointee*`.
+ */
+template<
+    base::vocab::ptr::VocabPtr T,
+    typename OtherPointee,
+    template<typename> typename TQual,
+    template<typename> typename OtherQual
+>
+    requires std::common_reference_with<OtherQual<OtherPointee*>, TQual<typename T::address_type>>
+struct std::basic_common_reference<OtherPointee*, T, OtherQual, TQual> {
+    using type = std::common_reference_t<OtherQual<OtherPointee*>, TQual<typename T::address_type>>;
+};

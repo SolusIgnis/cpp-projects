@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-required_ptr.cppm
- * @version 0.7.0
- * @date June 9, 2026
+ * @version 0.8.0
+ * @date July 6, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -81,7 +81,7 @@ export namespace base::vocab::inline ptr {
      *
      * @warning The referenced object MUST outlive the `required_ptr`. Violating this results in undefined behavior.
      *
-     * @see `alias_ptr` for nullable aliasing, `dependency_ptr` for dependency injection structural non-nullability, `cursor_ptr` for non-null iteration/traversal, `std::unique_ptr` and `std::shared_ptr` for ownership.
+     * @see `alias_ptr` for nullable aliasing, `dependency_ptr` for dependency injection structural non-nullability, `cursor_ptr` for non-null arithmetic traversal, `iterator_ptr` for nullable arithmetic traversal, `std::unique_ptr` and `std::shared_ptr` for ownership.
      */
     template<typename Pointee>
         requires is_valid_pointee_v<Pointee>
@@ -122,4 +122,16 @@ export namespace base::vocab::inline ptr {
      */
     template<typename T>
     required_ptr(T*) -> required_ptr<T>;
+
+    /**
+     * @brief Deduction guide for `required_ptr`.
+     *
+     * @tparam Pointer A concrete vocabulary pointer template.
+     * @tparam T The type of the pointee.
+     *
+     * @remark Deduces `T` from the pointee, preserving cv-qualification.
+     */
+    template<template<typename> typename Pointer, typename T>
+        requires VocabPtr<Pointer<T>>
+    required_ptr(Pointer<T>) -> required_ptr<T>;
 } //namespace base::vocab::inline ptr
