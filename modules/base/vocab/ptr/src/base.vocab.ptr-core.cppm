@@ -218,6 +218,8 @@ export namespace base::vocab::inline ptr {
         address_type address_; ///<@brief The stored address used by all concrete pointer types.
 
     public:
+        static constexpr bool is_nullable = ptr_policies::nullable_nullability_v<policy_set>;
+
         //================================================================================
         // Construction, Assignment, and Swap
         //================================================================================
