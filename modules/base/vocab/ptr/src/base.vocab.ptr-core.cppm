@@ -741,8 +741,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Compares with raw pointer in terms of pointer identity.
-        [[nodiscard]] friend constexpr auto
-            operator<=>(const concrete_ptr_instance& ptr, const address_type raw) noexcept
+        [[nodiscard]] friend constexpr auto operator<=>(const concrete_ptr_instance& ptr, const address_type raw) noexcept
             requires ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return (ptr.get() <=> raw);
@@ -1604,17 +1603,22 @@ struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
  *
  * @remark Determines the common reference pointee exactly like raw pointers do when finding their common reference.
  */
-template<template<typename> typename ConcretePtr, typename T, typename U, template <typename> typename TQual, template <typename> typename UQual>
-    requires (!std::same_as<T, U>)
-          && base::vocab::ptr::VocabPtr<ConcretePtr<T>>
-          && base::vocab::ptr::VocabPtr<ConcretePtr<U>>
+template<
+    template<typename> typename ConcretePtr,
+    typename T,
+    typename U,
+    template<typename> typename TQual,
+    template<typename> typename UQual
+>
+    requires (!std::same_as<T, U>) && base::vocab::ptr::VocabPtr<ConcretePtr<T>> && base::vocab::ptr::VocabPtr<ConcretePtr<U>>
           && std::common_reference_with<TQual<T*>, UQual<U*>>
 struct std::basic_common_reference<ConcretePtr<T>, ConcretePtr<U>, TQual, UQual> {
 private:
     using raw_common_ref = std::common_reference_t<TQual<T*>, UQual<U*>>;
 
 public:
-    using type = base::meta::traits::copy_cvref_t<raw_common_ref, ConcretePtr<std::remove_pointer_t<std::remove_cvref_t<raw_common_ref>>>>;
+    using type = base::meta::traits::
+        copy_cvref_t<raw_common_ref, ConcretePtr<std::remove_pointer_t<std::remove_cvref_t<raw_common_ref>>>>;
 };
 
 /**
@@ -1628,8 +1632,14 @@ public:
  * @tparam TQual An internal standard library alias template applying the cv/ref qualifiers of `T`.
  * @tparam UQual An internal standard library alias template applying the cv/ref qualifiers of `U`.
  */
-template<base::vocab::ptr::VocabPtr T, base::vocab::ptr::VocabPtr U, template <typename> typename TQual, template <typename> typename UQual>
-    requires (!std::same_as<T, U>) && std::common_reference_with<TQual<typename T::address_type>, UQual<typename U::address_type>>
+template<
+    base::vocab::ptr::VocabPtr T,
+    base::vocab::ptr::VocabPtr U,
+    template<typename> typename TQual,
+    template<typename> typename UQual
+>
+    requires (!std::same_as<T, U>)
+          && std::common_reference_with<TQual<typename T::address_type>, UQual<typename U::address_type>>
 struct std::basic_common_reference<T, U, TQual, UQual> {
     using type = std::common_reference_t<TQual<typename T::address_type>, UQual<typename U::address_type>>;
 };
@@ -1645,7 +1655,12 @@ struct std::basic_common_reference<T, U, TQual, UQual> {
  * @tparam TQual An internal standard library alias template applying the cv/ref qualifiers of `T`.
  * @tparam OtherQual An internal standard library alias template applying the cv/ref qualifiers of `OtherPointee*`.
  */
-template<base::vocab::ptr::VocabPtr T, typename OtherPointee, template<typename> typename TQual, template<typename> typename OtherQual>
+template<
+    base::vocab::ptr::VocabPtr T,
+    typename OtherPointee,
+    template<typename> typename TQual,
+    template<typename> typename OtherQual
+>
     requires std::common_reference_with<TQual<typename T::address_type>, OtherQual<OtherPointee*>>
 struct std::basic_common_reference<T, OtherPointee*, TQual, OtherQual> {
     using type = std::common_reference_t<TQual<typename T::address_type>, OtherQual<OtherPointee*>>;
@@ -1662,7 +1677,12 @@ struct std::basic_common_reference<T, OtherPointee*, TQual, OtherQual> {
  * @tparam TQual An internal standard library alias template applying the cv/ref qualifiers of `T`.
  * @tparam OtherQual An internal standard library alias template applying the cv/ref qualifiers of `OtherPointee*`.
  */
-template<base::vocab::ptr::VocabPtr T, typename OtherPointee, template<typename> typename TQual, template<typename> typename OtherQual>
+template<
+    base::vocab::ptr::VocabPtr T,
+    typename OtherPointee,
+    template<typename> typename TQual,
+    template<typename> typename OtherQual
+>
     requires std::common_reference_with<OtherQual<OtherPointee*>, TQual<typename T::address_type>>
 struct std::basic_common_reference<OtherPointee*, T, OtherQual, TQual> {
     using type = std::common_reference_t<OtherQual<OtherPointee*>, TQual<typename T::address_type>>;

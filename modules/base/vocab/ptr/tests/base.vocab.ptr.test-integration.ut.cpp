@@ -13,50 +13,58 @@ using namespace base::vocab::ptr;
 namespace {
     struct base_type {
         std::int32_t value{0};
-        
+
         std::size_t foo(this auto&& self) { return sizeof(self); }
+
         virtual std::int32_t bar() { return value; }
     };
 
     struct derived_type : base_type {
         std::int32_t extra{42};
-        
+
         std::int32_t bar() override { return extra; }
     };
 
     template<typename T, std::size_t N>
     class static_buffer {
-        static_assert(N > 0, "Why would you want an empty `static_buffer`?"); 
+        static_assert(N > 0, "Why would you want an empty `static_buffer`?");
+
     public:
-        using size_type       = std::size_t;
-        using pointer         = cursor_ptr<T>;
-        using const_pointer   = cursor_ptr<const T>;
-        using iterator        = iterator_ptr<T>;
-        using const_iterator  = iterator_ptr<const T>;
-        using element_type    = typename pointer::element_type;
-        using value_type      = typename pointer::value_type;
+        using size_type      = std::size_t;
+        using pointer        = cursor_ptr<T>;
+        using const_pointer  = cursor_ptr<const T>;
+        using iterator       = iterator_ptr<T>;
+        using const_iterator = iterator_ptr<const T>;
+        using element_type   = typename pointer::element_type;
+        using value_type     = typename pointer::value_type;
 
     private:
         element_type storage[N]{};
 
     public:
         constexpr size_type size() const noexcept { return N; }
+
         constexpr bool empty() const noexcept { return N == 0; }
 
         constexpr iterator begin() noexcept { return iterator_ptr{std::addressof(storage[0])}; }
+
         constexpr iterator end() noexcept { return begin() + N; }
 
         constexpr const_iterator begin() const noexcept { return iterator_ptr{std::addressof(storage[0])}; }
+
         constexpr const_iterator end() const noexcept { return begin() + N; }
-    
+
         constexpr const_iterator cbegin() const noexcept { return begin(); }
+
         constexpr const_iterator cend() const noexcept { return end(); }
 
         constexpr pointer data() noexcept { return cursor_ptr{storage[0]}; }
+
         constexpr const_pointer data() const noexcept { return cursor_ptr{storage[0]}; }
+
         constexpr const_pointer cdata() const noexcept { return data(); }
     };
-   
+
     suite vocabulary_pointer_integration_tests = [] mutable {
         "vocabulary pointers interoperate to model object relationships"_test = [] mutable {
             struct dummy_type {
@@ -67,8 +75,8 @@ namespace {
             constexpr std::int32_t expected_bar_val = 11;
             derived_type derived_service;
             derived_service.extra = expected_bar_val;
-            std::size_t count = 0;
-            dummy_type dummy_obj{ .service = dependency_ptr{derived_service} };
+            std::size_t count     = 0;
+            dummy_type dummy_obj{.service = dependency_ptr{derived_service}};
             required_ptr dummy_ptr = std::addressof(dummy_obj);
 
             expect(eq(dummy_ptr->counter == nullptr, true));
@@ -80,7 +88,7 @@ namespace {
             (*local_counter)++;
 
             expect(eq(*dummy_ptr->counter, 1zu));
-            
+
             (*dummy_obj.counter)++;
 
             expect(eq(*dummy_ptr->counter, 2zu));
@@ -106,16 +114,16 @@ namespace {
             vec.push_back(std::addressof(dt2));
 
             // converts argument from cursor_ptr<required_ptr<base_type>> to required_ptr<required_ptr<base_type>>
-            auto unwrap = [](required_ptr<required_ptr<base_type>> param){ return *param; };
+            auto unwrap = [](required_ptr<required_ptr<base_type>> param) { return *param; };
 
-            for(auto [cursor, i] = std::tuple{cursor_ptr{vec.data()}, 0zu}; i < vec.size(); ++cursor, ++i) {
+            for (auto [cursor, i] = std::tuple{cursor_ptr{vec.data()}, 0zu}; i < vec.size(); ++cursor, ++i) {
                 bool is_derived = (i == 1) || (i == 3); // 0 and 2 are base_type; 1 and 3 are derived_type
                 expect(eq(unwrap(cursor)->value, 0));
                 expect(eq(unwrap(cursor)->bar(), (is_derived ? 42 : 0)));
             }
 
             alias_ptr alias = vec[1];
-            alias->value = 1;
+            alias->value    = 1;
             expect(eq(dt1.value, 1));
             expect(eq(alias->bar(), 42));
         };
@@ -127,7 +135,7 @@ namespace {
 
             constexpr auto data = "This is a test.";
             std::string_view sview{data};
-            
+
             for (cursor_ptr<const char> datum{data[0]}; *datum != '\0'; ++datum) {
                 //Convert the `cursor_ptr` to `required_ptr` to populate the map.
                 test_map.emplace(datum, std::ranges::count(sview, *datum));
@@ -185,39 +193,180 @@ namespace {
             expect(eq(std::common_reference_with<alias_ptr<simple_t>, iterator_ptr<simple_t>>, true));
             expect(eq(std::common_reference_with<cursor_ptr<simple_t>, iterator_ptr<simple_t>>, true));
 
-            expect(eq(std::same_as<std::common_reference_t<dependency_ptr<simple_t>, dependency_ptr<simple_t>>, dependency_ptr<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<dependency_ptr<simple_t>, required_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<dependency_ptr<simple_t>, alias_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<dependency_ptr<simple_t>, cursor_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<dependency_ptr<simple_t>, iterator_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<dependency_ptr<simple_t>, dependency_ptr<simple_t>>,
+                       dependency_ptr<simple_t>
+                   >,
+                   true)
+            );
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<dependency_ptr<simple_t>, required_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<dependency_ptr<simple_t>, alias_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<dependency_ptr<simple_t>, cursor_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<dependency_ptr<simple_t>, iterator_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
 
-            expect(eq(std::same_as<std::common_reference_t<required_ptr<simple_t>, dependency_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<required_ptr<simple_t>, required_ptr<simple_t>>, required_ptr<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<required_ptr<simple_t>, alias_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<required_ptr<simple_t>, cursor_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<required_ptr<simple_t>, iterator_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<required_ptr<simple_t>, dependency_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
+            expect(eq(
+                std::same_as<std::common_reference_t<required_ptr<simple_t>, required_ptr<simple_t>>, required_ptr<simple_t>>,
+                true
+            ));
+            expect(eq(
+                std::
+                    same_as<std::common_reference_t<required_ptr<simple_t>, alias_ptr<simple_t>>, std::add_pointer_t<simple_t>>,
+                true
+            ));
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<required_ptr<simple_t>, cursor_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<required_ptr<simple_t>, iterator_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
 
-            expect(eq(std::same_as<std::common_reference_t<alias_ptr<simple_t>, dependency_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<alias_ptr<simple_t>, required_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<alias_ptr<simple_t>, alias_ptr<simple_t>>, alias_ptr<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<alias_ptr<simple_t>, cursor_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<alias_ptr<simple_t>, iterator_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<alias_ptr<simple_t>, dependency_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
+            expect(eq(
+                std::
+                    same_as<std::common_reference_t<alias_ptr<simple_t>, required_ptr<simple_t>>, std::add_pointer_t<simple_t>>,
+                true
+            ));
+            expect(
+                eq(std::same_as<std::common_reference_t<alias_ptr<simple_t>, alias_ptr<simple_t>>, alias_ptr<simple_t>>, true)
+            );
+            expect(eq(
+                std::same_as<std::common_reference_t<alias_ptr<simple_t>, cursor_ptr<simple_t>>, std::add_pointer_t<simple_t>>,
+                true
+            ));
+            expect(eq(
+                std::
+                    same_as<std::common_reference_t<alias_ptr<simple_t>, iterator_ptr<simple_t>>, std::add_pointer_t<simple_t>>,
+                true
+            ));
 
-            expect(eq(std::same_as<std::common_reference_t<cursor_ptr<simple_t>, dependency_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<cursor_ptr<simple_t>, required_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<cursor_ptr<simple_t>, alias_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<cursor_ptr<simple_t>, cursor_ptr<simple_t>>, cursor_ptr<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<cursor_ptr<simple_t>, iterator_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<cursor_ptr<simple_t>, dependency_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<cursor_ptr<simple_t>, required_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
+            expect(eq(
+                std::same_as<std::common_reference_t<cursor_ptr<simple_t>, alias_ptr<simple_t>>, std::add_pointer_t<simple_t>>,
+                true
+            ));
+            expect(
+                eq(std::same_as<std::common_reference_t<cursor_ptr<simple_t>, cursor_ptr<simple_t>>, cursor_ptr<simple_t>>,
+                   true)
+            );
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<cursor_ptr<simple_t>, iterator_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
 
-            expect(eq(std::same_as<std::common_reference_t<iterator_ptr<simple_t>, dependency_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<iterator_ptr<simple_t>, required_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<iterator_ptr<simple_t>, alias_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<iterator_ptr<simple_t>, cursor_ptr<simple_t>>, std::add_pointer_t<simple_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<iterator_ptr<simple_t>, iterator_ptr<simple_t>>, iterator_ptr<simple_t>>, true));
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<iterator_ptr<simple_t>, dependency_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<iterator_ptr<simple_t>, required_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
+            expect(eq(
+                std::
+                    same_as<std::common_reference_t<iterator_ptr<simple_t>, alias_ptr<simple_t>>, std::add_pointer_t<simple_t>>,
+                true
+            ));
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<iterator_ptr<simple_t>, cursor_ptr<simple_t>>,
+                       std::add_pointer_t<simple_t>
+                   >,
+                   true)
+            );
+            expect(eq(
+                std::same_as<std::common_reference_t<iterator_ptr<simple_t>, iterator_ptr<simple_t>>, iterator_ptr<simple_t>>,
+                true
+            ));
 
-            expect(eq(std::same_as<std::common_reference_t<dependency_ptr<base_type>, required_ptr<const derived_type>>, std::add_pointer_t<const base_type>>, true));
-            expect(eq(std::same_as<std::common_reference_t<required_ptr<const  base_type>, dependency_ptr<volatile derived_type>>, std::add_pointer_t<const volatile base_type>>, true));
-            expect(eq(std::same_as<std::common_reference_t<alias_ptr<derived_type>, required_ptr<volatile base_type>>, std::add_pointer_t<volatile base_type>>, true));
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<dependency_ptr<base_type>, required_ptr<const derived_type>>,
+                       std::add_pointer_t<const base_type>
+                   >,
+                   true)
+            );
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<required_ptr<const base_type>, dependency_ptr<volatile derived_type>>,
+                       std::add_pointer_t<const volatile base_type>
+                   >,
+                   true)
+            );
+            expect(
+                eq(std::same_as<
+                       std::common_reference_t<alias_ptr<derived_type>, required_ptr<volatile base_type>>,
+                       std::add_pointer_t<volatile base_type>
+                   >,
+                   true)
+            );
         };
 
         "`iterator_ptr` is a contiguous iterator"_test = [] mutable {
@@ -277,7 +426,7 @@ namespace {
             expect(eq(std::ranges::equal(sort_result, expected_sorted), true));
 
             // Partition the buffer by evenness: `iterator_ptr` iterators form a valid range
-            auto is_even = [](int x) { return x % 2 == 0; };
+            auto is_even   = [](int x) { return x % 2 == 0; };
             auto remainder = std::ranges::partition(buffer, is_even);
 
             // Expect everything before and nothing after the partition point to be even
@@ -300,22 +449,16 @@ namespace {
         "`iterator_ptr` iterators interoperate with standard views"_test = [] mutable {
             constexpr std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
 
-            auto is_even = [](int x) { return x % 2 == 0; };
-            auto expected = source
-                          | std::views::filter(is_even)
-                          | std::ranges::to<std::vector>()
-                          ;
+            auto is_even  = [](int x) { return x % 2 == 0; };
+            auto expected = source | std::views::filter(is_even) | std::ranges::to<std::vector>();
 
             static_buffer<std::int32_t, 8> buffer;
-            
+
             // Fill the buffer.
             std::ranges::copy(source, buffer.begin());
 
             // Build a filtering view with the buffer's `iterator_ptr` iterators and materialize the range into a vector.
-            auto even_values = buffer
-                             | std::views::filter(is_even)
-                             | std::ranges::to<std::vector>()
-                             ;
+            auto even_values = buffer | std::views::filter(is_even) | std::ranges::to<std::vector>();
 
             // The result when filtering with `iterator_ptr` iterators should be the same as when filtering with raw-pointer iterators.
             expect(eq(std::ranges::equal(even_values, expected), true));

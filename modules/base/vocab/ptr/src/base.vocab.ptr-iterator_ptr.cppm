@@ -85,15 +85,15 @@ export namespace base::vocab::inline ptr {
     template<typename Pointee>
         requires is_valid_pointee_v<Pointee> && (!std::is_void_v<Pointee>)
     class iterator_ptr final : public ptr_core<
-                                 iterator_ptr,
-                                 Pointee,
-                                 ptr_policies::type_list<
-                                     ptr_policies::nullability::nullable,
-                                     ptr_policies::pointer_binding::allowed,
-                                     ptr_policies::reference_binding::allowed,
-                                     ptr_policies::traversal::arithmetic
-                                 >
-                             > {
+                                   iterator_ptr,
+                                   Pointee,
+                                   ptr_policies::type_list<
+                                       ptr_policies::nullability::nullable,
+                                       ptr_policies::pointer_binding::allowed,
+                                       ptr_policies::reference_binding::allowed,
+                                       ptr_policies::traversal::arithmetic
+                                   >
+                               > {
     private:
         using base_type = typename iterator_ptr::core_type;
 

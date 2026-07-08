@@ -42,9 +42,11 @@ export namespace base::meta::traits::inline transformation {
 
     ///@brief Apply the reference value category of `Source` to `Target`.
     template<typename Source, typename Target>
-    using copy_reference_t = std::conditional_t<std::is_lvalue_reference_v<Source>, std::add_lvalue_reference_t<Target>,
-                             std::conditional_t<std::is_rvalue_reference_v<Source>, std::add_rvalue_reference_t<Target>,
-                             Target>>;
+    using copy_reference_t = std::conditional_t<
+        std::is_lvalue_reference_v<Source>,
+        std::add_lvalue_reference_t<Target>,
+        std::conditional_t<std::is_rvalue_reference_v<Source>, std::add_rvalue_reference_t<Target>, Target>
+    >;
 
     ///@brief Apply the reference value category and cv-qualifications of `Source` to `Target`.
     template<typename Source, typename Target>

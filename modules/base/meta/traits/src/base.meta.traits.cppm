@@ -33,7 +33,7 @@
 export module base.meta.traits;
 
 //Export all partition interfaces
-export import :copy_cvref;                    ///< @see "base.meta.traits-copy_cvref.cppm"
+export import :copy_cvref;                ///< @see "base.meta.traits-copy_cvref.cppm"
 export import :remove_indirection;        ///< @see "base.meta.traits-remove_indirection.cppm"
 export import :remove_all_indirections;   ///< @see "base.meta.traits-remove_all_indirections.cppm"
 export import :is_indirection;            ///< @see "base.meta.traits-is_indirection.cppm"
