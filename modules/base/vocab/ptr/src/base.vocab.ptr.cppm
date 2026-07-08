@@ -3,7 +3,7 @@
 /**
  * @module base.vocab.ptr
  * @file base.vocab.ptr.cppm
- * @version 0.7.1
+ * @version 0.8.0
  * @date July 5, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors

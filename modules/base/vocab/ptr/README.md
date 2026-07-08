@@ -331,7 +331,7 @@ Pointers using this policy must obtain their target addresses through alternativ
 
 #### `pointer_binding::allowed`
 
-Allows construction and assignment from raw pointers and compatible pointer-like types exposing a suitable `get()` interface.
+Allows construction and assignment from raw pointers and compatible pointer-like types exposing a suitable `get()` interface. This includes, for example, other vocabulary pointers such as pointing a `required_ptr` to the object at the current position of a `cursor_ptr` or binding a `required_ptr` to the address stored in an `alias_ptr` (after validating it is not null).
 
 ```cpp
 widget object;
