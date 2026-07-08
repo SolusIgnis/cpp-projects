@@ -157,8 +157,11 @@ export namespace base::vocab::inline ptr {
         using concrete_ptr_instance = ConcretePtr<Pointee>;
 
         struct void_reference;
+        struct validated_address_tag {};
 
     public:
+        static constexpr bool is_nullable = ptr_policies::nullable_nullability_v<policy_set>;
+
         /**
          * @typedef element_type
          * @brief The stored element type.
@@ -209,6 +212,9 @@ export namespace base::vocab::inline ptr {
          */
         using difference_type = std::ptrdiff_t;
 
+        template<typename OtherPointee>
+        using rebind = ConcretePtr<OtherPointee>;
+
         using iterator_concept =
             std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::contiguous_iterator_tag, void>;
         using iterator_category =
@@ -217,15 +223,16 @@ export namespace base::vocab::inline ptr {
     private:
         address_type address_; ///<@brief The stored address used by all concrete pointer types.
 
-    public:
-        static constexpr bool is_nullable = ptr_policies::nullable_nullability_v<policy_set>;
-
         //================================================================================
-        // Construction, Assignment, and Swap
+        // Construction, Assignment, Swap, and `pointer_to` Factory
         //================================================================================
 
         //===== Universal Core =====
 
+        ///@brief 
+        constexpr explicit ptr_core(validated_address_tag, const address_type address) noexcept : address_{address} {}
+
+    public:
         ///@brief (Conversion) Implicitly converts from another `ConcretePtr` specialization according to nested `address_type` type conversions.
         template<typename OtherPointee>
             requires (!std::same_as<OtherPointee, element_type>)
@@ -250,6 +257,12 @@ export namespace base::vocab::inline ptr {
             swap(lhs.address_, rhs.address_);
         }
 
+        ///@brief 
+        static constexpr concrete_ptr_instance pointer_to(reference object) noexcept
+        {
+            return concrete_ptr_instance{validated_address_tag{}, std::addressof(object)};
+        }
+        
         //===== Reference Binding (Allowed) =====
 
         ///@brief Constructs a pointer bound to an existing object.
