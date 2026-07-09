@@ -45,6 +45,14 @@ namespace {
         static constexpr bool allows_reference_binding = true;
     };
 
+    template<>
+    struct pointer_test_traits_base<base::vocab::ptr::iterator_ptr> {
+        static constexpr bool is_nullable              = true;
+        static constexpr bool has_arithmetic_traversal = true;
+        static constexpr bool allows_pointer_binding   = true;
+        static constexpr bool allows_reference_binding = true;
+    };
+
     template<template<typename> typename Ptr>
     struct pointer_test_traits : pointer_test_traits_base<Ptr> {
         static constexpr bool permits_void_pointee = !pointer_test_traits_base<Ptr>::has_arithmetic_traversal
@@ -58,6 +66,7 @@ namespace {
         test_impl.template operator()<base::vocab::ptr::required_ptr>();
         test_impl.template operator()<base::vocab::ptr::alias_ptr>();
         test_impl.template operator()<base::vocab::ptr::cursor_ptr>();
+        test_impl.template operator()<base::vocab::ptr::iterator_ptr>();
     }
 
     template<typename T>
@@ -86,6 +95,9 @@ namespace {
 
     template<typename T>
     concept ArrowAccessible = requires(T t) { t.operator->(); };
+
+    template<typename T>
+    concept HasPointerTo = requires(typename T::element_type obj) { T::pointer_to(obj); };
 
     struct base_type {
         int value{0};
@@ -195,20 +207,27 @@ namespace {
         "type aliases are correct"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 using T = ConcretePtr<const std::int32_t>;
+                using traits = std::pointer_traits<T>;
 
-                constexpr bool element = std::same_as<typename T::element_type, const std::int32_t>;
-                constexpr bool value   = std::same_as<typename T::value_type, std::int32_t>;
-                constexpr bool pointer = std::same_as<typename T::address_type, const std::int32_t*>;
-                constexpr bool lref    = std::same_as<typename T::reference, const std::int32_t&>;
-                constexpr bool rref    = std::same_as<typename T::rvalue_reference, const std::int32_t&&>;
-                constexpr bool ptrdiff = std::same_as<typename T::difference_type, std::ptrdiff_t>;
+                constexpr bool t_pointer = std::same_as<typename traits::pointer, T>;
+                constexpr bool element   = std::same_as<typename T::element_type, const std::int32_t>;
+                constexpr bool t_element = std::same_as<typename traits::element_type, typename T::element_type>;
+                constexpr bool value     = std::same_as<typename T::value_type, std::int32_t>;
+                constexpr bool address   = std::same_as<typename T::address_type, const std::int32_t*>;
+                constexpr bool lref      = std::same_as<typename T::reference, const std::int32_t&>;
+                constexpr bool rref      = std::same_as<typename T::rvalue_reference, const std::int32_t&&>;
+                constexpr bool ptrdiff   = std::same_as<typename T::difference_type, std::ptrdiff_t>;
+                constexpr bool t_ptrdiff = std::same_as<typename traits::difference_type, typename T::difference_type>;
 
+                expect(eq(t_pointer, true));
                 expect(eq(element, true));
+                expect(eq(t_element, true));
                 expect(eq(value, true));
-                expect(eq(pointer, true));
+                expect(eq(address, true));
                 expect(eq(lref, true));
                 expect(eq(rref, true));
                 expect(eq(ptrdiff, true));
+                expect(eq(t_ptrdiff, true));
             });
         };
 
@@ -485,6 +504,16 @@ namespace {
                 ConcretePtr<const std::int32_t> ptr{value};
 
                 expect(eq(ptr.get(), std::addressof(value)));
+            });
+        };
+
+        "`pointer_to` forms a valid pointer instance"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                base_type obj{123};
+                auto ptr = ConcretePtr<base_type>::pointer_to(obj);
+
+                expect(eq(ptr->value, obj.value));
+                expect(eq(ptr.get(), std::addressof(obj)));
             });
         };
 
@@ -917,6 +946,17 @@ namespace {
                     expect(eq(std::equality_comparable_with<ConcretePtr<base_type>, derived_type*>, true));
                     expect(eq(std::equality_comparable_with<base_type*, ConcretePtr<derived_type>>, true));
                 }
+            });
+        };
+
+        //============================================================
+        // Pointer Traits
+        //============================================================
+
+        "`std::` forms a valid pointer instance"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                base_type obj{123};
+                auto ptr = ConcretePtr<base_type>::pointer_to(obj);
             });
         };
 
