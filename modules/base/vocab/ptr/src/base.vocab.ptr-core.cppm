@@ -1587,7 +1587,9 @@ export namespace base::vocab::inline ptr {
 } //namespace base::vocab::inline ptr
 
 /**
+ * @brief Partial specialization of `std::pointer_traits` for `VocabPtr`s.
  *
+ * @tparam T The concrete pointer specialization.
  */
 template<base::vocab::ptr::VocabPtr T>
 struct std::pointer_traits<T> {
@@ -1598,8 +1600,8 @@ struct std::pointer_traits<T> {
     template<class OtherPointee>
     using rebind = typename pointer::template rebind<OtherPointee>;
 
-    static constexpr pointer pointer_to(typename pointer::reference object) noexcept requires (!std::is_void_v<element_type>) { return pointer::pointer_to(object); }
-    static constexpr typename pointer::address_type to_address(pointer ptr) noexcept { return ptr.get(); }
+    static constexpr pointer pointer_to(typename pointer::reference object) noexcept(noexcept(pointer::pointer_to(object))) requires (!std::is_void_v<element_type>) { return pointer::pointer_to(object); }
+    static constexpr typename pointer::address_type to_address(pointer ptr) noexcept(noexcept(ptr.get())) { return ptr.get(); }
 }; //struct std::pointer_traits
 
 /**
