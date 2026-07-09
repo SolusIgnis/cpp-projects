@@ -1600,7 +1600,10 @@ struct std::pointer_traits<T> {
     template<class OtherPointee>
     using rebind = typename pointer::template rebind<OtherPointee>;
 
+    ///@brief Forms a pointer bound to the provided object.
     static constexpr pointer pointer_to(typename pointer::reference object) noexcept(noexcept(pointer::pointer_to(object))) requires (!std::is_void_v<element_type>) { return pointer::pointer_to(object); }
+
+    ///@brief Returns the pointer's stored address.
     static constexpr typename pointer::address_type to_address(pointer ptr) noexcept(noexcept(ptr.get())) { return ptr.get(); }
 }; //struct std::pointer_traits
 
