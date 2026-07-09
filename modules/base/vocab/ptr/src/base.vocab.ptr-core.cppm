@@ -157,13 +157,13 @@ export namespace base::vocab::inline ptr {
         using core_type = ptr_core;
 
     private:
-        /*
+        /**
          * @typedef policy_set
          * @brief The concrete pointer's policy configuration set.
          */
         using policy_set = PolicySet;
 
-        /*
+        /**
          * @typedef concrete_ptr_instance
          * @brief The pointee-specialized concrete pointer type.
          */
@@ -229,7 +229,7 @@ export namespace base::vocab::inline ptr {
          */
         using difference_type = std::ptrdiff_t;
 
-        /*
+        /**
          * @typedef rebind
          * @brief Yields a concrete pointer specialization of the same concrete pointer template rebound to a new pointee type.
          * @tparam OtherPointee The pointee type of the rebound concrete pointer specialization.
@@ -237,7 +237,7 @@ export namespace base::vocab::inline ptr {
         template<typename OtherPointee>
         using rebind = ConcretePtr<OtherPointee>;
 
-        /*
+        /**
          * @typedef iterator_concept
          * @brief STL iterator compatibility type for contiguous iterators.
          * @remark Yields `void` for pointers with the rebinding traversal policy.
@@ -245,7 +245,7 @@ export namespace base::vocab::inline ptr {
         using iterator_concept =
             std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::contiguous_iterator_tag, void>;
 
-        /*
+        /**
          * @typedef iterator_category
          * @brief STL iterator compatibility type for random-access iterators.
          * @remark Yields `void` for pointers with the rebinding traversal policy.
@@ -290,8 +290,9 @@ export namespace base::vocab::inline ptr {
             swap(lhs.address_, rhs.address_);
         }
 
-        ///@brief 
+        ///@brief Factory function producing a concrete pointer instance bound to a given object.
         static constexpr concrete_ptr_instance pointer_to(reference object) noexcept
+            requires (!std::is_void_v<element_type>)
         {
             return concrete_ptr_instance{validated_address_tag{}, std::addressof(object)};
         }
@@ -300,7 +301,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Constructs a pointer bound to an existing object.
         constexpr explicit ptr_core(reference source) noexcept
-            requires ptr_policies::allowed_reference_binding_v<policy_set>
+            requires (!std::is_void_v<element_type>) && ptr_policies::allowed_reference_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, std::addressof(source)}
         {}
 
@@ -308,7 +309,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self>
             requires (!std::is_const_v<Self>)
         constexpr Self& operator=(this Self& self, reference source) noexcept
-            requires ptr_policies::allowed_reference_binding_v<policy_set>
+            requires (!std::is_void_v<element_type>) && ptr_policies::allowed_reference_binding_v<policy_set>
         {
             self.address_ = std::addressof(source);
             return self;
@@ -1586,6 +1587,22 @@ export namespace base::vocab::inline ptr {
 } //namespace base::vocab::inline ptr
 
 /**
+ *
+ */
+template<base::vocab::ptr::VocabPtr T>
+struct std::pointer_traits<T> {
+    using pointer = T;
+    using element_type = typename pointer::element_type;
+    using difference_type = typename pointer::difference_type;
+
+    template<class OtherPointee>
+    using rebind = typename pointer::template rebind<OtherPointee>;
+
+    static constexpr pointer pointer_to(typename pointer::reference object) noexcept requires (!std::is_void_v<element_type>) { return pointer::pointer_to(object); }
+    static constexpr typename pointer::address_type to_address(pointer ptr) noexcept { return ptr.get(); }
+}; //struct std::pointer_traits
+
+/**
  * @brief Partial specialization of `std::hash` for `VocabPtr`s.
  *
  * @tparam T The concrete pointer specialization.
@@ -1656,7 +1673,7 @@ private:
 public:
     using type = base::meta::traits::
         copy_cvref_t<raw_common_ref, ConcretePtr<std::remove_pointer_t<std::remove_cvref_t<raw_common_ref>>>>;
-};
+}; //struct std::basic_common_reference
 
 /**
  * @brief Partial specialization of `std::basic_common_reference` for two distinct `VocabPtr` types.
@@ -1679,7 +1696,7 @@ template<
           && std::common_reference_with<TQual<typename T::address_type>, UQual<typename U::address_type>>
 struct std::basic_common_reference<T, U, TQual, UQual> {
     using type = std::common_reference_t<TQual<typename T::address_type>, UQual<typename U::address_type>>;
-};
+}; //struct std::basic_common_reference
 
 /**
  * @brief Partial specialization of `std::basic_common_reference` for `VocabPtr`s with raw pointers.
@@ -1701,7 +1718,7 @@ template<
     requires std::common_reference_with<TQual<typename T::address_type>, OtherQual<OtherPointee*>>
 struct std::basic_common_reference<T, OtherPointee*, TQual, OtherQual> {
     using type = std::common_reference_t<TQual<typename T::address_type>, OtherQual<OtherPointee*>>;
-};
+}; //struct std::basic_common_reference
 
 /**
  * @brief Partial specialization of `std::basic_common_reference` for raw pointers with `VocabPtr`s.
@@ -1723,4 +1740,4 @@ template<
     requires std::common_reference_with<OtherQual<OtherPointee*>, TQual<typename T::address_type>>
 struct std::basic_common_reference<OtherPointee*, T, OtherQual, TQual> {
     using type = std::common_reference_t<OtherQual<OtherPointee*>, TQual<typename T::address_type>>;
-};
+}; //struct std::basic_common_reference
