@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-core.cppm
  * @version 0.9.0
- * @date June 30, 2026
+ * @date July 8, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -150,16 +150,33 @@ export namespace base::vocab::inline ptr {
         struct derived_from_ptr_core;
 
     protected:
+        /**
+         * @typedef core_type
+         * @brief Convenience alias of `ptr_core` specialization available to concrete pointers to name their base type.
+         */
         using core_type = ptr_core;
 
     private:
-        using policy_set            = PolicySet;
+        /*
+         * @typedef policy_set
+         * @brief The concrete pointer's policy configuration set.
+         */
+        using policy_set = PolicySet;
+
+        /*
+         * @typedef concrete_ptr_instance
+         * @brief The pointee-specialized concrete pointer type.
+         */
         using concrete_ptr_instance = ConcretePtr<Pointee>;
 
+        ///@brief Incomplete type used in place of `void &`.
         struct void_reference;
+
+        ///@brief Tag type to access private validated-address constructor.
         struct validated_address_tag {};
 
     public:
+        ///@brief Trait allowing users to query the pointer nullability policy.
         static constexpr bool is_nullable = ptr_policies::nullable_nullability_v<policy_set>;
 
         /**
@@ -212,11 +229,27 @@ export namespace base::vocab::inline ptr {
          */
         using difference_type = std::ptrdiff_t;
 
+        /*
+         * @typedef rebind
+         * @brief Yields a concrete pointer specialization of the same concrete pointer template rebound to a new pointee type.
+         * @tparam OtherPointee The pointee type of the rebound concrete pointer specialization.
+         */
         template<typename OtherPointee>
         using rebind = ConcretePtr<OtherPointee>;
 
+        /*
+         * @typedef iterator_concept
+         * @brief STL iterator compatibility type for contiguous iterators.
+         * @remark Yields `void` for pointers with the rebinding traversal policy.
+         */
         using iterator_concept =
             std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::contiguous_iterator_tag, void>;
+
+        /*
+         * @typedef iterator_category
+         * @brief STL iterator compatibility type for random-access iterators.
+         * @remark Yields `void` for pointers with the rebinding traversal policy.
+         */
         using iterator_category =
             std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::random_access_iterator_tag, void>;
 
@@ -229,8 +262,8 @@ export namespace base::vocab::inline ptr {
 
         //===== Universal Core =====
 
-        ///@brief 
-        constexpr explicit ptr_core(validated_address_tag, const address_type address) noexcept : address_{address} {}
+        ///@brief Constructs from a pre-validated address.
+        constexpr explicit ptr_core(validated_address_tag, address_type address) noexcept : address_{address} {}
 
     public:
         ///@brief (Conversion) Implicitly converts from another `ConcretePtr` specialization according to nested `address_type` type conversions.
@@ -869,7 +902,22 @@ export namespace base::vocab::inline ptr {
     }; //class ptr_core
 
     /**
-     * @fn constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept
+     * @fn constexpr explicit ptr_core(validated_address_tag, address_type address) noexcept
+     *
+     * @param address The validated raw address to store.
+     *
+     * @post `get() == address`.
+     *
+     * @details This constructor directly stores the provided address without any
+     * validation. User-facing constructors or factory functions perform runtime or
+     * compile-time validation and forward to this constructor to initialize the
+     * stored address.
+     *
+     * @note Enabled regardless of policy selections as an underlying common implication detail.
+     * @internal
+     */
+    /**
+     * @overload constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept
      *
      * @tparam OtherPointee The source pointee type whose address is convertible to `address_type`.
      *
