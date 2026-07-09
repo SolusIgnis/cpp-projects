@@ -290,7 +290,7 @@ export namespace base::vocab::inline ptr {
             swap(lhs.address_, rhs.address_);
         }
 
-        ///@brief Factory function producing a concrete pointer instance bound to a given object.
+        ///@brief Produces a concrete pointer instance bound to a given object.
         static constexpr concrete_ptr_instance pointer_to(reference object) noexcept
             requires (!std::is_void_v<element_type>)
         {
@@ -1600,7 +1600,7 @@ struct std::pointer_traits<T> {
     template<class OtherPointee>
     using rebind = typename pointer::template rebind<OtherPointee>;
 
-    ///@brief Forms a pointer bound to the provided object.
+    ///@brief Produces a pointer instanc bound to a given object.
     static constexpr pointer pointer_to(typename pointer::reference object) noexcept(noexcept(pointer::pointer_to(object))) requires (!std::is_void_v<element_type>) { return pointer::pointer_to(object); }
 
     ///@brief Returns the pointer's stored address.
