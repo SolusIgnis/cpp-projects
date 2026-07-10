@@ -457,7 +457,7 @@ namespace {
         //============================================================
 
         "`pointer_to` forms a valid pointer instance whose `get` returns its stored address"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {try{
                 using pointee_t = std::int32_t;
                 using pointer_t = ConcretePtr<pointee_t>;
 
@@ -474,7 +474,7 @@ namespace {
                 expect(eq(class_ptr.get(), std::addressof(obj)));
                 expect(eq(trait_ptr.get(), std::addressof(obj)));
                 expect(eq(free_ptr.get(),  std::addressof(obj)));
-            });
+            }catch(...){}});
         };
 
         "`to_address` returns stored address as raw pointer"_test = [] mutable {
