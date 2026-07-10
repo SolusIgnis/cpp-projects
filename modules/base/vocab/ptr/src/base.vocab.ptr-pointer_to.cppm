@@ -31,8 +31,8 @@ import std;
 
 namespace base::vocab::inline ptr {
     template<template<typename...> typename Pointer, typename Pointee>
-    Pointer<Pointee> pointer_to(Pointee& object) //noexcept(noexcept(std::pointer_traits<Pointer<Pointee>>::pointer_to(object)))
+    Pointer<Pointee> pointer_to(Pointee& object) noexcept(noexcept(std::pointer_traits<Pointer<Pointee>>::pointer_to(object)))
     {
-       return nullptr;//std::pointer_traits<Pointer<Pointee>>::pointer_to(object);
+       return std::pointer_traits<Pointer<Pointee>>::pointer_to(object);
     }
 } //namespace base::vocab::inline ptr
