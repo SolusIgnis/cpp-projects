@@ -464,7 +464,7 @@ namespace {
                 pointee_t obj{};
 
                 auto class_ptr = pointer_t::pointer_to(obj);
-                auto trait_ptr = std::pointer_traits<pointer_t>::pointer_to(obj)
+                auto trait_ptr = std::pointer_traits<pointer_t>::pointer_to(obj);
                 //auto free_ptr  = base::vocab::ptr::pointer_to<ConcretePtr>(obj);
                 
                 expect(eq(std::same_as<decltype(class_ptr), pointer_t>, true));
