@@ -465,15 +465,15 @@ namespace {
 
                 auto class_ptr = pointer_t::pointer_to(obj);
                 auto trait_ptr = std::pointer_traits<pointer_t>::pointer_to(obj);
-                //auto free_ptr  = base::vocab::ptr::pointer_to<ConcretePtr>(obj);
+                auto free_ptr  = base::vocab::ptr::pointer_to<ConcretePtr>(obj);
                 
                 expect(eq(std::same_as<decltype(class_ptr), pointer_t>, true));
                 expect(eq(std::same_as<decltype(trait_ptr), pointer_t>, true));
-                //expect(eq(std::same_as<decltype(free_ptr),  pointer_t>, true));
+                expect(eq(std::same_as<decltype(free_ptr),  pointer_t>, true));
 
                 expect(eq(class_ptr.get(), std::addressof(obj)));
                 expect(eq(trait_ptr.get(), std::addressof(obj)));
-                //expect(eq(free_ptr.get(),  std::addressof(obj)));
+                expect(eq(free_ptr.get(),  std::addressof(obj)));
             });
         };
 
