@@ -489,7 +489,7 @@ namespace {
                 expect(eq(std::same_as<decltype(std::pointer_traits<pointer_t>::to_address(ptr)), typename pointer_t::address_type>, true));
                 expect(eq(std::same_as<decltype(std::to_address(ptr)), typename pointer_t::address_type>, true));
 
-                expect(eq(std::pointer_traits<pointer_t>::to_address(ptr),>));
+                expect(eq(std::pointer_traits<pointer_t>::to_address(ptr), std::addressof(obj)));
                 expect(eq(std::to_address(ptr), std::addressof(obj)));
             });
         };
