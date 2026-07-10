@@ -100,11 +100,11 @@ namespace {
     concept HasPointerTo = requires(typename T::element_type obj) { T::pointer_to(obj); };
 
     struct base_type {
-        int value{0};
+        std::int32_t value{0};
     };
 
     struct derived_type : base_type {
-        int extra{42};
+        std::int32_t extra{42};
     };
 
     template<typename T>
@@ -228,6 +228,16 @@ namespace {
                 expect(eq(rref, true));
                 expect(eq(ptrdiff, true));
                 expect(eq(t_ptrdiff, true));
+            });
+        };
+
+        "`rebind` metafunctions preserve the pointer template while changing the pointee type"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                using pointee1 = std::int32_t;
+                using pointee2 = const std::map<std::string, std::vector<std::int32_t>>;
+
+                expect(eq(std::same_as<typename ConcretePtr<pointee1>::template rebind<pointee2>, ConcretePtr<pointee2>>, true));
+                expect(eq(std::same_as<typename std::pointer_traits<ConcretePtr<pointee1>>::template rebind<pointee2>, ConcretePtr<pointee2>>, true));
             });
         };
 
@@ -446,9 +456,47 @@ namespace {
         // Pointer semantics
         //============================================================
 
+        "`pointer_to` forms a valid pointer instance whose `get` returns its stored address"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                using pointee_t = std::int32_t;
+                using pointer_t = ConcretePtr<pointee_t>;
+
+                pointee_t obj{};
+
+                auto class_ptr = pointer_t::pointer_to(obj);
+                auto trait_ptr = std::pointer_traits<pointer_t>::pointer_to(obj)
+                //auto free_ptr  = base::vocab::ptr::pointer_to<ConcretePtr>(obj);
+                
+                expect(eq(std::same_as<decltype(class_ptr), pointer_t>, true));
+                expect(eq(std::same_as<decltype(trait_ptr), pointer_t>, true));
+                //expect(eq(std::same_as<decltype(free_ptr),  pointer_t>, true));
+
+                expect(eq(class_ptr.get(), std::addressof(obj)));
+                expect(eq(trait_ptr.get(), std::addressof(obj)));
+                //expect(eq(free_ptr.get(),  std::addressof(obj)));
+            });
+        };
+
+        "`to_address` returns stored address as raw pointer"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                using pointee_t = const std::int32_t;
+                using pointer_t = ConcretePtr<pointee_t>;
+
+                pointee_t obj{};
+
+                auto ptr = pointer_t::pointer_to(obj);
+
+                expect(eq(std::same_as<decltype(std::pointer_traits<pointer_t>::to_address(ptr)), typename pointer_t::address_type>, true));
+                expect(eq(std::same_as<decltype(std::to_address(ptr)), typename pointer_t::address_type>, true));
+
+                expect(eq(std::pointer_traits<pointer_t>::to_address(ptr),>));
+                expect(eq(std::to_address(ptr), std::addressof(obj)));
+            });
+        };
+
         "operator* dereferences correctly"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                int value = 55;
+                std::int32_t value = 55;
                 ConcretePtr<std::int32_t> ptr{value};
 
                 expect(eq(*ptr, value));
@@ -489,7 +537,7 @@ namespace {
 
         "conversion to raw pointer preserves address"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                const int value{};
+                const std::int32_t value{};
                 ConcretePtr<const std::int32_t> ptr{value};
 
                 const std::int32_t* raw = ptr;
@@ -498,30 +546,11 @@ namespace {
             });
         };
 
-        "get returns raw pointer"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                const int value{};
-                ConcretePtr<const std::int32_t> ptr{value};
-
-                expect(eq(ptr.get(), std::addressof(value)));
-            });
-        };
-
-        "`pointer_to` forms a valid pointer instance"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                base_type obj{123};
-                auto ptr = ConcretePtr<base_type>::pointer_to(obj);
-
-                expect(eq(ptr->value, obj.value));
-                expect(eq(ptr.get(), std::addressof(obj)));
-            });
-        };
-
         "contextual boolean conversion is supported"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 expect(eq(std::constructible_from<bool, ConcretePtr<std::int32_t>>, true));
 
-                const int value{};
+                const std::int32_t value{};
                 ConcretePtr<const std::int32_t> ptr{value};
 
                 bool converted{false};
@@ -541,8 +570,8 @@ namespace {
         "rebind via assignment from reference"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    const int a{};
-                    const int b = 2;
+                    const std::int32_t a{};
+                    const std::int32_t b = 2;
 
                     ConcretePtr<const std::int32_t> ptr{a};
                     ptr = b;
@@ -556,8 +585,8 @@ namespace {
         "rebind via `reset` call with reference argument"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    const int a{};
-                    const int b = 2;
+                    const std::int32_t a{};
+                    const std::int32_t b = 2;
 
                     ConcretePtr<const std::int32_t> ptr{a};
                     ptr.reset(b);
@@ -589,7 +618,7 @@ namespace {
         "rebind via `reset()` disengages the pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    const int a{};
+                    const std::int32_t a{};
 
                     ConcretePtr<const std::int32_t> ptr{a};
                     ptr.reset();
@@ -950,17 +979,6 @@ namespace {
         };
 
         //============================================================
-        // Pointer Traits
-        //============================================================
-
-        "`std::` forms a valid pointer instance"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                base_type obj{123};
-                auto ptr = ConcretePtr<base_type>::pointer_to(obj);
-            });
-        };
-
-        //============================================================
         // Common Reference
         //============================================================
 
@@ -1260,10 +1278,10 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal
                               && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    int values[] = {10, 20, 30, 40};
+                    std::int32_t values[] = {10, 20, 30, 40};
 
-                    ConcretePtr<int> first{values[0]};
-                    ConcretePtr<int> last{values[3]};
+                    ConcretePtr<std::int32_t> first{values[0]};
+                    ConcretePtr<std::int32_t> last{values[3]};
 
                     expect(eq(last - first, 3L));
                 }
@@ -1274,9 +1292,9 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal
                               && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    int values[] = {1, 2, 3};
+                    std::int32_t values[] = {1, 2, 3};
 
-                    ConcretePtr<int> ptr{values[0]};
+                    ConcretePtr<std::int32_t> ptr{values[0]};
 
                     ++ptr;
                     expect(eq(*ptr, 2));
@@ -1297,9 +1315,9 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal
                               && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    int values[] = {5, 6, 7, 8};
+                    std::int32_t values[] = {5, 6, 7, 8};
 
-                    ConcretePtr<int> ptr{values[0]};
+                    ConcretePtr<std::int32_t> ptr{values[0]};
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -1315,9 +1333,9 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal
                               && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    int values[] = {1, 2, 3, 4};
+                    std::int32_t values[] = {1, 2, 3, 4};
 
-                    ConcretePtr<int> ptr{values[0]};
+                    ConcretePtr<std::int32_t> ptr{values[0]};
 
                     expect(eq((ptr + 3).get(), values + 3));
                     expect(eq((3 + ptr).get(), values + 3));
@@ -1544,7 +1562,7 @@ namespace {
         };
 
         struct incomplete_type {
-            int value;
+            std::int32_t value;
         };
 
         "incomplete type becomes usable after completion"_test = [] mutable {
@@ -1691,9 +1709,9 @@ namespace {
         "constexpr construction and dereference"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    static constexpr int value = 42;
+                    static constexpr std::int32_t value = 42;
 
-                    constexpr ConcretePtr<const int> ptr{value};
+                    constexpr ConcretePtr<const std::int32_t> ptr{value};
 
                     expect(eq(*ptr, value));
                 }
@@ -1704,9 +1722,9 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding
                               && pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
-                    static constexpr int values[] = {2, 4, 6};
+                    static constexpr std::int32_t values[] = {2, 4, 6};
 
-                    constexpr ConcretePtr<const int> ptr{values[0]};
+                    constexpr ConcretePtr<const std::int32_t> ptr{values[0]};
 
                     constexpr auto next = ptr + 1;
                     expect(eq(*next, values[1]));
@@ -1717,9 +1735,9 @@ namespace {
         "constexpr get and boolean conversion"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    static constexpr int value = 7;
+                    static constexpr std::int32_t value = 7;
 
-                    constexpr ConcretePtr<const int> ptr{value};
+                    constexpr ConcretePtr<const std::int32_t> ptr{value};
 
                     expect(eq(ptr.get(), std::addressof(value)));
                     expect(eq(static_cast<bool>(ptr), true));
@@ -1730,10 +1748,10 @@ namespace {
         "constexpr equality"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    static constexpr int value = 11;
+                    static constexpr std::int32_t value = 11;
 
-                    constexpr ConcretePtr<const int> a{value};
-                    constexpr ConcretePtr<const int> b{value};
+                    constexpr ConcretePtr<const std::int32_t> a{value};
+                    constexpr ConcretePtr<const std::int32_t> b{value};
 
                     expect(eq(a == b, true));
                 }
@@ -1743,11 +1761,11 @@ namespace {
         "constexpr rebinding"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    static constexpr int a = 1;
-                    static constexpr int b = 2;
+                    static constexpr std::int32_t a = 1;
+                    static constexpr std::int32_t b = 2;
 
                     constexpr auto rebound = std::invoke([] {
-                        ConcretePtr<const int> ptr{a};
+                        ConcretePtr<const std::int32_t> ptr{a};
                         ptr = b;
                         return ptr;
                     });
@@ -1761,12 +1779,12 @@ namespace {
         "constexpr swap"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    static constexpr int a = 1;
-                    static constexpr int b = 2;
+                    static constexpr std::int32_t a = 1;
+                    static constexpr std::int32_t b = 2;
 
                     constexpr auto swapped = std::invoke([] {
-                        ConcretePtr<const int> lhs{a};
-                        ConcretePtr<const int> rhs{b};
+                        ConcretePtr<const std::int32_t> lhs{a};
+                        ConcretePtr<const std::int32_t> rhs{b};
 
                         using std::swap;
                         swap(lhs, rhs);
