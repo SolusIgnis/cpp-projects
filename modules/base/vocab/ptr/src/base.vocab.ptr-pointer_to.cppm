@@ -29,7 +29,7 @@ export module base.vocab.ptr:pointer_to;
 
 import std;
 
-namespace base::vocab::inline ptr {
+export namespace base::vocab::inline ptr {
     template<template<typename...> typename Pointer, typename Pointee>
     Pointer<Pointee> pointer_to(Pointee& object) noexcept(noexcept(std::pointer_traits<Pointer<Pointee>>::pointer_to(object)))
     {
