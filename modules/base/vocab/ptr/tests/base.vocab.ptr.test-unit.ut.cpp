@@ -893,7 +893,7 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 derived_type d;
 
-                auto ptr = base::vocab::pointer_to<ConcretePtr, base_type>(d);
+                auto bptr = base::vocab::pointer_to<ConcretePtr, base_type>(d);
 
                 expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
             });
@@ -1331,28 +1331,24 @@ namespace {
 
         "const element forbids mutation through dereference"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    const std::int32_t value{};
-                    ConcretePtr<const std::int32_t> ptr{value};
+                const std::int32_t value{};
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    // Compile-time: *ptr must NOT be assignable
-                    constexpr bool can_assign = std::is_assignable_v<decltype(*ptr), std::int32_t>;
+                // Compile-time: *ptr must NOT be assignable
+                constexpr bool can_assign = std::is_assignable_v<decltype(*ptr), std::int32_t>;
 
-                    expect(eq(can_assign, false));
-                }
+                expect(eq(can_assign, false));
             });
         };
 
         "non-const element allows mutation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    std::int32_t value = 5;
-                    ConcretePtr<std::int32_t> ptr{value};
+                std::int32_t value = 5;
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    *ptr = 10;
+                *ptr = 10;
 
-                    expect(eq(value, 10));
-                }
+                expect(eq(value, 10));
             });
         };
 
@@ -1374,37 +1370,33 @@ namespace {
 
         "const pointer prevents rebinding but not mutation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    std::int32_t value{};
+                std::int32_t value{};
 
-                    const ConcretePtr<std::int32_t> ptr{value};
+                const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    *ptr = 10; // allowed
+                *ptr = 10; // allowed
 
-                    constexpr bool can_rebind = std::is_assignable_v<const ConcretePtr<std::int32_t>&, std::int32_t&>;
+                constexpr bool can_rebind = std::is_assignable_v<const ConcretePtr<std::int32_t>&, std::int32_t&>;
 
-                    expect(eq(value, 10));
-                    expect(eq(can_rebind, false));
-                }
+                expect(eq(value, 10));
+                expect(eq(can_rebind, false));
             });
         };
 
         "qualification climbing construction and assignment"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    std::int32_t value{42};
-                    std::int32_t other{};
-                    ConcretePtr<std::int32_t> mutable_ptr{value};
-                    ConcretePtr<const std::int32_t> const_ptr{other};
+                std::int32_t value{42};
+                std::int32_t other{};
+                ConcretePtr<std::int32_t> mutable_ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                ConcretePtr<const std::int32_t> const_ptr{other};
 
-                    //Qualification climbing (Assignment)
-                    const_ptr = mutable_ptr;
-                    expect(eq(const_ptr.get() == mutable_ptr.get(), true));
+                //Qualification climbing (Assignment)
+                const_ptr = mutable_ptr;
+                expect(eq(const_ptr.get() == mutable_ptr.get(), true));
 
-                    //Qualification climbing (Construction)
-                    ConcretePtr<const std::int32_t> const_copy{mutable_ptr};
-                    expect(eq(const_copy.get() == mutable_ptr.get(), true));
-                }
+                //Qualification climbing (Construction)
+                ConcretePtr<const std::int32_t> const_copy{mutable_ptr};
+                expect(eq(const_copy.get() == mutable_ptr.get(), true));
             });
         };
 
