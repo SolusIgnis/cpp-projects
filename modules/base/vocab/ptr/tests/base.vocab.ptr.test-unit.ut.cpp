@@ -1752,33 +1752,29 @@ namespace {
 
         "hash matches raw pointer hash"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    std::int32_t value{};
+                std::int32_t value{};
 
-                    ConcretePtr<std::int32_t> ptr{value};
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    const auto ptr_hash = std::hash<ConcretePtr<std::int32_t>>{}(ptr);
-                    const auto raw_hash = std::hash<std::int32_t*>{}(std::addressof(value));
+                const auto ptr_hash = std::hash<ConcretePtr<std::int32_t>>{}(ptr);
+                const auto raw_hash = std::hash<std::int32_t*>{}(std::addressof(value));
 
-                    expect(eq(ptr_hash, raw_hash));
-                }
+                expect(eq(ptr_hash, raw_hash));
             });
         };
 
         "equal pointers produce equal hashes"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    std::int32_t value{};
+                std::int32_t value{};
 
-                    ConcretePtr<std::int32_t> lhs{value};
-                    ConcretePtr<const std::int32_t> rhs{value};
+                auto lhs = base::vocab::pointer_to<ConcretePtr, std::int32_t>(value);
+                auto rhs = base::vocab::pointer_to<ConcretePtr, const std::int32_t>(value);
 
-                    const auto lhs_hash = std::hash<ConcretePtr<std::int32_t>>{}(lhs);
-                    const auto rhs_hash = std::hash<ConcretePtr<const std::int32_t>>{}(rhs);
+                const auto lhs_hash = std::hash<ConcretePtr<std::int32_t>>{}(lhs);
+                const auto rhs_hash = std::hash<ConcretePtr<const std::int32_t>>{}(rhs);
 
-                    expect(eq(lhs == rhs, true));
-                    expect(eq(lhs_hash == rhs_hash, true));
-                }
+                expect(eq(lhs == rhs, true));
+                expect(eq(lhs_hash == rhs_hash, true));
             });
         };
 
@@ -1788,16 +1784,14 @@ namespace {
 
         "std::formatter formats as raw pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    std::int32_t value{};
+                std::int32_t value{};
 
-                    ConcretePtr<std::int32_t> ptr{value};
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    const auto formatted_ptr = std::format("{}", ptr);
-                    const auto formatted_raw = std::format<void*>("{}", std::addressof(value));
+                const auto formatted_ptr = std::format("{}", ptr);
+                const auto formatted_raw = std::format<void*>("{}", std::addressof(value));
 
-                    expect(eq(formatted_ptr, formatted_raw));
-                }
+                expect(eq(formatted_ptr, formatted_raw));
             });
         };
 
@@ -1816,34 +1810,30 @@ namespace {
 
         "std::formatter supports cv-qualified element types"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    const std::int32_t value{};
+                const std::int32_t value{};
 
-                    ConcretePtr<const std::int32_t> ptr{value};
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    const auto formatted_ptr = std::format("{}", ptr);
-                    const auto formatted_raw = std::format<const void*>("{}", std::addressof(value));
+                const auto formatted_ptr = std::format("{}", ptr);
+                const auto formatted_raw = std::format<const void*>("{}", std::addressof(value));
 
-                    expect(eq(formatted_ptr, formatted_raw));
-                }
+                expect(eq(formatted_ptr, formatted_raw));
             });
         };
 
         "ostream insertion outputs raw pointer representation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    std::int32_t value{};
+                std::int32_t value{};
 
-                    ConcretePtr<std::int32_t> ptr{value};
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    std::ostringstream ptr_stream;
-                    std::ostringstream raw_stream;
+                std::ostringstream ptr_stream;
+                std::ostringstream raw_stream;
 
-                    ptr_stream << ptr;
-                    raw_stream << std::addressof(value);
+                ptr_stream << ptr;
+                raw_stream << std::addressof(value);
 
-                    expect(eq(ptr_stream.str(), raw_stream.str()));
-                }
+                expect(eq(ptr_stream.str(), raw_stream.str()));
             });
         };
 
@@ -1865,21 +1855,19 @@ namespace {
 
         "ostream insertion supports cv-qualified element types"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    volatile std::int32_t value{};
+                volatile std::int32_t value{};
 
-                    ConcretePtr<volatile std::int32_t> ptr{value};
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    std::ostringstream ptr_stream;
-                    std::ostringstream raw_stream;
+                std::ostringstream ptr_stream;
+                std::ostringstream raw_stream;
 
-                    ptr_stream << ptr;
-                    raw_stream << const_cast<
-                        std::add_pointer_t<std::remove_volatile_t<std::remove_pointer_t<decltype(std::addressof(value))>>>
-                    >(std::addressof(value));
+                ptr_stream << ptr;
+                raw_stream << const_cast<
+                    std::add_pointer_t<std::remove_volatile_t<std::remove_pointer_t<decltype(std::addressof(value))>>>
+                >(std::addressof(value));
 
-                    expect(eq(ptr_stream.str(), raw_stream.str()));
-                }
+                expect(eq(ptr_stream.str(), raw_stream.str()));
             });
         };
     };
