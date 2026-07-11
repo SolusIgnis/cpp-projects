@@ -1387,8 +1387,8 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 std::int32_t value{42};
                 std::int32_t other{};
-                ConcretePtr<std::int32_t> mutable_ptr = base::vocab::pointer_to<ConcretePtr>(value);
-                ConcretePtr<const std::int32_t> const_ptr{other};
+                auto mutable_ptr = base::vocab::pointer_to<ConcretePtr, std::int32_t>(value);
+                auto const_ptr   = base::vocab::pointer_to<ConcretePtr, const std::int32_t>(other);
 
                 //Qualification climbing (Assignment)
                 const_ptr = mutable_ptr;
@@ -1402,22 +1402,20 @@ namespace {
 
         "volatile qualifier preservation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    volatile std::int32_t hardware_register = 0xAA;
-                    ConcretePtr<volatile std::int32_t> ptr{hardware_register};
+                volatile std::int32_t hardware_register = 0xAA;
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(hardware_register);
 
-                    //Ensure the raw pointer retrieved is also volatile
-                    expect(eq(std::same_as<decltype(ptr.get()), volatile std::int32_t*>, true));
+                //Ensure the raw pointer retrieved is also volatile
+                expect(eq(std::same_as<decltype(ptr.get()), volatile std::int32_t*>, true));
 
-                    //Ensure conversion to raw pointer preserves volatile
-                    volatile int* raw = ptr;
-                    expect(eq(raw, std::addressof(hardware_register)));
+                //Ensure conversion to raw pointer preserves volatile
+                volatile int* raw = ptr;
+                expect(eq(raw, std::addressof(hardware_register)));
 
-                    //Ensure dereference preserves volatile
-                    decltype(auto) dereferenced = *ptr;
-                    expect(eq(std::is_volatile_v<std::remove_reference_t<decltype(dereferenced)>>, true));
-                    expect(eq(dereferenced, hardware_register));
-                }
+                //Ensure dereference preserves volatile
+                decltype(auto) dereferenced = *ptr;
+                expect(eq(std::is_volatile_v<std::remove_reference_t<decltype(dereferenced)>>, true));
+                expect(eq(dereferenced, hardware_register));
             });
         };
 
@@ -1443,75 +1441,67 @@ namespace {
 
         "implicit conversion works with raw pointer API"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    auto takes_ptr = [](std::int32_t* p) { return *p; };
+                auto takes_ptr = [](std::int32_t* p) { return *p; };
 
-                    std::int32_t value = 3;
-                    ConcretePtr<std::int32_t> ptr{value};
+                std::int32_t value = 3;
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    expect(eq(takes_ptr(ptr), value));
-                }
+                expect(eq(takes_ptr(ptr), value));
             });
         };
 
         "get() works with raw pointer API"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
                     auto takes_ptr = [](std::int32_t* p) { return *p; };
 
                     std::int32_t value = 4;
-                    ConcretePtr<std::int32_t> ptr{value};
+                    auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                     expect(eq(takes_ptr(ptr.get()), value));
-                }
             });
         };
 
         "not constructible, convertible, nor assignable from C-array decay"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    std::int32_t array[3] = {0, 1, 2};
+                std::int32_t array[3] = {0, 1, 2};
 
-                    //ConcretePtr<std::int32_t> should_fail{array};
+                //ConcretePtr<std::int32_t> should_fail{array};
 
-                    expect(eq(std::convertible_to<decltype(array), ConcretePtr<std::int32_t>>, false));
-                    expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, decltype(array)>, false));
-                    expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, decltype(array)>, false));
+                expect(eq(std::convertible_to<decltype(array), ConcretePtr<std::int32_t>>, false));
+                expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, decltype(array)>, false));
+                expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, decltype(array)>, false));
 
-                    expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, decltype(array[0])>, true));
-                    expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, decltype(array[0])>, true));
+                expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, decltype(array[0])>, true));
+                expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, decltype(array[0])>, true));
 
-                    ConcretePtr<std::int32_t> ptr{array[1]};
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(array[1]);
 
-                    //Ensure binding to the element is equivalent to expected array-to-pointer decay with pointer offset arithmetic
-                    expect(eq(ptr.get(), array + 1));
-                }
+                //Ensure binding to the element is equivalent to expected array-to-pointer decay with pointer offset arithmetic
+                expect(eq(ptr.get(), array + 1));
             });
         };
 
         "not constructible, convertible, nor assignable from C-array decay when pointing to an array"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    std::int32_t array[3][3] = {
-                        {0, 1, 2},
-                        {3, 4, 5},
-                        {6, 7, 8}
-                    };
+                std::int32_t array[3][3] = {
+                    {0, 1, 2},
+                    {3, 4, 5},
+                    {6, 7, 8}
+                };
 
-                    //ConcretePtr<std::int32_t[3]> should_fail{array};
+                //ConcretePtr<std::int32_t[3]> should_fail{array};
 
-                    expect(eq(std::convertible_to<decltype(array), ConcretePtr<std::int32_t[3]>>, false));
-                    expect(eq(std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array)>, false));
-                    expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t[3]>&, decltype(array)>, false));
+                expect(eq(std::convertible_to<decltype(array), ConcretePtr<std::int32_t[3]>>, false));
+                expect(eq(std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array)>, false));
+                expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t[3]>&, decltype(array)>, false));
 
-                    expect(eq(std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array[0])>, true));
-                    expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t[3]>&, decltype(array[0])>, true));
+                expect(eq(std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array[0])>, true));
+                expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t[3]>&, decltype(array[0])>, true));
 
-                    ConcretePtr<std::int32_t[3]> ptr{array[1]};
+                auto ptr = base::vocab::pointer_to<ConcretePtr, std::int32_t[3]>(array[1]);
 
-                    //Ensure binding to the element is equivalent to expected array-to-pointer decay with pointer offset arithmetic
-                    expect(eq(ptr.get(), array + 1));
-                }
+                //Ensure binding to the element is equivalent to expected array-to-pointer decay with pointer offset arithmetic
+                expect(eq(ptr.get(), array + 1));
             });
         };
 
@@ -1541,14 +1531,12 @@ namespace {
 
         "incomplete type becomes usable after completion"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    incomplete_type obj{42};
+                incomplete_type obj{42};
 
-                    ConcretePtr<incomplete_type> ptr{obj};
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(obj);
 
-                    expect(eq(ptr->value, obj.value));
-                    expect(eq((*ptr).value, obj.value));
-                }
+                expect(eq(ptr->value, obj.value));
+                expect(eq((*ptr).value, obj.value));
             });
         };
 
@@ -1576,11 +1564,10 @@ namespace {
 
         "void specialization supports type erasure"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee
-                              && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
                     std::int32_t x{};
 
-                    ConcretePtr<std::int32_t> typed{x};
+                    auto typed = base::vocab::pointer_to<ConcretePtr>(x);
                     ConcretePtr<void> erased{typed};
 
                     expect(eq(erased.get(), static_cast<void*>(std::addressof(x))));
@@ -1620,13 +1607,12 @@ namespace {
 
         "void pointer constructs implicitly from typed pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee
-                              && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
                     expect(eq(std::convertible_to<ConcretePtr<std::int32_t>, ConcretePtr<void>>, true));
                     expect(eq(std::convertible_to<ConcretePtr<void>, ConcretePtr<std::int32_t>>, false));
 
                     const std::int32_t value{42};
-                    ConcretePtr<const std::int32_t> typed_ptr{value};
+                    auto typed_ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                     // Should be implicit (convertible)
                     auto takes_void = [](ConcretePtr<const void> ptr) { return ptr.get(); };
@@ -1638,10 +1624,9 @@ namespace {
         "void pointer is equality comparable"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee
-                              && pointer_test_traits<ConcretePtr>::allows_pointer_binding
-                              && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                              && pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     const std::int32_t value{42};
-                    ConcretePtr<const std::int32_t> typed_ptr{value};
+                    auto typed_ptr = base::vocab::pointer_to<ConcretePtr>(value);
                     const std::int32_t* typed_raw = std::addressof(value);
                     const void* erased_raw        = std::addressof(value);
 
@@ -1682,23 +1667,20 @@ namespace {
 
         "constexpr construction and dereference"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    static constexpr std::int32_t value = 42;
+                static constexpr std::int32_t value = 42;
 
-                    constexpr ConcretePtr<const std::int32_t> ptr{value};
+                constexpr auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    expect(eq(*ptr, value));
-                }
+                expect(eq(*ptr, value));
             });
         };
 
         "constexpr arithmetic"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding
-                              && pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
+                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     static constexpr std::int32_t values[] = {2, 4, 6};
 
-                    constexpr ConcretePtr<const std::int32_t> ptr{values[0]};
+                    constexpr auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
 
                     constexpr auto next = ptr + 1;
                     expect(eq(*next, values[1]));
@@ -1708,67 +1690,59 @@ namespace {
 
         "constexpr get and boolean conversion"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    static constexpr std::int32_t value = 7;
+                static constexpr std::int32_t value = 7;
 
-                    constexpr ConcretePtr<const std::int32_t> ptr{value};
+                constexpr auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    expect(eq(ptr.get(), std::addressof(value)));
-                    expect(eq(static_cast<bool>(ptr), true));
-                }
+                expect(eq(ptr.get(), std::addressof(value)));
+                expect(eq(static_cast<bool>(ptr), true));
             });
         };
 
         "constexpr equality"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    static constexpr std::int32_t value = 11;
+                static constexpr std::int32_t value = 11;
 
-                    constexpr ConcretePtr<const std::int32_t> a{value};
-                    constexpr ConcretePtr<const std::int32_t> b{value};
+                constexpr auto a = base::vocab::pointer_to<ConcretePtr>(value);
+                constexpr auto b = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    expect(eq(a == b, true));
-                }
+                expect(eq(a == b, true));
             });
         };
 
         "constexpr rebinding"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    static constexpr std::int32_t a = 1;
-                    static constexpr std::int32_t b = 2;
+                static constexpr std::int32_t a = 1;
+                static constexpr std::int32_t b = 2;
 
-                    constexpr auto rebound = std::invoke([] {
-                        ConcretePtr<const std::int32_t> ptr{a};
-                        ptr = b;
-                        return ptr;
-                    });
+                constexpr auto rebound = std::invoke([] {
+                    auto ptr = base::vocab::pointer_to<ConcretePtr>(a);
+                    ptr = b;
+                    return ptr;
+                });
 
-                    expect(eq(*rebound, b));
-                    expect(eq(rebound.get(), std::addressof(b)));
-                }
+                expect(eq(*rebound, b));
+                expect(eq(rebound.get(), std::addressof(b)));
             });
         };
 
         "constexpr swap"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    static constexpr std::int32_t a = 1;
-                    static constexpr std::int32_t b = 2;
+                static constexpr std::int32_t a = 1;
+                static constexpr std::int32_t b = 2;
 
-                    constexpr auto swapped = std::invoke([] {
-                        ConcretePtr<const std::int32_t> lhs{a};
-                        ConcretePtr<const std::int32_t> rhs{b};
+                constexpr auto swapped = std::invoke([] {
+                    auto lhs = base::vocab::pointer_to<ConcretePtr>(a);
+                    auto rhs = base::vocab::pointer_to<ConcretePtr>(b);
 
-                        using std::swap;
-                        swap(lhs, rhs);
+                    using std::swap;
+                    swap(lhs, rhs);
 
-                        return std::pair{lhs, rhs};
-                    });
+                    return std::pair{lhs, rhs};
+                });
 
-                    expect(eq(*swapped.first, b));
-                    expect(eq(*swapped.second, a));
-                }
+                expect(eq(*swapped.first, b));
+                expect(eq(*swapped.second, a));
             });
         };
 
