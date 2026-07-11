@@ -19,9 +19,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief 
+ * @brief Generic object-to-pointer factory for pointer-like types.
  *
- * @details 
+ * @details Provides the free function `base::vocab::ptr::pointer_to`, which
+ * constructs a pointer to an existing object using the static member function
+ * `pointer_to` provided by `std::pointer_traits`. This supplies a concise,
+ * declarative spelling for pointer formation while integrating naturally with
+ * any pointer type that models the standard pointer interface, including the
+ * vocabulary pointer types provided by this library.
  */
 
 //Module partition interface unit
@@ -30,8 +35,23 @@ export module base.vocab.ptr:pointer_to;
 import std;
 
 export namespace base::vocab::inline ptr {
+    /**
+     * @brief Produces a `Pointer<Pointee>` instance bound to a given object.
+     *
+     * @tparam Pointer A class template modeling a pointer type.
+     * @tparam Pointee The pointee type, typically deduced from `object`.
+     *
+     * @param object The object to which to form a pointer.
+     *
+     * @return A `Pointer` to the provided `object`.
+     *
+     * @note `Pointee` is deduced from the cv-qualified type of `object`; callers need specify only the pointer template.
+     * @remark Delegates to `std::pointer_traits<Pointer<Pointee>>::pointer_to`, allowing any pointer type with a conforming `std::pointer_traits` specialization to participate.
+     */
     template<template<typename...> typename Pointer, typename Pointee>
-    Pointer<Pointee> pointer_to(Pointee& object) noexcept(noexcept(std::pointer_traits<Pointer<Pointee>>::pointer_to(object)))
+        requires requires(Pointee& object) { { std::pointer_traits<Pointer<Pointee>>::pointer_to(object); } -> std::convertible_to<Pointer<Pointee>> }
+    constexpr auto pointer_to(Pointee& object)
+        noexcept(noexcept(std::pointer_traits<Pointer<Pointee>>::pointer_to(object)))
     {
        return std::pointer_traits<Pointer<Pointee>>::pointer_to(object);
     }
