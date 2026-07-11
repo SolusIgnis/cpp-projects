@@ -1840,8 +1840,7 @@ namespace {
         "ostream insertion outputs null equivalently to raw pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    //ConcretePtr<std::int32_t> ptr{nullptr};
-                    auto ptr = base::vocab::pointer_to<ConcretePtr>(nullptr);
+                    ConcretePtr<std::int32_t> ptr{nullptr};
 
                     std::ostringstream ptr_stream;
                     std::ostringstream raw_stream;
