@@ -497,7 +497,7 @@ namespace {
         "operator* dereferences correctly"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 std::int32_t value = 55;
-                auto ptr = base::vocab::pointer_to(value);
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                 expect(eq(*ptr, value));
             });
@@ -506,7 +506,7 @@ namespace {
         "operator-> provides member access"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 base_type obj{123};
-                auto ptr = base::vocab::pointer_to(obj);
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(obj);
 
                 expect(eq(ptr->value, obj.value));
             });
@@ -538,7 +538,7 @@ namespace {
         "conversion to raw pointer preserves address"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 const std::int32_t value{};
-                auto ptr = base::vocab::pointer_to(value);
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                 const std::int32_t* raw = ptr;
 
@@ -551,7 +551,7 @@ namespace {
                 expect(eq(std::constructible_from<bool, ConcretePtr<std::int32_t>>, true));
 
                 const std::int32_t value{};
-                auto ptr = base::vocab::pointer_to(value);
+                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                 bool converted{false};
                 if (ptr) {
@@ -600,19 +600,17 @@ namespace {
 
         "moved-from object may be rebound"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    std::int32_t a = 1;
-                    std::int32_t b = 2;
+                std::int32_t a = 1;
+                std::int32_t b = 2;
 
-                    ConcretePtr<std::int32_t> source{a};
-                    ConcretePtr<std::int32_t> target{std::move(source)};
+                auto source = base::vocab::pointer_to<ConcretePtr>(a);
+                ConcretePtr<std::int32_t> target{std::move(source)};
 
-                    //Rebind moved-from `source` to reference `b`
-                    source = b;
+                //Rebind moved-from `source` to reference `b`
+                source = base::vocab::pointer_to<ConcretePtr>(b);
 
-                    expect(eq(*target, a));
-                    expect(eq(*source, b));
-                }
+                expect(eq(*target, a));
+                expect(eq(*source, b));
             });
         };
 
@@ -621,7 +619,7 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     const std::int32_t a{};
 
-                    ConcretePtr<const std::int32_t> ptr{a};
+                    auto ptr = base::vocab::pointer_to<ConcretePtr>(a);
                     ptr.reset();
 
                     expect(eq(!ptr, true));
@@ -804,8 +802,8 @@ namespace {
                 const std::int32_t a = 1;
                 const std::int32_t b = 2;
 
-                ConcretePtr<const std::int32_t> lhs{a};
-                ConcretePtr<const std::int32_t> rhs{b};
+                auto lhs = base::vocab::pointer_to<ConcretePtr>(a);
+                auto rhs = base::vocab::pointer_to<ConcretePtr>(b);
 
                 using std::swap;
                 swap(lhs, rhs);
@@ -824,20 +822,18 @@ namespace {
 
         "equality compares pointer identity"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    expect(eq(std::equality_comparable<ConcretePtr<std::int32_t>>, true));
+                expect(eq(std::equality_comparable<ConcretePtr<std::int32_t>>, true));
 
-                    std::int32_t x = 1;
-                    std::int32_t y = 1;
+                std::int32_t x = 1;
+                std::int32_t y = 1;
 
-                    ConcretePtr<const std::int32_t> a{x};
-                    ConcretePtr<std::int32_t> b{x};
-                    ConcretePtr<std::int32_t> c{y};
+                auto a = base::vocab::pointer_to<ConcretePtr, const std::int32_t>(x);
+                auto b = base::vocab::pointer_to<ConcretePtr>(x);
+                auto c = base::vocab::pointer_to<ConcretePtr>(y);
 
-                    expect(eq(a == b, true));
-                    expect(eq(a == c, false));
-                    expect(eq(b == c, false));
-                }
+                expect(eq(a == b, true));
+                expect(eq(a == c, false));
+                expect(eq(b == c, false));
             });
         };
 
