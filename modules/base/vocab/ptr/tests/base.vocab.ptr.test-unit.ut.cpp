@@ -880,42 +880,36 @@ namespace {
 
         "construct base from derived pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    derived_type d;
-                    ConcretePtr<derived_type> dptr{d};
+                derived_type d;
+                auto dptr = base::vocab::pointer_to<ConcretePtr>(d);
 
-                    ConcretePtr<base_type> bptr{dptr};
+                ConcretePtr<base_type> bptr{dptr};
 
-                    expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
-                }
+                expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
             });
         };
 
         "construct base from derived reference"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    derived_type d;
+                derived_type d;
 
-                    ConcretePtr<base_type> bptr{d};
+                auto ptr = base::vocab::pointer_to<ConcretePtr, base_type>(d);
 
-                    expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
-                }
+                expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
             });
         };
 
         "assign base from derived pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    derived_type d;
-                    ConcretePtr<derived_type> dptr{d};
+                derived_type d;
+                auto dptr = base::vocab::pointer_to<ConcretePtr>(d);
 
-                    base_type b;
-                    ConcretePtr<base_type> bptr{b};
+                base_type b;
+                auto bptr = base::vocab::pointer_to<ConcretePtr>(b);
 
-                    bptr = dptr;
+                bptr = dptr;
 
-                    expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
-                }
+                expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
             });
         };
 
@@ -936,17 +930,15 @@ namespace {
 
         "assign const base from derived pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    derived_type d;
-                    ConcretePtr<derived_type> dptr{d};
+                derived_type d;
+                auto dptr = base::vocab::pointer_to<ConcretePtr>(d);
 
-                    base_type b;
-                    ConcretePtr<const base_type> bptr{b};
+                base_type b;
+                auto bptr = base::vocab::pointer_to<ConcretePtr, const base_type>(b);
 
-                    bptr = dptr;
+                bptr = dptr;
 
-                    expect(eq(bptr.get(), static_cast<const base_type*>(std::addressof(d))));
-                }
+                expect(eq(bptr.get(), static_cast<const base_type*>(std::addressof(d))));
             });
         };
 
@@ -967,11 +959,9 @@ namespace {
 
         "covariant equality comparison"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    expect(eq(std::equality_comparable_with<ConcretePtr<base_type>, ConcretePtr<derived_type>>, true));
-                    expect(eq(std::equality_comparable_with<ConcretePtr<base_type>, derived_type*>, true));
-                    expect(eq(std::equality_comparable_with<base_type*, ConcretePtr<derived_type>>, true));
-                }
+                expect(eq(std::equality_comparable_with<ConcretePtr<base_type>, ConcretePtr<derived_type>>, true));
+                expect(eq(std::equality_comparable_with<ConcretePtr<base_type>, derived_type*>, true));
+                expect(eq(std::equality_comparable_with<base_type*, ConcretePtr<derived_type>>, true));
             });
         };
 
@@ -1243,13 +1233,12 @@ namespace {
 
         "pointer arithmetic preserves native traversal semantics"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal
-                              && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {10, 20, 30, 40};
 
                     constexpr std::ptrdiff_t step = 2;
 
-                    ConcretePtr<std::int32_t> ptr{values[0]};
+                    auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
 
                     auto advanced = ptr + step;
                     auto clone    = ptr;
@@ -1273,12 +1262,11 @@ namespace {
 
         "difference matches raw pointer semantics"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal
-                              && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {10, 20, 30, 40};
 
-                    ConcretePtr<std::int32_t> first{values[0]};
-                    ConcretePtr<std::int32_t> last{values[3]};
+                    auto first = base::vocab::pointer_to<ConcretePtr>(values[0]);
+                    auto last  = base::vocab::pointer_to<ConcretePtr>(values[3]);
 
                     expect(eq(last - first, 3L));
                 }
@@ -1287,11 +1275,10 @@ namespace {
 
         "increment and decrement traverse correctly"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal
-                              && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {1, 2, 3};
 
-                    ConcretePtr<std::int32_t> ptr{values[0]};
+                    auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
 
                     ++ptr;
                     expect(eq(*ptr, 2));
@@ -1310,11 +1297,10 @@ namespace {
 
         "subscript matches raw pointer indexing"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal
-                              && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {5, 6, 7, 8};
 
-                    ConcretePtr<std::int32_t> ptr{values[0]};
+                    auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -1328,11 +1314,10 @@ namespace {
 
         "mixed raw and cursor arithmetic produce identical addresses"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal
-                              && pointer_test_traits<ConcretePtr>::allows_reference_binding) {
+                if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {1, 2, 3, 4};
 
-                    ConcretePtr<std::int32_t> ptr{values[0]};
+                    auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
 
                     expect(eq((ptr + 3).get(), values + 3));
                     expect(eq((3 + ptr).get(), values + 3));
