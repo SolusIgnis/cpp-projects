@@ -457,7 +457,7 @@ namespace {
         //============================================================
 
         "`pointer_to` forms a valid pointer instance whose `get` returns its stored address"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {try{
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 using pointee_t = std::int32_t;
                 using pointer_t = ConcretePtr<pointee_t>;
 
@@ -474,7 +474,7 @@ namespace {
                 expect(eq(class_ptr.get(), std::addressof(obj)));
                 expect(eq(trait_ptr.get(), std::addressof(obj)));
                 expect(eq(free_ptr.get(),  std::addressof(obj)));
-            }catch(...){}});
+            });
         };
 
         "`to_address` returns stored address as raw pointer"_test = [] mutable {
@@ -497,7 +497,7 @@ namespace {
         "operator* dereferences correctly"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 std::int32_t value = 55;
-                ConcretePtr<std::int32_t> ptr{value};
+                auto ptr = base::vocab::pointer_to(value);
 
                 expect(eq(*ptr, value));
             });
@@ -506,7 +506,7 @@ namespace {
         "operator-> provides member access"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 base_type obj{123};
-                ConcretePtr<base_type> ptr{obj};
+                auto ptr = base::vocab::pointer_to(obj);
 
                 expect(eq(ptr->value, obj.value));
             });
@@ -538,7 +538,7 @@ namespace {
         "conversion to raw pointer preserves address"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 const std::int32_t value{};
-                ConcretePtr<const std::int32_t> ptr{value};
+                auto ptr = base::vocab::pointer_to(value);
 
                 const std::int32_t* raw = ptr;
 
@@ -551,11 +551,12 @@ namespace {
                 expect(eq(std::constructible_from<bool, ConcretePtr<std::int32_t>>, true));
 
                 const std::int32_t value{};
-                ConcretePtr<const std::int32_t> ptr{value};
+                auto ptr = base::vocab::pointer_to(value);
 
                 bool converted{false};
-                if (ptr)
+                if (ptr) {
                     converted = true;
+                }
 
                 expect(eq(static_cast<bool>(ptr), true));
                 expect(eq(!ptr, false));
