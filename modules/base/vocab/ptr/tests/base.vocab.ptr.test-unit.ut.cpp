@@ -1841,7 +1841,7 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     //ConcretePtr<std::int32_t> ptr{nullptr};
-                    auto ptr = base::vocab::pointer_to<ConcretePtr, std::int32_t>(nullptr);
+                    auto ptr = base::vocab::pointer_to<ConcretePtr>(nullptr);
 
                     std::ostringstream ptr_stream;
                     std::ostringstream raw_stream;
