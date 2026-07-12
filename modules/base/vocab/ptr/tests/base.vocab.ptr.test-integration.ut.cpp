@@ -81,8 +81,7 @@ namespace {
             auto dummy_ptr = base::vocab::pointer_to<required_ptr>(dummy_obj);
 
             expect(eq(dummy_ptr->counter == nullptr, true));
-            //dummy_ptr->counter = std::addressof(count);
-            dummy_ptr->counter = base::vocab::pointer_to<std::add_pointer_t>(count);
+            dummy_ptr->counter = std::addressof(count);
 
             expect(eq(*dummy_ptr->counter, 0zu));
 

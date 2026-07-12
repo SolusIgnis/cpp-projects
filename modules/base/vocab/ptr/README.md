@@ -1,4 +1,4 @@
-# Vocabulary Pointer Module
+# Pointer Vocabulary Module
 
 The `base.vocab.ptr` module provides a collection of lightweight, non-owning pointer types that make object relationships explicit in the type system.
 
@@ -22,6 +22,7 @@ dependency_ptr<logger> logger_;
 required_ptr<widget> selected_widget_;
 alias_ptr<widget> hovered_widget_;
 cursor_ptr<char> current_;
+iterator_ptr<widget> iter;
 ```
 
 Although each object ultimately stores only an address, the type itself communicates:
@@ -32,6 +33,12 @@ Although each object ultimately stores only an address, the type itself communic
 - which operations are intentionally unavailable
 
 This shifts many categories of misuse from runtime errors and documentation violations into compile-time diagnostics.
+
+To complement these vocabulary types, the module also provides the free function `pointer_to`, a generic pointer factory that produces pointer objects from references through `std::pointer_traits`, allowing vocabulary pointers and other conforming pointer types to be formed using a single, declarative interface:
+
+```cpp
+auto ptr = pointer_to<required_ptr>(object);
+```
 
 ---
 ## Design Philosophy
@@ -94,9 +101,9 @@ The remainder of this document describes the concrete vocabulary pointer types, 
 ## Concrete Pointer Types
 ---
 
-The module provides four concrete vocabulary pointer types. Each represents a distinct semantic contract with a uniform storage representation.
+The module provides five concrete vocabulary pointer types. Each represents a distinct semantic contract with a uniform storage representation.
 
-All four types are:
+All five types are:
 
 - non-owning
 - single-address representations
@@ -108,6 +115,7 @@ All four types are:
 They differ only in the operations and invariants selected through the policy framework.
 
 ### Required Dependency Alias (`dependency_ptr`)
+`base.vocab.ptr:dependency_ptr`
 
 A compile-time validated, reference-bound, required-dependency alias pointer.
 
@@ -139,6 +147,7 @@ Typical use cases include:
 ---
 
 ### Required-Object Alias (`required_ptr`)
+`base.vocab.ptr:required_ptr`
 
 A general-purpose, required-object alias pointer.
 
@@ -172,6 +181,7 @@ Typical use cases include:
 ---
 
 ### Nullable Object-Alias (`alias_ptr`)
+`base.vocab.ptr:alias_ptr`
 
 A general-purpose, nullable object-alias pointer.
 
@@ -205,15 +215,15 @@ Typical use cases include:
 
 ---
 
-### Memory Cursor/Iterator (`cursor_ptr`)
+### Memory Cursor (`cursor_ptr`)
+`base.vocab.ptr:cursor_ptr`
 
 A universal memory-cursor pointer.
 
 ```cpp
 std::vector<int> values{1, 2, 3, 4};
 
-cursor_ptr<int> begin{values.begin()};
-cursor_ptr<int> current{*values.begin()};
+cursor_ptr current{values.begin()};
 
 ++current;
 ```
@@ -229,7 +239,7 @@ Characteristics:
 - supports pointer arithmetic
 - models contiguous iterator semantics
 
-Unlike the other vocabulary pointer types, `cursor_ptr` treats the stored address as a traversal position rather than merely an object association.
+Unlike the aliasing vocabulary pointer types, `cursor_ptr` treats the stored address as a traversal position rather than merely an object association.
 
 Typical use cases include:
 
@@ -238,7 +248,54 @@ Typical use cases include:
 - buffer processing
 - cursor-oriented algorithms
 
-The distinction between `cursor_ptr` and the other vocabulary pointer types is primarily its arithmetic traversal policy, which enables arithmetic operators, ordering comparisons, and iterator facilities.
+The distinction between `cursor_ptr` and the aliasing vocabulary pointer types is primarily its arithmetic traversal policy, which enables arithmetic operators, ordering comparisons, and iterator facilities.
+
+---
+
+### STL Iterator (`iterator_ptr`)
+`base.vocab.ptr:iterator_ptr`
+
+A STL-compatible nullable-iterator pointer.
+
+Unlike `cursor_ptr`, `iterator_ptr` is nullable so that it satisfies the default-initializability requirements of `std::contiguous_iterator` and can serve directly as the iterator type of STL-compatible containers.
+
+```cpp
+template<typename T>
+class my_vector {
+public:
+    using iterator = iterator_ptr<T>;
+
+    iterator begin() noexcept;
+    iterator end() noexcept;
+    //...
+};
+
+my_vector<int> values{1, 2, 3, 4};
+
+auto pos = std::ranges::find(values, 3);
+```
+
+Characteristics:
+
+- may be empty
+- supports default construction
+- supports `nullptr`
+- supports reference binding
+- supports raw pointer binding
+- supports compatible pointer-like types
+- supports pointer arithmetic
+- models `std::contiguous_iterator`
+
+Unlike the aliasing vocabulary pointer types, `iterator_ptr` treats the stored address as a traversal position rather than merely an object association.
+
+Typical use cases include:
+
+- iterator-like traversal
+- STL algorithm compatibility
+- STL-like container iteration
+- `std::ranges` interoperability
+
+The distinction between `iterator_ptr` and the aliasing vocabulary pointer types is primarily its arithmetic traversal policy, which enables arithmetic operators, ordering comparisons, and `std::contiguous_iterator` satisfaction.
 
 ---
 
@@ -251,6 +308,7 @@ The distinction between `cursor_ptr` and the other vocabulary pointer types is p
 | `required_ptr`   | No       | Yes       | Yes     | No         |
 | `alias_ptr`      | Yes      | Yes       | Yes     | No         |
 | `cursor_ptr`     | No       | Yes       | Yes     | Yes        |
+| `iterator_ptr`  | Yes      | Yes       | Yes     | Yes        |
 
 Each concrete vocabulary pointer type is uniquely distinguished by its selections among these four policies.
 
@@ -534,7 +592,6 @@ These facilities expose the stored address and provide the fundamental mechanics
 - `operator*`
 - `get()`
 - implicit conversion to the type of the stored address
-- `rebind()`
 - `reset(P)`
 - `swap()`
 
@@ -655,7 +712,22 @@ The result is a substantially smaller implementation surface while preserving co
 
 ### Standard Library Integration
 
-All vocabulary pointer types automatically participate in standard hashing and formatting facilities.
+All vocabulary pointer types automatically participate in standard pointer traits, hashing, formatting, and common reference facilities.
+
+#### Pointer Traits
+
+`std::pointer_traits` is specialized for all `VocabPtr` types. This includes provision of pointer, element, and difference types as well as the `rebind` template, the `pointer_to` factory, and the `to_address` function.
+
+```cpp
+template<typename P>
+auto pointer_to_const(typename std::pointer_traits<P>::element_type& object) {
+    return std::pointer_traits<P>::template rebind<std::add_const_t<typename std::pointer_traits<P>::element_type>>::pointer_to(object);
+}
+
+std::int32_t value = 42;
+auto ptr = pointer_to_const<required_ptr<std::int32_t>>(value);
+assert(std::to_address(ptr) == std::addressof(value));
+```
 
 #### Hashing
 
@@ -692,6 +764,10 @@ std::cout << ptr;
 Like formatting and hashing, stream output operates on the stored address rather than the pointee object.
 
 Together, these facilities allow vocabulary pointers to integrate naturally with standard containers, formatting libraries, logging systems, and diagnostic tooling while preserving pointer-identity semantics.
+
+#### Common Reference
+
+`std::basic_common_reference` is specialized for cross-type comparisons between different `VocabPtr` types yielding the raw address type as their common reference. Similarly, specializations produce the common raw address type as the common reference between a `VocabPtr` and a raw pointer.
 
 ---
 
