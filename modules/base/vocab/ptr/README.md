@@ -295,7 +295,7 @@ Typical use cases include:
 - STL-like container iteration
 - `std::ranges` interoperability
 
-The distinction between `iterator_ptr` and the aliasing vocabulary pointer types is primarily its arithmetic traversal policy, which enables arithmetic operators, ordering comparisons, and `std::contiguous_iterator` satisfaction.
+The distinction between `iterator_ptr` and the aliasing vocabulary pointer types is primarily its arithmetic traversal policy, which enables the arithmetic operators and ordering comparisons required by `std::contiguous_iterator`.
 
 ---
 

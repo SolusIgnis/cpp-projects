@@ -73,6 +73,12 @@ namespace base::vocab::inline ptr {
     template<typename T>
     concept VocabPtr = requires { typename T::derived_from_ptr_core; };
 
+    template<typename T>
+    concept NullableVocabPtr = VocabPtr<T> && T::is_nullable;
+
+    template<typename T>
+    concept AlwaysEngagedVocabPtr = VocabPtr<T> && (!T::is_nullable);
+
     /**
      * @brief Determines whether a type is a pointer compatible with another pointer.
      *
@@ -86,6 +92,16 @@ namespace base::vocab::inline ptr {
     template<typename T, typename OtherPointer>
     concept CompatibleRawPtr = std::is_pointer_v<std::remove_cvref_t<T>> && std::convertible_to<std::decay_t<T>, OtherPointer>;
 
+    template<typename T, typename AddressType>
+    concept ResolvableToAddress = requires(const T& ptr) {
+        { std::to_address(ptr) } -> std::convertible_to<AddressType>;
+    };
+
+    template<typename T, template<typename...> typename OtherPtr, typename OtherPointee>
+    concept PointerCompatibleWith = ResolvableToAddress<T, typename OtherPtr<OtherPointee>::address_type>
+                                 && !std::is_array_v<std::remove_reference_t<T>>
+                                 && !base::meta::traits::is_type_specialization_of_v<T, OtherPtr>;
+       
     /**
      * @brief Determines whether a type may be used as a vocabulary pointer pointee.
      *
