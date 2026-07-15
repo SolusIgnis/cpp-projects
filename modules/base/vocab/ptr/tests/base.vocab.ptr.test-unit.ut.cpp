@@ -505,6 +505,9 @@ namespace {
 
         "operator-> provides member access"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                expect(eq(ArrowAccessible<ConcretePtr<std::int32_t>>, false));
+                expect(eq(ArrowAccessible<ConcretePtr<base_type>>, true));
+
                 base_type obj{123};
                 auto ptr = base::vocab::pointer_to<ConcretePtr>(obj);
 
