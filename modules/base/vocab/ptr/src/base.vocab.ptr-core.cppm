@@ -134,8 +134,8 @@ namespace base::vocab::inline ptr {
      *
      * @internal
      */
-    template<typename T, template<typename...> typename ConcretePtr, typename Pointee>
-    concept PointerCompatibleWith = PointerCompatibleWithImpl<std::remove_cvref_t<T>, ConcretePtr, Pointee>;
+    template<typename T, typename U>
+    concept PointerCompatibleWith = PointerCompatibleWithImpl<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
 
     /**
      * @brief Determines whether a type may be used as a vocabulary pointer pointee.
