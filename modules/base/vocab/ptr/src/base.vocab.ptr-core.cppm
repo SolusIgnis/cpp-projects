@@ -117,16 +117,35 @@ namespace base::vocab::inline ptr {
      * `ptr_core`, so the expectation is that the argument to `ConcretePtr` will be the `ConcretePtr` parameter from a
      * specialization of `ptr_core` and that the argument to `Pointee` will likewise be its `Pointee` parameter.
      *
-     * @note This concept does not remove references or cv-qualifications from `T`. Normalization is left to the call site if needed.
+     * @note This concept does not remove references or cv-qualifications from `T`. Normalization is left to a higher-level concept.
      *
      * @internal
      */
     template<typename T, template<typename...> typename ConcretePtr, typename Pointee>
-    concept PointerCompatibleWith = VocabPtr<ConcretePtr<Pointee>>
-                                 && ResolvableToAddress<T, typename ConcretePtr<Pointee>::address_type>
-                                 && !std::is_array_v<T>
-                                 && !base::meta::traits::is_type_specialization_of_v<T, ConcretePtr>;
+    concept PointerCompatibleWithImpl = VocabPtr<ConcretePtr<Pointee>>
+                                     && ResolvableToAddress<T, typename ConcretePtr<Pointee>::address_type>
+                                     && !std::is_array_v<T>
+                                     && !base::meta::traits::is_type_specialization_of_v<T, ConcretePtr>;
        
+    /**
+     * @brief Determines whether a type is a pointer compatible with a specified `VocabPtr`.
+     *
+     * @tparam T The type being tested.
+     * @tparam ConcretePtr The concrete pointer template with which compatibility is being tested.
+     * @tparam Pointee The pointee type argument for `ConcretePtr`.
+     *
+     * @details This concept is satisfied when `T` is a pointer other than `ConcretePtr` that is address-compatible with
+     * the concrete pointer specialization `ConcretePtr<Pointee>`. The concept constrains function templates within
+     * `ptr_core`, so the expectation is that the argument to `ConcretePtr` will be the `ConcretePtr` parameter from a
+     * specialization of `ptr_core` and that the argument to `Pointee` will likewise be its `Pointee` parameter.
+     *
+     * @note This concept removes reference and cv-qualifications from `T`.
+     *
+     * @internal
+     */
+    template<typename T, template<typename...> typename ConcretePtr, typename Pointee>
+    concept PointerCompatibleWith = PointerCompatibleWithImpl<std::remove_cvref_t<T>, ConcretePtr, Pointee>;
+
     /**
      * @brief Determines whether a type may be used as a vocabulary pointer pointee.
      *
@@ -357,7 +376,7 @@ export namespace base::vocab::inline ptr {
         }
 
         //===== Pointer Binding (Allowed)  =====
-
+#ifdef OLD_POINTER_BINDING
         ///@brief Implicitly converts from a raw `address_type`. Explicit when `element_type` is void to avoid implicit conversion chaining.
         template<CompatibleRawPtr<address_type> P>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(
@@ -402,6 +421,25 @@ export namespace base::vocab::inline ptr {
             self.address_ = apply_nullability_policy(source.get());
             return self;
         }
+#else
+        ///@brief Implicitly converts from a compatible pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
+        template<PointerCompatibleWith<ConcretePtr, element_type> P>
+        constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(source))))
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+            : ptr_core{validated_address_tag{}, apply_nullability_policy(std::to_address(source))}
+        {}
+
+        ///@brief Assigns from a compatible pointer type.
+        template<typename Self, PointerCompatibleWith<ConcretePtr, element_type> P>
+            requires (!std::is_const_v<Self>)
+        constexpr Self&
+            operator=(this Self& self, P&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(source))))
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        {
+            self.address_ = apply_nullability_policy(std::to_address(source));
+            return self;
+        }
+#endif
 
         //===== Nullability (Nullable) =====
 
