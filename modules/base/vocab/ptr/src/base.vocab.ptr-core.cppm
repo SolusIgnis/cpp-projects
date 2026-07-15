@@ -92,15 +92,40 @@ namespace base::vocab::inline ptr {
     template<typename T, typename OtherPointer>
     concept CompatibleRawPtr = std::is_pointer_v<std::remove_cvref_t<T>> && std::convertible_to<std::decay_t<T>, OtherPointer>;
 
+    /**
+     * @brief Determines whether a pointer type can be resolved to a given raw address type by `std::to_address`.
+     *
+     * @tparam T The type being tested.
+     * @tparam AddressType The type of the raw address to which the resolved address must be convertible.
+     *
+     * @details Satisfied when a `T` can be the argument to `std::to_address` and the result of that call is convertible to `AddressType`.
+     */
     template<typename T, typename AddressType>
     concept ResolvableToAddress = requires(const T& ptr) {
         { std::to_address(ptr) } -> std::convertible_to<AddressType>;
     };
 
-    template<typename T, template<typename...> typename OtherPtr, typename OtherPointee>
-    concept PointerCompatibleWith = ResolvableToAddress<T, typename OtherPtr<OtherPointee>::address_type>
-                                 && !std::is_array_v<std::remove_reference_t<T>>
-                                 && !base::meta::traits::is_type_specialization_of_v<T, OtherPtr>;
+    /**
+     * @brief Determines whether a type is a pointer compatible with a specified `VocabPtr`.
+     *
+     * @tparam T The type being tested.
+     * @tparam ConcretePtr The concrete pointer template with which compatibility is being tested.
+     * @tparam Pointee The pointee type argument for `ConcretePtr`.
+     *
+     * @details This concept is satisfied when `T` is a pointer other than `ConcretePtr` that is address-compatible with
+     * the concrete pointer specialization `ConcretePtr<Pointee>`. The concept constrains function templates within
+     * `ptr_core`, so the expectation is that the argument to `ConcretePtr` will be the `ConcretePtr` parameter from a
+     * specialization of `ptr_core` and that the argument to `Pointee` will likewise be its `Pointee` parameter.
+     *
+     * @note This concept does not remove references or cv-qualifications from `T`. Normalization is left to the call site if needed.
+     *
+     * @internal
+     */
+    template<typename T, template<typename...> typename ConcretePtr, typename Pointee>
+    concept PointerCompatibleWith = VocabPtr<ConcretePtr<Pointee>>
+                                 && ResolvableToAddress<T, typename ConcretePtr<Pointee>::address_type>
+                                 && !std::is_array_v<T>
+                                 && !base::meta::traits::is_type_specialization_of_v<T, ConcretePtr>;
        
     /**
      * @brief Determines whether a type may be used as a vocabulary pointer pointee.
