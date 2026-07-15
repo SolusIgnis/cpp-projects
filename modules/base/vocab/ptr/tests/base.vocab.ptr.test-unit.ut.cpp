@@ -1578,8 +1578,8 @@ namespace {
         "void specialization disables dereference operators"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-                    expect(eq(Dereferenceable<ConcretePtr<std::int32_t>>, true));
-                    expect(eq(ArrowAccessible<ConcretePtr<std::int32_t>>, true));
+                    expect(eq(Dereferenceable<ConcretePtr<base_type>>, true));
+                    expect(eq(ArrowAccessible<ConcretePtr<base_type>>, true));
 
                     expect(eq(Dereferenceable<ConcretePtr<void>>, false));
                     expect(eq(ArrowAccessible<ConcretePtr<void>>, false));
