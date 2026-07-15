@@ -415,7 +415,7 @@ export namespace base::vocab::inline ptr {
 #else
         ///@brief Implicitly converts from a compatible pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
         template<typename P>
-            requires (!std::same_as<std::remove_cvref_t<P>, concrete_ptr_instance>)
+            requires (!VocabPtr<std::remove_cvref_t<P>>)
                   && (!base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<P>, ConcretePtr>)
                   && (!std::is_array_v<std::remove_cvref_t<P>>)
                   && ResolvableToAddress<std::remove_cvref_t<P>, address_type>
@@ -427,7 +427,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Assigns from a compatible pointer type.
         template<typename Self, typename P>
             requires (!std::is_const_v<Self>)
-                  && (!std::same_as<std::remove_cvref_t<P>, concrete_ptr_instance>)
+                  && (!VocabPtr<std::remove_cvref_t<P>>)
                   && (!base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<P>, ConcretePtr>)
                   && (!std::is_array_v<std::remove_cvref_t<P>>)
                   && ResolvableToAddress<std::remove_cvref_t<P>, address_type>
