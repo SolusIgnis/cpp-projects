@@ -101,9 +101,10 @@ namespace base::vocab::inline ptr {
      * @details Satisfied when a `T` can be the argument to `std::to_address` and the result of that call is convertible to `AddressType`.
      */
     template<typename T, typename AddressType>
-    concept ResolvableToAddress = requires(const T& ptr) {
-        { std::to_address(ptr) } -> std::convertible_to<AddressType>;
-    };
+    concept ResolvableToAddress = (std::is_pointer_v<T> || requires { typename std::pointer_traits<T>::element_type; })
+                               && requires(const T& ptr) {
+                                      { std::to_address(ptr) } -> std::convertible_to<AddressType>;
+                                  };
 
     template<typename T, typename U>
     struct pointer_compatible_with_impl : std::false_type {};
