@@ -122,8 +122,8 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T, template<typename...> typename ConcretePtr, typename Pointee>
-    concept PointerCompatibleWithImpl = VocabPtr<ConcretePtr<Pointee>>
-                                     && ResolvableToAddress<T, typename ConcretePtr<Pointee>::address_type>
+    concept PointerCompatibleWithImpl = //VocabPtr<ConcretePtr<Pointee>>
+                                      ResolvableToAddress<T, typename ConcretePtr<Pointee>::address_type>
                                      && !std::is_array_v<T>
                                      && !base::meta::traits::is_type_specialization_of_v<T, ConcretePtr>;
        
