@@ -415,9 +415,9 @@ export namespace base::vocab::inline ptr {
 #else
         ///@brief Implicitly converts from a compatible pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
         template<typename P>
-            requires ResolvableToAddress<std::remove_reference_t<P>, address_type>
+            requires (!base::meta::traits::is_type_specialization_of_v<std::remove_reference_t<P>, ConcretePtr>)
                   && (!std::is_array_v<std::remove_reference_t<P>>)
-                  && (!base::meta::traits::is_type_specialization_of_v<std::remove_reference_t<P>, ConcretePtr>)
+                  && ResolvableToAddress<std::remove_reference_t<P>, address_type>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(source))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, apply_nullability_policy(std::to_address(source))}
