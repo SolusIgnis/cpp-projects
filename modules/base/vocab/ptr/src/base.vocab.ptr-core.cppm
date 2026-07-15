@@ -368,7 +368,7 @@ export namespace base::vocab::inline ptr {
         }
 
         //===== Pointer Binding (Allowed)  =====
-#ifdef OLD_POINTER_BINDING
+#ifndef OLD_POINTER_BINDING
         ///@brief Implicitly converts from a raw `address_type`. Explicit when `element_type` is void to avoid implicit conversion chaining.
         template<CompatibleRawPtr<address_type> P>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(
