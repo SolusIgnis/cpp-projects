@@ -417,7 +417,7 @@ export namespace base::vocab::inline ptr {
         template<typename P>
             requires VocabPtr<std::remove_cvref_t<P>>
                   && (!base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<P>, ConcretePtr>)
-                  && std::convertible_to<typename remove_cvref_t<P>::address_type, address_type>
+                  && std::convertible_to<typename std::remove_cvref_t<P>::address_type, address_type>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(noexcept(apply_nullability_policy(static_cast<address_type>(source))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, apply_nullability_policy(static_cast<address_type>(source))}
@@ -428,7 +428,7 @@ export namespace base::vocab::inline ptr {
             requires (!std::is_const_v<Self>)
                   && VocabPtr<std::remove_cvref_t<P>>
                   && (!base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<P>, ConcretePtr>)
-                  && std::convertible_to<typename remove_cvref_t<P>::address_type, address_type>
+                  && std::convertible_to<typename std::remove_cvref_t<P>::address_type, address_type>
         constexpr Self&
             operator=(this Self& self, P&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(source))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
