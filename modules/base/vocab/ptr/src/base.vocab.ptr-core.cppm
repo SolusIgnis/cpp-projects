@@ -105,27 +105,18 @@ namespace base::vocab::inline ptr {
         { std::to_address(ptr) } -> std::convertible_to<AddressType>;
     };
 
-    /**
-     * @brief Determines whether a type is a pointer compatible with a specified `VocabPtr`.
-     *
-     * @tparam T The type being tested.
-     * @tparam ConcretePtr The concrete pointer template with which compatibility is being tested.
-     * @tparam Pointee The pointee type argument for `ConcretePtr`.
-     *
-     * @details This concept is satisfied when `T` is a pointer other than `ConcretePtr` that is address-compatible with
-     * the concrete pointer specialization `ConcretePtr<Pointee>`. The concept constrains function templates within
-     * `ptr_core`, so the expectation is that the argument to `ConcretePtr` will be the `ConcretePtr` parameter from a
-     * specialization of `ptr_core` and that the argument to `Pointee` will likewise be its `Pointee` parameter.
-     *
-     * @note This concept does not remove references or cv-qualifications from `T`. Normalization is left to a higher-level concept.
-     *
-     * @internal
-     */
+    template<typename T, typename U>
+    struct pointer_compatible_with_impl : std::false_type {};
+
     template<typename T, template<typename...> typename ConcretePtr, typename Pointee>
-    concept PointerCompatibleWithImpl = //VocabPtr<ConcretePtr<Pointee>>
-                                      ResolvableToAddress<T, typename ConcretePtr<Pointee>::address_type>
+    struct pointer_compatible_with_impl<T, ConcretePtr<Pointee>> : std::bool_constant<!base::meta::traits::is_type_specialization_of_v<T, ConcretePtr>> {};
+    
+
+    template<typename T, typename U>
+    concept PointerCompatibleWithImpl = VocabPtr<U>
+                                     && ResolvableToAddress<T, typename U::address_type>
                                      && !std::is_array_v<T>
-                                     && !base::meta::traits::is_type_specialization_of_v<T, ConcretePtr>;
+                                     && pointer_compatible_with_impl<T, U>::value;
        
     /**
      * @brief Determines whether a type is a pointer compatible with a specified `VocabPtr`.
