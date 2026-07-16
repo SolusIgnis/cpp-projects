@@ -79,6 +79,11 @@ namespace base::vocab::inline ptr {
     template<typename T>
     concept AlwaysEngagedVocabPtr = VocabPtr<T> && (!T::is_nullable);
 
+    template<typename T, template<typename...> typename TargetTemplate, typename TargetAddress>
+    concept VocabPtrSourceFor = VocabPtr<std::remove_cvref_t<T>>
+                             && !base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<T>, TargetTemplate>)
+                             && std::convertible_to<typename std::remove_cvref_t<T>::address_type, TargetAddress>;
+
     /**
      * @brief Determines whether a type is a pointer compatible with another pointer.
      *
@@ -404,19 +409,15 @@ export namespace base::vocab::inline ptr {
         }
 #else
         ///@brief Implicitly converts from another compatible vocabulary pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
-        template<VocabPtr P>
-            requires (!base::meta::traits::is_type_specialization_of_v<P, ConcretePtr>)
-                  && std::convertible_to<typename P::address_type, address_type>
+        template<VocabPtrSourceFor<ConcretePtr, address_type> P>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(P source) noexcept(noexcept(apply_nullability_policy(static_cast<address_type>(source))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, apply_nullability_policy(static_cast<address_type>(source))}
         {}
 
         ///@brief Assigns from another compatible vocabulary pointer type.
-        template<typename Self, VocabPtr P>
+        template<typename Self, VocabPtrSourceFor<ConcretePtr, address_type> P>
             requires (!std::is_const_v<Self>)
-                  && (!base::meta::traits::is_type_specialization_of_v<P, ConcretePtr>)
-                  && std::convertible_to<typename P::address_type, address_type>
         constexpr Self&
             operator=(this Self& self, P source) noexcept(noexcept(apply_nullability_policy(static_cast<address_type>(source))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
