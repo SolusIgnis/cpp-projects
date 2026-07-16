@@ -105,18 +105,19 @@ namespace base::vocab::inline ptr {
                                && requires(const T& ptr) {
                                       { std::to_address(ptr) } -> std::convertible_to<AddressType>;
                                   };
+
     /**
      * @brief Determines whether a type is an external pointer compatible with a specified `VocabPtr`.
      *
      * @tparam T The type being tested.
      * @tparam U The `VocabPtr` with which compatibility is being tested.
      *
-     * @details This concept is satisfied when `T` is a pointer other than a `VocabPtr` that is address-compatible with
-     * the concrete pointer specialization `U`. The concept constrains function templates within `ptr_core`, so the
-     * expectation is that the argument to `U` will be the `concrete_ptr_instance` from the specialization of `ptr_core`
-     * currently being evaluated.
+     * @details This concept is satisfied when the underlying type of `T` (after removing references and cv-qualifications)
+     * is a pointer other than a `VocabPtr` that is address-compatible with the concrete pointer specialization `U`. The
+     * concept constrains function templates within `ptr_core`, so `U` is expected to be the `concrete_ptr_instance` from
+     * the specialization of `ptr_core` currently being instantiated.
      *
-     * @note This concept removes reference and cv-qualifications from `T` but NOT from `U`.
+     * @note This concept removes reference and cv-qualifications from `T` but NOT from `U`, so `U` preserves its precise qualifiers.
      *
      * @internal
      */
@@ -125,10 +126,6 @@ namespace base::vocab::inline ptr {
                                  && !std::is_array_v<std::remove_cvref_t<T>>
                                  && VocabPtr<U>
                                  && ResolvableToAddress<std::remove_cvref_t<T>, typename U::address_type>;
-       
-
-    template<typename T, typename U>
-    concept PointerCompatibleWith = PointerCompatibleWithImpl<, std::remove_cvref_t<U>>;
 
     /**
      * @brief Determines whether a type may be used as a vocabulary pointer pointee.
