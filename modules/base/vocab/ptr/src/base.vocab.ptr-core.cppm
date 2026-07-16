@@ -409,39 +409,39 @@ export namespace base::vocab::inline ptr {
         }
 #else
         ///@brief Implicitly converts from another compatible vocabulary pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
-        template<VocabPtrSourceFor<ConcretePtr, address_type> P>
-            requires VocabPtr<std::remove_cvref_t<P>>
-        constexpr explicit(std::is_void_v<element_type>) ptr_core(P source) noexcept(noexcept(apply_nullability_policy(static_cast<address_type>(source))))
+        template<VocabPtrSourceFor<ConcretePtr, address_type> Source>
+            requires VocabPtr<std::remove_cvref_t<Source>>
+        constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(noexcept(apply_nullability_policy(static_cast<address_type>(std::forward<Source>(source)))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, apply_nullability_policy(static_cast<address_type>(source))}
         {}
 
         ///@brief Assigns from another compatible vocabulary pointer type.
-        template<typename Self, VocabPtrSourceFor<ConcretePtr, address_type> P>
-            requires (!std::is_const_v<Self>) && VocabPtr<std::remove_cvref_t<P>>
+        template<typename Self, VocabPtrSourceFor<ConcretePtr, address_type> Source>
+            requires (!std::is_const_v<Self>) && VocabPtr<std::remove_cvref_t<Source>>
         constexpr Self&
-            operator=(this Self& self, P source) noexcept(noexcept(apply_nullability_policy(static_cast<address_type>(source))))
+            operator=(this Self& self, Source&& source) noexcept(noexcept(apply_nullability_policy(static_cast<address_type>(std::forward<Source>(source)))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
-            self.address_ = apply_nullability_policy(static_cast<address_type>(source));
+            self.address_ = apply_nullability_policy(static_cast<address_type>(std::forward<Source>(source)));
             return self;
         }
 
         ///@brief Implicitly converts from a compatible pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
-        template<PointerCompatibleWith<concrete_ptr_instance> P>
-        constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(source))))
+        template<PointerCompatibleWith<concrete_ptr_instance> Source>
+        constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source)))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
-            : ptr_core{validated_address_tag{}, apply_nullability_policy(std::to_address(source))}
+            : ptr_core{validated_address_tag{}, apply_nullability_policy(std::to_address(std::forward<Source>(source)))}
         {}
 
         ///@brief Assigns from a compatible pointer type.
-        template<typename Self, PointerCompatibleWith<concrete_ptr_instance> P>
+        template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
             requires (!std::is_const_v<Self>)
         constexpr Self&
-            operator=(this Self& self, P&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(source))))
+            operator=(this Self& self, Source&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source)))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
-            self.address_ = apply_nullability_policy(std::to_address(source));
+            self.address_ = apply_nullability_policy(std::to_address(std::forward<Source>(source)));
             return self;
         }
 #endif
