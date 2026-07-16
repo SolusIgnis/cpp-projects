@@ -413,7 +413,7 @@ export namespace base::vocab::inline ptr {
             requires AlwaysEngagedVocabPtr<std::remove_cvref_t<Source>>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
-            : ptr_core{validated_address_tag{}, std::forward<Source>(source).get()}
+            : ptr_core{validated_address_tag{}, std::forward<Source>(source)}
         {}
 
         ///@brief Assigns from another compatible vocabulary pointer type.
@@ -423,7 +423,7 @@ export namespace base::vocab::inline ptr {
             operator=(this Self& self, Source&& source) noexcept
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
-            self.address_ = std::forward<Source>(source).get();
+            self.address_ = std::forward<Source>(source);
             return self;
         }
 
