@@ -439,7 +439,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Implicitly converts from a compatible pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
         template<typename P>
             requires (!VocabPtr<std::remove_cvref_t<P>>)
-                  && (!base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<P>, ConcretePtr>)
+                  //&& (!base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<P>, ConcretePtr>)
                   && (!std::is_array_v<std::remove_cvref_t<P>>)
                   && ResolvableToAddress<std::remove_cvref_t<P>, address_type>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(source))))
@@ -451,7 +451,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self, typename P>
             requires (!std::is_const_v<Self>)
                   && (!VocabPtr<std::remove_cvref_t<P>>)
-                  && (!base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<P>, ConcretePtr>)
+                  //&& (!base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<P>, ConcretePtr>)
                   && (!std::is_array_v<std::remove_cvref_t<P>>)
                   && ResolvableToAddress<std::remove_cvref_t<P>, address_type>
         constexpr Self&
