@@ -112,6 +112,7 @@ namespace {
         T* address{};
 
         T* get() const { return address; }
+        T* operator-> const { return address; }
     };
 
     struct ref_tag;
