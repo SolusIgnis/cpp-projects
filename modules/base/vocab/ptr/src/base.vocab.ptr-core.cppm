@@ -183,7 +183,7 @@ export namespace base::vocab::inline ptr {
      * @see `:policies`
      *
      * @remark Array Decay Prevention: Operations taking raw C-arrays are explicitly intercepted and deleted for pointer-binding configurations to block pointer-decay errors when targeting blocks of contiguous memory.
-     * @remark Temporary Binding Prevention: Direct binding from temporary variables (including `rvalue_reference`s and pointer-like temporaries) is structurally blocked using deleted sinks, eliminating a primary vector for dangling pointers.
+     * @remark Temporary Binding Prevention: Direct binding from temporary variables (including `rvalue_reference`s and potentially-owning pointer-like temporaries) is structurally blocked using deleted sinks, eliminating a primary vector for dangling pointers. Binding from temporary raw pointers and vocabulary pointers is permitted as these do not imply ownership semantics.
      * @remark Layout Guarantee: `ptr_core` maintains a strict standard-layout representation, allowing the concrete pointers derived from it to preserve the structural properties of a scalar raw pointer.
      *
      * @remark This interface uses C++23 explicit object parameters (e.g., `this auto&& self`) to avoid cv/ref-qualified overload duplication while preserving correct value-category propagation.
@@ -590,21 +590,19 @@ export namespace base::vocab::inline ptr {
         //===== Pointer Binding (Allowed) =====
 
         ///@brief Deleted constructor from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
-        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, address_type>
-                     ptr_core(std::add_rvalue_reference_t<Pointer<Element, Args...>>)
-                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
-        = delete /*("Constructor from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+        template<PointerCompatibleWith<concrete_ptr_instance> Source>
+            requires std::is_rvalue_reference_v<Source> && (!is_pointer_v<std::remove_cvref_t<Source>>)
+        ptr_core(Source&&)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        = delete /*("Constructor from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries. If this use is known to be safe, pass the temporary through `std::to_address`.")*/
             ;
 
         ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
-        template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, address_type>
-                     Self& operator=(this Self&&, std::add_rvalue_reference_t<Pointer<Element, Args...>>)
-                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
-        = delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+        template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
+            requires std::is_rvalue_reference_v<Source> && (!is_pointer_v<std::remove_cvref_t<Source>>)
+        Self& operator=(this Self&&, Source&&)
+            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+        = delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries. If this use is known to be safe, pass the temporary through `std::to_address`.")*/
             ;
 
         //===== Reference Binding (Forbidden) =====
