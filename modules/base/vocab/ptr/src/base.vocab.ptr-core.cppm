@@ -81,7 +81,7 @@ namespace base::vocab::inline ptr {
 
     template<typename T, template<typename...> typename TargetTemplate, typename TargetAddress>
     concept VocabPtrSourceFor = VocabPtr<std::remove_cvref_t<T>>
-                             && !base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<T>, TargetTemplate>)
+                             && !base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<T>, TargetTemplate>
                              && std::convertible_to<typename std::remove_cvref_t<T>::address_type, TargetAddress>;
 
     /**
