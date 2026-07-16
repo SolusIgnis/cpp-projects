@@ -107,20 +107,13 @@ namespace base::vocab::inline ptr {
                                   };
 
     template<typename T, typename U>
-    struct pointer_compatible_with_impl : std::false_type {};
-
-    template<typename T, template<typename...> typename ConcretePtr, typename Pointee>
-    struct pointer_compatible_with_impl<T, ConcretePtr<Pointee>> : std::bool_constant<!base::meta::traits::is_type_specialization_of_v<T, ConcretePtr>> {};
-    
-
-    template<typename T, typename U>
-    concept PointerCompatibleWithImpl = VocabPtr<U>
-                                     && ResolvableToAddress<T, typename U::address_type>
+    concept PointerCompatibleWithImpl = !VocabPtr<T>
                                      && !std::is_array_v<T>
-                                     && pointer_compatible_with_impl<T, U>::value;
+                                     && VocabPtr<U>
+                                     && ResolvableToAddress<T, typename U::address_type>;
        
     /**
-     * @brief Determines whether a type is a pointer compatible with a specified `VocabPtr`.
+     * @brief Determines whether a type is an external pointer compatible with a specified `VocabPtr`.
      *
      * @tparam T The type being tested.
      * @tparam ConcretePtr The concrete pointer template with which compatibility is being tested.
@@ -437,23 +430,15 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Implicitly converts from a compatible pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
-        template<typename P>
-            requires (!VocabPtr<std::remove_cvref_t<P>>)
-                  //&& (!base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<P>, ConcretePtr>)
-                  && (!std::is_array_v<std::remove_cvref_t<P>>)
-                  && ResolvableToAddress<std::remove_cvref_t<P>, address_type>
+        template<PointerCompatibleWith<concrete_ptr_instance> P>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(source))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, apply_nullability_policy(std::to_address(source))}
         {}
 
         ///@brief Assigns from a compatible pointer type.
-        template<typename Self, typename P>
+        template<typename Self, PointerCompatibleWith<concrete_ptr_instance> P>
             requires (!std::is_const_v<Self>)
-                  && (!VocabPtr<std::remove_cvref_t<P>>)
-                  //&& (!base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<P>, ConcretePtr>)
-                  && (!std::is_array_v<std::remove_cvref_t<P>>)
-                  && ResolvableToAddress<std::remove_cvref_t<P>, address_type>
         constexpr Self&
             operator=(this Self& self, P&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(source))))
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
