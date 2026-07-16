@@ -516,36 +516,32 @@ export namespace base::vocab::inline ptr {
 
         //===== Pointer Binding (Forbidden) =====
 
-        ///@brief Deleted constructor from raw pointers to structurally guarantee non-null initialization.
-        template<CompatibleRawPtr<address_type> P>
-        ptr_core(P)
+        ///@brief Deleted constructor from other vocabulary pointer types to structurally guarantee non-null initialization.
+        template<VocabPtrSourceFor<ConcretePtr, address_type> Source>
+        ptr_core(Source&&)
             requires ptr_policies::forbidden_pointer_binding_v<policy_set>
-        = delete /*("Constructor from raw pointers deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization by the reference-binding constructor. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+        = delete /*("Constructor from other vocabulary pointer types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization by the reference-binding constructor. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
-        ///@brief Deleted assignment from raw pointers to structurally guarantee non-null rebinding.
-        template<typename Self, CompatibleRawPtr<address_type> P>
-        Self& operator=(this Self&&, P)
+        ///@brief Deleted assignment from other vocabulary pointer types to structurally guarantee non-null rebinding.
+        template<typename Self, VocabPtrSourceFor<ConcretePtr, address_type> Source>
+        Self& operator=(this Self&&, Source&&)
             requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Assignment from raw pointers deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null assignment by the reference-binding assignment operator. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
-        ///@brief Deleted constructor from another pointer-like type to structurally guarantee non-null initialization.
-        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, address_type>
-                     ptr_core(const Pointer<Element, Args...>&)
-                         requires ptr_policies::forbidden_pointer_binding_v<policy_set>
-        = delete /*("Constructor from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization by the reference-binding constructor. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+        ///@brief Deleted constructor from compatible pointer types to structurally guarantee non-null initialization.
+        template<PointerCompatibleWith<concrete_ptr_instance> Source>
+        ptr_core(Source&&)
+            requires ptr_policies::forbidden_pointer_binding_v<policy_set>
+        = delete /*("Constructor from other vocabulary pointer types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization by the reference-binding constructor. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
-        ///@brief Deleted assignment from another pointer-like type to structurally guarantee non-null rebinding.
-        template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, address_type>
-                     Self& operator=(this Self&&, const Pointer<Element, Args...>&)
-                         requires ptr_policies::forbidden_pointer_binding_v<policy_set>
-        = delete /*("Assignment from pointer-like types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null assignment by the reference-binding assignment operator. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
+        ///@brief Deleted assignment from compatible pointer types to structurally guarantee non-null rebinding.
+        template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
+        Self& operator=(this Self&&, Source&&)
+            requires ptr_policies::forbidden_pointer_binding_v<policy_set>
+        = delete /*("Assignment from raw pointers deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null assignment by the reference-binding assignment operator. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
         //================================================================================
