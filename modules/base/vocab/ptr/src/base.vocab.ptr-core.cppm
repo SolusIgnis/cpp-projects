@@ -105,31 +105,30 @@ namespace base::vocab::inline ptr {
                                && requires(const T& ptr) {
                                       { std::to_address(ptr) } -> std::convertible_to<AddressType>;
                                   };
-
-    template<typename T, typename U>
-    concept PointerCompatibleWithImpl = !VocabPtr<T>
-                                     && !std::is_array_v<T>
-                                     && VocabPtr<U>
-                                     && ResolvableToAddress<T, typename U::address_type>;
-       
     /**
      * @brief Determines whether a type is an external pointer compatible with a specified `VocabPtr`.
      *
      * @tparam T The type being tested.
-     * @tparam ConcretePtr The concrete pointer template with which compatibility is being tested.
-     * @tparam Pointee The pointee type argument for `ConcretePtr`.
+     * @tparam U The `VocabPtr` with which compatibility is being tested.
      *
-     * @details This concept is satisfied when `T` is a pointer other than `ConcretePtr` that is address-compatible with
-     * the concrete pointer specialization `ConcretePtr<Pointee>`. The concept constrains function templates within
-     * `ptr_core`, so the expectation is that the argument to `ConcretePtr` will be the `ConcretePtr` parameter from a
-     * specialization of `ptr_core` and that the argument to `Pointee` will likewise be its `Pointee` parameter.
+     * @details This concept is satisfied when `T` is a pointer other than a `VocabPtr` that is address-compatible with
+     * the concrete pointer specialization `U`. The concept constrains function templates within `ptr_core`, so the
+     * expectation is that the argument to `U` will be the `concrete_ptr_instance` from the specialization of `ptr_core`
+     * currently being evaluated.
      *
-     * @note This concept removes reference and cv-qualifications from `T`.
+     * @note This concept removes reference and cv-qualifications from `T` but NOT from `U`.
      *
      * @internal
      */
     template<typename T, typename U>
-    concept PointerCompatibleWith = PointerCompatibleWithImpl<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
+    concept PointerCompatibleWith = !VocabPtr<std::remove_cvref_t<T>>
+                                 && !std::is_array_v<std::remove_cvref_t<T>>
+                                 && VocabPtr<U>
+                                 && ResolvableToAddress<std::remove_cvref_t<T>, typename U::address_type>;
+       
+
+    template<typename T, typename U>
+    concept PointerCompatibleWith = PointerCompatibleWithImpl<, std::remove_cvref_t<U>>;
 
     /**
      * @brief Determines whether a type may be used as a vocabulary pointer pointee.
