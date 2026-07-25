@@ -45,6 +45,7 @@
  * defined in other partitions rather than with `ptr_core` directly.
  *
  * @todo Future Development: Use `= delete("reason")` instead of the C-style comments once the C++26 feature becomes available.
+ * @todo Consider monadic operations for `nullability::nullable` pointers. Also consider whether they should require `traversal::rebinding`.
  */
 
 //Module partition interface unit
@@ -66,6 +67,8 @@ namespace base::vocab::inline ptr {
      * @details Satisfied when `T` exposes the marker type `derived_from_ptr_core`, which is inherited by all
      * concrete vocabulary pointer specializations.
      *
+     * @note Expects an exact type. This concept does not remove reference or cv-qualifications from `T`.
+     *
      * @remark Primarily serves to constrain specializations of generic facilities to the vocabulary pointer domain.
      *
      * @internal
@@ -73,12 +76,55 @@ namespace base::vocab::inline ptr {
     template<typename T>
     concept VocabPtr = requires { typename T::derived_from_ptr_core; };
 
+    /**
+     * @brief Detects vocabulary pointer types that permit a null state.
+     *
+     * @tparam T The type being tested.
+     *
+     * @details Satisfied when `T` satisfies `VocabPtr` and its static policy member `T::is_nullable` evaluates to `true`.
+     *
+     * @note Expects an exact type. This concept does not remove reference or cv-qualifications from `T`. When constraining forwarding references (e.g., `T&&`), consider `std::remove_cvref_t<T>` at the use site.
+     *
+     * @remark Primarily serves to constrain function templates taking `VocabPtr`s by nullability policy.
+     *
+     * @internal
+     */
     template<typename T>
     concept NullableVocabPtr = VocabPtr<T> && T::is_nullable;
 
+    /**
+     * @brief Detects vocabulary pointer types that are guaranteed to never be null.
+     *
+     * @tparam T The type being tested.
+     *
+     * @details Satisfied when `T` satisfies `VocabPtr` and its static policy member `T::is_nullable` evaluates to `false`.
+     *
+     * @note Expects an exact type. This concept does not remove reference or cv-qualifications from `T`. When constraining forwarding references (e.g., `T&&`), consider `std::remove_cvref_t<T>` at the use site.
+     *
+     * @remark Primarily serves to constrain function templates taking `VocabPtr`s by nullability policy.
+     *
+     * @internal
+     */
     template<typename T>
     concept AlwaysEngagedVocabPtr = VocabPtr<T> && (!T::is_nullable);
 
+    /**
+     * @brief Determines whether a vocabulary pointer type is a valid binding source for a target pointer type.
+     *
+     * @tparam T The type being tested.
+     * @tparam TargetTemplate The target concrete pointer class template.
+     * @tparam TargetAddress The raw address type expected by the target pointer.
+     *
+     * @details Satisfied when the underlying type of `T` satisfies `VocabPtr`, is
+     * not a specialization of `TargetTemplate`, and exposes an `address_type`
+     * implicitly convertible to `TargetAddress`.
+     *
+     * @note This concept removes reference and cv-qualifications internally to evaluate the underlying type of `T`.
+     *
+     * @remark Primarily serves to facilitate construction and assignment from other vocabulary pointer types while excluding the target pointer type itself, avoiding conflicts with copy, move, and conversion operations.
+     *
+     * @internal
+     */
     template<typename T, template<typename...> typename TargetTemplate, typename TargetAddress>
     concept VocabPtrSourceFor = VocabPtr<std::remove_cvref_t<T>>
                              && !base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<T>, TargetTemplate>

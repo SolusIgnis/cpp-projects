@@ -165,7 +165,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Estimated Effort**: 2–3 days (1 for evaluation, 1–1.5 for implementation, 0.5 for testing).
 
 ### Future Development Milestones
-- [ ] **base.meta**:
+- [✔️] **base.meta**:
   - **Task**: Set up `base.meta.*`
   - **Steps**:
     - Move `remove_indirection_t` to `base::meta::traits::inline transformation`.
