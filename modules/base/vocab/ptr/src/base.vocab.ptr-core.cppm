@@ -408,52 +408,7 @@ export namespace base::vocab::inline ptr {
         }
 
         //===== Pointer Binding (Allowed)  =====
-#ifdef OLD_POINTER_BINDING
-        ///@brief Implicitly converts from a raw `address_type`. Explicit when `element_type` is void to avoid implicit conversion chaining.
-        template<CompatibleRawPtr<address_type> P>
-        constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source) noexcept(
-            noexcept(apply_nullability_policy(std::forward<P>(source)))
-        )
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
-            : ptr_core{validated_address_tag{}, apply_nullability_policy(std::forward<P>(source))}
-        {}
 
-        ///@brief Assigns from a raw `address_type`.
-        template<typename Self, CompatibleRawPtr<address_type> P>
-            requires (!std::is_const_v<Self>)
-        constexpr Self&
-            operator=(this Self& self, P&& source) noexcept(noexcept(apply_nullability_policy(std::forward<P>(source))))
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
-        {
-            self.address_ = apply_nullability_policy(std::forward<P>(source));
-            return self;
-        }
-
-        ///@brief Implicitly converts from another pointer-like type. Explicit when `element_type` is void to avoid implicit conversion chaining.
-        template<template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, address_type>
-                     constexpr explicit(std::is_void_v<element_type>) ptr_core(
-                         const Pointer<Element, Args...>& source
-                     ) noexcept(noexcept(apply_nullability_policy(source.get())))
-                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
-            : ptr_core{validated_address_tag{}, apply_nullability_policy(source.get())}
-        {}
-
-        ///@brief Assigns from another pointer-like type.
-        template<typename Self, template<typename, typename...> typename Pointer, typename Element, typename... Args>
-            requires (!base::meta::traits::is_type_specialization_of_v<Pointer<Element, Args...>, ConcretePtr>)
-                  && (!std::is_const_v<Self>)
-                  && is_smart_ptr_convertible_to_v<Pointer<Element, Args...>, address_type>
-                     constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source) noexcept(
-                         noexcept(apply_nullability_policy(source.get()))
-                     )
-                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
-        {
-            self.address_ = apply_nullability_policy(source.get());
-            return self;
-        }
-#else
         ///@brief Implicitly converts from a compatible, always-engaged vocabulary pointer type bypassing nullability policy checks. Explicit when `element_type` is void to avoid implicit conversion chaining.
         template<VocabPtrSourceFor<ConcretePtr, address_type> Source>
             requires AlwaysEngagedVocabPtr<std::remove_cvref_t<Source>>
@@ -509,7 +464,6 @@ export namespace base::vocab::inline ptr {
             self.address_ = apply_nullability_policy(std::to_address(std::forward<Source>(source)));
             return self;
         }
-#endif
 
         //===== Nullability (Nullable) =====
 
@@ -1058,7 +1012,7 @@ export namespace base::vocab::inline ptr {
      * compile-time validation and forward to this constructor to initialize the
      * stored address.
      *
-     * @note Enabled regardless of policy selections as an underlying common implication detail.
+     * @note This internal constructor is enabled regardless of policy selections.
      * @internal
      */
     /**
@@ -1097,49 +1051,68 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `reference_binding::allowed`.
      */
     /**
-     * @overload constexpr explicit(std::is_void_v<element_type>) ptr_core(P&& source)
+     * @overload constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source)
      *
-     * @tparam P A raw pointer type which must decay to a type convertible to `address_type`.
+     * @tparam Source A compatible, always-engaged vocabulary pointer type.
      *
-     * @param source The raw pointer to bind.
+     * @param source The vocabulary pointer object providing the address to store.
      *
-     * @pre If the selected policies include `nullability::always_engaged`, `source` must not be null.
-     * @pre If not null, `source` must point to a valid object that outlives the resulting pointer.
-     * @post `get() == static_cast<address_type>(source)`.
+     * @pre `source` refers to a valid object that outlives the resulting pointer.
+     * @post `get() == source.get()`.
      *
-     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
+     * @details Stores the supplied address without applying the configured
+     * nullability policy because the source pointer is statically known to
+     * be always engaged. Supports qualification conversion, covariance, and
+     * type erasure between compatible specializations of distinct vocabulary
+     * pointer templates.
      *
-     * @details Stores the supplied address after applying the configured nullability
-     * policy. Captures the original argument type prior to decay through a forwarding
-     * reference so that C-array arguments can be diagnosed explicitly rather than
-     * silently decaying to element pointers.
-     *
-     * @note This constructor is constrained to raw pointers to prevent hijacking copy/move operations or accepting arrays.
      * @remark Explicit when `element_type` is `void` to prevent unintended implicit type erasure conversion chains.
-     * @remark Binds the stored address without affecting ownership or pointee lifetime.
+     * @remark This constructor does not transfer ownership nor affect the lifetime of the pointee object.
      * @note Enabled by policy `pointer_binding::allowed`.
      */
     /**
-     * @overload constexpr explicit(std::is_void_v<element_type>) ptr_core(const Pointer<Element, Args...>& source)
+     * @overload constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source)
      *
-     * @tparam Pointer A pointer-like class template exposing `get()`.
-     * @tparam Element The element type of the source pointer-like type.
-     * @tparam Args Additional template parameters of the source pointer-like type.
+     * @tparam Source A compatible, nullable vocabulary pointer type.
      *
-     * @param source The pointer-like object providing access to a pointer-compatible address value.
+     * @param source The vocabulary pointer object providing the address to store.
      *
-     * @pre `source.get()` must be a valid expression convertible to `address_type`.
-     * @pre If the selected policies include `nullability::always_engaged`, `source.get()` must not be null.
-     * @pre If not null, `source.get()` must point to a valid object that outlives the resulting pointer.
-     * @post `get() == static_cast<address_type>(source.get())`.
+     * @pre If not null, `source` must refer to a valid object that outlives the resulting pointer.
+     * @post `get() == source.get()`.
      *
-     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
+     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source` is disengaged. Provides the Strong Exception Safety Guarantee.
      *
-     * @details Stores the supplied address after applying the configured nullability
-     * policy. Supports covariance, qualification conversion, and type erasure.
+     * @details Stores the supplied address after applying the configured
+     * nullability policy. Supports qualification conversion, covariance, and
+     * type erasure between compatible specializations of distinct vocabulary
+     * pointer templates.
      *
-     * @remark Enables interoperation with pointer-like types that expose a `get()` member.
-     * @remark The source type must not be a specialization of `ConcretePtr` (to avoid ambiguity with existing overloads).
+     * @remark Explicit when `element_type` is `void` to prevent unintended implicit type erasure conversion chains.
+     * @remark This constructor does not transfer ownership nor affect the lifetime of the pointee object.
+     * @note Enabled by policy `pointer_binding::allowed`.
+     */
+    /**
+     * @overload constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source)
+     *
+     * @tparam Source An external pointer type compatible with `concrete_ptr_instance`
+     * and addressable through `std::to_address`.
+     *
+     * @param source The pointer-like object providing the address to store.
+     *
+     * @pre `std::to_address(source)` must be a valid expression convertible to `address_type`.
+     * @pre If the selected policies include `nullability::always_engaged`, `std::to_address(source)` must not be null.
+     * @pre If not null, `std::to_address(source)` must point to a valid object that outlives the resulting pointer.
+     * @post `get() == std::to_address(source)`.
+     *
+     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `std::to_address(source) == nullptr`. Provides the Strong Exception Safety Guarantee.
+     *
+     * @details Obtains the address using `std::to_address()` before applying the
+     * configured nullability policy, allowing interoperability with standard and
+     * third-party pointer-like types, including raw pointers. Captures the original
+     * argument type prior to decay through a forwarding reference so that C-array
+     * arguments can be diagnosed explicitly rather than silently decaying to element
+     * pointers.
+     *
      * @remark Explicit when `element_type` is `void` to prevent unintended implicit type erasure conversion chains.
      * @remark This constructor does not transfer ownership nor affect the lifetime of the pointee object.
      * @note Enabled by policy `pointer_binding::allowed`.
@@ -1205,48 +1178,76 @@ export namespace base::vocab::inline ptr {
      * @note Enabled by policy `reference_binding::allowed`.
      */
     /**
-     * @overload constexpr Self& operator=(this Self& self, P&& source)
+     * @overload constexpr Self& operator=(this Self& self, Source&& source)
      *
      * @tparam Self The non-const concrete pointer type deduced from the call site.
-     * @tparam P A raw pointer type which must decay to a type convertible to `address_type`.
+     * @tparam Source A compatible, always-engaged vocabulary pointer type.
      *
      * @param self The pointer being rebound.
-     * @param source The raw pointer to bind.
+     * @param source The vocabulary pointer object providing the address to store.
      *
      * @return Reference to `self`.
      *
-     * @pre If the selected policies include `nullability::always_engaged`, `source` must not be null.
-     * @pre If not null, `source` must point to a valid object that outlives the resulting pointer.
-     * @post `self.get() == static_cast<address_type>(source)`.
+     * @pre `source` refers to a valid object that outlives the resulting pointer.
+     * @post `self.get() == source.get()`.
      *
-     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source == nullptr`. Provides the Strong Exception Safety Guarantee.
+     * @details Rebinds the stored address without applying the configured
+     * nullability policy because the source pointer is statically known to
+     * be always engaged. Supports qualification conversion, covariance, and
+     * type erasure between compatible specializations of distinct vocabulary
+     * pointer templates.
      *
-     * @details Stores the supplied address after applying the configured nullability
-     * policy. Captures the original argument type prior to decay through a forwarding
-     * reference so that C-array arguments can be diagnosed explicitly rather than
-     * silently decaying to element pointers.
-     *
-     * @note This assignment operator is constrained to raw pointers to prevent hijacking copy/move operations or accepting arrays.
      * @remark Rebinds the stored address without affecting ownership or pointee lifetime.
      * @note Enabled by policy `pointer_binding::allowed`.
      */
     /**
-     * @overload constexpr Self& operator=(this Self& self, const Pointer<Element, Args...>& source)
+     * @overload constexpr Self& operator=(this Self& self, Source&& source)
      *
-     * @tparam Pointer A pointer-like class template exposing `get()`.
-     * @tparam Element The element type of the source pointer-like type.
-     * @tparam Args Additional template parameters of the source pointer-like type.
+     * @tparam Self The non-const concrete pointer type deduced from the call site.
+     * @tparam Source A compatible, nullable vocabulary pointer type.
      *
-     * @param source The pointer-like object providing access to a pointer-compatible address value.
+     * @param self The pointer being rebound.
+     * @param source The vocabulary pointer object providing the address to store.
      *
      * @return Reference to `self`.
      *
-     * @pre `source.get()` must be a valid expression convertible to `address_type`.
-     * @pre If the selected policies include `nullability::always_engaged`, `source.get()` must not be null.
-     * @pre If not null, `source.get()` must point to a valid object that outlives the resulting pointer.
-     * @post `self.get() == static_cast<address_type>(source.get())`.
+     * @pre If not null, `source` must refer to a valid object that outlives the resulting pointer.
+     * @post `self.get() == source.get()`.
      *
-     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source.get() == nullptr`. Provides the Strong Exception Safety Guarantee.
+     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `source` is disengaged. Provides the Strong Exception Safety Guarantee.
+     *
+     * @details Rebinds the stored address after applying the configured
+     * nullability policy. Supports qualification conversion, covariance, and
+     * type erasure between compatible specializations of distinct vocabulary
+     * pointer templates.
+     *
+     * @remark Rebinds the stored address without affecting ownership or pointee lifetime.
+     * @note Enabled by policy `pointer_binding::allowed`.
+     */
+    /**
+     * @overload constexpr Self& operator=(this Self& self, Source&& source)
+     *
+     * @tparam Self The non-const concrete pointer type deduced from the call site.
+     * @tparam Source An external pointer type compatible with `concrete_ptr_instance` and addressable through `std::to_address`.
+     *
+     * @param self The pointer being rebound.
+     * @param source The pointer-like object providing the address to store.
+     *
+     * @return Reference to `self`.
+     *
+     * @pre `std::to_address(source)` must be a valid expression convertible to `address_type`.
+     * @pre If the selected policies include `nullability::always_engaged`, `std::to_address(source)` must not be null.
+     * @pre If not null, `std::to_address(source)` must point to a valid object that outlives the resulting pointer.
+     * @post `self.get() == std::to_address(source)`.
+     *
+     * @throws std::invalid_argument if the selected policies include `nullability::always_engaged` and `std::to_address(source) == nullptr`. Provides the Strong Exception Safety Guarantee.
+     *
+     * @details Obtains the address using `std::to_address()` before applying the
+     * configured nullability policy, allowing interoperability with standard and
+     * third-party pointer-like types, including raw pointers. Captures the original
+     * argument type prior to decay through a forwarding reference so that C-array
+     * arguments can be diagnosed explicitly rather than silently decaying to element
+     * pointers.
      *
      * @remark Rebinds the stored address without affecting ownership or pointee lifetime.
      * @note Enabled by policy `pointer_binding::allowed`.
