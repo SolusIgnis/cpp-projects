@@ -83,7 +83,7 @@ namespace {
             derived_type derived_service;
             derived_service.extra = expected_bar_val;
             std::size_t count     = 0;
-            dummy_ptr->service = derived_service;
+            dummy_ptr->service    = dependency_ptr{derived_service};
 
             expect(eq(dummy_ptr->counter == nullptr, true));
             dummy_ptr->counter = std::addressof(count);
