@@ -120,7 +120,6 @@ export namespace base::vocab::inline ptr {
      * @tparam P A concrete vocabulary pointer specialization.
      */
     template<VocabPtr P>
-        requires VocabPtrSourceFor<P, iterator_ptr, typename P::address_type>
     iterator_ptr(P) -> iterator_ptr<typename P::element_type>;
 
     /**

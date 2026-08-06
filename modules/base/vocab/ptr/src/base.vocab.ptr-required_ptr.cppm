@@ -121,7 +121,6 @@ export namespace base::vocab::inline ptr {
      * @tparam P A concrete vocabulary pointer specialization.
      */
     template<VocabPtr P>
-        requires VocabPtrSourceFor<P, required_ptr, typename P::address_type>
     required_ptr(P) -> required_ptr<typename P::element_type>;
 
     /**
@@ -130,6 +129,6 @@ export namespace base::vocab::inline ptr {
      * @tparam Pointer A compatible pointer-like type with an `element_type` exposed through `std::pointer_traits`.
      */
     template<PointerWithElementType Pointer>
-        requires PointerCompatibleWith<Pointer, required_ptr<typename std::pointer_traits<Pointer>::element_type>>
+        requires (!VocabPtr<Pointer>)
     required_ptr(Pointer) -> required_ptr<typename std::pointer_traits<Pointer>::element_type>;
 } //namespace base::vocab::inline ptr
