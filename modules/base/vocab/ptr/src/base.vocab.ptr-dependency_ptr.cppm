@@ -108,12 +108,14 @@ export namespace base::vocab::inline ptr {
     };
 
     /**
-     * @brief Deduction guide for `dependency_ptr`.
+     * @brief Deduction guide for `dependency_ptr` from lvalue references.
      *
      * @tparam T The type of the referenced object.
      *
      * @remark Deduces `T` from the referenced object, preserving cv-qualification.
+     * @remark Excludes `VocabPtr`s and `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
      */
     template<typename T>
+        requires (!VocabPtr<T>) && (!PointerWithElementType<T>)
     dependency_ptr(T&) -> dependency_ptr<T>;
 } //namespace base::vocab::inline ptr

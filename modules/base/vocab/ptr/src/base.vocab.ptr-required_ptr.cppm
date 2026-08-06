@@ -104,11 +104,12 @@ export namespace base::vocab::inline ptr {
     };
 
     /**
-     * @brief Deduction guide for `required_ptr`.
+     * @brief Deduction guide for `required_ptr` from lvalue references.
      *
      * @tparam T The type of the referenced object.
      *
      * @remark Deduces `T` from the referenced object, preserving cv-qualification.
+     * @remark Excludes `VocabPtr`s and `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
      */
     template<typename T>
         requires (!VocabPtr<T>) && (!PointerWithElementType<T>)
@@ -125,7 +126,7 @@ export namespace base::vocab::inline ptr {
     //required_ptr(T*) -> required_ptr<T>;
 
     /**
-     * @brief Deduction guide for `required_ptr`.
+     * @brief Deduction guide for `required_ptr` from other `VocabPtr`s.
      *
      * @tparam VocabPointer A concrete vocabulary pointer specialization.
      */
@@ -134,9 +135,9 @@ export namespace base::vocab::inline ptr {
     required_ptr(VocabPointer) -> required_ptr<typename VocabPointer::element_type>;
 
     /**
-     * @brief Deduction guide for `required_ptr`.
+     * @brief Deduction guide for `required_ptr` from other pointers.
      *
-     * @tparam Pointer A compatible pointer-like type.
+     * @tparam Pointer A compatible pointer-like type with an `element_type` exposed through `std::pointer_traits`.
      */
     template<PointerWithElementType Pointer>
         requires PointerCompatibleWith<Pointer, required_ptr<typename std::pointer_traits<Pointer>::element_type>>

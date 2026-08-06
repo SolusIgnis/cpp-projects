@@ -100,13 +100,15 @@ export namespace base::vocab::inline ptr {
     };
 
     /**
-     * @brief Deduction guide for `alias_ptr`.
+     * @brief Deduction guide for `alias_ptr` from lvalue references.
      *
      * @tparam T The type of the referenced object.
      *
      * @remark Deduces `T` from the referenced object, preserving cv-qualification.
+     * @remark Excludes `VocabPtr`s and `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
      */
     template<typename T>
+        requires (!VocabPtr<T>) && (!PointerWithElementType<T>)
     alias_ptr(T&) -> alias_ptr<T>;
 
     /**
@@ -116,18 +118,24 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Deduces `T` from the pointee, preserving cv-qualification.
      */
-    template<typename T>
-    alias_ptr(T*) -> alias_ptr<T>;
+    //template<typename T>
+    //alias_ptr(T*) -> alias_ptr<T>;
 
     /**
-     * @brief Deduction guide for `alias_ptr`.
+     * @brief Deduction guide for `alias_ptr` from other `VocabPtr`s.
      *
-     * @tparam Pointer A concrete vocabulary pointer template.
-     * @tparam T The type of the pointee.
-     *
-     * @remark Deduces `T` from the pointee, preserving cv-qualification.
+     * @tparam VocabPointer A concrete vocabulary pointer specialization.
      */
-    template<template<typename> typename Pointer, typename T>
-        requires VocabPtr<Pointer<T>>
-    alias_ptr(Pointer<T>) -> alias_ptr<T>;
+    template<typename VocabPointer>
+        requires VocabPtrSourceFor<VocabPointer, alias_ptr, typename VocabPointer::address_type>
+    alias_ptr(VocabPointer) -> alias_ptr<typename VocabPointer::element_type>;
+
+    /**
+     * @brief Deduction guide for `alias_ptr` from other pointers.
+     *
+     * @tparam Pointer A compatible pointer-like type with an `element_type` exposed through `std::pointer_traits`.
+     */
+    template<PointerWithElementType Pointer>
+        requires PointerCompatibleWith<Pointer, alias_ptr<typename std::pointer_traits<Pointer>::element_type>>
+    alias_ptr(Pointer) -> alias_ptr<typename std::pointer_traits<Pointer>::element_type>;
 } //namespace base::vocab::inline ptr
