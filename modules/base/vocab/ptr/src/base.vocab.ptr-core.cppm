@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-core.cppm
  * @version 0.9.0
- * @date July 8, 2026
+ * @date July 28, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -131,19 +131,6 @@ namespace base::vocab::inline ptr {
                              && std::convertible_to<typename std::remove_cvref_t<T>::address_type, TargetAddress>;
 
     /**
-     * @brief Determines whether a type is a pointer compatible with another pointer.
-     *
-     * @tparam T The type being tested.
-     * @tparam OtherPointer The pointer with which compatibility is being tested.
-     *
-     * @details Satisfied when `T` is a raw pointer that is convertible after decay to `OtherPointer`.
-     *
-     * @internal
-     */
-    template<typename T, typename OtherPointer>
-    concept CompatibleRawPtr = std::is_pointer_v<std::remove_cvref_t<T>> && std::convertible_to<std::decay_t<T>, OtherPointer>;
-
-    /**
      * @brief Determines whether a pointer type can be resolved to a given raw address type by `std::to_address`.
      *
      * @tparam T The type being tested.
@@ -193,24 +180,7 @@ namespace base::vocab::inline ptr {
      */
     template<typename Pointee>
     inline constexpr bool is_valid_pointee_v =
-        (!std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>);
-
-    /**
-     * @brief Detects pointer-like types exposing a compatible `get()` member.
-     *
-     * @tparam Source The candidate pointer-like type.
-     * @tparam Target The required pointer target type.
-     *
-     * @details Evaluates to `true` when an object of type `Source` has a `get()` method whose result is convertible to `Target`.
-     *
-     * @remark Facilitates interoperability with other pointer(-like) abstractions without depending on specific library implementations.
-     *
-     * @internal
-     */
-    template<typename Source, typename Target>
-    inline constexpr bool is_smart_ptr_convertible_to_v = requires(Source ptr) {
-                                                              { std::as_const(ptr).get() } -> std::convertible_to<Target>;
-                                                          };
+        !std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>;
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
