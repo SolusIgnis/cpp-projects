@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Parameterized unit tests for base.vocab.ptr
+// Integration tests for base.vocab.ptr
 
 import base.vocab.ptr;
 import ut;
@@ -368,6 +368,91 @@ namespace {
                    >,
                    true)
             );
+        };
+
+        "vocabulary pointers alias external owning pointers"_test = [] mutable {
+            auto unique = std::make_unique<derived_type>();
+            auto shared = std::make_shared<derived_type>();
+            
+            required_ptr<base_type> required = unique;
+            alias_ptr<base_type> alias = shared;
+            
+            expect(eq(required->bar(), unique->bar()));
+            expect(eq(alias->bar(), shared->bar()));
+
+            constexpr std::int32_t u_expected =17;
+            required->value = u_expected;
+            expect(eq(unique->value, u_expected));
+
+            constexpr std::int32_t s_expected = 29;
+            alias->value = s_expected;
+            expect(eq(shared->value, s_expected));
+        };
+
+        "nullability policy is enforced from owning smart pointers"_test = [] mutable {
+            std::unique_ptr<std::int32_t> empty_unique{};
+        
+            { //always-engaged pointer
+                bool threw = false;
+                bool wrong_exception = false;
+                try {
+                    [[maybe_unused]] required_ptr dummy_ptr = empty_unique;
+                }
+                catch (const std::invalid_argument&) {
+                    threw = true;
+                } catch (...) {
+                    wrong_exception = true;
+                }
+        
+                expect(eq(threw, true));
+                expect(eq(wrong_exception, false));
+            } //always-engaged pointer
+        
+            { //nullable pointer
+                bool threw = false;
+                bool wrong_exception = false;
+                try {
+                    alias_ptr ptr = empty_unique;
+                }
+                catch (const std::invalid_argument&) {
+                    threw = true;
+                } catch (...) {
+                    wrong_exception = true;
+                }
+        
+                expect(eq(threw, false));
+                expect(eq(wrong_exception, false));
+                expect(eq(ptr == nullptr, true));
+            } //nullable pointer
+        };
+
+        "vocabulary pointers observe but never participate in ownership"_test = [] mutable {
+            constexpr std::int32_t expected = 21;
+
+            auto shared = std::make_shared<derived_type>();
+            const auto original_count = shared.use_count();
+
+            {
+                alias_ptr alias = shared;
+                expect(eq(shared.use_count(), original_count));
+                alias->extra = expected;
+            } //~alias
+            expect(eq(shared.use_count(), original_count));
+            expect(eq(shared->extra, expected));
+
+            auto owner = std::make_unique<derived_type>();
+            required_ptr<base_type> ptr1 = owner;
+
+            {
+                required_ptr<base_type> ptr2 = owner;
+                ptr2->value = expected;
+            } //~ptr2
+
+            auto owner2 = std::move(owner);
+            
+            expect(eq(owner.get(), nullptr));
+            expect(eq(owner2->bar(), ptr1->bar()));
+            expect(eq(owner2->value, expected))
         };
 
         "`iterator_ptr` is a contiguous iterator"_test = [] mutable {
