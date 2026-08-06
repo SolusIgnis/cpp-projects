@@ -452,8 +452,8 @@ namespace {
 
             auto owner2 = std::move(owner);
             
-            expect(eq(owner.get(), nullptr));
-            expect(eq(std::to_address(owner2), std::to_address(ptr1)));
+            expect(eq(owner.get() == nullptr, true));
+            expect(eq(std::to_address(owner2) == std::to_address(ptr1), true));
             expect(eq(owner2->bar(), ptr1->bar()));
             expect(eq(owner2->value, expected));
         };
