@@ -415,6 +415,7 @@ namespace {
                 bool wrong_exception = false;
                 try {
                     alias_ptr ptr = empty_unique;
+                    expect(eq(ptr == nullptr, true));
                 }
                 catch (const std::invalid_argument&) {
                     threw = true;
@@ -424,7 +425,6 @@ namespace {
         
                 expect(eq(threw, false));
                 expect(eq(wrong_exception, false));
-                expect(eq(ptr == nullptr, true));
             } //nullable pointer
         };
 
@@ -453,6 +453,7 @@ namespace {
             auto owner2 = std::move(owner);
             
             expect(eq(owner.get(), nullptr));
+            expect(eq(std::to_address(owner2), std::to_address(ptr1)));
             expect(eq(owner2->bar(), ptr1->bar()));
             expect(eq(owner2->value, expected));
         };
