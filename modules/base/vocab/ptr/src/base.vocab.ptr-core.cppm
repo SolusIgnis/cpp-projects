@@ -375,7 +375,7 @@ export namespace base::vocab::inline ptr {
             requires (!std::is_void_v<element_type>) && ptr_policies::allowed_reference_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, std::addressof(source)}
         {}
-#ifdef TOGGLE_IMPLICIT_REFERENCE_ASSIGNMENT
+#ifndef TOGGLE_IMPLICIT_REFERENCE_ASSIGNMENT
         ///@brief Rebinds the pointer to another object.
         template<typename Self>
             requires (!std::is_const_v<Self>)
