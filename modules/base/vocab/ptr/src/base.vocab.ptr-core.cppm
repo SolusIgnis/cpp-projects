@@ -166,6 +166,15 @@ namespace base::vocab::inline ptr {
                                  && ResolvableToAddress<std::remove_cvref_t<T>, typename TargetPtr::address_type>;
 
     /**
+     * @brief Determines whether a pointer-like type has an exposed element type.
+     */
+    template<typename T>
+    concept PointerWithElementType =
+        requires {
+            typename std::pointer_traits<std::remove_cvref_t<T>>::element_type;
+        };
+
+    /**
      * @brief Determines whether a type may be used as a vocabulary pointer pointee.
      *
      * @tparam Pointee The candidate pointee type.
