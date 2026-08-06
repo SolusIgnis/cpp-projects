@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-core.cppm
  * @version 0.9.0
- * @date July 28, 2026
+ * @date August 6, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -375,7 +375,7 @@ export namespace base::vocab::inline ptr {
             requires (!std::is_void_v<element_type>) && ptr_policies::allowed_reference_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, std::addressof(source)}
         {}
-
+#ifndef TOGGLE_IMPLICIT_REFERENCE_ASSIGNMENT
         ///@brief Rebinds the pointer to another object.
         template<typename Self>
             requires (!std::is_const_v<Self>)
@@ -385,7 +385,7 @@ export namespace base::vocab::inline ptr {
             self.address_ = std::addressof(source);
             return self;
         }
-
+#endif
         //===== Pointer Binding (Allowed)  =====
 
         ///@brief Implicitly converts from a compatible, always-engaged vocabulary pointer type bypassing nullability policy checks. Explicit when `element_type` is void to avoid implicit conversion chaining.
