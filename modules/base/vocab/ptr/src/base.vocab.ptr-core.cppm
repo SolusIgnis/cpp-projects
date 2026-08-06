@@ -554,7 +554,7 @@ export namespace base::vocab::inline ptr {
             ;
 
         //================================================================================
-        // Deleted Constructors and Assignment Operators: No Aliasing Temporaries
+        // Deleted Constructors and Assignment Operators: References & Temporaries
         //================================================================================
 
         //===== Reference Binding (Allowed) =====
@@ -636,7 +636,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self, typename P>
             requires (!std::same_as<P, std::nullptr_t>)
         constexpr void reset(this Self& self, P&& source) noexcept(std::is_nothrow_assignable_v<Self&, P>)
-            requires std::is_assignable_v<Self&, P>
+            requires std::is_assignable_v<Self&, P> || (std::is_reference_v<P> && std::constructible_from<Self, P>)
         {
             if constexpr (std::is_reference_v<P>) {
                 //references require explicit construction before rebinding
