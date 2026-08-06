@@ -265,7 +265,7 @@ namespace {
                                                     typename SourceTag,
                                                     bool IsConstructibleFrom,
                                                     bool IsConvertibleFrom,
-                                                    bool IsAssignableFrom = IsConstructibleFrom /*&& !std::same_as<SourceTag, ref_tag>*/>() {
+                                                    bool IsAssignableFrom = IsConstructibleFrom && !std::same_as<SourceTag, ref_tag>>() {
                     //Explicitly constructible unless removing qualifier
                     expect(
                         eq(std::constructible_from<ConcretePtr<Pointee>, source_t<Pointee, SourceTag>>, IsConstructibleFrom)
