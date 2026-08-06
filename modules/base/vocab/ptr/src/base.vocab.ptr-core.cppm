@@ -638,7 +638,12 @@ export namespace base::vocab::inline ptr {
         constexpr void reset(this Self& self, P&& source) noexcept(std::is_nothrow_assignable_v<Self&, P>)
             requires std::is_assignable_v<Self&, P>
         {
-            self = std::forward<P>(source);
+            if constexpr (std::is_reference_v<P>) {
+                //references require explicit construction before rebinding
+                self = Self{std::forward<P>(source)};
+            } else {
+                self = std::forward<P>(source);
+            }
         }
 
         //===== Nullability (Nullable) =====

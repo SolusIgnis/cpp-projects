@@ -573,14 +573,15 @@ namespace {
         // Rebinding
         //============================================================
 
-        "rebind via assignment from reference"_test = [] mutable {
+        "rebind via copy-assignment from reference construction"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
                     const std::int32_t a{};
                     const std::int32_t b = 2;
 
                     ConcretePtr<const std::int32_t> ptr{a};
-                    ptr = b;
+                    //error: ```ptr = b;``` is deleted to prevent implicit conversions
+                    ptr = ConcretePtr{b};
 
                     expect(eq(*ptr, b));
                     expect(eq(ptr.get(), std::addressof(b)));
