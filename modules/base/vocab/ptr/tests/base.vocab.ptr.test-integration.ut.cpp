@@ -12,6 +12,8 @@ using namespace base::vocab::ptr;
 
 namespace {
     struct base_type {
+        virtual ~base_type() = default;
+
         std::int32_t value{0};
 
         std::size_t foo(this auto&& self) { return sizeof(self); }
@@ -452,7 +454,7 @@ namespace {
             
             expect(eq(owner.get(), nullptr));
             expect(eq(owner2->bar(), ptr1->bar()));
-            expect(eq(owner2->value, expected))
+            expect(eq(owner2->value, expected));
         };
 
         "`iterator_ptr` is a contiguous iterator"_test = [] mutable {
