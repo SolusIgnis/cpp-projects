@@ -385,6 +385,12 @@ export namespace base::vocab::inline ptr {
             self.address_ = std::addressof(source);
             return self;
         }
+#else
+        ///@brief Rebinds the pointer to another object.
+        template<typename Self>
+        constexpr Self& operator=(this Self& self, reference source) noexcept
+            requires (!std::is_void_v<element_type>) && ptr_policies::allowed_reference_binding_v<policy_set>
+            = delete;
 #endif
         //===== Pointer Binding (Allowed)  =====
 
