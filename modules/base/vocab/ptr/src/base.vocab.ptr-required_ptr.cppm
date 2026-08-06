@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-required_ptr.cppm
  * @version 0.9.0
- * @date July 6, 2026
+ * @date August 5, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -116,7 +116,7 @@ export namespace base::vocab::inline ptr {
     required_ptr(T&&) -> required_ptr<std::remove_reference_t<T>>;
 
     /**
-     * @brief Deduction guide for `required_ptr` from other pointers.
+     * @brief Deduction guide for `required_ptr` from pointers.
      *
      * @tparam P A pointer-like type with an `element_type` exposed through `std::pointer_traits`.
      */

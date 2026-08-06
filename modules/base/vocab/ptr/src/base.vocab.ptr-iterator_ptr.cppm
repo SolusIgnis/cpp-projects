@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-iterator_ptr.cppm
  * @version 0.9.0
- * @date July 6, 2026
+ * @date August 5, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -103,31 +103,22 @@ export namespace base::vocab::inline ptr {
     };
 
     /**
-     * @brief Deduction guide for `iterator_ptr` from lvalue references.
+     * @brief Deduction guide for `iterator_ptr` from references.
      *
      * @tparam T The type of the referenced object.
      *
      * @remark Deduces `T` from the referenced object, preserving cv-qualification.
-     * @remark Excludes `VocabPtr`s and `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
+     * @remark Excludes `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
      */
     template<typename T>
-        requires (!VocabPtr<T>) && (!PointerWithElementType<T>)
-    iterator_ptr(T&) -> iterator_ptr<T>;
+        requires (!PointerWithElementType<T>)
+    iterator_ptr(T&&) -> iterator_ptr<std::remove_reference_t<T>>;
 
     /**
-     * @brief Deduction guide for `iterator_ptr` from other `VocabPtr`s.
+     * @brief Deduction guide for `iterator_ptr` from pointers.
      *
-     * @tparam P A concrete vocabulary pointer specialization.
+     * @tparam P A pointer-like type with an `element_type` exposed through `std::pointer_traits`.
      */
-    template<VocabPtr P>
-    iterator_ptr(P) -> iterator_ptr<typename P::element_type>;
-
-    /**
-     * @brief Deduction guide for `iterator_ptr` from other pointers.
-     *
-     * @tparam Pointer A compatible pointer-like type with an `element_type` exposed through `std::pointer_traits`.
-     */
-    template<PointerWithElementType Pointer>
-        requires PointerCompatibleWith<Pointer, iterator_ptr<typename std::pointer_traits<Pointer>::element_type>>
-    iterator_ptr(Pointer) -> iterator_ptr<typename std::pointer_traits<Pointer>::element_type>;
+    template<PointerWithElementType P>
+    iterator_ptr(P) -> iterator_ptr<typename std::pointer_traits<P>::element_type>;
 } //namespace base::vocab::inline ptr
