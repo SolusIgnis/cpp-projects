@@ -111,7 +111,7 @@ export namespace base::vocab::inline ptr {
      * @remark Deduces `T` from the referenced object, preserving cv-qualification.
      */
     template<typename T>
-        requires !VocabPtr<T> && !PointerWithElementType<T>
+        requires (!VocabPtr<T>) && (!PointerWithElementType<T>)
     required_ptr(T&) -> required_ptr<T>;
 
     /**
