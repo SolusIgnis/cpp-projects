@@ -116,23 +116,13 @@ export namespace base::vocab::inline ptr {
     required_ptr(T&) -> required_ptr<T>;
 
     /**
-     * @brief Deduction guide for `required_ptr`.
-     *
-     * @tparam T The type of the pointee.
-     *
-     * @remark Deduces `T` from the pointee, preserving cv-qualification.
-     */
-    //template<typename T>
-    //required_ptr(T*) -> required_ptr<T>;
-
-    /**
      * @brief Deduction guide for `required_ptr` from other `VocabPtr`s.
      *
-     * @tparam VocabPointer A concrete vocabulary pointer specialization.
+     * @tparam P A concrete vocabulary pointer specialization.
      */
-    template<typename VocabPointer>
-        requires VocabPtrSourceFor<VocabPointer, required_ptr, typename VocabPointer::address_type>
-    required_ptr(VocabPointer) -> required_ptr<typename VocabPointer::element_type>;
+    template<VocabPtr P>
+        requires VocabPtrSourceFor<P, required_ptr, typename P::address_type>
+    required_ptr(P) -> required_ptr<typename P::element_type>;
 
     /**
      * @brief Deduction guide for `required_ptr` from other pointers.

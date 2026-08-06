@@ -118,4 +118,22 @@ export namespace base::vocab::inline ptr {
     template<typename T>
         requires (!VocabPtr<T>) && (!PointerWithElementType<T>)
     dependency_ptr(T&) -> dependency_ptr<T>;
+
+    /**
+     * @brief Deduction guide for `dependency_ptr` from other `VocabPtr`s.
+     *
+     * @tparam P A concrete vocabulary pointer specialization.
+     */
+    template<VocabPtr P>
+        requires VocabPtrSourceFor<P, dependency_ptr, typename P::address_type>
+    dependency_ptr(P) -> dependency_ptr<typename P::element_type>;
+
+    /**
+     * @brief Deduction guide for `dependency_ptr` from other pointers.
+     *
+     * @tparam Pointer A compatible pointer-like type with an `element_type` exposed through `std::pointer_traits`.
+     */
+    template<PointerWithElementType Pointer>
+        requires PointerCompatibleWith<Pointer, dependency_ptr<typename std::pointer_traits<Pointer>::element_type>>
+    dependency_ptr(Pointer) -> dependency_ptr<typename std::pointer_traits<Pointer>::element_type>;
 } //namespace base::vocab::inline ptr

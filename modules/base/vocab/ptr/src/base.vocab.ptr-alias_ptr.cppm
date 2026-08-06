@@ -112,23 +112,13 @@ export namespace base::vocab::inline ptr {
     alias_ptr(T&) -> alias_ptr<T>;
 
     /**
-     * @brief Deduction guide for `alias_ptr`.
-     *
-     * @tparam T The type of the pointee.
-     *
-     * @remark Deduces `T` from the pointee, preserving cv-qualification.
-     */
-    //template<typename T>
-    //alias_ptr(T*) -> alias_ptr<T>;
-
-    /**
      * @brief Deduction guide for `alias_ptr` from other `VocabPtr`s.
      *
-     * @tparam VocabPointer A concrete vocabulary pointer specialization.
+     * @tparam P A concrete vocabulary pointer specialization.
      */
-    template<typename VocabPointer>
-        requires VocabPtrSourceFor<VocabPointer, alias_ptr, typename VocabPointer::address_type>
-    alias_ptr(VocabPointer) -> alias_ptr<typename VocabPointer::element_type>;
+    template<VocabPtr P>
+        requires VocabPtrSourceFor<P, alias_ptr, typename P::address_type>
+    alias_ptr(P) -> alias_ptr<typename P::element_type>;
 
     /**
      * @brief Deduction guide for `alias_ptr` from other pointers.
