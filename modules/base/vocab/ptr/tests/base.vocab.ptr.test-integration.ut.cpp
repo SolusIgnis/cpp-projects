@@ -77,7 +77,6 @@ namespace {
             base_type base_service;
 
             dummy_type dummy_obj{.service = dependency_ptr{base_service}};
-            auto dummy_ptr = base::vocab::pointer_to<required_ptr>(dummy_obj);
 
             constexpr std::int32_t expected_bar_val = 11;
             derived_type derived_service;
@@ -85,6 +84,7 @@ namespace {
             std::size_t count     = 0;
             dummy_obj.service     = dependency_ptr{derived_service};
 
+            auto dummy_ptr = base::vocab::pointer_to<required_ptr>(dummy_obj);
             expect(eq(dummy_ptr->counter == nullptr, true));
             dummy_ptr->counter = std::addressof(count);
 
