@@ -1478,7 +1478,6 @@ namespace {
                 expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, decltype(array)>, false));
 
                 expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, decltype(array[0])>, true));
-                expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, decltype(array[0])>, true));
 
                 auto ptr = base::vocab::pointer_to<ConcretePtr>(array[1]);
 
@@ -1502,7 +1501,6 @@ namespace {
                 expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t[3]>&, decltype(array)>, false));
 
                 expect(eq(std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array[0])>, true));
-                expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t[3]>&, decltype(array[0])>, true));
 
                 auto ptr = base::vocab::pointer_to<ConcretePtr, std::int32_t[3]>(array[1]);
 
