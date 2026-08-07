@@ -927,7 +927,7 @@ namespace {
                     base_type b;
                     ConcretePtr<base_type> bptr{b};
 
-                    bptr = d;
+                    bptr = ConcretePtr{d};
 
                     expect(eq(bptr.get(), static_cast<base_type*>(std::addressof(d))));
                 }
@@ -956,7 +956,7 @@ namespace {
                     base_type b;
                     ConcretePtr<const base_type> bptr{b};
 
-                    bptr = d;
+                    bptr = ConcretePtr{d};
 
                     expect(eq(bptr.get(), static_cast<const base_type*>(std::addressof(d))));
                 }
