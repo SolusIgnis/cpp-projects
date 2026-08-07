@@ -1723,7 +1723,7 @@ namespace {
 
                 constexpr auto rebound = std::invoke([] {
                     auto ptr = base::vocab::pointer_to<ConcretePtr>(a);
-                    ptr = b;
+                    ptr = ConcretePtr{b};
                     return ptr;
                 });
 
