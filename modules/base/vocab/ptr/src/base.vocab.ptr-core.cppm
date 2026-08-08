@@ -636,14 +636,14 @@ export namespace base::vocab::inline ptr {
                 self = std::forward<P>(source);
             }
         }
-#ifdef TOGGLE_POINTER_CASTS
+
         ///@brief Changes the pointee cv-qualification of a pointer.
         template<typename Destination>
         friend constexpr ConcretePtr<Destination> const_pointer_cast(concrete_ptr_instance source) noexcept
         {
             return ConcretePtr<Destination>(validated_address_tag{}, const_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
         }
-
+#ifdef TOGGLE_POINTER_CASTS
         ///@brief Converts the static pointee type of a pointer.
         template<typename Destination>
         friend constexpr ConcretePtr<Destination> static_pointer_cast(concrete_ptr_instance source) noexcept
