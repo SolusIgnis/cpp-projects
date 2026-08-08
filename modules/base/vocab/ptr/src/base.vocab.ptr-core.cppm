@@ -217,6 +217,8 @@ export namespace base::vocab::inline ptr {
     template<template<typename> typename ConcretePtr, typename Pointee, ptr_policies::PtrPolicyList PolicySet>
         requires is_valid_pointee_v<Pointee>
     class ptr_core {
+        template<template<typename> typename, typename, typename>
+        friend class ptr_core;
     public:
         struct derived_from_ptr_core;
 
@@ -638,8 +640,8 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Changes the pointee cv-qualification of a pointer.
-        template<typename Destination, typename Source>
-        friend constexpr ConcretePtr<Destination> const_pointer_cast(ConcretePtr<Source> source) noexcept
+        template<typename Destination>
+        friend constexpr ConcretePtr<Destination> const_pointer_cast(concrete_ptr_instance source) noexcept
         {
             return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, const_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
         }
