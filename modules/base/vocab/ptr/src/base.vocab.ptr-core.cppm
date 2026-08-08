@@ -636,7 +636,43 @@ export namespace base::vocab::inline ptr {
                 self = std::forward<P>(source);
             }
         }
+#ifdef TOGGLE_POINTER_CASTS
+        ///@brief Changes the pointee cv-qualification of a pointer.
+        template<typename Destination>
+        friend constexpr ConcretePtr<Destination> const_pointer_cast(concrete_ptr_instance source) noexcept
+        {
+            return ConcretePtr<Destination>(validated_address_tag{}, const_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
+        }
 
+        ///@brief Converts the static pointee type of a pointer.
+        template<typename Destination>
+        friend constexpr ConcretePtr<Destination> static_pointer_cast(concrete_ptr_instance source) noexcept
+        {
+            return ConcretePtr<Destination>(validated_address_tag{}, static_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
+        }
+
+        ///@brief Converts the dynamic pointee type of a pointer along a class hierarchy using RTTI.
+        template<typename Destination>
+        friend inline ConcretePtr<Destination> dynamic_pointer_cast(concrete_ptr_instance source) noexcept(ptr_policies::nullable_nullability_v<policy_set>)
+        {
+            if constexpr (ptr_policies::nullable_nullability_v<policy_set>) {
+                return ConcretePtr<Destination>(validated_address_tag{}, dynamic_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
+            } else {
+                if (auto* p = dynamic_cast<typename ConcretePtr<Destination>::address_type>(source.get()); !p) {
+                    throw std::bad_cast{};
+                } else {
+                    return ConcretePtr<Destination>(validated_address_tag{}, p);
+                }
+            }
+        }
+
+        ///@brief Reinterprets the pointer's stored address as pointing to an arbitrary destination type.
+        template<typename Destination>
+        friend inline ConcretePtr<Destination> reinterpret_pointer_cast(concrete_ptr_instance source) noexcept
+        {
+            return ConcretePtr<Destination>(validated_address_tag{}, reinterpret_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
+        }
+#endif
         //===== Nullability (Nullable) =====
 
         ///@brief Reset the pointer to `nullptr`.

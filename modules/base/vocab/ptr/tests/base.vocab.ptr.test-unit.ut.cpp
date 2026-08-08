@@ -570,6 +570,71 @@ namespace {
         };
 
         //============================================================
+        // Pointer Casting
+        //============================================================
+
+        "const_pointer_cast alters pointee cv-qualifications"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                auto test_cast = []<typename Source, typename Destination>() {
+                    Source value{};
+
+                    auto source = base::vocab::pointer_to<ConcretePtr>(value);
+                    auto result = const_pointer_cast<Destination>(source);
+
+                    expect(eq(std::same_as<decltype(result), ConcretePtr<Destination>>, true));
+                    expect(eq(result.get(), std::addressof(value)));
+                };
+
+                test_cast.template operator()<std::int32_t, std::int32_t>();
+                test_cast.template operator()<std::int32_t, const std::int32_t>();
+                test_cast.template operator()<std::int32_t, volatile std::int32_t>();
+                test_cast.template operator()<std::int32_t, const volatile std::int32_t>();
+                test_cast.template operator()<const std::int32_t, std::int32_t>();
+                test_cast.template operator()<const std::int32_t, const std::int32_t>();
+                test_cast.template operator()<const std::int32_t, volatile std::int32_t>();
+                test_cast.template operator()<const std::int32_t, const volatile std::int32_t>();
+                test_cast.template operator()<volatile std::int32_t, std::int32_t>();
+                test_cast.template operator()<volatile std::int32_t, const std::int32_t>();
+                test_cast.template operator()<volatile std::int32_t, volatile std::int32_t>();
+                test_cast.template operator()<volatile std::int32_t, const volatile std::int32_t>();
+                test_cast.template operator()<const volatile std::int32_t, std::int32_t>();
+                test_cast.template operator()<const volatile std::int32_t, const std::int32_t>();
+                test_cast.template operator()<const volatile std::int32_t, volatile std::int32_t>();
+                test_cast.template operator()<const volatile std::int32_t, const volatile std::int32_t>();
+            });
+        };
+
+        "const_pointer_cast preserves null state"_test = [] {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                    ConcretePtr<int> source{nullptr};
+
+                    auto result = const_pointer_cast<const int>(source);
+
+                    expect(eq(result == nullptr, true));
+                }
+            });
+        };
+
+        "static_pointer_cast alters pointee static type"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                
+            });
+        };
+
+        "dynamic_pointer_cast alters pointee dynamic type"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                
+            });
+        };
+
+        "reinterpret_pointer_cast alters pointee type"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                
+            });
+        };
+
+        //============================================================
         // Rebinding
         //============================================================
 
