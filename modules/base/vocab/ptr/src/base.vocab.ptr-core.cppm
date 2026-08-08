@@ -375,23 +375,7 @@ export namespace base::vocab::inline ptr {
             requires (!std::is_void_v<element_type>) && ptr_policies::allowed_reference_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, std::addressof(source)}
         {}
-#ifdef TOGGLE_IMPLICIT_REFERENCE_ASSIGNMENT
-        ///@brief Rebinds the pointer to another object.
-        template<typename Self>
-            requires (!std::is_const_v<Self>)
-        constexpr Self& operator=(this Self& self, reference source) noexcept
-            requires (!std::is_void_v<element_type>) && ptr_policies::allowed_reference_binding_v<policy_set>
-        {
-            self.address_ = std::addressof(source);
-            return self;
-        }
-#else
-        ///@brief Rebinds the pointer to another object.
-        template<typename Self>
-        constexpr Self& operator=(this Self& self, reference source) noexcept
-            requires (!std::is_void_v<element_type>) && ptr_policies::allowed_reference_binding_v<policy_set>
-            = delete;
-#endif
+
         //===== Pointer Binding (Allowed)  =====
 
         ///@brief Implicitly converts from a compatible, always-engaged vocabulary pointer type bypassing nullability policy checks. Explicit when `element_type` is void to avoid implicit conversion chaining.
@@ -570,6 +554,13 @@ export namespace base::vocab::inline ptr {
         Self& operator=(this Self&&, rvalue_reference)
             requires ptr_policies::allowed_reference_binding_v<policy_set>
         = delete /*("Assignment from `rvalue_reference` deleted to discourage dangling by rejecting direct binding to temporaries.")*/
+            ;
+
+        ///@brief Deleted assignment from `reference` to prevent implicit conversions from objects to pointers.
+        template<typename Self>
+        Self& operator=(this Self&&, reference)
+            requires (!std::is_void_v<element_type>) && ptr_policies::allowed_reference_binding_v<policy_set>
+        = delete /*("Assignment from `reference` deleted to prevent implicit conversions from objects to pointers. Use the `reference` constructor and copy assignment to be explicit about the conversion.")*/
             ;
 
         //===== Pointer Binding (Allowed) =====
@@ -1149,23 +1140,6 @@ export namespace base::vocab::inline ptr {
      * @remark Enables type erasure by converting pointer-to-`OtherPointee` to pointer-to-`void` when applicable.
      * @remark Enables conversion between compatible specializations of the same concrete pointer type.
      * @note Enabled regardless of policy selections because conversion between different pointee specializations of the same concrete pointer type preserves all class invariants.
-     */
-    /**
-     * @overload constexpr Self& operator=(this Self& self, reference source) noexcept
-     *
-     * @tparam Self The non-const concrete pointer type deduced from the call site.
-     *
-     * @param self The pointer being rebound.
-     * @param source The object to reference.
-     *
-     * @return Reference to `self`.
-     *
-     * @pre `source` must refer to a valid object that outlives the pointer.
-     * @post `self.get() == std::addressof(source)`.
-     *
-     * @remark Rebinds the stored address directly to an existing object without affecting ownership or pointee lifetime.
-     * @remark Prevents binding to temporaries via a deleted rvalue-reference overload.
-     * @note Enabled by policy `reference_binding::allowed`.
      */
     /**
      * @overload constexpr Self& operator=(this Self& self, Source&& source)
