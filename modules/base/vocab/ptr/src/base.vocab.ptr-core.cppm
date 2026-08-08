@@ -638,8 +638,8 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Changes the pointee cv-qualification of a pointer.
-        template<typename Destination>
-        friend constexpr ConcretePtr<Destination> const_pointer_cast(concrete_ptr_instance source) noexcept
+        template<typename Destination, typename Source>
+        friend constexpr ConcretePtr<Destination> const_pointer_cast(ConcretePtr<Source> source) noexcept
         {
             return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, const_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
         }
