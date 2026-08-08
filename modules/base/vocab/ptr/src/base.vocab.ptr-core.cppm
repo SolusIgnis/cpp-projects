@@ -641,7 +641,7 @@ export namespace base::vocab::inline ptr {
         template<typename Destination>
         friend constexpr ConcretePtr<Destination> const_pointer_cast(concrete_ptr_instance source) noexcept
         {
-            return ConcretePtr<Destination>(ConcretePtr<Destination>::validated_address_tag{}, const_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
+            return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, const_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
         }
 #ifdef TOGGLE_POINTER_CASTS
         ///@brief Converts the static pointee type of a pointer.
