@@ -582,7 +582,7 @@ namespace {
                     auto result = const_pointer_cast<Destination>(source);
 
                     expect(eq(std::same_as<decltype(result), ConcretePtr<Destination>>, true));
-                    expect(eq(result.get(), std::addressof(value)));
+                    expect(eq(result.get() == std::addressof(value), true));
                 };
 
                 test_cast.template operator()<std::int32_t, std::int32_t>();
