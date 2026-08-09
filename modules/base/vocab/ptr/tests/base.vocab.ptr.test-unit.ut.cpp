@@ -616,13 +616,36 @@ namespace {
             });
         };
 
-        "static_pointer_cast alters pointee static type"_test = [] mutable {
+        "static_pointer_cast converts static pointee type up and down inheritance hierarchies"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                
+                derived_type object;
+
+                ConcretePtr<derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
+                auto result1 = static_pointer_cast<base_type>(source);
+
+                expect(eq(std::same_as<decltype(result1), ConcretePtr<base_type>>, true));
+                expect(eq(result1.get(), static_cast<base*>(std::addressof(object)));
+
+                auto result2 = static_pointer_cast<derived_type>(result1);
+
+                expect(eq(std::same_as<decltype(result2), ConcretePtr<derived_type>>, true));
+                expect(eq(result2.get(), std::addressof(object));
             });
         };
 
-        "dynamic_pointer_cast alters pointee dynamic type"_test = [] mutable {
+        "static_pointer_cast preserves null state"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                    ConcretePtr<int> source{nullptr};
+
+                    auto result = static_pointer_cast<const int>(source);
+
+                    expect(eq(result == nullptr, true));
+                }
+            });
+        };
+
+        "dynamic_pointer_cast converrs dynamic pointee type"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 
             });
@@ -1686,6 +1709,25 @@ namespace {
                     // Should be implicit (convertible)
                     auto takes_void = [](ConcretePtr<const void> ptr) { return ptr.get(); };
                     expect(eq(takes_void(typed_ptr), static_cast<const void*>(std::addressof(value))));
+                }
+            });
+        };
+
+        "static_pointer_cast converts static pointee type to and from void"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
+                    std::int32_t object;
+
+                    ConcretePtr<std::int32_t> source = base::vocab::pointer_to<ConcretePtr>(object);
+                    auto result1 = static_pointer_cast<void>(source);
+
+                    expect(eq(std::same_as<decltype(result1), ConcretePtr<void>>, true));
+                    expect(eq(result1.get(), static_cast<void*>(std::addressof(object)));
+
+                    auto result2 = static_pointer_cast<std::int32_t>(result1);
+
+                    expect(eq(std::same_as<decltype(result2), ConcretePtr<std::int32_t>>, true));
+                    expect(eq(result2.get(), std::addressof(object));
                 }
             });
         };

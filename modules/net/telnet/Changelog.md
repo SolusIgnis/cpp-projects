@@ -23,6 +23,9 @@
 - Added `ptr_core` policy-based implementation class and refactored all behaviors from the 4 concrete pointer types into `ptr_core`.
 - Reimplemented the 4 concrete pointer types as derived from `ptr_core` specialized on a `type_list` of policies.
 - Added module-level `base/vocab/ptr/README.md` to summarize the design, architecture, and philosophy of the `base.vocab.ptr` module.
+- Added `iterator_ptr` to `base.vocab.ptr` module.
+- Provided `std::pointer_traits` partial specialization for vocabulary pointers, including `pointer_to` and `to_address`.
+- Added `const_pointer_cast`, `static_pointer_cast`, `dynamic static_pointer_cast`, and `reinterpret_pointer_cast` to cast the pointee type of a pointer template.
 
 ## [0.5.7] - February 11, 2026
 ### Added
