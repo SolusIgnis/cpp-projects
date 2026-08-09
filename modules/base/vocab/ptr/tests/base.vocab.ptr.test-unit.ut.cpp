@@ -624,12 +624,12 @@ namespace {
                 auto result1 = static_pointer_cast<base_type>(source);
 
                 expect(eq(std::same_as<decltype(result1), ConcretePtr<base_type>>, true));
-                expect(eq(result1.get(), static_cast<base*>(std::addressof(object)));
+                expect(eq(result1.get(), static_cast<base_type*>(std::addressof(object)));
 
                 auto result2 = static_pointer_cast<derived_type>(result1);
 
                 expect(eq(std::same_as<decltype(result2), ConcretePtr<derived_type>>, true));
-                expect(eq(result2.get(), std::addressof(object));
+                expect(eq(result2.get(), std::addressof(object)));
             });
         };
 
@@ -1727,7 +1727,7 @@ namespace {
                     auto result2 = static_pointer_cast<std::int32_t>(result1);
 
                     expect(eq(std::same_as<decltype(result2), ConcretePtr<std::int32_t>>, true));
-                    expect(eq(result2.get(), std::addressof(object));
+                    expect(eq(result2.get(), std::addressof(object)));
                 }
             });
         };
