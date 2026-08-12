@@ -664,7 +664,7 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] friend inline auto dynamic_pointer_cast(concrete_ptr_instance source) noexcept(ptr_policies::nullable_nullability_v<policy_set>)
         {
             if constexpr (ptr_policies::nullable_nullability_v<policy_set>) {
-                return ConcretePtr<Destination>(validated_address_tag{}, dynamic_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
+                return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, dynamic_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
             } else {
                 if (auto* p = dynamic_cast<typename ConcretePtr<Destination>::address_type>(source.get()); !p) {
                     throw std::bad_cast{};
@@ -692,7 +692,7 @@ export namespace base::vocab::inline ptr {
             return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, result);
         }
 #else
-#warning "std::start_lifetime_as not defined."
+#warning "`std::start_lifetime_as` not defined. `base::vocab::ptr::start_lifetime_as` will be unavailable."
 #endif
         //===== Nullability (Nullable) =====
 
