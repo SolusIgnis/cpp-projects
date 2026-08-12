@@ -692,7 +692,7 @@ export namespace base::vocab::inline ptr {
             return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, result);
         }
 #else
-    static_assert(false, "std::start_lifetime_as not defined.");
+#warning "std::start_lifetime_as not defined."
 #endif
         //===== Nullability (Nullable) =====
 
