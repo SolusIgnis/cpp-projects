@@ -681,7 +681,7 @@ export namespace base::vocab::inline ptr {
         {
             return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, reinterpret_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
         }
-
+#if defined(__cpp_lib_start_lifetime_as)
         ///@brief Starts an object lifetime at a given address.
         template <typename Target>
             requires std::is_implicit_lifetime_v<Target> && (alignof(Target) <= alignof(element_type))
@@ -691,7 +691,9 @@ export namespace base::vocab::inline ptr {
             using destination = std::remove_pointer_t<decltype(result)>;
             return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, result);
         }
-
+#else
+    static_assert(false, "std::start_lifetime_as not defined.");
+#endif
         //===== Nullability (Nullable) =====
 
         ///@brief Reset the pointer to `nullptr`.
