@@ -520,7 +520,8 @@ namespace {
                 expect(eq(ArrowAccessible<ConcretePtr<std::int32_t>>, false));
                 expect(eq(ArrowAccessible<ConcretePtr<base_type>>, true));
 
-                base_type obj{.value = 123};
+                base_type obj;
+                obj.value = 123;
                 auto ptr = base::vocab::pointer_to<ConcretePtr>(obj);
 
                 expect(eq(ptr->value, obj.value));
