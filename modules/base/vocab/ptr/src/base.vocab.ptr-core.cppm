@@ -657,7 +657,7 @@ export namespace base::vocab::inline ptr {
         {
             return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, static_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
         }
-#ifdef TOGGLE_POINTER_CASTS
+#ifndef TOGGLE_POINTER_CASTS
         ///@brief Converts the dynamic pointee type of a pointer along a class hierarchy using RTTI.
         template<typename Destination>
              requires is_valid_pointee_v<Destination>
