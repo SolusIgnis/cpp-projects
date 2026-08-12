@@ -166,11 +166,11 @@ namespace {
 
                 expect(eq(InstantiableWith<ConcretePtr, std::int32_t&>, false));
                 expect(eq(InstantiableWith<ConcretePtr, std::int32_t&&>, false));
-                expect(eq(InstantiableWith<ConcretePtr, void(int)>, false));
-                expect(eq(InstantiableWith<ConcretePtr, void (&)(int)>, false));
-                expect(eq(InstantiableWith<ConcretePtr, void (*)(int, float)>, false));
-                expect(eq(InstantiableWith<ConcretePtr, void (**)(std::string, int)>, false));
-                expect(eq(InstantiableWith<ConcretePtr, void (*******)(int)>, false));
+                expect(eq(InstantiableWith<ConcretePtr, void(std::int32_t)>, false));
+                expect(eq(InstantiableWith<ConcretePtr, void (&)(std::int32_t)>, false));
+                expect(eq(InstantiableWith<ConcretePtr, void (*)(std::int32_t, float)>, false));
+                expect(eq(InstantiableWith<ConcretePtr, void (**)(std::string, std::int32_t)>, false));
+                expect(eq(InstantiableWith<ConcretePtr, void (*******)(std::int32_t)>, false));
             });
         };
 
@@ -1022,7 +1022,7 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     ConcretePtr<std::int32_t> source{nullptr};
 
-                    auto result = const_pointer_cast<const int>(source);
+                    auto result = const_pointer_cast<const std::int32_t>(source);
 
                     expect(eq(result == nullptr, true));
                 }
@@ -1058,68 +1058,61 @@ namespace {
             });
         };
 
-        "dynamic_pointer_cast converts dynamic pointee type"_test = [] mutable {
+        "dynamic_pointer_cast performs multiple-inheritance upcasts"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                
+                derived_type value;
+
+                auto source = base::vocab::pointer_to<ConcretePtr>(value);
+
+                auto result_1 = dynamic_pointer_cast<mixin_1>(source);
+                auto result_2 = dynamic_pointer_cast<mixin_2>(source);
+
+                expect(eq(std::same_as<decltype(result_1), ConcretePtr<mixin_1>>, true));
+                expect(eq(result_1.get(), dynamic_cast<mixin_1*>(std::addressof(value))));
+
+                expect(eq(std::same_as<decltype(result_2), ConcretePtr<mixin_2>>, true));
+                expect(eq(result_2.get(), dynamic_cast<mixin_2*>(std::addressof(value))));
             });
         };
 
-"dynamic_pointer_cast performs multiple-inheritance upcasts"_test = [] mutable {
-    test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-        derived_type value;
+        "dynamic_pointer_cast performs successful downcasts"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                derived_type value;
 
-        auto source = base::vocab::pointer_to<ConcretePtr>(value);
+                ConcretePtr<base_type> source = base::vocab::pointer_to<ConcretePtr>(value);
 
-        auto result_1 = dynamic_pointer_cast<mixin_1>(source);
-        auto result_2 = dynamic_pointer_cast<mixin_2>(source);
+                auto result = dynamic_pointer_cast<derived_type>(source);
 
-        expect(eq(std::same_as<decltype(result_1), ConcretePtr<mixin_1>>, true));
-        expect(eq(result_1.get(), dynamic_cast<mixin_1*>(std::addressof(value))));
+                expect(eq(std::same_as<decltype(result), ConcretePtr<derived_type>>, true));
+                expect(eq(result.get(), std::addressof(value)));
+                expect(eq(result->extra, value.extra));
+            });
+        };
 
-        expect(eq(std::same_as<decltype(result_2), ConcretePtr<mixin_2>>, true));
-        expect(eq(result_2.get(), dynamic_cast<mixin_2*>(std::addressof(value))));
-    });
-};
+        "dynamic_pointer_cast handles failed downcasts according to policy"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                struct wrong_derived : base_type {};
 
-"dynamic_pointer_cast performs successful downcasts"_test = [] mutable {
-    test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-        derived_type value;
+                derived_type value;
 
-        ConcretePtr<base_type> source = base::vocab::pointer_to<ConcretePtr>(value);
+                ConcretePtr<base_type> source = base::vocab::pointer_to<ConcretePtr>(value);
 
-        auto result = dynamic_pointer_cast<derived_type>(source);
+                bool threw = false;
+                bool wrong_exception = false;
+                try {
+                    auto result = dynamic_pointer_cast<wrong_derived>(source);
+        
+                    expect(eq(result.get() == nullptr, pointer_test_traits<ConcretePtr>::is_nullable));
+                } catch (const std::bad_cast&) {
+                    threw = true;
+                } catch (...) {
+                    wrong_exception = true;
+                }
 
-        expect(eq(std::same_as<decltype(result), ConcretePtr<derived_type>>, true));
-        expect(eq(result.get(), std::addressof(value)));
-        expect(eq(result->extra, value.extra));
-    });
-};
-
-"dynamic_pointer_cast handles failed downcasts according to policy"_test = [] mutable {
-    test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-        struct wrong_derived : base_type {};
-
-        derived_type value;
-
-        ConcretePtr<base_type> source = base::vocab::pointer_to<ConcretePtr>(value);
-
-        bool threw = false;
-        bool wrong_exception = false;
-
-        try {
-            auto result = dynamic_pointer_cast<wrong_derived>(source);
-
-            expect(eq(result.get() == nullptr, pointer_test_traits<ConcretePtr>::is_nullable));
-        } catch (const std::bad_cast&) {
-            threw = true;
-        } catch (...) {
-            wrong_exception = true;
-        }
-
-        expect(eq(threw, !pointer_test_traits<ConcretePtr>::is_nullable));
-        expect(eq(wrong_exception, false));
-    });
-};
+                expect(eq(threw, !pointer_test_traits<ConcretePtr>::is_nullable));
+                expect(eq(wrong_exception, false));
+            });
+        };
 
         "dynamic_pointer_cast preserves null state"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
@@ -1272,7 +1265,7 @@ namespace {
                 expect(
                     eq(std::same_as<
                            std::common_reference_t<ConcretePtr<const std::int32_t>, ConcretePtr<const volatile std::int32_t>>,
-                           ConcretePtr<const volatile int>
+                           ConcretePtr<const volatile std::int32_t>
                        >,
                        true)
                 );
@@ -1284,7 +1277,7 @@ namespace {
                 expect(eq(
                     std::same_as<
                         std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const volatile std::int32_t>>,
-                        ConcretePtr<const volatile int>
+                        ConcretePtr<const volatile std::int32_t>
                     >,
                     true
                 ));
@@ -1685,7 +1678,7 @@ namespace {
                 expect(eq(std::same_as<decltype(ptr.get()), volatile std::int32_t*>, true));
 
                 //Ensure conversion to raw pointer preserves volatile
-                volatile int* raw = ptr;
+                volatile std::int32_t* raw = ptr;
                 expect(eq(raw, std::addressof(hardware_register)));
 
                 //Ensure dereference preserves volatile
