@@ -659,7 +659,7 @@ namespace {
                     auto result = dynamic_pointer_cast<base_type>(source);
 
                     expect(eq(result == nullptr, true));
-                }>/
+                }>*/
             });
         };
 
