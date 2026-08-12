@@ -570,7 +570,7 @@ namespace {
         };
 
         //============================================================
-        // Pointer Casting
+        // Pointer Casting & Lifetime Transmutation
         //============================================================
 
         "const_pointer_cast alters pointee cv-qualifications"_test = [] mutable {
@@ -607,7 +607,7 @@ namespace {
         "const_pointer_cast preserves null state"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    ConcretePtr<int> source{nullptr};
+                    ConcretePtr<std::int32_t> source{nullptr};
 
                     auto result = const_pointer_cast<const int>(source);
 
@@ -636,24 +636,136 @@ namespace {
         "static_pointer_cast preserves null state"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    ConcretePtr<int> source{nullptr};
+                    ConcretePtr<derived_type> source{nullptr};
 
-                    auto result = static_pointer_cast<const int>(source);
+                    auto result = static_pointer_cast<base_type>(source);
 
                     expect(eq(result == nullptr, true));
                 }
             });
         };
 
-        "dynamic_pointer_cast converrs dynamic pointee type"_test = [] mutable {
+        "dynamic_pointer_cast converts dynamic pointee type"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 
             });
         };
 
-        "reinterpret_pointer_cast alters pointee type"_test = [] mutable {
+        "dynamic_pointer_cast preserves null state"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                
+                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                    ConcretePtr<derived_type> source{nullptr};
+
+                    auto result = dynamic_pointer_cast<base_type>(source);
+
+                    expect(eq(result == nullptr, true));
+                }
+            });
+        };
+
+        "reinterpret_pointer_cast views objects as raw bytes"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                struct object {
+                    std::int32_t x;
+                    double y;
+                };
+
+                object value;
+
+                auto source = base::vocab::pointer_to<ConcretePtr>(value);
+                auto result_bytes = reinterpret_pointer_cast<std::byte>(source);
+                auto result_chars = reinterpret_pointer_cast<char>(source);
+
+                expect(eq(std::same_as<decltype(result_bytes), ConcretePtr<std::byte>>, true));
+                expect(eq(result_bytes.get(), reinterpret_cast<std::byte*>(std::addressof(value))));
+
+                expect(eq(std::same_as<decltype(result_chars), ConcretePtr<char>>, true));
+                expect(eq(result_chars.get(), reinterpret_cast<char*>(std::addressof(value))));
+            });
+        };
+
+        "reinterpret_pointer_cast alters how a pointer sees its pointee type"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                struct origin_t {
+                    std::int32_t foo;
+                    char bar;
+                    double baz;
+                };
+                struct target_t {
+                    std::int64_t foo;
+                    double bar;
+                    std::uint8_t baz;
+                };
+
+                origin_t value;
+
+                auto source = base::vocab::pointer_to<ConcretePtr>(value);
+                //WARNING: Using this result pointer's stored address potentially invokes undefined behavior.
+                auto result = reinterpret_pointer_cast<target_t>(source);
+
+                expect(eq(std::same_as<decltype(result), ConcretePtr<target_t>>, true));
+                expect(eq(result.get(), reinterpret_cast<target_t*>(std::addressof(value))));
+            });
+        };
+
+        "reinterpret_pointer_cast preserves null state"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                    ConcretePtr<std::int32_t> source{nullptr};
+
+                    auto result = reinterpret_pointer_cast<std::byte>(source);
+
+                    expect(eq(result.get() == nullptr, true));
+                }
+            });
+        };
+        
+        "start_lifetime_as alters pointee type"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                struct origin_t {
+                    std::int32_t foo;
+                    std::int32_t bar;
+                    std::int32_t baz;
+                    double qux;
+                };
+                struct target_t {
+                    std::int32_t x;
+                    std::int32_t y;
+                    std::int32_t z;
+                    double velocity;
+                };
+
+                const origin_t value    = { .foo = 1, .bar = 3, .baz = 5, .qux = 2.0 };
+                const origin_t expected = value;
+
+                auto source = base::vocab::pointer_to<ConcretePtr>(value);
+                auto result = start_lifetime_as<target_t>(source);
+
+                expect(eq(std::same_as<decltype(result), ConcretePtr<const target_t>>, true));
+                expect(eq(result.get(), reinterpret_cast<target_t*>(std::addressof(value))));
+                expect(eq(result->x, expected.foo));
+                expect(eq(result->y, expected.bar));
+                expect(eq(result->z, expected.baz));
+                expect(eq(result->velocity, expected.qux));
+            });
+        };
+
+        "start_lifetime_as preserves null state"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                    struct origin_t {
+                        std::int32_t foo;
+                    };
+                    struct target_t {
+                        std::int32_t x;
+                    };
+                    
+                    ConcretePtr<origin_t> source{nullptr};
+
+                    auto result = start_lifetime_as<target_t>(source);
+
+                    expect(eq(result.get() == nullptr, true));
+                }
             });
         };
 

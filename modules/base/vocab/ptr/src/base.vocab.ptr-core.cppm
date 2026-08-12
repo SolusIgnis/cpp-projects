@@ -45,6 +45,8 @@
  * defined in other partitions rather than with `ptr_core` directly.
  *
  * @todo Future Development: Use `= delete("reason")` instead of the C-style comments once the C++26 feature becomes available.
+ * @todo Future Development: Consider a `contract_assert` against null in `apply_nullability_policy` once C++26 contracts are generally available.
+ * @todo Future Development: Consider a `contract_assert` around dynamic alignment requirements in `start_lifetime_as` once C++26 contracts are generally available.
  * @todo Consider monadic operations for `nullability::nullable` pointers. Also consider whether they should require `traversal::rebinding`.
  */
 
@@ -643,7 +645,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Changes the pointee cv-qualification of a pointer.
         template<typename Destination>
              requires is_valid_pointee_v<Destination>
-        friend constexpr ConcretePtr<Destination> const_pointer_cast(concrete_ptr_instance source) noexcept
+        [[nodiscard]] friend constexpr auto const_pointer_cast(concrete_ptr_instance source) noexcept
         {
             return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, const_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
         }
@@ -651,7 +653,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Converts the static pointee type of a pointer.
         template<typename Destination>
              requires is_valid_pointee_v<Destination>
-        friend constexpr ConcretePtr<Destination> static_pointer_cast(concrete_ptr_instance source) noexcept
+        [[nodiscard]] friend constexpr auto static_pointer_cast(concrete_ptr_instance source) noexcept
         {
             return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, static_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
         }
@@ -659,7 +661,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Converts the dynamic pointee type of a pointer along a class hierarchy using RTTI.
         template<typename Destination>
              requires is_valid_pointee_v<Destination>
-        friend inline ConcretePtr<Destination> dynamic_pointer_cast(concrete_ptr_instance source) noexcept(ptr_policies::nullable_nullability_v<policy_set>)
+        [[nodiscard]] friend inline auto dynamic_pointer_cast(concrete_ptr_instance source) noexcept(ptr_policies::nullable_nullability_v<policy_set>)
         {
             if constexpr (ptr_policies::nullable_nullability_v<policy_set>) {
                 return ConcretePtr<Destination>(validated_address_tag{}, dynamic_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
@@ -671,15 +673,25 @@ export namespace base::vocab::inline ptr {
                 }
             }
         }
-
+#endif
         ///@brief Reinterprets the pointer's stored address as pointing to an arbitrary destination type.
         template<typename Destination>
              requires is_valid_pointee_v<Destination>
-        friend inline ConcretePtr<Destination> reinterpret_pointer_cast(concrete_ptr_instance source) noexcept
+        [[nodiscard]] friend inline auto reinterpret_pointer_cast(concrete_ptr_instance source) noexcept
         {
             return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, reinterpret_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
         }
-#endif
+
+        ///@brief Starts an object lifetime at a given address.
+        template <typename Target>
+            requires std::is_implicit_lifetime_v<Target> && (alignof(Target) <= alignof(element_type))
+        [[nodiscard]] friend inline auto start_lifetime_as(concrete_ptr_instance source) noexcept
+        {
+            auto* result = std::start_lifetime_as<Target>(source);
+            using destination = std::remove_pointer_t<decltype(result)>;
+            return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, result);
+        }
+
         //===== Nullability (Nullable) =====
 
         ///@brief Reset the pointer to `nullptr`.
