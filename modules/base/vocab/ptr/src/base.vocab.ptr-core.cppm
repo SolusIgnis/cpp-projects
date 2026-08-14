@@ -644,42 +644,45 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Changes the pointee cv-qualification of a pointer.
         template<typename Destination>
-             requires is_valid_pointee_v<Destination>
+            requires is_valid_pointee_v<Destination> && std::same_as<std::remove_cv_t<Destination>, value_type>
         [[nodiscard]] friend constexpr auto const_pointer_cast(concrete_ptr_instance source) noexcept
         {
             return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, const_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
         }
 
         ///@brief Converts the static pointee type of a pointer.
-        template<typename Destination>
-             requires is_valid_pointee_v<Destination>
+        template<typename Target>
+             requires is_valid_pointee_v<Target>
         [[nodiscard]] friend constexpr auto static_pointer_cast(concrete_ptr_instance source) noexcept
         {
-            return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, static_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
+            using destination = base::meta::traits::copy_cv_t<element_type, Target>;
+            return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, static_cast<typename ConcretePtr<destination>::address_type>(source.get()));
         }
-#ifndef TOGGLE_POINTER_CASTS
+
         ///@brief Converts the dynamic pointee type of a pointer along a class hierarchy using RTTI.
-        template<typename Destination>
-             requires is_valid_pointee_v<Destination>
+        template<typename Target>
+             requires is_valid_pointee_v<Target>
         [[nodiscard]] friend inline auto dynamic_pointer_cast(concrete_ptr_instance source) noexcept(ptr_policies::nullable_nullability_v<policy_set>)
         {
+            using destination = base::meta::traits::copy_cv_t<element_type, Target>;
             if constexpr (ptr_policies::nullable_nullability_v<policy_set>) {
-                return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, dynamic_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
+                return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, dynamic_cast<typename ConcretePtr<destination>::address_type>(source.get()));
             } else {
-                if (auto* p = dynamic_cast<typename ConcretePtr<Destination>::address_type>(source.get()); !p) {
+                if (auto* p = dynamic_cast<typename ConcretePtr<destination>::address_type>(source.get()); !p) {
                     throw std::bad_cast{};
                 } else {
-                    return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, p);
+                    return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, p);
                 }
             }
         }
-#endif
+
         ///@brief Reinterprets the pointer's stored address as pointing to an arbitrary destination type.
-        template<typename Destination>
-             requires is_valid_pointee_v<Destination>
+        template<typename Target>
+             requires is_valid_pointee_v<Target>
         [[nodiscard]] friend inline auto reinterpret_pointer_cast(concrete_ptr_instance source) noexcept
         {
-            return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, reinterpret_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
+            using destination = base::meta::traits::copy_cv_t<element_type, Target>;
+            return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, reinterpret_cast<typename ConcretePtr<destination>::address_type>(source.get()));
         }
 #if defined(__cpp_lib_start_lifetime_as)
         ///@brief Starts an object lifetime at a given address.

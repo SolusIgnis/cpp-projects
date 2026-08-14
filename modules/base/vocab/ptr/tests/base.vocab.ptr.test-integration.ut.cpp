@@ -565,7 +565,17 @@ namespace {
         };
 
         "vocabulary pointer casts and conversions preserve object representation"_test = [] mutable {
-            derived_type value;
+            const derived_type object;
+
+            const auto expected = std::as_bytes(std::span{std::addressof(object), 1});
+
+            const auto object_ptr = base::vocab::pointer_to<required_ptr>(object);
+            cursor_ptr byte_ptr   = reinterpret_pointer_cast<std::byte>(object_ptr);
+
+            static_buffer<std::byte, sizeof(derived_type)> buffer;
+            std::copy(byte_ptr, byte_ptr + sizeof(derived_type), buffer.data());
+
+            expect(eq(std::span<const std::byte>{buffer}, expected));
         };
     };
 } //namespace
