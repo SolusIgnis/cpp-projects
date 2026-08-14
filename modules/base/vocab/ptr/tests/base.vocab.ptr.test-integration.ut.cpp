@@ -575,7 +575,7 @@ namespace {
             static_buffer<std::byte, sizeof(derived_type)> buffer;
             std::copy(byte_ptr, byte_ptr + sizeof(derived_type), buffer.data());
 
-            expect(eq(std::span<const std::byte>{buffer}, expected));
+            expect(eq(std::ranges::equal(std::span{buffer}, expected), true));
         };
     };
 } //namespace
