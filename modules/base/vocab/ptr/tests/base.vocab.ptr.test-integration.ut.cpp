@@ -11,14 +11,22 @@ using namespace ut;
 using namespace base::vocab::ptr;
 
 namespace {
-    struct base_type {
+    struct mixin_1 {
+        virtual ~mixin_1() = default;
+        virtual std::int32_t bar() = 0;
+    };
+
+    struct mixin_2 {
+        virtual ~mixin_2() = default;
+        std::size_t foo(this auto&& self) { return sizeof(self); }
+    };
+
+    struct base_type : mixin_1, mixin_2 {
         virtual ~base_type() = default;
 
         std::int32_t value{0};
 
-        std::size_t foo(this auto&& self) { return sizeof(self); }
-
-        virtual std::int32_t bar() { return value; }
+        std::int32_t bar() override { return value; }
     };
 
     struct derived_type : base_type {
@@ -554,6 +562,10 @@ namespace {
 
             // The result when filtering with `iterator_ptr` iterators should be the same as when filtering with raw-pointer iterators.
             expect(eq(std::ranges::equal(even_values, expected), true));
+        };
+
+        "vocabulary pointer casts and conversions preserve object representation"_test = [] mutable {
+            derived_type value;
         };
     };
 } //namespace
