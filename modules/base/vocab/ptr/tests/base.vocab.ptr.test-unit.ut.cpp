@@ -1046,6 +1046,17 @@ namespace {
             });
         };
 
+        "static_pointer_cast preserves cv-qualifications"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                const derived_type object;
+
+                ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
+                auto result = static_pointer_cast<base_type>(source);
+
+                expect(eq(std::same_as<decltype(result), ConcretePtr<const base_type>>, true));
+            });
+        };
+
         "static_pointer_cast preserves null state"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
