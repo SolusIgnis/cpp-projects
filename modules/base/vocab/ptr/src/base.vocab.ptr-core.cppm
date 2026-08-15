@@ -684,19 +684,7 @@ export namespace base::vocab::inline ptr {
             using destination = base::meta::traits::copy_cv_t<element_type, Target>;
             return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, reinterpret_cast<typename ConcretePtr<destination>::address_type>(source.get()));
         }
-#if defined(__cpp_lib_start_lifetime_as)
-        ///@brief Starts an object lifetime at a given address.
-        template <typename Target>
-            requires std::is_implicit_lifetime_v<Target> && (alignof(Target) <= alignof(element_type))
-        [[nodiscard]] friend inline auto start_lifetime_as(concrete_ptr_instance source) noexcept
-        {
-            auto* result = std::start_lifetime_as<Target>(source);
-            using destination = std::remove_pointer_t<decltype(result)>;
-            return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, result);
-        }
-#else
-#warning "`std::start_lifetime_as` not defined. `base::vocab::ptr::start_lifetime_as` will be unavailable."
-#endif
+
         //===== Nullability (Nullable) =====
 
         ///@brief Reset the pointer to `nullptr`.
@@ -735,7 +723,27 @@ export namespace base::vocab::inline ptr {
         {
             return true;
         }
+#if defined(__cpp_lib_start_lifetime_as)
+        ///@brief Starts an object lifetime at a given address.
+        template <typename Target>
+            requires std::is_implicit_lifetime_v<Target> && (alignof(Target) <= alignof(element_type))
+        [[nodiscard]] friend inline auto start_lifetime_as(concrete_ptr_instance source) noexcept
+            requires ptr_policies::always_engaged_nullability_v<policy_set>
+        {
+            auto* result = std::start_lifetime_as<Target>(source);
+            using destination = std::remove_pointer_t<decltype(result)>;
+            return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, result);
+        }
 
+        ///@brief Deleted `start_lifetime_as` because `std::start_lifetime_as` requires a pointer to a region of allocated storage.
+        template <typename Target>
+            requires std::is_implicit_lifetime_v<Target> && (alignof(Target) <= alignof(element_type))
+        friend inline auto start_lifetime_as(concrete_ptr_instance source) noexcept
+            requires ptr_policies::nullable_nullability_v<policy_set>
+        = delete /*("`start_lifetime_as` deleted by policy `nullability::nullable` because `std::start_lifetime_as` requires a pointer to a region of allocated storage.")*/;
+#else
+#warning "`std::start_lifetime_as` not defined. `base::vocab::ptr::start_lifetime_as` will be unavailable."
+#endif
         //================================================================================
         // Arithmetic Operators: Implemented for Iteration, Deleted Otherwise
         //================================================================================

@@ -1125,6 +1125,17 @@ namespace {
             });
         };
 
+        "dynamic_pointer_cast preserves cv-qualifications"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                const derived_type object;
+
+                ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
+                auto result = dynamic_pointer_cast<base_type>(source);
+
+                expect(eq(std::same_as<decltype(result), ConcretePtr<const base_type>>, true));
+            });
+        };
+
         "dynamic_pointer_cast preserves null state"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
@@ -1182,6 +1193,17 @@ namespace {
             });
         };
 
+        "reinterpret_pointer_cast preserves cv-qualifications"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                const derived_type object;
+
+                ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
+                auto result = reinterpret_pointer_cast<base_type>(source);
+
+                expect(eq(std::same_as<decltype(result), ConcretePtr<const base_type>>, true));
+            });
+        };
+
         "reinterpret_pointer_cast preserves null state"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
@@ -1221,25 +1243,6 @@ namespace {
                 expect(eq(result->y, expected.bar));
                 expect(eq(result->z, expected.baz));
                 expect(eq(result->velocity, expected.qux));
-            });
-        };
-
-        "start_lifetime_as preserves null state"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    struct origin_t {
-                        std::int32_t foo;
-                    };
-                    struct target_t {
-                        std::int32_t x;
-                    };
-                    
-                    ConcretePtr<origin_t> source{nullptr};
-
-                    auto result = start_lifetime_as<target_t>(source);
-
-                    expect(eq(result.get() == nullptr, true));
-                }
             });
         };
 #else
