@@ -1420,6 +1420,61 @@ export namespace base::vocab::inline ptr {
      * @note This does not indicate engagement/optionality as policy `nullability::always_engaged` implies no disengaged state.
      */
     /**
+     * @fn constexpr auto const_pointer_cast(concrete_ptr_instance source) noexcept
+     *
+     * @tparam Destination The new pointee type. (This operation must only add or remove cv-qualifications; the `value_type` of the pointer remains unchanged.)
+     *
+     * @param source The pointer whose pointee cv-qualifications are being cast.
+     *
+     * @return An instance of the same concrete pointer template specialized with `Destination` as its `element_type`.
+     */
+    /**
+     * @fn constexpr auto static_pointer_cast(concrete_ptr_instance source) noexcept
+     *
+     * @tparam Target The target pointee type.
+     *
+     * @param source The pointer whose pointee type is being cast.
+     *
+     * @return An instance of the same concrete pointer template specialized with the target type as its `element_type`, with the source's cv-qualifications preserved.
+     */
+    /**
+     * @fn inline auto dynamic_pointer_cast(concrete_ptr_instance source) noexcept(...)
+     *
+     * @tparam Target The target pointee type.
+     *
+     * @param source The pointer whose pointee type is being cast.
+     *
+     * @return An instance of the same concrete pointer template specialized with the target type as its `element_type`, with the source's cv-qualifications preserved. (If the pointer has policy `nullability::nullable`, the returned pointer is null in the case of a failed cast.)
+     *
+     * @throws `std::bad_cast` on a failed cast if the pointer has policy `nullability::always_engaged`.
+     *
+     * @note For pointers with policy `nullability::nullable`, a failed cast produces a null pointer. For pointers with policy `nullability::always_engaged`, a failed cast throws `std::bad_cast`.
+     */
+    /**
+     * @fn inline auto reinterpret_pointer_cast(concrete_ptr_instance source) noexcept
+     *
+     * @tparam Target The target pointee type.
+     *
+     * @param source The pointer whose stored address is being reinterpreted.
+     *
+     * @return An instance of the same concrete pointer template specialized with the target type as its `element_type`, with the source's cv-qualifications preserved.
+     *
+     * @warning The resulting pointer's stored address is unchanged, but using it to access an object may result in undefined behavior.
+     */
+    /**
+     * @fn inline auto start_lifetime_as(concrete_ptr_instance source) noexcept
+     *
+     * @tparam Target The type whose object lifetime is to be started.
+     *
+     * @param source The pointer to the region of allocated storage where the object's lifetime is to be started.
+     *
+     * @return An instance of the same concrete pointer template specialized with `Target` as its `element_type`, with the source's cv-qualifications preserved.
+     *
+     * @note `Target` must be an implicit-lifetime type and have an alignment no greater than that of the source's `element_type`.
+     * @warning The behavior is undefined if the half-open range [`source`, `(char*)source + sizeof(Target)`) does not denote a region of allocated storage that is a subset of the region of storage reachable through `source`, or if the region is not suitably aligned for `Target`.
+     * @note Enabled by policy `nullability::always_engaged`.
+     */
+    /**
      * @fn constexpr bool operator==(const concrete_ptr_instance& lhs, const concrete_ptr_instance& rhs) noexcept
      *
      * @param lhs The left-hand side pointer.
