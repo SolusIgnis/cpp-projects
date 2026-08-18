@@ -443,13 +443,13 @@ namespace {
                     operator()<std::int32_t, ref_tag, pointer_test_traits<ConcretePtr>::allows_reference_binding, false>();
 
                 //Pointer binding allows implicit conversion
-        /*        verify_binding_operations.template operator()<
+                verify_binding_operations.template operator()<
                     std::int32_t,
                     ptr_tag,
                     pointer_test_traits<ConcretePtr>::allows_pointer_binding,
                     pointer_test_traits<ConcretePtr>::allows_pointer_binding
                 >();
-                verify_binding_operations.template operator()<
+                /*verify_binding_operations.template operator()<
                     std::int32_t,
                     smart_ptr_tag,
                     pointer_test_traits<ConcretePtr>::allows_pointer_binding,
