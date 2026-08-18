@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-iterator_ptr.cppm
- * @version 0.8.0
- * @date July 6, 2026
+ * @version 0.9.0
+ * @date August 5, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -103,34 +103,22 @@ export namespace base::vocab::inline ptr {
     };
 
     /**
-     * @brief Deduction guide for `iterator_ptr`.
+     * @brief Deduction guide for `iterator_ptr` from references.
      *
      * @tparam T The type of the referenced object.
      *
      * @remark Deduces `T` from the referenced object, preserving cv-qualification.
+     * @remark Excludes `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
      */
     template<typename T>
-    iterator_ptr(T&) -> iterator_ptr<T>;
+        requires (!PointerWithElementType<T>)
+    iterator_ptr(T&&) -> iterator_ptr<std::remove_reference_t<T>>;
 
     /**
-     * @brief Deduction guide for `iterator_ptr`.
+     * @brief Deduction guide for `iterator_ptr` from pointers.
      *
-     * @tparam T The type of the pointee.
-     *
-     * @remark Deduces `T` from the pointee, preserving cv-qualification.
+     * @tparam P A pointer-like type with an `element_type` exposed through `std::pointer_traits`.
      */
-    template<typename T>
-    iterator_ptr(T*) -> iterator_ptr<T>;
-
-    /**
-     * @brief Deduction guide for `iterator_ptr`.
-     *
-     * @tparam Pointer A concrete vocabulary pointer template.
-     * @tparam T The type of the pointee.
-     *
-     * @remark Deduces `T` from the pointee, preserving cv-qualification.
-     */
-    template<template<typename> typename Pointer, typename T>
-        requires VocabPtr<Pointer<T>>
-    iterator_ptr(Pointer<T>) -> iterator_ptr<T>;
+    template<PointerWithElementType P>
+    iterator_ptr(P) -> iterator_ptr<typename std::pointer_traits<P>::element_type>;
 } //namespace base::vocab::inline ptr

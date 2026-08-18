@@ -3,7 +3,7 @@
 /**
  * @module base.vocab.ptr
  * @file base.vocab.ptr.cppm
- * @version 0.8.0
+ * @version 0.9.0
  * @date July 5, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
@@ -33,6 +33,7 @@
 export module base.vocab.ptr;
 
 //Export all partition interfaces
+export import :pointer_to;     ///< @see "base.vocab.ptr-pointer_to.cppm"
 export import :alias_ptr;      ///< @see "base.vocab.ptr-alias_ptr.cppm"
 export import :cursor_ptr;     ///< @see "base.vocab.ptr-cursor_ptr.cppm"
 export import :dependency_ptr; ///< @see "base.vocab.ptr-dependency_ptr.cppm"

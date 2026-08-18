@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-required_ptr.cppm
- * @version 0.8.0
- * @date July 6, 2026
+ * @version 0.9.0
+ * @date August 5, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -104,34 +104,22 @@ export namespace base::vocab::inline ptr {
     };
 
     /**
-     * @brief Deduction guide for `required_ptr`.
+     * @brief Deduction guide for `required_ptr` from references.
      *
      * @tparam T The type of the referenced object.
      *
      * @remark Deduces `T` from the referenced object, preserving cv-qualification.
+     * @remark Excludes `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
      */
     template<typename T>
-    required_ptr(T&) -> required_ptr<T>;
+        requires (!PointerWithElementType<T>)
+    required_ptr(T&&) -> required_ptr<std::remove_reference_t<T>>;
 
     /**
-     * @brief Deduction guide for `required_ptr`.
+     * @brief Deduction guide for `required_ptr` from pointers.
      *
-     * @tparam T The type of the pointee.
-     *
-     * @remark Deduces `T` from the pointee, preserving cv-qualification.
+     * @tparam P A pointer-like type with an `element_type` exposed through `std::pointer_traits`.
      */
-    template<typename T>
-    required_ptr(T*) -> required_ptr<T>;
-
-    /**
-     * @brief Deduction guide for `required_ptr`.
-     *
-     * @tparam Pointer A concrete vocabulary pointer template.
-     * @tparam T The type of the pointee.
-     *
-     * @remark Deduces `T` from the pointee, preserving cv-qualification.
-     */
-    template<template<typename> typename Pointer, typename T>
-        requires VocabPtr<Pointer<T>>
-    required_ptr(Pointer<T>) -> required_ptr<T>;
+    template<PointerWithElementType P>
+    required_ptr(P) -> required_ptr<typename std::pointer_traits<P>::element_type>;
 } //namespace base::vocab::inline ptr

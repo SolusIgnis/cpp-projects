@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Parameterized unit tests for base.vocab.ptr
+// Integration tests for base.vocab.ptr
 
 import base.vocab.ptr;
 import ut;
@@ -11,12 +11,24 @@ using namespace ut;
 using namespace base::vocab::ptr;
 
 namespace {
-    struct base_type {
-        std::int32_t value{0};
+    struct mixin_1 {
+        virtual ~mixin_1()         = default;
+        virtual std::int32_t bar() = 0;
+    };
+
+    struct mixin_2 {
+        virtual ~mixin_2() = default;
 
         std::size_t foo(this auto&& self) { return sizeof(self); }
+    };
 
-        virtual std::int32_t bar() { return value; }
+    struct base_type : mixin_1,
+                       mixin_2 {
+        virtual ~base_type() = default;
+
+        std::int32_t value{0};
+
+        std::int32_t bar() override { return value; }
     };
 
     struct derived_type : base_type {
@@ -72,13 +84,17 @@ namespace {
                 alias_ptr<std::size_t> counter = {};
             };
 
+            base_type base_service;
+
+            dummy_type dummy_obj{.service = dependency_ptr{base_service}};
+
             constexpr std::int32_t expected_bar_val = 11;
             derived_type derived_service;
             derived_service.extra = expected_bar_val;
             std::size_t count     = 0;
-            dummy_type dummy_obj{.service = dependency_ptr{derived_service}};
-            required_ptr dummy_ptr = std::addressof(dummy_obj);
+            dummy_obj.service     = dependency_ptr{derived_service};
 
+            auto dummy_ptr = base::vocab::pointer_to<required_ptr>(dummy_obj);
             expect(eq(dummy_ptr->counter == nullptr, true));
             dummy_ptr->counter = std::addressof(count);
 
@@ -369,6 +385,90 @@ namespace {
             );
         };
 
+        "vocabulary pointers alias external owning pointers"_test = [] mutable {
+            auto unique = std::make_unique<derived_type>();
+            auto shared = std::make_shared<derived_type>();
+
+            required_ptr<base_type> required = unique;
+            alias_ptr<base_type> alias       = shared;
+
+            expect(eq(required->bar(), unique->bar()));
+            expect(eq(alias->bar(), shared->bar()));
+
+            constexpr std::int32_t u_expected = 17;
+            required->value                   = u_expected;
+            expect(eq(unique->value, u_expected));
+
+            constexpr std::int32_t s_expected = 29;
+            alias->value                      = s_expected;
+            expect(eq(shared->value, s_expected));
+        };
+
+        "nullability policy is enforced from owning smart pointers"_test = [] mutable {
+            std::unique_ptr<std::int32_t> empty_unique{};
+
+            { //always-engaged pointer
+                bool threw           = false;
+                bool wrong_exception = false;
+                try {
+                    [[maybe_unused]] required_ptr dummy_ptr = empty_unique;
+                } catch (const std::invalid_argument&) {
+                    threw = true;
+                } catch (...) {
+                    wrong_exception = true;
+                }
+
+                expect(eq(threw, true));
+                expect(eq(wrong_exception, false));
+            } //always-engaged pointer
+
+            { //nullable pointer
+                bool threw           = false;
+                bool wrong_exception = false;
+                try {
+                    alias_ptr ptr = empty_unique;
+                    expect(eq(ptr == nullptr, true));
+                } catch (const std::invalid_argument&) {
+                    threw = true;
+                } catch (...) {
+                    wrong_exception = true;
+                }
+
+                expect(eq(threw, false));
+                expect(eq(wrong_exception, false));
+            } //nullable pointer
+        };
+
+        "vocabulary pointers observe but never participate in ownership"_test = [] mutable {
+            constexpr std::int32_t expected = 21;
+
+            auto shared               = std::make_shared<derived_type>();
+            const auto original_count = shared.use_count();
+
+            {
+                alias_ptr alias = shared;
+                expect(eq(shared.use_count(), original_count));
+                alias->extra = expected;
+            } //~alias
+            expect(eq(shared.use_count(), original_count));
+            expect(eq(shared->extra, expected));
+
+            auto owner                   = std::make_unique<derived_type>();
+            required_ptr<base_type> ptr1 = owner;
+
+            {
+                required_ptr<base_type> ptr2 = owner;
+                ptr2->value                  = expected;
+            } //~ptr2
+
+            auto owner2 = std::move(owner);
+
+            expect(eq(owner.get() == nullptr, true));
+            expect(eq(std::to_address(owner2) == std::to_address(ptr1), true));
+            expect(eq(owner2->bar(), ptr1->bar()));
+            expect(eq(owner2->value, expected));
+        };
+
         "`iterator_ptr` is a contiguous iterator"_test = [] mutable {
             expect(eq(std::input_or_output_iterator<iterator_ptr<std::int32_t>>, true));
             expect(eq(std::input_iterator<iterator_ptr<std::int32_t>>, true));
@@ -462,6 +562,20 @@ namespace {
 
             // The result when filtering with `iterator_ptr` iterators should be the same as when filtering with raw-pointer iterators.
             expect(eq(std::ranges::equal(even_values, expected), true));
+        };
+
+        "vocabulary pointer casts and conversions preserve object representation"_test = [] mutable {
+            const derived_type object;
+
+            const auto expected = std::as_bytes(std::span{std::addressof(object), 1});
+
+            const auto object_ptr = base::vocab::pointer_to<required_ptr>(object);
+            cursor_ptr byte_ptr   = reinterpret_pointer_cast<std::byte>(object_ptr);
+
+            static_buffer<std::byte, sizeof(derived_type)> buffer;
+            std::copy(byte_ptr, byte_ptr + sizeof(derived_type), buffer.data());
+
+            expect(eq(std::ranges::equal(buffer, expected), true));
         };
     };
 } //namespace

@@ -30,15 +30,18 @@ export module base.meta.traits:is_type_specialization_of;
 
 import std;
 
-export namespace base::meta::traits::inline predicates {
+namespace base::meta::traits::inline predicates {
+    template<typename T, template<typename...> typename PrimaryTemplate>
+    inline constexpr bool is_type_specialization_of_impl = false;
+
+    template<template<typename...> typename TT, typename... Args>
+    inline constexpr bool is_type_specialization_of_impl<TT<Args...>, TT> = true;
+
     /**
      * @brief Checks if a type is a specialization of a given template.
      * @tparam T The type to check.
      * @tparam PrimaryTemplate The template to match against.
      */
-    template<typename T, template<typename...> typename PrimaryTemplate>
-    inline constexpr bool is_type_specialization_of_v = false;
-
-    template<template<typename...> typename TT, typename... Args>
-    inline constexpr bool is_type_specialization_of_v<TT<Args...>, TT> = true;
+    export template<typename T, template<typename...> typename PrimaryTemplate>
+    inline constexpr bool is_type_specialization_of_v = is_type_specialization_of_impl<std::remove_cvref_t<T>, PrimaryTemplate>;
 } //namespace base::meta::traits::inline predicates

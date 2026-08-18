@@ -14,6 +14,7 @@ add_named_module(base.vocab.ptr
   PARTITIONS
     src/base.vocab.ptr-policies.cppm
     src/base.vocab.ptr-core.cppm
+    src/base.vocab.ptr-pointer_to.cppm
     src/base.vocab.ptr-alias_ptr.cppm
     src/base.vocab.ptr-cursor_ptr.cppm
     src/base.vocab.ptr-dependency_ptr.cppm

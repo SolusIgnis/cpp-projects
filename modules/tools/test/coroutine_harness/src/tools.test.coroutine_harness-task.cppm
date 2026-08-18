@@ -232,9 +232,9 @@ export namespace tools::test::coroutine_harness {
             void await_resume() noexcept {}
         };
 
-        std::suspend_always initial_suspend() noexcept { return {}; }
+        auto initial_suspend() noexcept { return std::suspend_always{}; }
 
-        suspend_finalize final_suspend() noexcept { return {}; }
+        auto final_suspend() noexcept { return suspend_finalize{}; }
 
         void unhandled_exception() noexcept { exception = std::current_exception(); }
     };

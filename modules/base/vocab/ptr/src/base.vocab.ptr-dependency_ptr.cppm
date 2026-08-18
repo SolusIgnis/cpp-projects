@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-dependency_ptr.cppm
- * @version 0.8.0
- * @date June 9, 2026
+ * @version 0.9.0
+ * @date August 5, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -108,12 +108,22 @@ export namespace base::vocab::inline ptr {
     };
 
     /**
-     * @brief Deduction guide for `dependency_ptr`.
+     * @brief Deduction guide for `dependency_ptr` from references.
      *
      * @tparam T The type of the referenced object.
      *
      * @remark Deduces `T` from the referenced object, preserving cv-qualification.
+     * @remark Excludes `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
      */
     template<typename T>
-    dependency_ptr(T&) -> dependency_ptr<T>;
+        requires (!PointerWithElementType<T>)
+    dependency_ptr(T&&) -> dependency_ptr<std::remove_reference_t<T>>;
+
+    /**
+     * @brief Deduction guide for `dependency_ptr` from pointers.
+     *
+     * @tparam P A pointer-like type with an `element_type` exposed through `std::pointer_traits`.
+     */
+    template<PointerWithElementType P>
+    dependency_ptr(P) -> dependency_ptr<typename std::pointer_traits<P>::element_type>;
 } //namespace base::vocab::inline ptr
