@@ -146,7 +146,7 @@ namespace {
 
     template<typename T>
     struct source_category<T, smart_ptr_tag> {
-        using type = trivial_smart_ptr<T>;
+        using type = trivial_smart_ptr<T>&;
     };
 
     template<typename T, typename Tag>
@@ -449,12 +449,12 @@ namespace {
                     pointer_test_traits<ConcretePtr>::allows_pointer_binding,
                     pointer_test_traits<ConcretePtr>::allows_pointer_binding
                 >();
-                /*verify_binding_operations.template operator()<
+                verify_binding_operations.template operator()<
                     std::int32_t,
                     smart_ptr_tag,
                     pointer_test_traits<ConcretePtr>::allows_pointer_binding,
                     pointer_test_traits<ConcretePtr>::allows_pointer_binding
-                >();*/
+                >();
             });
         };
 
