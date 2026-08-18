@@ -458,7 +458,7 @@ namespace {
             });
         };
 
-        "not bindable from rvalue"_test = [] mutable {
+        "not bindable from pointee rvalue"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, std::int32_t>, false));
                 expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, std::int32_t>, false));
@@ -471,6 +471,22 @@ namespace {
                 expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, std::int32_t&&>, false));
                 expect(eq(std::is_assignable_v<ConcretePtr<const std::int32_t>&, std::int32_t&&>, false));
                 expect(eq(std::is_assignable_v<ConcretePtr<const std::int32_t>&, const std::int32_t&&>, false));
+            });
+        };
+
+        "not bindable from smart pointer rvalue"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>>, false));
+                expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>>, false));
+                expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>>, false));
+
+                expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>&&>, false));
+                expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>&&>, false));
+                expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>&&>, false));
+
+                expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, trivial_smart_ptr<std::int32_t>&&>, false));
+                expect(eq(std::is_assignable_v<ConcretePtr<const std::int32_t>&, trivial_smart_ptr<std::int32_t>&&>, false));
+                expect(eq(std::is_assignable_v<ConcretePtr<const std::int32_t>&, const trivial_smart_ptr<std::int32_t>&&>, false));
             });
         };
 
