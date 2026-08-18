@@ -89,13 +89,15 @@ The result is a family of pointer types that are:
 - structurally consistent
 - semantically explicit
 
+Zero-overhead means that vocabulary pointers introduce no additional runtime cost in time or space compared to semantically equivalent operations using raw pointers.
+
 This architecture provides several benefits:
 
 - Semantic intent becomes visible at the type level.
 - Invalid pointer states become unrepresentable.
 - Common misuse patterns are diagnosed at compile time.
 
-The remainder of this document describes the concrete vocabulary pointer types, the policy system used to define them, and the implementation framework that realizes their behavior.
+The remainder of this document describes the concrete vocabulary pointer types and their operations, the policy system used to define them, and the implementation framework that realizes their behavior.
 
 ---
 ## Concrete Pointer Types
@@ -112,7 +114,9 @@ All five types are:
 - lightweight value types
 - compatible with standard hashing and formatting facilities
 
-They differ only in the operations and invariants selected through the policy framework.
+They differ only in the operations, invariants, and semantics selected through the policy framework.
+
+Note that all five types support class template argument deduction when the pointee type can be deduced from the constructor argument; deduction is independent of whether the corresponding constructor is available for the resulting pointer type.
 
 ### Required Dependency Alias (`dependency_ptr`)
 `base.vocab.ptr:dependency_ptr`
@@ -308,11 +312,44 @@ The distinction between `iterator_ptr` and the aliasing vocabulary pointer types
 | `required_ptr`   | No       | Yes       | Yes     | No         |
 | `alias_ptr`      | Yes      | Yes       | Yes     | No         |
 | `cursor_ptr`     | No       | Yes       | Yes     | Yes        |
-| `iterator_ptr`  | Yes      | Yes       | Yes     | Yes        |
+| `iterator_ptr`   | Yes      | Yes       | Yes     | Yes        |
 
 Each concrete vocabulary pointer type is uniquely distinguished by its selections among these four policies.
 
-The remainder of this document describes the policy framework and core implementation machinery used to synthesize these concrete pointer types.
+---
+## Pointer Casts
+---
+
+The module provides a family of pointer-cast functions for converting vocabulary pointers between pointee types while preserving the semantic properties of the source pointer. Cast operations preserve the concrete pointer type.
+
+The available cast functions correspond closely to their standard-library counterparts:
+
+- `const_pointer_cast` changes the cv-qualification of the pointee type without changing its underlying `value_type`.
+- `static_pointer_cast` performs a compile-time checked static conversion between pointee types.
+- `dynamic_pointer_cast` performs a runtime checked dynamic conversion along a polymorphic class hierarchy using RTTI.
+- `reinterpret_pointer_cast` reinterprets the stored address as pointing to another pointee type.
+- `start_lifetime_as` starts the lifetime of an implicit-lifetime object at the pointer's address and yields a pointer whose pointee is of the type of the object.
+
+Note that the first four operations are analogous to the built-in `const_cast`, `static_cast`, `dynamic_cast`, and `reinterpret_cast` operations applied to the pointer's stored address. `start_lifetime_as` similarly applies `std::start_lifetime_as` to that address.
+
+### Cv-Qualification Preservation
+
+The type-converting casts preserve the source pointer's cv-qualifications while potentially altering its underlying `value_type`. In particular, `static_pointer_cast`, `dynamic_pointer_cast`, and `reinterpret_pointer_cast` may add cv-qualifications specified by the target type, but never remove cv-qualifications inherited from the source.
+
+`const_pointer_cast` is the exception: it is specifically provided to change the pointee's cv-qualification while preserving its underlying `value_type`.
+
+### Nullability
+
+For `dynamic_pointer_cast`, the nullability policy of the concrete pointer type determines the behavior of a failed cast:
+
+- Nullable pointers produce a null pointer.
+- Non-nullable pointers throw `std::bad_cast`.
+
+### Starting Object Lifetimes
+
+`start_lifetime_as` follows the storage and lifetime requirements of `std::start_lifetime_as`. The source must designate a suitably aligned region of allocated storage large enough for the target object.
+
+Because the operation requires a pointer to a region of allocated storage, `start_lifetime_as` is available only for non-nullable pointers.
 
 ---
 ## Pointer Policies (`:policies`)
@@ -358,7 +395,7 @@ Pointers using this policy:
 - do **not** support address ordering comparisons
 - are **not** iterators
 
-This is the preferred policy for most non-owning object references where pointer arithmetic would be semantically meaningless.
+This is the preferred policy for most non-owning object aliases where pointer arithmetic would be semantically meaningless.
 
 ---
 
@@ -366,13 +403,16 @@ This is the preferred policy for most non-owning object references where pointer
 
 #### `reference_binding::allowed`
 
-Allows construction and assignment directly from lvalue references.
+Allows explicit construction directly from lvalue references. Direct assignment from lvalue references is prohibited to avoid implicit conversions. Instead, explicit construction and copy assignment can be used together to achieve the same result.
 
 ```cpp
-widget w;
+widget w1;
+widget w2;
 
-required_ptr<widget> p{w};
-p = w;
+required_ptr p1{w1};
+required_ptr p2{w2};
+
+p2 = required_ptr{w1};
 ```
 
 Binding from temporaries remains prohibited to reduce opportunities for dangling pointers.
@@ -389,21 +429,21 @@ Pointers using this policy must obtain their target addresses through alternativ
 
 #### `pointer_binding::allowed`
 
-Allows construction and assignment from raw pointers and compatible pointer-like types exposing a suitable `get()` interface. This includes, for example, other vocabulary pointers such as pointing a `required_ptr` to the object at the current position of a `cursor_ptr` or binding a `required_ptr` to the address stored in an `alias_ptr` (after validating it is not null).
+Allows construction and assignment from other vocabulary pointers and external compatible pointer-like types addressable through `std::to_address` (including raw pointers). This includes, for example, pointing a `required_ptr` to the object at the current position of a `cursor_ptr` (without needing a redundant null-check) or binding a `required_ptr` to the address stored in an `alias_ptr` (after validating it is not null).
 
 ```cpp
 widget object;
-required_ptr<widget> p1{&object}; // raw pointer
+required_ptr p1{&object}; // raw pointer
 
 auto owner = std::make_unique<widget>();
-required_ptr<widget> p2{owner}; // pointer-like type
+required_ptr p2{owner}; // pointer-like type
 ```
 
 Pointer-like types are treated as first-class binding sources and participate in the same initialization and rebinding facilities as raw pointers.
 
 #### `pointer_binding::forbidden`
 
-Disables construction and assignment from pointer values.
+Disables construction and assignment from values of other pointer types. Conversions between compatible specializations of the same concrete pointer type remain part of the universal pointer interface.
 
 This can be useful when a pointer type wishes to enforce stronger initialization rules while still allowing other forms of binding.
 
@@ -439,6 +479,7 @@ Pointers using this policy:
 - cannot be default constructed
 - cannot be assigned `nullptr`
 - must remain bound to a valid address for their entire lifetime
+- convert to true in a boolean context
 
 This policy forms the foundation of the library's non-null pointer vocabulary types.
 
@@ -594,6 +635,8 @@ These facilities expose the stored address and provide the fundamental mechanics
 - implicit conversion to the type of the stored address
 - `reset(P)`
 - `swap()`
+
+`reset(P)` provides a uniform rebinding interface using the pointer's permitted binding mechanisms.
 
 These operations form the common vocabulary pointer interface. Policy selections then extend, restrict, or remove behavior around construction, assignment, traversal, comparison, and nullability.
 
