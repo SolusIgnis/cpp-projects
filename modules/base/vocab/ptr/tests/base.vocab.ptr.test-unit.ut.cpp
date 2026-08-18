@@ -1977,7 +1977,7 @@ namespace {
         "deduction guides work"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 constexpr std::int32_t value{};
-
+ 
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
                     ConcretePtr ptr1{value};
                     expect(eq(ptr1.get(), std::addressof(value)));
@@ -1985,6 +1985,7 @@ namespace {
 
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     ConcretePtr ptr2{std::addressof(value)};
+                    trivial_smart_ptr<std::int32_t> smart_pointer{std::addressof(value)};
                     expect(eq(ptr2.get(), std::addressof(value)));
                 }
             });
