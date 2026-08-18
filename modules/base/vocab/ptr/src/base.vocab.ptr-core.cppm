@@ -426,6 +426,8 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Implicitly converts from an external compatible pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
         template<PointerCompatibleWith<concrete_ptr_instance> Source>
+            requires std::is_lvalue_reference_v<Source>
+                  || std::is_pointer_v<std::remove_cvref_t<Source>>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(
             noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
         )
@@ -436,6 +438,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Assigns from an external compatible pointer type.
         template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
             requires (!std::is_const_v<Self>)
+                  && (std::is_lvalue_reference_v<Source> || std::is_pointer_v<std::remove_cvref_t<Source>>)
         constexpr Self& operator=(this Self& self, Source&& source) noexcept(
             noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
         )
