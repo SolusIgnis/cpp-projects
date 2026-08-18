@@ -12,16 +12,18 @@ using namespace base::vocab::ptr;
 
 namespace {
     struct mixin_1 {
-        virtual ~mixin_1() = default;
+        virtual ~mixin_1()         = default;
         virtual std::int32_t bar() = 0;
     };
 
     struct mixin_2 {
         virtual ~mixin_2() = default;
+
         std::size_t foo(this auto&& self) { return sizeof(self); }
     };
 
-    struct base_type : mixin_1, mixin_2 {
+    struct base_type : mixin_1,
+                       mixin_2 {
         virtual ~base_type() = default;
 
         std::int32_t value{0};
@@ -386,54 +388,52 @@ namespace {
         "vocabulary pointers alias external owning pointers"_test = [] mutable {
             auto unique = std::make_unique<derived_type>();
             auto shared = std::make_shared<derived_type>();
-            
+
             required_ptr<base_type> required = unique;
-            alias_ptr<base_type> alias = shared;
-            
+            alias_ptr<base_type> alias       = shared;
+
             expect(eq(required->bar(), unique->bar()));
             expect(eq(alias->bar(), shared->bar()));
 
-            constexpr std::int32_t u_expected =17;
-            required->value = u_expected;
+            constexpr std::int32_t u_expected = 17;
+            required->value                   = u_expected;
             expect(eq(unique->value, u_expected));
 
             constexpr std::int32_t s_expected = 29;
-            alias->value = s_expected;
+            alias->value                      = s_expected;
             expect(eq(shared->value, s_expected));
         };
 
         "nullability policy is enforced from owning smart pointers"_test = [] mutable {
             std::unique_ptr<std::int32_t> empty_unique{};
-        
+
             { //always-engaged pointer
-                bool threw = false;
+                bool threw           = false;
                 bool wrong_exception = false;
                 try {
                     [[maybe_unused]] required_ptr dummy_ptr = empty_unique;
-                }
-                catch (const std::invalid_argument&) {
+                } catch (const std::invalid_argument&) {
                     threw = true;
                 } catch (...) {
                     wrong_exception = true;
                 }
-        
+
                 expect(eq(threw, true));
                 expect(eq(wrong_exception, false));
             } //always-engaged pointer
-        
+
             { //nullable pointer
-                bool threw = false;
+                bool threw           = false;
                 bool wrong_exception = false;
                 try {
                     alias_ptr ptr = empty_unique;
                     expect(eq(ptr == nullptr, true));
-                }
-                catch (const std::invalid_argument&) {
+                } catch (const std::invalid_argument&) {
                     threw = true;
                 } catch (...) {
                     wrong_exception = true;
                 }
-        
+
                 expect(eq(threw, false));
                 expect(eq(wrong_exception, false));
             } //nullable pointer
@@ -442,7 +442,7 @@ namespace {
         "vocabulary pointers observe but never participate in ownership"_test = [] mutable {
             constexpr std::int32_t expected = 21;
 
-            auto shared = std::make_shared<derived_type>();
+            auto shared               = std::make_shared<derived_type>();
             const auto original_count = shared.use_count();
 
             {
@@ -453,16 +453,16 @@ namespace {
             expect(eq(shared.use_count(), original_count));
             expect(eq(shared->extra, expected));
 
-            auto owner = std::make_unique<derived_type>();
+            auto owner                   = std::make_unique<derived_type>();
             required_ptr<base_type> ptr1 = owner;
 
             {
                 required_ptr<base_type> ptr2 = owner;
-                ptr2->value = expected;
+                ptr2->value                  = expected;
             } //~ptr2
 
             auto owner2 = std::move(owner);
-            
+
             expect(eq(owner.get() == nullptr, true));
             expect(eq(std::to_address(owner2) == std::to_address(ptr1), true));
             expect(eq(owner2->bar(), ptr1->bar()));

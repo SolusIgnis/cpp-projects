@@ -49,10 +49,11 @@ export namespace base::vocab::inline ptr {
      * @remark Delegates to `std::pointer_traits<Pointer<Pointee>>::pointer_to`, allowing any pointer type with a conforming `std::pointer_traits` specialization to participate.
      */
     template<template<typename...> typename Pointer, typename Pointee>
-        requires requires(Pointee& object) { { std::pointer_traits<Pointer<Pointee>>::pointer_to(object) } -> std::convertible_to<Pointer<Pointee>>; }
-    constexpr auto pointer_to(Pointee& object)
-        noexcept(noexcept(std::pointer_traits<Pointer<Pointee>>::pointer_to(object)))
+        requires requires(Pointee& object) {
+                     { std::pointer_traits<Pointer<Pointee>>::pointer_to(object) } -> std::convertible_to<Pointer<Pointee>>;
+                 }
+    constexpr auto pointer_to(Pointee& object) noexcept(noexcept(std::pointer_traits<Pointer<Pointee>>::pointer_to(object)))
     {
-       return std::pointer_traits<Pointer<Pointee>>::pointer_to(object);
+        return std::pointer_traits<Pointer<Pointee>>::pointer_to(object);
     }
 } //namespace base::vocab::inline ptr

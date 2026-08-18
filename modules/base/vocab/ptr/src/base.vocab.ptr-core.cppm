@@ -141,10 +141,11 @@ namespace base::vocab::inline ptr {
      * @details Satisfied when a `T` can be the argument to `std::to_address` and the result of that call is convertible to `AddressType`.
      */
     template<typename T, typename AddressType>
-    concept ResolvableToAddress =/* (std::is_pointer_v<T> || requires { typename std::pointer_traits<T>::element_type; })
-                               &&*/ requires(const T& ptr) {
-                                      { std::to_address(ptr) } -> std::convertible_to<AddressType>;
-                                  };
+    concept ResolvableToAddress = /* (std::is_pointer_v<T> || requires { typename std::pointer_traits<T>::element_type; })
+                                &&*/
+        requires(const T& ptr) {
+            { std::to_address(ptr) } -> std::convertible_to<AddressType>;
+        };
 
     /**
      * @brief Determines whether a type is an external pointer compatible with a specified `VocabPtr`.
@@ -162,8 +163,7 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T, typename TargetPtr>
-    concept PointerCompatibleWith = !VocabPtr<std::remove_cvref_t<T>>
-                                 && !std::is_array_v<std::remove_cvref_t<T>>
+    concept PointerCompatibleWith = !VocabPtr<std::remove_cvref_t<T>> && !std::is_array_v<std::remove_cvref_t<T>>
                                  && VocabPtr<TargetPtr>
                                  && ResolvableToAddress<std::remove_cvref_t<T>, typename TargetPtr::address_type>;
 
@@ -171,10 +171,7 @@ namespace base::vocab::inline ptr {
      * @brief Determines whether a pointer-like type has an exposed element type.
      */
     template<typename T>
-    concept PointerWithElementType =
-        requires {
-            typename std::pointer_traits<std::remove_cvref_t<T>>::element_type;
-        };
+    concept PointerWithElementType = requires { typename std::pointer_traits<std::remove_cvref_t<T>>::element_type; };
 
     /**
      * @brief Determines whether a type may be used as a vocabulary pointer pointee.
@@ -190,8 +187,8 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename Pointee>
-    inline constexpr bool is_valid_pointee_v =
-        !std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>;
+    inline constexpr bool is_valid_pointee_v = !std::is_reference_v<Pointee>
+                                            && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>;
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
@@ -222,6 +219,7 @@ export namespace base::vocab::inline ptr {
         template<template<typename> typename, typename FriendPointee, ptr_policies::PtrPolicyList>
             requires is_valid_pointee_v<FriendPointee>
         friend class ptr_core;
+
     public:
         struct derived_from_ptr_core;
 
@@ -346,7 +344,8 @@ export namespace base::vocab::inline ptr {
         template<typename OtherPointee>
             requires (!std::same_as<OtherPointee, element_type>)
                   && std::convertible_to<std::add_pointer_t<OtherPointee>, address_type>
-        constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept : ptr_core{validated_address_tag{}, source.get()}
+        constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept
+            : ptr_core{validated_address_tag{}, source.get()}
         {}
 
         ///@brief (Conversion) Assigns from another `ConcretePtr` specialization according to nested `address_type` type conversions.
@@ -372,7 +371,7 @@ export namespace base::vocab::inline ptr {
         {
             return concrete_ptr_instance{validated_address_tag{}, std::addressof(object)};
         }
-        
+
         //===== Reference Binding (Allowed) =====
 
         ///@brief Constructs a pointer bound to an existing object.
@@ -393,10 +392,10 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Assigns from a compatible, always-engaged vocabulary pointer type bypassing nullability policy checks.
         template<typename Self, VocabPtrSourceFor<ConcretePtr, address_type> Source>
-            requires (!std::is_const_v<Self>) && AlwaysEngagedVocabPtr<std::remove_cvref_t<Source>>
-        constexpr Self&
-            operator=(this Self& self, Source&& source) noexcept
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+            requires (!std::is_const_v<Self>)
+                  && AlwaysEngagedVocabPtr<std::remove_cvref_t<Source>>
+                     constexpr Self& operator=(this Self& self, Source&& source) noexcept
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = std::forward<Source>(source);
             return self;
@@ -405,17 +404,21 @@ export namespace base::vocab::inline ptr {
         ///@brief Implicitly converts from a compatible, nullable vocabulary pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
         template<VocabPtrSourceFor<ConcretePtr, address_type> Source>
             requires NullableVocabPtr<std::remove_cvref_t<Source>>
-        constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(noexcept(apply_nullability_policy(std::forward<Source>(source))))
+        constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(
+            noexcept(apply_nullability_policy(std::forward<Source>(source)))
+        )
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, apply_nullability_policy(std::forward<Source>(source))}
         {}
 
         ///@brief Assigns from a compatible, nullable vocabulary pointer type.
         template<typename Self, VocabPtrSourceFor<ConcretePtr, address_type> Source>
-            requires (!std::is_const_v<Self>) && NullableVocabPtr<std::remove_cvref_t<Source>>
-        constexpr Self&
-            operator=(this Self& self, Source&& source) noexcept(noexcept(apply_nullability_policy(std::forward<Source>(source))))
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+            requires (!std::is_const_v<Self>)
+                  && NullableVocabPtr<std::remove_cvref_t<Source>>
+                     constexpr Self& operator=(this Self& self, Source&& source) noexcept(
+                         noexcept(apply_nullability_policy(std::forward<Source>(source)))
+                     )
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = apply_nullability_policy(std::forward<Source>(source));
             return self;
@@ -423,7 +426,9 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Implicitly converts from an external compatible pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
         template<PointerCompatibleWith<concrete_ptr_instance> Source>
-        constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source)))))
+        constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(
+            noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
+        )
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, apply_nullability_policy(std::to_address(std::forward<Source>(source)))}
         {}
@@ -431,8 +436,9 @@ export namespace base::vocab::inline ptr {
         ///@brief Assigns from an external compatible pointer type.
         template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
             requires (!std::is_const_v<Self>)
-        constexpr Self&
-            operator=(this Self& self, Source&& source) noexcept(noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source)))))
+        constexpr Self& operator=(this Self& self, Source&& source) noexcept(
+            noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
+        )
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = apply_nullability_policy(std::to_address(std::forward<Source>(source)));
@@ -572,17 +578,19 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Deleted constructor from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<PointerCompatibleWith<concrete_ptr_instance> Source>
-            requires std::is_rvalue_reference_v<Source> && (!std::is_pointer_v<std::remove_cvref_t<Source>>)
-        ptr_core(Source&&)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+            requires std::is_rvalue_reference_v<Source>
+                  && (!std::is_pointer_v<std::remove_cvref_t<Source>>)
+                     ptr_core(Source&&)
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         = delete /*("Constructor from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries. If this use is known to be safe, pass the temporary through `std::to_address`.")*/
             ;
 
         ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
-            requires std::is_rvalue_reference_v<Source> && (!std::is_pointer_v<std::remove_cvref_t<Source>>)
-        Self& operator=(this Self&&, Source&&)
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+            requires std::is_rvalue_reference_v<Source>
+                  && (!std::is_pointer_v<std::remove_cvref_t<Source>>)
+                     Self& operator=(this Self&&, Source&&)
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         = delete /*("Assignment from pointer-like object rvalue deleted to discourage dangling by rejecting direct binding to temporaries. If this use is known to be safe, pass the temporary through `std::to_address`.")*/
             ;
 
@@ -609,8 +617,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Provides member access to the pointee object.
         [[nodiscard]] constexpr address_type operator->(this auto&& self) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
-                  && std::is_class_v<element_type>
+            requires base::meta::concepts::CompletePointee<element_type> && std::is_class_v<element_type>
         {
             return self.address_;
         }
@@ -647,26 +654,36 @@ export namespace base::vocab::inline ptr {
             requires is_valid_pointee_v<Destination> && std::same_as<std::remove_cv_t<Destination>, value_type>
         [[nodiscard]] friend constexpr auto const_pointer_cast(concrete_ptr_instance source) noexcept
         {
-            return ConcretePtr<Destination>(typename ConcretePtr<Destination>::validated_address_tag{}, const_cast<typename ConcretePtr<Destination>::address_type>(source.get()));
+            return ConcretePtr<Destination>(
+                typename ConcretePtr<Destination>::validated_address_tag{},
+                const_cast<typename ConcretePtr<Destination>::address_type>(source.get())
+            );
         }
 
         ///@brief Converts the static pointee type of a pointer.
         template<typename Target>
-             requires is_valid_pointee_v<Target>
+            requires is_valid_pointee_v<Target>
         [[nodiscard]] friend constexpr auto static_pointer_cast(concrete_ptr_instance source) noexcept
         {
             using destination = base::meta::traits::copy_cv_t<element_type, Target>;
-            return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, static_cast<typename ConcretePtr<destination>::address_type>(source.get()));
+            return ConcretePtr<destination>(
+                typename ConcretePtr<destination>::validated_address_tag{},
+                static_cast<typename ConcretePtr<destination>::address_type>(source.get())
+            );
         }
 
         ///@brief Converts the dynamic pointee type of a pointer along a class hierarchy using RTTI.
         template<typename Target>
-             requires is_valid_pointee_v<Target>
-        [[nodiscard]] friend inline auto dynamic_pointer_cast(concrete_ptr_instance source) noexcept(ptr_policies::nullable_nullability_v<policy_set>)
+            requires is_valid_pointee_v<Target>
+        [[nodiscard]] friend inline auto
+            dynamic_pointer_cast(concrete_ptr_instance source) noexcept(ptr_policies::nullable_nullability_v<policy_set>)
         {
             using destination = base::meta::traits::copy_cv_t<element_type, Target>;
             if constexpr (ptr_policies::nullable_nullability_v<policy_set>) {
-                return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, dynamic_cast<typename ConcretePtr<destination>::address_type>(source.get()));
+                return ConcretePtr<destination>(
+                    typename ConcretePtr<destination>::validated_address_tag{},
+                    dynamic_cast<typename ConcretePtr<destination>::address_type>(source.get())
+                );
             } else {
                 if (auto* p = dynamic_cast<typename ConcretePtr<destination>::address_type>(source.get()); !p) {
                     throw std::bad_cast{};
@@ -678,11 +695,14 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Reinterprets the pointer's stored address as pointing to an arbitrary destination type.
         template<typename Target>
-             requires is_valid_pointee_v<Target>
+            requires is_valid_pointee_v<Target>
         [[nodiscard]] friend inline auto reinterpret_pointer_cast(concrete_ptr_instance source) noexcept
         {
             using destination = base::meta::traits::copy_cv_t<element_type, Target>;
-            return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, reinterpret_cast<typename ConcretePtr<destination>::address_type>(source.get()));
+            return ConcretePtr<destination>(
+                typename ConcretePtr<destination>::validated_address_tag{},
+                reinterpret_cast<typename ConcretePtr<destination>::address_type>(source.get())
+            );
         }
 
         //===== Nullability (Nullable) =====
@@ -725,24 +745,27 @@ export namespace base::vocab::inline ptr {
         }
 #if defined(__cpp_lib_start_lifetime_as)
         ///@brief Starts an object lifetime at a given address.
-        template <typename Target>
-            requires std::is_implicit_lifetime_v<Target> && (alignof(Target) <= alignof(element_type))
-        [[nodiscard]] friend inline auto start_lifetime_as(concrete_ptr_instance source) noexcept
-            requires ptr_policies::always_engaged_nullability_v<policy_set>
+        template<typename Target>
+            requires std::is_implicit_lifetime_v<Target>
+                  && (alignof(Target) <= alignof(element_type))
+                     [[nodiscard]] friend inline auto start_lifetime_as(concrete_ptr_instance source) noexcept
+                         requires ptr_policies::always_engaged_nullability_v<policy_set>
         {
-            auto* result = std::start_lifetime_as<Target>(source);
+            auto* result      = std::start_lifetime_as<Target>(source);
             using destination = std::remove_pointer_t<decltype(result)>;
             return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, result);
         }
 
         ///@brief Deleted `start_lifetime_as` because `std::start_lifetime_as` requires a pointer to a region of allocated storage.
-        template <typename Target>
-            requires std::is_implicit_lifetime_v<Target> && (alignof(Target) <= alignof(element_type))
-        friend inline auto start_lifetime_as(concrete_ptr_instance source) noexcept
-            requires ptr_policies::nullable_nullability_v<policy_set>
-        = delete /*("`start_lifetime_as` deleted by policy `nullability::nullable` because `std::start_lifetime_as` requires a pointer to a region of allocated storage.")*/;
+        template<typename Target>
+            requires std::is_implicit_lifetime_v<Target>
+                  && (alignof(Target) <= alignof(element_type))
+                     friend inline auto start_lifetime_as(concrete_ptr_instance source) noexcept
+                         requires ptr_policies::nullable_nullability_v<policy_set>
+        = delete /*("`start_lifetime_as` deleted by policy `nullability::nullable` because `std::start_lifetime_as` requires a pointer to a region of allocated storage.")*/
+            ;
 #else
-#warning "`std::start_lifetime_as` not defined. `base::vocab::ptr::start_lifetime_as` will be unavailable."
+    #warning "`std::start_lifetime_as` not defined. `base::vocab::ptr::start_lifetime_as` will be unavailable."
 #endif
         //================================================================================
         // Arithmetic Operators: Implemented for Iteration, Deleted Otherwise
@@ -1825,15 +1848,19 @@ export namespace base::vocab::inline ptr {
  */
 template<base::vocab::ptr::VocabPtr T>
 struct std::pointer_traits<T> {
-    using pointer = T;
-    using element_type = typename pointer::element_type;
+    using pointer         = T;
+    using element_type    = typename pointer::element_type;
     using difference_type = typename pointer::difference_type;
 
     template<class OtherPointee>
     using rebind = typename pointer::template rebind<OtherPointee>;
 
     ///@brief Produces a pointer instanc bound to a given object.
-    static constexpr pointer pointer_to(typename pointer::reference object) noexcept(noexcept(pointer::pointer_to(object))) requires (!std::is_void_v<element_type>) { return pointer::pointer_to(object); }
+    static constexpr pointer pointer_to(typename pointer::reference object) noexcept(noexcept(pointer::pointer_to(object)))
+        requires (!std::is_void_v<element_type>)
+    {
+        return pointer::pointer_to(object);
+    }
 
     ///@brief Returns the pointer's stored address.
     static constexpr typename pointer::address_type to_address(pointer ptr) noexcept(noexcept(ptr.get())) { return ptr.get(); }

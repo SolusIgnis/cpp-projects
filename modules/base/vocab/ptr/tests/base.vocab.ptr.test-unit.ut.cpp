@@ -107,7 +107,8 @@ namespace {
         virtual ~mixin_2() = default;
     };
 
-    struct base_type : mixin_1, mixin_2 {
+    struct base_type : mixin_1,
+                       mixin_2 {
         virtual ~base_type() = default;
         std::int32_t value{0};
     };
@@ -122,6 +123,7 @@ namespace {
         T* address{};
 
         T* get() const { return address; }
+
         T* operator->() const { return address; }
     };
 
@@ -217,7 +219,7 @@ namespace {
 
         "type aliases are correct"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                using T = ConcretePtr<const std::int32_t>;
+                using T      = ConcretePtr<const std::int32_t>;
                 using traits = std::pointer_traits<T>;
 
                 constexpr bool t_pointer = std::same_as<typename traits::pointer, T>;
@@ -247,8 +249,16 @@ namespace {
                 using pointee1 = std::int32_t;
                 using pointee2 = const std::map<std::string, std::vector<std::int32_t>>;
 
-                expect(eq(std::same_as<typename ConcretePtr<pointee1>::template rebind<pointee2>, ConcretePtr<pointee2>>, true));
-                expect(eq(std::same_as<typename std::pointer_traits<ConcretePtr<pointee1>>::template rebind<pointee2>, ConcretePtr<pointee2>>, true));
+                expect(
+                    eq(std::same_as<typename ConcretePtr<pointee1>::template rebind<pointee2>, ConcretePtr<pointee2>>, true)
+                );
+                expect(
+                    eq(std::same_as<
+                           typename std::pointer_traits<ConcretePtr<pointee1>>::template rebind<pointee2>,
+                           ConcretePtr<pointee2>
+                       >,
+                       true)
+                );
             });
         };
 
@@ -275,7 +285,8 @@ namespace {
                                                     typename SourceTag,
                                                     bool IsConstructibleFrom,
                                                     bool IsConvertibleFrom,
-                                                    bool IsAssignableFrom = IsConstructibleFrom && !std::same_as<SourceTag, ref_tag>>() {
+                                                    bool IsAssignableFrom = IsConstructibleFrom
+                                                                         && !std::same_as<SourceTag, ref_tag>>() {
                     //Explicitly constructible unless removing qualifier
                     expect(
                         eq(std::constructible_from<ConcretePtr<Pointee>, source_t<Pointee, SourceTag>>, IsConstructibleFrom)
@@ -398,8 +409,7 @@ namespace {
                            false)
                     );
                     expect(
-                        eq(std::is_assignable_v<ConcretePtr<volatile Pointee>&, source_t<Pointee, SourceTag>>,
-                           IsAssignableFrom)
+                        eq(std::is_assignable_v<ConcretePtr<volatile Pointee>&, source_t<Pointee, SourceTag>>, IsAssignableFrom)
                     );
                     expect(eq(std::is_assignable_v<ConcretePtr<volatile Pointee>&, source_t<const Pointee, SourceTag>>, false));
                     expect(
@@ -478,14 +488,14 @@ namespace {
                 auto class_ptr = pointer_t::pointer_to(obj);
                 auto trait_ptr = std::pointer_traits<pointer_t>::pointer_to(obj);
                 auto free_ptr  = base::vocab::ptr::pointer_to<ConcretePtr>(obj);
-                
+
                 expect(eq(std::same_as<decltype(class_ptr), pointer_t>, true));
                 expect(eq(std::same_as<decltype(trait_ptr), pointer_t>, true));
-                expect(eq(std::same_as<decltype(free_ptr),  pointer_t>, true));
+                expect(eq(std::same_as<decltype(free_ptr), pointer_t>, true));
 
                 expect(eq(class_ptr.get(), std::addressof(obj)));
                 expect(eq(trait_ptr.get(), std::addressof(obj)));
-                expect(eq(free_ptr.get(),  std::addressof(obj)));
+                expect(eq(free_ptr.get(), std::addressof(obj)));
             });
         };
 
@@ -498,7 +508,10 @@ namespace {
 
                 auto ptr = pointer_t::pointer_to(obj);
 
-                expect(eq(std::same_as<decltype(std::pointer_traits<pointer_t>::to_address(ptr)), typename pointer_t::address_type>, true));
+                expect(eq(
+                    std::same_as<decltype(std::pointer_traits<pointer_t>::to_address(ptr)), typename pointer_t::address_type>,
+                    true
+                ));
                 expect(eq(std::same_as<decltype(std::to_address(ptr)), typename pointer_t::address_type>, true));
 
                 expect(eq(std::pointer_traits<pointer_t>::to_address(ptr), std::addressof(obj)));
@@ -509,7 +522,7 @@ namespace {
         "operator* dereferences correctly"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 std::int32_t value = 55;
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
 
                 expect(eq(*ptr, value));
             });
@@ -522,7 +535,7 @@ namespace {
 
                 base_type obj;
                 obj.value = 123;
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(obj);
+                auto ptr  = base::vocab::pointer_to<ConcretePtr>(obj);
 
                 expect(eq(ptr->value, obj.value));
             });
@@ -1034,7 +1047,7 @@ namespace {
                 derived_type object;
 
                 ConcretePtr<derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
-                auto result1 = static_pointer_cast<base_type>(source);
+                auto result1                     = static_pointer_cast<base_type>(source);
 
                 expect(eq(std::same_as<decltype(result1), ConcretePtr<base_type>>, true));
                 expect(eq(result1.get(), static_cast<base_type*>(std::addressof(object))));
@@ -1051,7 +1064,7 @@ namespace {
                 const derived_type object;
 
                 ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
-                auto result = static_pointer_cast<base_type>(source);
+                auto result                            = static_pointer_cast<base_type>(source);
 
                 expect(eq(std::same_as<decltype(result), ConcretePtr<const base_type>>, true));
             });
@@ -1108,11 +1121,11 @@ namespace {
 
                 ConcretePtr<base_type> source = base::vocab::pointer_to<ConcretePtr>(value);
 
-                bool threw = false;
+                bool threw           = false;
                 bool wrong_exception = false;
                 try {
                     auto result = dynamic_pointer_cast<wrong_derived>(source);
-        
+
                     expect(eq(result.get() == nullptr, pointer_test_traits<ConcretePtr>::is_nullable));
                 } catch (const std::bad_cast&) {
                     threw = true;
@@ -1130,7 +1143,7 @@ namespace {
                 const derived_type object;
 
                 ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
-                auto result = dynamic_pointer_cast<base_type>(source);
+                auto result                            = dynamic_pointer_cast<base_type>(source);
 
                 expect(eq(std::same_as<decltype(result), ConcretePtr<const base_type>>, true));
             });
@@ -1157,7 +1170,7 @@ namespace {
 
                 object value;
 
-                auto source = base::vocab::pointer_to<ConcretePtr>(value);
+                auto source       = base::vocab::pointer_to<ConcretePtr>(value);
                 auto result_bytes = reinterpret_pointer_cast<std::byte>(source);
                 auto result_chars = reinterpret_pointer_cast<char>(source);
 
@@ -1198,7 +1211,7 @@ namespace {
                 const derived_type object;
 
                 ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
-                auto result = reinterpret_pointer_cast<base_type>(source);
+                auto result                            = reinterpret_pointer_cast<base_type>(source);
 
                 expect(eq(std::same_as<decltype(result), ConcretePtr<const base_type>>, true));
             });
@@ -1231,7 +1244,7 @@ namespace {
                     double velocity;
                 };
 
-                const origin_t value    = { .foo = 1, .bar = 3, .baz = 5, .qux = 2.0 };
+                const origin_t value    = {.foo = 1, .bar = 3, .baz = 5, .qux = 2.0};
                 const origin_t expected = value;
 
                 auto source = base::vocab::pointer_to<ConcretePtr>(value);
@@ -1246,7 +1259,7 @@ namespace {
             });
         };
 #else
-#warning "std::start_lifetime_as not defined. Tests skipped."
+    #warning "std::start_lifetime_as not defined. Tests skipped."
 #endif
         //============================================================
         // Common Reference
@@ -1627,7 +1640,7 @@ namespace {
         "non-const element allows mutation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 std::int32_t value = 5;
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
 
                 *ptr = 10;
 
@@ -1686,7 +1699,7 @@ namespace {
         "volatile qualifier preservation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 volatile std::int32_t hardware_register = 0xAA;
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(hardware_register);
+                auto ptr                                = base::vocab::pointer_to<ConcretePtr>(hardware_register);
 
                 //Ensure the raw pointer retrieved is also volatile
                 expect(eq(std::same_as<decltype(ptr.get()), volatile std::int32_t*>, true));
@@ -1727,7 +1740,7 @@ namespace {
                 auto takes_ptr = [](std::int32_t* p) { return *p; };
 
                 std::int32_t value = 3;
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
 
                 expect(eq(takes_ptr(ptr), value));
             });
@@ -1735,12 +1748,12 @@ namespace {
 
         "get() works with raw pointer API"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                    auto takes_ptr = [](std::int32_t* p) { return *p; };
+                auto takes_ptr = [](std::int32_t* p) { return *p; };
 
-                    std::int32_t value = 4;
-                    auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                std::int32_t value = 4;
+                auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
 
-                    expect(eq(takes_ptr(ptr.get()), value));
+                expect(eq(takes_ptr(ptr.get()), value));
             });
         };
 
@@ -1908,7 +1921,7 @@ namespace {
                     std::int32_t object;
 
                     ConcretePtr<std::int32_t> source = base::vocab::pointer_to<ConcretePtr>(object);
-                    auto result1 = static_pointer_cast<void>(source);
+                    auto result1                     = static_pointer_cast<void>(source);
 
                     expect(eq(std::same_as<decltype(result1), ConcretePtr<void>>, true));
                     expect(eq(result1.get(), static_cast<void*>(std::addressof(object))));
@@ -1926,7 +1939,7 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee
                               && pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     const std::int32_t value{42};
-                    auto typed_ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                    auto typed_ptr                = base::vocab::pointer_to<ConcretePtr>(value);
                     const std::int32_t* typed_raw = std::addressof(value);
                     const void* erased_raw        = std::addressof(value);
 
@@ -2017,7 +2030,7 @@ namespace {
 
                 constexpr auto rebound = std::invoke([] {
                     auto ptr = base::vocab::pointer_to<ConcretePtr>(a);
-                    ptr = ConcretePtr{b};
+                    ptr      = ConcretePtr{b};
                     return ptr;
                 });
 
