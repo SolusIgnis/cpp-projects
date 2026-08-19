@@ -2000,7 +2000,9 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     ConcretePtr ptr2{std::addressof(value)};
                     trivial_smart_ptr<const std::int32_t> smart_pointer{std::addressof(value)};
+                    ConcretePtr ptr3{smart_pointer};
                     expect(eq(ptr2.get(), std::addressof(value)));
+                    expect(eq(ptr3.get(), std::addressof(value)));
                 }
             });
         };
