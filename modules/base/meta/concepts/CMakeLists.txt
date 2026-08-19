@@ -14,4 +14,6 @@ add_named_module(base.meta.concepts
   PARTITIONS
     src/base.meta.concepts-instantiable_with.cppm
     src/base.meta.concepts-completeness.cppm
+  IMPORTS
+    base.meta.traits
 )
