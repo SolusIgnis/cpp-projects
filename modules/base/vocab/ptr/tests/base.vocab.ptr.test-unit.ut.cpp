@@ -118,6 +118,11 @@ namespace {
         std::int32_t extra{42};
     };
 
+    union union_type {
+        std::int32_t value;
+        std::int16_t irrelevant;
+    };
+
     template<typename T>
     struct trivial_smart_ptr {
         T* address{};
@@ -546,14 +551,23 @@ namespace {
 
         "operator-> provides member access"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                expect(eq(ArrowAccessible<ConcretePtr<std::int32_t>>, false));
+                expect(eq(ArrowAccessible<ConcretePtr<std::uint8_t>>, false));
+                expect(eq(ArrowAccessible<ConcretePtr<std::float_round_style>>, false));
+                expect(eq(ArrowAccessible<ConcretePtr<std::memory_order>>, false));
+                expect(eq(ArrowAccessible<ConcretePtr<std::byte>>, false));
                 expect(eq(ArrowAccessible<ConcretePtr<base_type>>, true));
+                expect(eq(ArrowAccessible<ConcretePtr<union_type>>, true));
 
-                base_type obj;
-                obj.value = 123;
-                auto ptr  = base::vocab::pointer_to<ConcretePtr>(obj);
+                base_type c_obj;
+                c_obj.value = 123;
+                auto ptr1  = base::vocab::pointer_to<ConcretePtr>(c_obj);
 
-                expect(eq(ptr->value, obj.value));
+                union_type u_obj;
+                u_obj.value = 321;
+                auto ptr2  = base::vocab::pointer_to<ConcretePtr>(u_obj);
+
+                expect(eq(ptr1->value, c_obj.value));
+                expect(eq(ptr2->value, u_obj.value));
             });
         };
 
