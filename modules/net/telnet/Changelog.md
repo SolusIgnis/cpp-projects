@@ -3,6 +3,8 @@
 # Changelog.md
 
 ## [Unreleased] - TBD
+
+## [0.5.8] - August 18, 2026
 ### Added
 - Added CMake support for unit testing frameworks and CTest.
 - Added unit tests for `net.asio_concepts` module.
