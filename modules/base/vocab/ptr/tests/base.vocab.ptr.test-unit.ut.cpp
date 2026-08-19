@@ -483,15 +483,21 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>>, false));
                 expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>>, false));
-                expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>>, false));
+                expect(
+                    eq(std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>>, false)
+                );
 
                 expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>&&>, false));
                 expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>&&>, false));
-                expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>&&>, false));
+                expect(
+                    eq(std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>&&>, false)
+                );
 
                 expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, trivial_smart_ptr<std::int32_t>&&>, false));
                 expect(eq(std::is_assignable_v<ConcretePtr<const std::int32_t>&, trivial_smart_ptr<std::int32_t>&&>, false));
-                expect(eq(std::is_assignable_v<ConcretePtr<const std::int32_t>&, const trivial_smart_ptr<std::int32_t>&&>, false));
+                expect(
+                    eq(std::is_assignable_v<ConcretePtr<const std::int32_t>&, const trivial_smart_ptr<std::int32_t>&&>, false)
+                );
             });
         };
 
@@ -560,11 +566,11 @@ namespace {
 
                 base_type c_obj;
                 c_obj.value = 123;
-                auto ptr1  = base::vocab::pointer_to<ConcretePtr>(c_obj);
+                auto ptr1   = base::vocab::pointer_to<ConcretePtr>(c_obj);
 
                 union_type u_obj;
                 u_obj.value = 321;
-                auto ptr2  = base::vocab::pointer_to<ConcretePtr>(u_obj);
+                auto ptr2   = base::vocab::pointer_to<ConcretePtr>(u_obj);
 
                 expect(eq(ptr1->value, c_obj.value));
                 expect(eq(ptr2->value, u_obj.value));
@@ -1991,7 +1997,7 @@ namespace {
         "deduction guides work"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 constexpr std::int32_t value{};
- 
+
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
                     ConcretePtr ptr1{value};
                     expect(eq(ptr1.get(), std::addressof(value)));

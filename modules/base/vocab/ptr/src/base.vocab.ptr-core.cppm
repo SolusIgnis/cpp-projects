@@ -428,10 +428,10 @@ export namespace base::vocab::inline ptr {
         template<PointerCompatibleWith<concrete_ptr_instance> Source>
             requires std::is_lvalue_reference_v<Source>
                   || std::is_pointer_v<std::remove_cvref_t<Source>>
-        constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(
-            noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
-        )
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                     constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(
+                         noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
+                     )
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, apply_nullability_policy(std::to_address(std::forward<Source>(source)))}
         {}
 
@@ -439,10 +439,10 @@ export namespace base::vocab::inline ptr {
         template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
             requires (!std::is_const_v<Self>)
                   && (std::is_lvalue_reference_v<Source> || std::is_pointer_v<std::remove_cvref_t<Source>>)
-        constexpr Self& operator=(this Self& self, Source&& source) noexcept(
-            noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
-        )
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                     constexpr Self& operator=(this Self& self, Source&& source) noexcept(
+                         noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
+                     )
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = apply_nullability_policy(std::to_address(std::forward<Source>(source)));
             return self;
