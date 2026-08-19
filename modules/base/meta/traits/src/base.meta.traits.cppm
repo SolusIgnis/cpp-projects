@@ -3,8 +3,8 @@
 /**
  * @module base.meta.traits
  * @file base.meta.traits.cppm
- * @version 0.0.3
- * @date April 26, 2026
+ * @version 0.0.4
+ * @date August 18, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -23,10 +23,11 @@
  * @brief Primary module interface for the metaprogramming traits module.
  * @details Exports partitions for:
  *   - `:copy_cvref`                  = Apply value categories and/or cv-qualifications from one type to another.
- *   - `:remove_indirection`          = Removes one layer of indirection  (pointer, pointer-to-member, lvalue reference, rvalue reference, or array) from a type.
- *   - `:remove_all_indirections`     = Removes all layers of indirection from a type to yield the "core" cv-qualified type.
+ *   - `:remove_indirection`          = Remove one layer of indirection  (pointer, pointer-to-member, lvalue reference, rvalue reference, or array) from a type.
+ *   - `:remove_all_indirections`     = Remove all layers of indirection from a type to yield the "core" cv-qualified type.
  *   - `:is_indirection_v`            = Determine if a type has at least one layer of indirection.
  *   - `:is_type_specialization_of_v` = Determine if a type is a specialization of a given primary template.
+ *   - `:type_categories`             = Determine if a type fits into a given category.
  */
 
 //Primary module interface unit
@@ -38,3 +39,4 @@ export import :remove_indirection;        ///< @see "base.meta.traits-remove_ind
 export import :remove_all_indirections;   ///< @see "base.meta.traits-remove_all_indirections.cppm"
 export import :is_indirection;            ///< @see "base.meta.traits-is_indirection.cppm"
 export import :is_type_specialization_of; ///< @see "base.meta.traits-is_type_specialization_of.cppm"
+export import :type_categories;           ///< @see "base.meta.traits-type_categories.cppm"
