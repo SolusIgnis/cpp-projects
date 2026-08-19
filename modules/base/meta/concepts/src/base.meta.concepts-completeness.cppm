@@ -19,13 +19,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief `concept`s that determine if a type is complete (generally) or is complete enough to dereference a pointer to it.
+ * @brief `concept`s that determine if a type is complete (generally), is complete enough to dereference a pointer to it, or is complete enough to access its members.
  */
 
 //Module partition interface unit
 export module base.meta.concepts:completeness;
 
 import std;
+
+import base.meta.traits;
 
 export namespace base::meta::concepts {
     /**
@@ -41,10 +43,20 @@ export namespace base::meta::concepts {
     /**
      * @brief `CompletePointee`: Determines whether a type is complete for the purpose of dereferencing a pointer to it.
      *
-     * @tparam T The type to check for completeness.
+     * @tparam T The type to check.
      *
      * @details This concept is satisfied if the type is both an object and a complete type.
      */
     template<typename T>
     concept CompletePointee = std::is_object_v<T> && CompleteType<T>;
+
+    /**
+     * @brief `CompleteClassType`: Determines whether a type is a complete C++ Standard class type.
+     *
+     * @tparam T The type to check.
+     *
+     * @details This concept is satisfied if the type is both a "class type" (i.e., `struct`/`class` or `union`) and a complete pointee.
+     */
+    template<typename T>
+    concept CompleteClassType = base::meta::traits::is_class_type_v<T> && CompletePointee<T>;
 } //namespace base::meta::concepts

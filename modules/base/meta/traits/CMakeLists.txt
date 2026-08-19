@@ -17,4 +17,5 @@ add_named_module(base.meta.traits
     src/base.meta.traits-remove_all_indirections.cppm
     src/base.meta.traits-is_indirection.cppm
     src/base.meta.traits-is_type_specialization_of.cppm
+    src/base.meta.traits-type_categories.cppm
 )

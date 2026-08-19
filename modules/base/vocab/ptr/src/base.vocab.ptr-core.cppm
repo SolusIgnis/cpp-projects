@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.vocab.ptr-core.cppm
- * @version 0.9.0
+ * @version 0.9.1
  * @date August 6, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
@@ -426,20 +426,23 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Implicitly converts from an external compatible pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
         template<PointerCompatibleWith<concrete_ptr_instance> Source>
-        constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(
-            noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
-        )
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+            requires std::is_lvalue_reference_v<Source>
+                  || std::is_pointer_v<std::remove_cvref_t<Source>>
+                     constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(
+                         noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
+                     )
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, apply_nullability_policy(std::to_address(std::forward<Source>(source)))}
         {}
 
         ///@brief Assigns from an external compatible pointer type.
         template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
             requires (!std::is_const_v<Self>)
-        constexpr Self& operator=(this Self& self, Source&& source) noexcept(
-            noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
-        )
-            requires ptr_policies::allowed_pointer_binding_v<policy_set>
+                  && (std::is_lvalue_reference_v<Source> || std::is_pointer_v<std::remove_cvref_t<Source>>)
+                     constexpr Self& operator=(this Self& self, Source&& source) noexcept(
+                         noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
+                     )
+                         requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
             self.address_ = apply_nullability_policy(std::to_address(std::forward<Source>(source)));
             return self;
@@ -578,7 +581,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Deleted constructor from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<PointerCompatibleWith<concrete_ptr_instance> Source>
-            requires std::is_rvalue_reference_v<Source>
+            requires (!std::is_lvalue_reference_v<Source>)
                   && (!std::is_pointer_v<std::remove_cvref_t<Source>>)
                      ptr_core(Source&&)
                          requires ptr_policies::allowed_pointer_binding_v<policy_set>
@@ -587,7 +590,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
         template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
-            requires std::is_rvalue_reference_v<Source>
+            requires (!std::is_lvalue_reference_v<Source>)
                   && (!std::is_pointer_v<std::remove_cvref_t<Source>>)
                      Self& operator=(this Self&&, Source&&)
                          requires ptr_policies::allowed_pointer_binding_v<policy_set>
@@ -617,7 +620,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Provides member access to the pointee object.
         [[nodiscard]] constexpr address_type operator->(this auto&& self) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && std::is_class_v<element_type>
+            requires base::meta::concepts::CompleteClassType<element_type>
         {
             return self.address_;
         }

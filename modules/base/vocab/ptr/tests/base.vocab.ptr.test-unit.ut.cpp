@@ -118,6 +118,11 @@ namespace {
         std::int32_t extra{42};
     };
 
+    union union_type {
+        std::int32_t value;
+        std::int16_t irrelevant;
+    };
+
     template<typename T>
     struct trivial_smart_ptr {
         T* address{};
@@ -146,7 +151,7 @@ namespace {
 
     template<typename T>
     struct source_category<T, smart_ptr_tag> {
-        using type = trivial_smart_ptr<T>;
+        using type = trivial_smart_ptr<T>&;
     };
 
     template<typename T, typename Tag>
@@ -458,7 +463,7 @@ namespace {
             });
         };
 
-        "not bindable from rvalue"_test = [] mutable {
+        "not bindable from pointee rvalue"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
                 expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, std::int32_t>, false));
                 expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, std::int32_t>, false));
@@ -471,6 +476,28 @@ namespace {
                 expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, std::int32_t&&>, false));
                 expect(eq(std::is_assignable_v<ConcretePtr<const std::int32_t>&, std::int32_t&&>, false));
                 expect(eq(std::is_assignable_v<ConcretePtr<const std::int32_t>&, const std::int32_t&&>, false));
+            });
+        };
+
+        "not bindable from smart pointer rvalue"_test = [] mutable {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+                expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>>, false));
+                expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>>, false));
+                expect(
+                    eq(std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>>, false)
+                );
+
+                expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>&&>, false));
+                expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>&&>, false));
+                expect(
+                    eq(std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>&&>, false)
+                );
+
+                expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, trivial_smart_ptr<std::int32_t>&&>, false));
+                expect(eq(std::is_assignable_v<ConcretePtr<const std::int32_t>&, trivial_smart_ptr<std::int32_t>&&>, false));
+                expect(
+                    eq(std::is_assignable_v<ConcretePtr<const std::int32_t>&, const trivial_smart_ptr<std::int32_t>&&>, false)
+                );
             });
         };
 
@@ -530,14 +557,23 @@ namespace {
 
         "operator-> provides member access"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                expect(eq(ArrowAccessible<ConcretePtr<std::int32_t>>, false));
+                expect(eq(ArrowAccessible<ConcretePtr<std::uint8_t>>, false));
+                expect(eq(ArrowAccessible<ConcretePtr<std::float_round_style>>, false));
+                expect(eq(ArrowAccessible<ConcretePtr<std::memory_order>>, false));
+                expect(eq(ArrowAccessible<ConcretePtr<std::byte>>, false));
                 expect(eq(ArrowAccessible<ConcretePtr<base_type>>, true));
+                expect(eq(ArrowAccessible<ConcretePtr<union_type>>, true));
 
-                base_type obj;
-                obj.value = 123;
-                auto ptr  = base::vocab::pointer_to<ConcretePtr>(obj);
+                base_type c_obj;
+                c_obj.value = 123;
+                auto ptr1   = base::vocab::pointer_to<ConcretePtr>(c_obj);
 
-                expect(eq(ptr->value, obj.value));
+                union_type u_obj;
+                u_obj.value = 321;
+                auto ptr2   = base::vocab::pointer_to<ConcretePtr>(u_obj);
+
+                expect(eq(ptr1->value, c_obj.value));
+                expect(eq(ptr2->value, u_obj.value));
             });
         };
 
@@ -1969,7 +2005,12 @@ namespace {
 
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     ConcretePtr ptr2{std::addressof(value)};
+
+                    trivial_smart_ptr<const std::int32_t> smart_pointer{std::addressof(value)};
+                    ConcretePtr ptr3{smart_pointer};
+
                     expect(eq(ptr2.get(), std::addressof(value)));
+                    expect(eq(ptr3.get(), std::addressof(value)));
                 }
             });
         };

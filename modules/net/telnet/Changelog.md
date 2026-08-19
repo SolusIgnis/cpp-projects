@@ -25,9 +25,11 @@
 - Added module-level `base/vocab/ptr/README.md` to summarize the design, architecture, and philosophy of the `base.vocab.ptr` module.
 - Added `iterator_ptr` to `base.vocab.ptr` module.
 - Provided `std::pointer_traits` partial specialization for vocabulary pointers, including `pointer_to` and `to_address`.
-- Added `const_pointer_cast`, `static_pointer_cast`, `dynamic static_pointer_cast`, and `reinterpret_pointer_cast` to cast the pointee type of a pointer template.
+- Added `const_pointer_cast`, `static_pointer_cast`, `dynamic_pointer_cast`, and `reinterpret_pointer_cast` to cast the pointee type of a pointer template.
 - Added `start_lifetime_as` to safely start object lifetimes whenever `std::start_lifetime_as` from C++23 is available.
 - Refactored CTAD guides to deduce pointees from references or pointers with a `std::pointer_traits` specialization exposing an `element_type`.
+- Added `is_class_type_v` in `base.meta.traits` to test for C++ core language "class types".
+- Added `CompleteClassType` in `base.meta.concepts` to test for `CompletePointee`s that are also "class types".
 
 ## [0.5.7] - February 11, 2026
 ### Added

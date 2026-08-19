@@ -426,7 +426,7 @@ namespace {
                 bool threw           = false;
                 bool wrong_exception = false;
                 try {
-                    alias_ptr ptr = empty_unique;
+                    alias_ptr ptr = alias_ptr{empty_unique};
                     expect(eq(ptr == nullptr, true));
                 } catch (const std::invalid_argument&) {
                     threw = true;
