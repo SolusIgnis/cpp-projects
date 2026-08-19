@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 <!-- SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors -->
-#  Testing Framework Guide: `qlibs/ut`
+# Testing Framework Guide: `qlibs/ut`
 
 To test our code, we use **`ut`** (from qlibs). It is a modern, macro-free C++20 framework. Unlike older frameworks (like GTest), `ut` is designed to be as close to standard C++ as possible, utilizing lambdas and custom string literals.
 
