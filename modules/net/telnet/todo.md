@@ -90,7 +90,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
     - Add overloads or tag-based specializations if certain handler types need pre/post-processing.
   - **Dependencies**: Depends on **Implement Tagged Awaitables**; affects `:stream`, `:awaitables`, `:protocol_fsm`, `:internal`.
   - **Priority**: Medium (code reuse, consistency, and future extensibility).
-  - **Estimated Effort**: Completed in 0 days. (Prior refactoring made this unnecessary/impractical.
+  - **Estimated Effort**: Completed in 0 days. (Prior refactoring made this unnecessary/impractical.)
   
 08. [✔️] **Investigate TaggedAwaitable Tags** (Completed March 21, 2026):
   - **Task**: Investigate whether the tag types for TaggedAwaitable need to be declared or defined to be used.
