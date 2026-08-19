@@ -127,7 +127,7 @@ endfunction()
 function(cxxModules_validateModuleName module_name context)
   cxxModules_resolveContext(context "${context}")
   
-  if (NOT module_name)
+  if ("${module_name}" STREQUAL "")
     message(FATAL_ERROR "${context}: module name is required as first argument")
   endif()
   
