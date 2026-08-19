@@ -25,8 +25,8 @@
  *   - `:copy_cvref`                  = Apply value categories and/or cv-qualifications from one type to another.
  *   - `:remove_indirection`          = Remove one layer of indirection  (pointer, pointer-to-member, lvalue reference, rvalue reference, or array) from a type.
  *   - `:remove_all_indirections`     = Remove all layers of indirection from a type to yield the "core" cv-qualified type.
- *   - `:is_indirection_v`            = Determine if a type has at least one layer of indirection.
- *   - `:is_type_specialization_of_v` = Determine if a type is a specialization of a given primary template.
+ *   - `:is_indirection`              = Determine if a type has at least one layer of indirection.
+ *   - `:is_type_specialization_of`   = Determine if a type is a specialization of a given primary template.
  *   - `:type_categories`             = Determine if a type fits into a given category.
  */
 
