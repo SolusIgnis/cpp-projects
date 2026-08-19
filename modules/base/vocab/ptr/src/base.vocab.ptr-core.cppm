@@ -620,7 +620,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Provides member access to the pointee object.
         [[nodiscard]] constexpr address_type operator->(this auto&& self) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && std::is_class_v<element_type>
+            requires base::meta::concepts::CompleteClassType<element_type>
         {
             return self.address_;
         }
