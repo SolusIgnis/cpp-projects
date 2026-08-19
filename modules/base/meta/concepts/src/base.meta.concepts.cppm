@@ -3,8 +3,8 @@
 /**
  * @module base.meta.concepts
  * @file base.meta.concepts.cppm
- * @version 0.0.2
- * @date May 8, 2026
+ * @version 0.0.3
+ * @date August 18, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock

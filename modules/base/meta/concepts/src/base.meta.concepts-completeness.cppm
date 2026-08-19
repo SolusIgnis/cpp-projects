@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.meta.concepts-completeness.cppm
- * @version 0.0.2
- * @date May 8, 2026
+ * @version 0.0.3
+ * @date August 18, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock

@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
 /**
  * @file base.meta.traits-remove_indirection.cppm
- * @version 0.0.1
+ * @version 0.0.4
  * @date April 27, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
