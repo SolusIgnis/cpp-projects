@@ -41,5 +41,5 @@ export namespace base::meta::traits::inline predicates {
      * @note This corresponds to the C++ Standard's core language definition of a "class type", which includes both `struct`s/`class`es ("non-union class types") and `union`s ("union types").
      */
     template<typename T>
-    constexpr bool is_class_type_v = std::is_class_v<T> || std::is_union_v<T>;
+    inline constexpr bool is_class_type_v = std::is_class_v<T> || std::is_union_v<T>;
 } //namespace base::meta::traits::inline predicates
