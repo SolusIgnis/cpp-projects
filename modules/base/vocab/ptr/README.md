@@ -713,6 +713,8 @@ This includes:
 - binding from temporary pointer-like objects
 - assignment from temporary pointer-like objects
 
+This does not include raw pointers or vocabulary pointers as the destruction if the non-owning pointer can't make the constructed or assigned-to pointer dangle.
+
 These deleted overloads eliminate a common source of dangling pointers at the vocabulary boundary.
 
 #### Array Decay Prevention
