@@ -36,6 +36,7 @@ namespace {
         std::array<std::byte, sizeof(base_type) + alignof(base_type)> make_derived_bigger_than_base_even_with_tail_padding{};
 
         std::int32_t bar() override { return extra; }
+
         std::size_t baz() { return make_derived_bigger_than_base_even_with_tail_padding.size(); }
     };
 
@@ -112,7 +113,10 @@ namespace {
             expect(eq(*dummy_ptr->counter, 2zu));
             expect(eq(count, 2zu));
 
-            static_assert(sizeof(derived_type) > sizeof(base_type), "`derived_type` must be larger than `base_type` for this test to be valid.");
+            static_assert(
+                sizeof(derived_type) > sizeof(base_type),
+                "`derived_type` must be larger than `base_type` for this test to be valid."
+            );
             expect(eq(dummy_ptr->service->foo(), sizeof(base_type)));
             expect(eq(dummy_ptr->service->bar(), expected_bar_val));
         };

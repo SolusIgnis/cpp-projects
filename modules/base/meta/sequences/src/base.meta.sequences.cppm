@@ -113,7 +113,7 @@ export module base.meta.sequences;
 export import :core;   ///< @see "base.meta.sequences-core.cppm"
 export import :access; ///< @see "base.meta.sequences-access.cppm"
 export import :query;  ///< @see "base.meta.sequences-query.cppm"
-export import :select;    ///< @see "base.meta.sequences-select.cppm"
+export import :select; ///< @see "base.meta.sequences-select.cppm"
 //export import :modify;    ///< @see "base.meta.sequences-modify.cppm"
 //export import :transform; ///< @see "base.meta.sequences-transform.cppm"
 //export import :reduce;    ///< @see "base.meta.sequences-reduce.cppm"
