@@ -479,5 +479,5 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
 ### Notes
 - Version 0.5.8 reflects a major restructuring of the project including testing and GitHub CI.
 - Log formats use default `{}` specifiers for `TelnetCommand` (`name (0xXX)`), `option` (`0xXX (name)`), and `NegotiationDirection` (`local` or `remote`), with `"N/A"_sv` for `std::nullopt` cases.
-- Next focus: Phase 6 Milestone 9, **Taged Callables**
+- Next focus: Phase 6 Milestone 9, **Tagged Callables**
 *Last updated: August 19, 2026*
