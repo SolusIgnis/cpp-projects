@@ -60,5 +60,5 @@ export namespace base::meta::traits::inline predicates {
      * @details Evaluates to `true` if `T` changes under `remove_indirection_t`.
      */
     template<typename T>
-    constexpr bool is_indirection_v = is_indirection<T>::value;
+    inline constexpr bool is_indirection_v = is_indirection<T>::value;
 } //namespace base::meta::traits::inline predicates
