@@ -15,7 +15,7 @@
 - Stubbed in `base.vocab.ptr` module and added `base.vocab` and `base` metamodules.
 - Added `tools.test` and `tools` metamodules.
 - Added `base.functional.overload` module to implement the overload pattern and `base.functional` metamodule.
-- Added `base.meta` metamodule with `base.meta.traits` implementing `remove_all_indirections_t` type transformation trait and `base.meta.concepts` implementing `instantiable_with` `concept`.
+- Added `base.meta` metamodule with `base.meta.traits` implementing `remove_all_indirections_t` type transformation trait and `base.meta.concepts` implementing `InstantiableWith` `concept`.
 - Added `dependency_ptr` to `base.vocab.ptr` module.
 - Added `required_ptr` to `base.vocab.ptr` module.
 - Added `alias_ptr` to `base.vocab.ptr` module.

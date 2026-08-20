@@ -328,7 +328,7 @@ The available cast functions correspond closely to their standard-library counte
 - `static_pointer_cast` performs a compile-time checked static conversion between pointee types.
 - `dynamic_pointer_cast` performs a runtime checked dynamic conversion along a polymorphic class hierarchy using RTTI.
 - `reinterpret_pointer_cast` reinterprets the stored address as pointing to another pointee type.
-- `start_lifetime_as` starts the lifetime of an implicit-lifetime object at the pointer's address and yields a pointer whose pointee is of the type of the object.
+- `start_lifetime_as` starts the lifetime of an implicit-lifetime object at the pointer's address and yields a pointer whose pointee is of the type of the object. (This function is only available with standard library implementations providing `std::start_lifetime_as`.)
 
 Note that the first four operations are analogous to the built-in `const_cast`, `static_cast`, `dynamic_cast`, and `reinterpret_cast` operations applied to the pointer's stored address. `start_lifetime_as` similarly applies `std::start_lifetime_as` to that address.
 
