@@ -45,6 +45,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/AddNamedModule.cmake)
 #     `GENERATED`), an interface unit is generated in
 #     `${CMAKE_CURRENT_BINARY_DIR}/generated/metamodules`
 #     that `export import`s all direct submodules.
+#   - If `INTERFACE_UNIT` is not specified when there is a
+#     "src/" subdirectory, the call fails in order to prevent
+#     silently/accidentally ignoring an authored module.
 #   - Generated metamodules are excluded from tooling targets
 #     since they are ephemeral, trivial, and preformatted.
 #   - The directory for generated units is added to the
