@@ -21,8 +21,8 @@
  *
  * @brief `is_type_specialization_of_v`: A type predicate trait that determines if a type is a specialization of a given primary template.
  *
- * @details `is_type_specialization_of_v<T, PrimaryTemplate>` evaluates to `true` if `T` is a specialization
- * of `PrimaryTemplate` such that `PrimaryTemplate<Args...>` is the same type as `T` for some type arguments.
+ * @details `is_type_specialization_of_v<T, PrimaryTemplate>` evaluates to `true` if `std::remove_cvref_t<T>` is a specialization
+ * of `PrimaryTemplate` such that `PrimaryTemplate<Args...>` is the same type as `std::remove_cvref_t<T>` for some type arguments.
  */
 
 //Module partition interface unit
