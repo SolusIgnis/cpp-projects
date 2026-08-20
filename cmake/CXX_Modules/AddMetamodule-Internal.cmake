@@ -56,7 +56,8 @@ endfunction()
 # Append a key-value pair to a list if the value is set.
 # ============================================================
 function(cxxModules_appendIfSet list_var key value)
-  if (value)
+  cxxModules_hasValue(_engaged_input "${value}")
+  if (_engaged_input)
     list(APPEND ${list_var} ${key} ${value})
     set(${list_var} "${${list_var}}" PARENT_SCOPE)
   endif()
@@ -180,7 +181,8 @@ function(cxxModules_resolveMetamoduleInterfaceUnit out_interface_unit out_base_d
 
   set(_base_dir "")
   set(_is_generated FALSE)
-  if (interface_unit_arg AND NOT "${interface_unit_arg}" STREQUAL "GENERATED")
+  cxxModules_hasValue(_engaged_interface_unit_arg "${interface_unit_arg}")
+  if (_engaged_interface_unit_arg AND NOT "${interface_unit_arg}" STREQUAL "GENERATED")
     set(_iface "${interface_unit_arg}")
   else()
     if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src" AND NOT "${interface_unit_arg}" STREQUAL "GENERATED")
