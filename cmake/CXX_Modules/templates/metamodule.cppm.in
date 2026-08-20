@@ -20,7 +20,7 @@
  * limitations under the License. @endparblock
  *
  * @brief Primary module interface for the `@module_name@` metamodule.
- * @details Exports partitions for:
+ * @details Exports submodules for:
 @submodules_header_comment@
  *
  * @warning THIS FILE IS A GENERATED CONFIGURATION ARTIFACT.
