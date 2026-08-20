@@ -1,14 +1,14 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 <!-- SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors -->
 # Telnet Project TODO
-## Version: 0.5.7
-## Date: October 30, 2025
+## Version: 0.5.8
+## Date: August 19, 2026
 ## Purpose: This document compiles all `@todo` tasks from the Telnet project files, organized by phase, to guide development in Phase 6 and beyond. The tasks focus on enhancing stream compatibility, TLS support, and interface cleanup, building on the modular structure defined in `telnet.cppm`.
 
 ## Development Plan
 
 ### Overview
-The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving protocol stability through RFC 1143 compliance, enhanced logging with `std::format`, urgent data/Synch procedure handling (RFC 854), advanced option handling with tagged awaitables, handler registration, and user-initiated negotiation. Phase 6 targets stream compatibility and interface cleanup, while Future Development addresses long-term maintenance and optimization. Phase 6 and later milestones are unordered, with changes requiring explicit approval.
+The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving protocol stability through RFC 1143 compliance, enhanced logging with `std::format`, urgent data/Synch procedure handling (RFC 854), advanced option handling with tagged awaitables, handler registration, and user-initiated negotiation. Phase 6 targets stream compatibility and interface cleanup, while Future Development addresses long-term maintenance and optimization. Phase 6 and later milestones are unordered, with changes requiring explicit approval.
 
 ### Phase 6 Milestones
 01. [✔️] **Rename `socket` to `stream`** (Completed October 17, 2025):
@@ -169,7 +169,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Task**: Set up `base.meta.*`
   - **Steps**:
     - Move `remove_indirection_t` to `base::meta::traits::inline transformation`.
-    - Put `instantiatable_with` (from the `base.vocab.ptr:dependency_ptr` test suite in `base.meta.concepts`.
+    - Put `instantiatable_with` (from the `base.vocab.ptr:dependency_ptr` test suite) in `base.meta.concepts` (renamed `InstantiableWith`).
   - **Dependencies**: None
   - **Priority**: Medium (refactoring base components)
   - **Estimated Effort**: 1 day
@@ -477,7 +477,7 @@ The Telnet project (version 0.5.0) has completed Phases 4 and 5, achieving proto
   - **Estimated Effort**: Completed in 0.5 days.
 
 ### Notes
-- Version 0.5.7 reflects the completion of Phase 5, including tagged awaitables, enhanced `OptionHandlerRecord`, and user-initiated option negotiation.
+- Version 0.5.8 reflects a major restructuring of the project including testing and GitHub CI.
 - Log formats use default `{}` specifiers for `TelnetCommand` (`name (0xXX)`), `option` (`0xXX (name)`), and `NegotiationDirection` (`local` or `remote`), with `"N/A"_sv` for `std::nullopt` cases.
-- Next focus: Phase 6 Milestone 8, **TLS**
-*Last updated: October 30, 2025*
+- Next focus: Phase 6 Milestone 9, **Taged Callables**
+*Last updated: August 19, 2026*
