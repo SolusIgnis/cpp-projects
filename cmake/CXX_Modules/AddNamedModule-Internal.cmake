@@ -108,7 +108,8 @@ function(cxxModules_collectLinkTargets out_var imports libraries context)
     list(APPEND _link_targets "${_import_target}")
   endforeach() 
   
-  if (libraries)
+  cxxModules_hasValue(_engaged_libraries "${libraries}")
+  if (_engaged_libraries)
     list(APPEND _link_targets ${libraries})
   endif()
   
