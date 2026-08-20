@@ -22,6 +22,7 @@
  *
  * @brief Primary module interface for the pointer vocabulary module.
  * @details Exports partitions for:
+ *   - `:pointer_to`     = `pointer_to` factory function to construct a pointer of a specified template to a given object.
  *   - `:alias_ptr`      = General-purpose nullable object alias pointer.
  *   - `:cursor_ptr`     = Non-owning arithmetic never-null pointer suitable for contiguous memory traversal.
  *   - `:dependency_ptr` = Non-owning non-arithmetic never-null pointer for dependency injection.
