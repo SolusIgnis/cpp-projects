@@ -141,7 +141,7 @@ export namespace net::telnet {
         awaitables::subnegotiation_awaitable undefined_subnegotiation_handler(option opt, std::vector<byte_t> /*unused*/)
         {
             ProtocolConfig::log_error(make_error_code(error::user_handler_not_found), "cmd: {}, option: {}", command::se, opt);
-            co_return;
+            co_return {opt, {}};
         } //undefined_subnegotiation_handler(option::id_num opt, std::vector<byte_t>)
 
         std::map<option::id_num, option_handler_record> handlers_;
