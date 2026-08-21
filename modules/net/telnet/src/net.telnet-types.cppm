@@ -93,7 +93,7 @@ export namespace std {
          * @brief Parses the format specifier for `telnet::command`.
          * @param ctx The format parse context.
          * @return Iterator pointing to the end of the parsed format specifier.
-         * @throws std::format_error if the specifier is invalid (not 'd', 'n', or 'x').
+         * @throws std::format_error if the specifier is invalid (not 'd', 'n', 'x', or 'X').
          * @remark Supports 'd' (default: name (0xXX)), 'n' (name only), and 'x' (hex only, 0xXX).
          */
         //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
@@ -123,7 +123,7 @@ export namespace std {
          * - 'n': "name" (e.g., "WILL").
          * - 'x': "0xxx" (e.g., "0xfb").
          * - 'X': "0xXX" (e.g., "0xFB").
-         * - Unknown commands format as "UNKNOWN" ('n') or "0xXX" ('x').
+         * - Unknown commands format as "UNKNOWN" ('n') or "0xXX" ('X').
          */
         //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         template<typename FormatContext>
