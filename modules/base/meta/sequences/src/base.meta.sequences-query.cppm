@@ -62,7 +62,8 @@ namespace base::meta::sequences {
      * @brief Equivalence comparison requires same cv-ref normalized type and value equality.
      */
     template<auto LHS, auto RHS>
-    consteval bool value_equivalent() {
+    consteval bool value_equivalent()
+    {
         if constexpr (std::same_as<std::remove_cvref_t<decltype(LHS)>, std::remove_cvref_t<decltype(RHS)>>) {
             return LHS == RHS;
         } else {
