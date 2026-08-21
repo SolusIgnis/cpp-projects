@@ -106,9 +106,10 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Deduces `T` from the referenced object, preserving cv-qualification.
      * @remark Excludes `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
+     * @remark Excludes non-array `ResolvableToAddress`s to avoid ambiguity with other CTAD guides.
      */
     template<typename T>
-        requires (!PointerWithElementType<T>)
+        requires (!PointerWithElementType<T>) && ((!ResolvableToAddress<T>) || std::is_array_v<std::remove_cvref_t<T>>)
     alias_ptr(T&&) -> alias_ptr<std::remove_reference_t<T>>;
 
     /**
@@ -128,6 +129,6 @@ export namespace base::vocab::inline ptr {
      * @remark Excludes C arrays to avoid array-to-pointer decay in the type deduction.
      */
     template<ResolvableToAddress P>
-        requires (!PointerWithElementType<P>) && (!is_array_v<P>)
+        requires (!PointerWithElementType<P>) && (!std::is_array_v<P>)
     alias_ptr(P) -> alias_ptr<address_resolved_element_t<P>>;
 } //namespace base::vocab::inline ptr

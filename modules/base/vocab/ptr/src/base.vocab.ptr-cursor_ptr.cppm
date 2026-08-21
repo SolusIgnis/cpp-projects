@@ -110,7 +110,7 @@ export namespace base::vocab::inline ptr {
      * @remark Excludes non-array `ResolvableToAddress`s to avoid ambiguity with other CTAD guides.
      */
     template<typename T>
-        requires (!PointerWithElementType<T>) && ((!ResolvableToAddress<T>) || is_array_v<std::remove_cvref_t<T>>)
+        requires (!PointerWithElementType<T>) && ((!ResolvableToAddress<T>) || std::is_array_v<std::remove_cvref_t<T>>)
     cursor_ptr(T&&) -> cursor_ptr<std::remove_reference_t<T>>;
 
     /**
@@ -130,6 +130,6 @@ export namespace base::vocab::inline ptr {
      * @remark Excludes C arrays to avoid array-to-pointer decay in the type deduction.
      */
     template<ResolvableToAddress P>
-        requires (!PointerWithElementType<P>) && (!is_array_v<P>)
+        requires (!PointerWithElementType<P>) && (!std::is_array_v<P>)
     cursor_ptr(P) -> cursor_ptr<address_resolved_element_t<P>>;
 } //namespace base::vocab::inline ptr
