@@ -57,7 +57,7 @@ export namespace framework::coroutines {
         tagged_awaitable() = default;
 
         ///@brief Constructs from an awaitable.
-        explicit(false) tagged_awaitable(awaitable_type awaitable) noexcept : awaitable_(std::move(awaitable)) {}
+        explicit(false) tagged_awaitable(awaitable_type awaitable) noexcept(std::is_nothrow_move_constructible_v<awaitable_type>) : awaitable_(std::move(awaitable)) {}
 
         ///@brief Prevent copy construction from a tagged_awaitable with a different tag.
         template<typename OtherTag, typename OtherAwaitable>
