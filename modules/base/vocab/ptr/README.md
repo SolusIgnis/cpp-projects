@@ -193,7 +193,7 @@ A general-purpose, nullable object-alias pointer.
 alias_ptr<widget> ptr;
 
 if (!ptr) {
-    ptr = some_widget;
+    ptr = alias_ptr{some_widget};
 }
 ```
 
