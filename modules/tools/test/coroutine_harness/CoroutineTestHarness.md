@@ -110,7 +110,7 @@ A dummy type that is made awaitable via a free-function `operator co_await` in i
 ## 7. Helper: `as_task<T>(awaitable)`
 This utility function template adapts any **awaitable** (like the test dummies) into a `test_task<T>`. This is extremely useful when you want to use the `run()` function on something that isn't a coroutine itself.
 
-The adapter uses **perfect forwarding** (`std::forward`) to preserve the value category of the awaitable. If you pass an **rvalue** (a temporary), the task will move it into the `co_await` expression instead of copying.
+The adapter takes the awaitable **by value** and moves it into the `co_await` expression, so the value category of the argument is preserved at the call boundary: an **rvalue** argument is moved into the task, while an **lvalue** is copied. This ensures that the task owns its awaitable, so its lifetime is not dependent on the lifetime of the caller's object.
 
 ```cpp
 using namespace net::telnet::test_support::coroutine_harness;
