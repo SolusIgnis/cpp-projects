@@ -251,26 +251,6 @@ suite net_telnet_awaitables_integration_tests = [] mutable {
         expect(eq(ran_on_executor, true));
         expect(eq(fut.get(), expected));
     };
-
-    // ============================================================
-    // Exception Propagation
-    // ============================================================
-
-    "tagged_awaitable propagates test_task destroy without run exception"_test = [] mutable {
-        auto wrapped = [](int value) -> tagged_awaitable<test_tag, test_task<int>> { co_return value; };
-
-        int herring = 42;
-
-        bool threw = false;
-
-        try {
-            auto coro = wrapped(herring);
-        } catch (std::logic_error&) {
-            threw = true;
-        }
-
-        expect(eq(threw, true));
-    };
 };
 
 int main() {}

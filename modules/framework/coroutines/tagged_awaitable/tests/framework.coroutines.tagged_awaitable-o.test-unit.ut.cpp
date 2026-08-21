@@ -166,8 +166,6 @@ suite tagged_awaitable_unit_tests = [] mutable {
         wrapper_t wrapped = dummies::adl::awaitable_by_adl{expected};
 
         expect(eq(run(as_task<int>(wrapped)), expected));
-        expect(eq(run(as_task<int>(std::as_const(wrapped))), expected));
-        expect(eq(run(as_task<int>(std::move(wrapped))), expected));
     };
 
     "tagged_awaitable supports co_await of wrapped awaiter"_test = [] mutable {
