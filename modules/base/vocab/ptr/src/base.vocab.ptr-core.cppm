@@ -133,19 +133,55 @@ namespace base::vocab::inline ptr {
                              && std::convertible_to<typename std::remove_cvref_t<T>::address_type, TargetAddress>;
 
     /**
+     * @brief Determines whether a pointer type can be resolved to any raw address type by `std::to_address`.
+     *
+     * @tparam T The type being tested.
+     *
+     * @details Satisfied when a `T` can be the argument to `std::to_address`.
+     *
+     * @internal
+     */
+    template<typename T>
+    concept ResolvableToAddress =
+        requires(const T& ptr) {
+            { std::to_address(ptr) };
+        };
+
+    /**
      * @brief Determines whether a pointer type can be resolved to a given raw address type by `std::to_address`.
      *
      * @tparam T The type being tested.
      * @tparam AddressType The type of the raw address to which the resolved address must be convertible.
      *
      * @details Satisfied when a `T` can be the argument to `std::to_address` and the result of that call is convertible to `AddressType`.
+     *
+     * @internal
      */
     template<typename T, typename AddressType>
-    concept ResolvableToAddress = /* (std::is_pointer_v<T> || requires { typename std::pointer_traits<T>::element_type; })
-                                &&*/
+    concept ResolvableToAddressAs = ResolvableToAddress<T> &&
         requires(const T& ptr) {
             { std::to_address(ptr) } -> std::convertible_to<AddressType>;
         };
+
+    /**
+     * @brief Determines the type of the address resolved by applying `std::to_address` to an object of a given type.
+     *
+     * @tparam T The type from which to resolve an address type.
+     *
+     * @internal
+     */
+    template<ResolvableToAddress T>
+    using resolved_address_t = decltype(std::to_address(std::declval<const T&>()));
+
+    /**
+     * @brief Determines the pointee element type of an address resolved by applying `std::to_address` to an object of a given type.
+     *
+     * @tparam T The type from which to resolve an element type.
+     *
+     * @internal
+     */
+    template<ResolvableToAddress T>
+    using address_resolved_element_t = std::remove_pointer_t<resolved_address_t<T>>;
 
     /**
      * @brief Determines whether a type is an external pointer compatible with a specified `VocabPtr`.
@@ -165,10 +201,14 @@ namespace base::vocab::inline ptr {
     template<typename T, typename TargetPtr>
     concept PointerCompatibleWith = !VocabPtr<std::remove_cvref_t<T>> && !std::is_array_v<std::remove_cvref_t<T>>
                                  && VocabPtr<TargetPtr>
-                                 && ResolvableToAddress<std::remove_cvref_t<T>, typename TargetPtr::address_type>;
+                                 && ResolvableToAddressAs<std::remove_cvref_t<T>, typename TargetPtr::address_type>;
 
     /**
      * @brief Determines whether a pointer-like type has an exposed element type.
+     *
+     * @tparam T The type to be tested after removing reference and cv-qualifications.
+     *
+     * @internal
      */
     template<typename T>
     concept PointerWithElementType = requires { typename std::pointer_traits<std::remove_cvref_t<T>>::element_type; };

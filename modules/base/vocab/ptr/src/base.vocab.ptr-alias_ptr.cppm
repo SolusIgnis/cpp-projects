@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-alias_ptr.cppm
  * @version 0.9.1
- * @date August 5, 2026
+ * @date August 21, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -118,4 +118,16 @@ export namespace base::vocab::inline ptr {
      */
     template<PointerWithElementType P>
     alias_ptr(P) -> alias_ptr<typename std::pointer_traits<P>::element_type>;
+
+    /**
+     * @brief Deduction guide for `alias_ptr` from address-resolvable types.
+     *
+     * @tparam P A type resolvable by `std::to_address`.
+     *
+     * @remark Excludes `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
+     * @remark Excludes C arrays to avoid array-to-pointer decay in the type deduction.
+     */
+    template<ResolvableToAddress P>
+        requires (!PointerWithElementType<P>) && (!is_array_v<P>)
+    alias_ptr(P) -> alias_ptr<address_resolved_element_t<P>>;
 } //namespace base::vocab::inline ptr

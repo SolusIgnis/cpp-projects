@@ -3,7 +3,7 @@
 /**
  * @file base.vocab.ptr-cursor_ptr.cppm
  * @version 0.9.1
- * @date August 5, 2026
+ * @date August 21, 2026
  *
  * @copyright © 2026 Jeremy Murphy and any Contributors
  * @par License: @parblock
@@ -107,9 +107,10 @@ export namespace base::vocab::inline ptr {
      *
      * @remark Deduces `T` from the referenced object, preserving cv-qualification.
      * @remark Excludes `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
+     * @remark Excludes non-array `ResolvableToAddress`s to avoid ambiguity with other CTAD guides.
      */
     template<typename T>
-        requires (!PointerWithElementType<T>)
+        requires (!PointerWithElementType<T>) && ((!ResolvableToAddress<T>) || is_array_v<std::remove_cvref_t<T>>)
     cursor_ptr(T&&) -> cursor_ptr<std::remove_reference_t<T>>;
 
     /**
@@ -119,4 +120,16 @@ export namespace base::vocab::inline ptr {
      */
     template<PointerWithElementType P>
     cursor_ptr(P) -> cursor_ptr<typename std::pointer_traits<P>::element_type>;
+
+    /**
+     * @brief Deduction guide for `cursor_ptr` from address-resolvable types.
+     *
+     * @tparam P A type resolvable by `std::to_address`.
+     *
+     * @remark Excludes `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
+     * @remark Excludes C arrays to avoid array-to-pointer decay in the type deduction.
+     */
+    template<ResolvableToAddress P>
+        requires (!PointerWithElementType<P>) && (!is_array_v<P>)
+    cursor_ptr(P) -> cursor_ptr<address_resolved_element_t<P>>;
 } //namespace base::vocab::inline ptr
