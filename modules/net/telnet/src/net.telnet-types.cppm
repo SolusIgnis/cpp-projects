@@ -87,14 +87,14 @@ export namespace std {
     template<>
     struct formatter<::net::telnet::command, char> {
     private:
-        char presentation_ = 'd'; ///< Format specifier: 'd' for name (0xXX), 'n' for name only, 'x' for hex only.
+        char presentation_ = 'd'; ///< Format specifier: 'd' for name (0xXX), 'n' for name only, 'x' or 'X' for hex only.
     public:
         /**
          * @brief Parses the format specifier for `telnet::command`.
          * @param ctx The format parse context.
          * @return Iterator pointing to the end of the parsed format specifier.
          * @throws std::format_error if the specifier is invalid (not 'd', 'n', 'x', or 'X').
-         * @remark Supports 'd' (default: name (0xXX)), 'n' (name only), and 'x' (hex only, 0xXX).
+         * @remark Supports 'd' (default: name (0xXX)), 'n' (name only), 'x' (lowercase hex only, 0xxx), and 'X' (uppercase hex only, 0xXX).
          */
         //NOLINTNEXTLINE(readability-convert-member-functions-to-static): The std::formatter interface doesn't allow this to be static.
         constexpr auto parse(format_parse_context& ctx)
