@@ -15,7 +15,10 @@ jobs:
   version-fix:
     runs-on: ubuntu-latest
 
-    if: github.actor != 'github-actions[bot]' && contains(github.head_ref, 'release/')
+    if: >
+      github.actor != 'github-actions[bot]' &&
+      contains(github.head_ref, 'release/') &&
+      github.event.pull_request.head.repo.full_name == github.repository
 
     permissions:
       contents: write
@@ -29,62 +32,41 @@ jobs:
 
       - name: Extract module path and release version
         id: parse_branch
+        env:
+          PR_SOURCE_BRANCH: ${{ github.head_ref }}
+          PR_TARGET_BRANCH: ${{ github.base_ref }}
         run: |
-          BRANCH="${{ github.head_ref }}" # PR source branch
-          TARGET="${{ github.base_ref }}" # PR target branch
-
-          if [ -z "$BRANCH" ]; then
+          if [ -z "$PR_SOURCE_BRANCH" ]; then
             echo "Not a PR. Skipping."
             echo "release_branch=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           
-          if [[ "$TARGET" != "main" ]]; then
+          if [[ "$PR_TARGET_BRANCH" != "main" ]]; then
             echo "PR branch not merging to main. Skipping."
             echo "release_branch=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          echo "Source branch: $BRANCH"
+          echo "Source branch: $PR_SOURCE_BRANCH"
 
           # Match branches with an optional prefix path, release/, and a valid semantic version (X.Y.Z[-pre.release][+build]).
           REGEX='^(.*\/)?release\/(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$'
 
-          if grep -Eq "$REGEX" <<< "$BRANCH"; then
+          if grep -Eq "$REGEX" <<< "$PR_SOURCE_BRANCH"; then
             echo "PR branch matches release branch pattern."
             RELEASE_BRANCH=true
             # Following branch name parsing assumes branch validation by regex above.
 
             # Optional prefix before release/, strip trailing slash if any
-            MODULE_PATH="${BRANCH%release/*}"
+            MODULE_PATH="${PR_SOURCE_BRANCH%release/*}"
             MODULE_PATH="modules/${MODULE_PATH%/}"
             
             # Version comes from everything after release/
-            VERSION_TAG="${BRANCH##*release/}"
+            VERSION_TAG="${PR_SOURCE_BRANCH##*release/}"
             
-            # Split build metadata (+...)
-            if [[ "$VERSION_TAG" == *"+"* ]]; then
-              VERSION_CORE="${VERSION_TAG%%+*}"
-              VERSION_BUILD="${VERSION_TAG#*+}"
-              VERSION_BUILD_TAG="+$VERSION_BUILD"
-            else
-              VERSION_CORE="$VERSION_TAG"
-              VERSION_BUILD=""
-              VERSION_BUILD_TAG=""
-            fi
-
-            # Split prerelease (-...)
-            if [[ "$VERSION_CORE" == *"-"* ]]; then
-              VERSION_NUMBER="${VERSION_CORE%%-*}"
-              VERSION_PRERELEASE="${VERSION_CORE#*-}"
-              VERSION_PRERELEASE_TAG="-$VERSION_PRERELEASE"
-            else
-              VERSION_NUMBER="$VERSION_CORE"
-              VERSION_PRERELEASE=""
-              VERSION_PRERELEASE_TAG=""
-            fi
-
-            RELEASE_VERSION="$VERSION_NUMBER$VERSION_PRERELEASE_TAG"
+            # Build metadata is ignored by VERSION files and @version tags to reduce file churn.
+            RELEASE_VERSION="${VERSION_TAG%%+*}"
 
             echo "module_path=$MODULE_PATH" >> "$GITHUB_OUTPUT"
             echo "release_version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
@@ -98,9 +80,10 @@ jobs:
       - name: Check and fix VERSION file
         id: update_version
         if: steps.parse_branch.outputs.release_branch == 'true'
+        env:
+          MODULE_PATH: ${{ steps.parse_branch.outputs.module_path }}
+          RELEASE_VERSION: ${{ steps.parse_branch.outputs.release_version }}
         run: |
-          MODULE_PATH="${{ steps.parse_branch.outputs.module_path }}"
-          RELEASE_VERSION="${{ steps.parse_branch.outputs.release_version }}"
           VERSION_FILE="${MODULE_PATH:+$MODULE_PATH/}VERSION"
 
           echo "changed=false" >> "$GITHUB_OUTPUT"

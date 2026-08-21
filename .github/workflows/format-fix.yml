@@ -34,7 +34,6 @@ jobs:
       - name: Run clang-format
         id: format-run
         run: |
-          echo "changed=false" >> "$GITHUB_OUTPUT"
           cmake --build --preset=clang-debug --target=format-fix
           git add modules
           
@@ -49,5 +48,4 @@ jobs:
 
           git commit -m "chore: Ran clang-format."
           git push origin "${GITHUB_REF_NAME}"
-          echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "Committed format fixes."

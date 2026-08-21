@@ -4,13 +4,11 @@
 name: Publish CI Image
 
 concurrency:
-  group: docker-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: publish-ci-image
+  cancel-in-progress: false
 
 on:
   push:
-    branches:
-      [feature/docker_ci]
     paths:
       - "Dockerfile"
 
@@ -100,4 +98,5 @@ jobs:
       - name: Trigger CI Workflow
         env:
           GH_TOKEN: ${{ secrets.BOT_PUSH_CI_TRIGGER_TOKEN }}
-        run: gh workflow run ci.yml --ref ${{ github.ref_name }} -f notooling=false
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+        run: gh workflow run ci.yml --ref "$GITHUB_REF_NAME" -f notooling=false
