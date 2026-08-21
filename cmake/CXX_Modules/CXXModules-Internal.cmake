@@ -103,6 +103,33 @@ endfunction()
 # =================================================================
 
 # ============================================================
+# cxxModules_validateModuleNameNoRepeatedPrefix(module_name context)
+# ------------------------------------------------------------
+# Validate that a module name does not begin with two
+# identical components (e.g. "a.a", "a.a.b.c", or "base.base")
+# in order to prevent name clashes with the stutter form of
+# alias targets generated for single-component module names.
+#
+# NOTE: This restriction should have minimal practical impact
+# for modules with meaningful names.
+# ============================================================
+function(cxxModules_validateModuleNameNoRepeatedPrefix module_name context)
+  cxxModules_resolveContext(context "${context}")
+  
+  string(REPLACE "." ";" _parts "${module_name}")
+  list(LENGTH _parts _len)
+
+  if (_len GREATER 1)
+    list(GET _parts 0 _first)
+    list(GET _parts 1 _second)
+
+    if ("${_first}" STREQUAL "${_second}")
+      message(FATAL_ERROR "${context}(${module_name}): module names may not begin with two identical components")
+    endif()
+  endif()
+endfunction()
+
+# ============================================================
 # cxxModules_validateModuleNameToken(module_name context)
 # ------------------------------------------------------------
 # Validate that a module name matches the allowed token
@@ -116,6 +143,8 @@ function(cxxModules_validateModuleNameToken module_name context)
   if (NOT module_name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
     message(FATAL_ERROR "${context}(${module_name}): invalid module name '${module_name}'")
   endif()
+
+  cxxModules_validateModuleNameNoRepeatedPrefix("${module_name}" "${context}")
 endfunction()
 
 # ============================================================
