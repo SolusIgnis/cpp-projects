@@ -115,7 +115,7 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
   - **Steps**:
     - Change `option_registry` from using a `std::set<option>` to a `std::flat_set<option>`.
     - Ensure implementations of registry methods do not rely on reference or iterator stability.
-    - Change `option_handler_registry` from using a `std::map<option::id_num, option_handler_record>` (AoS form) to `std::flat_map<OptionEnablementHandler>`, `std::flat_map<OptionDisablementHandler>`, and `std::flat_map<SubnegotiationHandler>` (SoA form).
+    - Change `option_handler_registry` from using a `std::map<option::id_num, option_handler_record>` (AoS form) to `std::flat_map<option::id_num, OptionEnablementHandler>`, `std::flat_map<option::id_num, OptionDisablementHandler>`, and `std::flat_map<option::id_num, SubnegotiationHandler>` (SoA form).
   - **Dependencies**: Affects `:options` and `:internal`.
   - **Priority**: Medium (significant performance improvement)
   - **Estimated Effort**: 1 day.
