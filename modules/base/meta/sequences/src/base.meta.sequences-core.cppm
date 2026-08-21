@@ -54,11 +54,13 @@ export namespace base::meta::sequences {
 } //namespace base::meta::sequences
 
 namespace base::meta::sequences {
+    ///@internal
     template<typename T>
     struct type_constant {
         using type = T;
     };
 
+    ///@internal
     template<auto Value>
     struct value_constant {
         static constexpr auto value = Value;
