@@ -242,12 +242,12 @@ export namespace tools::test::coroutine_harness {
     /// @brief Promise for non-void coroutine results.
     template<typename T>
     struct test_promise : test_promise_base<T> {
-        void return_value(T v) noexcept { this->value.emplace(std::move(v)); }
+        void return_value(T v) noexcept try { this->value.emplace(std::move(v)); } catch (...) { this->unhandled_exception(); }
     };
 
     /// @brief Promise specialization for `void`.
     template<>
     struct test_promise<void> : test_promise_base<void> {
-        void return_void() noexcept { this->value.emplace(); }
+        void return_void() noexcept try { this->value.emplace(); } catch (...) { this->unhandled_exception(); }
     };
 } //namespace tools::test::coroutine_harness
