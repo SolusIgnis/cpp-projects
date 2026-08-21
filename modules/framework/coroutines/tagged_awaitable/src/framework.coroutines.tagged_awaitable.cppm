@@ -57,7 +57,11 @@ export namespace framework::coroutines {
         tagged_awaitable() = default;
 
         ///@brief Constructs from an awaitable.
-        explicit(false) tagged_awaitable(awaitable_type awaitable) noexcept(std::is_nothrow_move_constructible_v<awaitable_type>) : awaitable_(std::move(awaitable)) {}
+        explicit(false) tagged_awaitable(
+            awaitable_type awaitable
+        ) noexcept(std::is_nothrow_move_constructible_v<awaitable_type>)
+            : awaitable_(std::move(awaitable))
+        {}
 
         ///@brief Prevent copy construction from a tagged_awaitable with a different tag.
         template<typename OtherTag, typename OtherAwaitable>
@@ -68,13 +72,22 @@ export namespace framework::coroutines {
         tagged_awaitable(tagged_awaitable<OtherTag, OtherAwaitable>&&) = delete;
 
         ///@brief Implicit conversion to underlying awaitable (lvalue).
-        explicit(false) operator awaitable_type() & noexcept(std::is_nothrow_constructible_v<awaitable_type, awaitable_type&>) { return awaitable_; }
+        explicit(false) operator awaitable_type() & noexcept(std::is_nothrow_constructible_v<awaitable_type, awaitable_type&>)
+        {
+            return awaitable_;
+        }
 
         ///@brief Implicit conversion to underlying awaitable (const lvalue).
-        explicit(false) operator awaitable_type() const& noexcept(std::is_nothrow_copy_constructible_v<awaitable_type>) { return awaitable_; }
+        explicit(false) operator awaitable_type() const& noexcept(std::is_nothrow_copy_constructible_v<awaitable_type>)
+        {
+            return awaitable_;
+        }
 
         ///@brief Implicit conversion to underlying awaitable (rvalue).
-        explicit(false) operator awaitable_type() && noexcept(std::is_nothrow_move_constructible_v<awaitable_type>) { return std::move(awaitable_); }
+        explicit(false) operator awaitable_type() && noexcept(std::is_nothrow_move_constructible_v<awaitable_type>)
+        {
+            return std::move(awaitable_);
+        }
 
         //NOLINTEND(google-explicit-constructor)
 
