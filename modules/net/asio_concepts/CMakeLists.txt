@@ -15,5 +15,6 @@ find_package(OpenSSL)
 add_named_module(net.asio_concepts
   LIB_TYPE OBJECT
   LINK_LIBRARIES
-    $<$<BOOL:${OPENSSL_FOUND}>:OpenSSL::SSL OpenSSL::Crypto>
+    "$<$<BOOL:${OPENSSL_FOUND}>:OpenSSL::SSL>"
+    "$<$<BOOL:${OPENSSL_FOUND}>:OpenSSL::Crypto>"
 )
