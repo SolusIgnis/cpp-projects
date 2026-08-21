@@ -333,7 +333,7 @@ export namespace net::telnet {
 
     /**
      * @brief Inserts an `option::id_num` into a `std::ostream`.
-     * @param o_str The `std::ostream` into which to insert the `command`.
+     * @param o_str The `std::ostream` into which to insert the `option::id_num`.
      * @param opt_id The `option::id_num` to insert.
      * @return A reference to the stream for inserter chaining.
      * @remark Inserts the `option::id_num` as its representation in the underlying type of the enum (widened to avoid character interpretation).
