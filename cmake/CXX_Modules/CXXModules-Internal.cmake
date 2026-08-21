@@ -134,13 +134,13 @@ endfunction()
 # ------------------------------------------------------------
 # Validate that a module name matches the allowed token
 # grammar:
-#           [A-Za-z0-9_]+(\.[A-Za-z0-9_]+)*
+#           [A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*
 #           <identifier>[.<identifier>]*
 # ============================================================
 function(cxxModules_validateModuleNameToken module_name context)
   cxxModules_resolveContext(context "${context}")
   
-  if (NOT module_name MATCHES "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$")
+  if (NOT module_name MATCHES "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$")
     message(FATAL_ERROR "${context}(${module_name}): invalid module name '${module_name}'")
   endif()
 
