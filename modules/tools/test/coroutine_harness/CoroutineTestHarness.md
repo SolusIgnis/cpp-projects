@@ -58,9 +58,9 @@ auto main_task() -> test_task<int> {
 
 ## 4. Quick Start Example
 ```cpp
-import net.telnet.test_support;
+import tools.test.coroutine_harness;
 
-using namespace net::telnet::test_support::coroutine_harness;
+using namespace tools::test::coroutine_harness;
 
 void test_example() {
     // 1. Setup the spy
@@ -113,8 +113,8 @@ This utility function template adapts any **awaitable** (like the test dummies) 
 The adapter takes the awaitable **by value** and moves it into the `co_await` expression, so the value category of the argument is preserved at the call boundary: an **rvalue** argument is moved into the task, while an **lvalue** is copied. This ensures that the task owns its awaitable, so its lifetime is not dependent on the lifetime of the caller's object.
 
 ```cpp
-using namespace net::telnet::test_support::coroutine_harness;
-using namespace net::telnet::test_support::coroutine_harness::dummies;
+using namespace tools::test::coroutine_harness;
+using namespace tools::test::coroutine_harness::dummies;
 
 void test_registry() {
     // 1. Create a simple 'Ready' awaiter
