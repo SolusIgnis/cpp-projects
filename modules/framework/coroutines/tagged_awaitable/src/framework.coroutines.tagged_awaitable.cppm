@@ -68,13 +68,13 @@ export namespace framework::coroutines {
         tagged_awaitable(tagged_awaitable<OtherTag, OtherAwaitable>&&) = delete;
 
         ///@brief Implicit conversion to underlying awaitable (lvalue).
-        explicit(false) operator awaitable_type() & noexcept { return awaitable_; }
+        explicit(false) operator awaitable_type() & noexcept(std::is_nothrow_copy_constructible_v<awaitable_type>) { return awaitable_; }
 
         ///@brief Implicit conversion to underlying awaitable (const lvalue).
-        explicit(false) operator awaitable_type() const& noexcept { return awaitable_; }
+        explicit(false) operator awaitable_type() const& noexcept(std::is_nothrow_copy_constructible_v<awaitable_type>) { return awaitable_; }
 
         ///@brief Implicit conversion to underlying awaitable (rvalue).
-        explicit(false) operator awaitable_type() && noexcept { return std::move(awaitable_); }
+        explicit(false) operator awaitable_type() && noexcept(std::is_nothrow_move_constructible_v<awaitable_type>) { return std::move(awaitable_); }
 
         //NOLINTEND(google-explicit-constructor)
 
