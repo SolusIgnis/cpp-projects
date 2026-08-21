@@ -44,9 +44,9 @@ import :task; ///< @see "tools.test.coroutine_harness-task.cppm"
 export namespace tools::test::coroutine_harness {
     ///@brief Wrap a trivial awaiter or non-coroutine awaitable in a `test_task` so that it can be run as a task.
     template<typename T, typename Awaitable>
-    [[nodiscard]] auto as_task(Awaitable&& awaitable) -> test_task<T>
+    [[nodiscard]] auto as_task(Awaitable awaitable) -> test_task<T>
     {
-        co_return co_await std::forward<Awaitable>(awaitable);
+        co_return co_await std::move(awaitable);
     }
 
     /// @brief Entry trampoline used by `run`.
