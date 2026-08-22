@@ -75,7 +75,9 @@ function(cxxModules_hasValue out_var input)
       OR "${input}" STREQUAL "0"
       OR "${input}" STREQUAL "FALSE"
       OR "${input}" STREQUAL "OFF"
-      OR "${input}" STREQUAL "NO")
+      OR "${input}" STREQUAL "NO"
+      OR "${input}" STREQUAL "N"
+      OR "${input}" STREQUAL "IGNORE")
     set(${out_var} "TRUE" PARENT_SCOPE)
   else()
     set(${out_var} "FALSE" PARENT_SCOPE)
