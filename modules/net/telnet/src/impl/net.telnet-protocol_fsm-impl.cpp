@@ -762,6 +762,7 @@ namespace net::telnet {
             protocol_config_type::log_error(
                 error::invalid_subnegotiation, "Invalid STATUS subnegotiation: no data between IAC SB STATUS and IAC SE"
             );
+            co_return std::make_tuple(opt, std::vector<byte_t>{});
         } else if (buffer[0] == subcommand_is) {
             if (option_status_[option::id_num::status].remote_enabled()) {
                 //Delegate processing of subcommand IS to user-provided handler.
