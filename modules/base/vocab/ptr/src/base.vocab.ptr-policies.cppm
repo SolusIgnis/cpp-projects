@@ -248,6 +248,10 @@ namespace base::vocab::inline ptr::ptr_policies {
      */
     template<PtrPolicyGroup ExpectedPolicyGroup>
     struct in_policy_group {
+        template<typename T>  
+            requires (!requires { typename T::policy_group; })  
+        struct predicate : std::false_type {};  
+
         template<typename T>
             requires requires { typename T::policy_group; }
         struct predicate : std::bool_constant<std::same_as<typename T::policy_group, ExpectedPolicyGroup>> {};
