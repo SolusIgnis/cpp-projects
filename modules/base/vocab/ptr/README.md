@@ -227,7 +227,7 @@ A universal memory-cursor pointer.
 ```cpp
 std::vector<int> values{1, 2, 3, 4};
 
-cursor_ptr current{values.begin()};
+cursor_ptr current{std::to_address(values.begin())};
 
 ++current;
 ```
