@@ -14,11 +14,27 @@
       }
     },
     {
-      "name": "clang-debug",
+      "name": "clang-debug-base",
+      "hidden": true,
       "inherits": "clang-base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }
+    },
+    {
+      "name": "clang-debug-unsanitized",
+      "inherits": "clang-debug-base"
+    },
+    {
+      "name": "clang-debug-sanitize",
+      "inherits": "clang-debug-base",
+      "cacheVariables": {
+        "LLVM_SANITIZER_KIND": "address,undefined"
+      }
+    },
+    {
+      "name": "clang-debug",
+      "inherits": "clang-debug-sanitize"
     },
     {
       "name": "clang-release",
@@ -83,6 +99,16 @@
   ],
   
   "buildPresets": [
+    {
+      "name": "clang-debug-unsanitized",
+      "configurePreset": "clang-debug-unsanitized",
+      "jobs": 0
+    },
+    {
+      "name": "clang-debug-sanitize",
+      "configurePreset": "clang-debug-sanitize",
+      "jobs": 0
+    },
     {
       "name": "clang-debug",
       "configurePreset": "clang-debug",

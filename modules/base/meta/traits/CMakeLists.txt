@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
+# ===========================================================================
+# //modules/base/meta/traits/CMakeLists.txt
+# ===========================================================================
+
+cmake_minimum_required(VERSION 4.1.2)
+# Will be bumped to 4.3 most likely when "import std;" is no longer experimental
+
+trace_me()
+
+add_named_module(base.meta.traits
+  LIB_TYPE STATIC
+  PARTITIONS
+    src/base.meta.traits-copy_cvref.cppm
+    src/base.meta.traits-remove_indirection.cppm
+    src/base.meta.traits-remove_all_indirections.cppm
+    src/base.meta.traits-is_indirection.cppm
+    src/base.meta.traits-is_type_specialization_of.cppm
+    src/base.meta.traits-type_categories.cppm
+)

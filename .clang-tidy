@@ -23,12 +23,12 @@ Checks:
   - '-modernize-use-trailing-return-type'
 
   # ============================================================
-  # Performance correctness (non-micro-optimizing)
+  # Performance correctness
   # ============================================================
   - 'performance-*'
 
   # ============================================================
-  # API & lifetime rules (selective core guidelines)
+  # API & lifetime rules
   # ============================================================
   - 'cppcoreguidelines-*'
   
@@ -57,9 +57,12 @@ Checks:
 
   # Redundant declarations are generally benign, and this check does not play well with `import std;` 
   - '-readability-redundant-declaration'
+  
+  # This is extremely noisy with dependency headers.
+  - '-readability-use-concise-preprocessor-directives'
 
   # ============================================================
-  # Vendor / legacy rule sets (TEMPORARY, prune later)
+  # Vendor / legacy rule sets
   # ============================================================
   - 'google-build-explicit-make-pair'
   - 'google-build-using-namespace'
@@ -250,7 +253,7 @@ CheckOptions:
   misc-include-cleaner.MissingIncludes:     'true'
   misc-include-cleaner.UnusedIncludes:      'true'
   
-  misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: 'false'
+  misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: 'true'
   misc-non-private-member-variables-in-classes.IgnorePublicMemberVariables:                    'false'
   
   misc-throw-by-value-catch-by-reference.CheckThrowTemporaries: 'true'
@@ -412,7 +415,7 @@ CheckOptions:
   readability-magic-numbers.IgnoreTypeAliases:            'false'
   readability-magic-numbers.IgnoreUserDefinedLiterals:    'false'
   readability-magic-numbers.IgnoredFloatingPointValues:   '1.0;100.0;'
-  readability-magic-numbers.IgnoredIntegerValues:         '1;2;3;4;'
+  readability-magic-numbers.IgnoredIntegerValues:         '-1;0;1;2;3;4;'
   
   readability-named-parameter.InsertPlainNamesInForwardDecls: 'false'
   

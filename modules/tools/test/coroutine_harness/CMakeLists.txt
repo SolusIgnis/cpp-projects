@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 Jeremy Murphy and any Contributors
+# ===========================================================================
+# //modules/tools/test/coroutine_harness/CMakeLists.txt
+# ===========================================================================
+
+cmake_minimum_required(VERSION 4.1.2)
+# Will be bumped to 4.3 most likely when "import std;" is no longer experimental
+
+trace_me()
+
+add_named_module(tools.test.coroutine_harness
+  LIB_TYPE STATIC
+  INTERFACE_UNIT
+    src/tools.test.coroutine_harness.cppm
+  PARTITIONS
+    src/tools.test.coroutine_harness-core.cppm
+    src/tools.test.coroutine_harness-task.cppm
+    src/tools.test.coroutine_harness-dummies.cppm
+    src/tools.test.coroutine_harness-runner.cppm
+  LINK_LIBRARIES
+    base::base
+)
