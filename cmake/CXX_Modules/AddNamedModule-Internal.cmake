@@ -49,7 +49,7 @@ function(cxxModules_validateInterfaceUnit interface_unit module_name context)
   endif()
   
   if (NOT EXISTS "${_iface_path}" OR IS_DIRECTORY "${_iface_path}")
-    message(FATAL_ERROR "${context}(${module_name}): INTERFACE_UNIT 'file ${interface_unit}' does not exist at path '${_iface_path}'")
+    message(FATAL_ERROR "${context}(${module_name}): INTERFACE_UNIT '${interface_unit}' must be a file at path '${_iface_path}'")
   endif()
 endfunction()
 
