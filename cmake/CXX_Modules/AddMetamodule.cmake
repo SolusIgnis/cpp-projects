@@ -71,6 +71,14 @@ function(add_metamodule name)
 
   cxxModules_resolveContext(context "${MM_ARG__CONTEXT}")
 
+  if (MM_ARG_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "${context}(${name}): unrecognized arguments: ${MM_ARG_UNPARSED_ARGUMENTS}")
+  endif()
+
+  if (MM_ARG_KEYWORDS_MISSING_VALUES)
+    message(FATAL_ERROR "${context}(${name}): arguments missing values: ${MM_ARG_KEYWORDS_MISSING_VALUES}")
+  endif()
+
   cxxModules_processSubmodules(_submodules "${MM_ARG_SUBMODULES}" "${name}" "${context}")
 
   cxxModules_resolveMetamoduleInterfaceUnit(_interface_unit _base_dirs _is_generated "${name}" "${_submodules}" "${MM_ARG_INTERFACE_UNIT}" "${context}")

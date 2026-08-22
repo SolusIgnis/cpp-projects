@@ -104,7 +104,15 @@ function(add_named_module name)
   )
 
   cxxModules_resolveContext(context "${NM_ARG__CONTEXT}")
-  
+
+  if (NM_ARG_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "${context}(${name}): unrecognized arguments: ${NM_ARG_UNPARSED_ARGUMENTS}")
+  endif()
+
+  if (NM_ARG_KEYWORDS_MISSING_VALUES)
+    message(FATAL_ERROR "${context}(${name}): arguments missing values: ${NM_ARG_KEYWORDS_MISSING_VALUES}")
+  endif()
+
   if (NOT DEFINED NM_ARG_LIB_TYPE)
     message(FATAL_ERROR "${context}(${name}): LIB_TYPE is required.")
   endif()
