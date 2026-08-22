@@ -52,7 +52,7 @@ export namespace base::vocab::inline ptr {
         requires requires(Pointee& object) {
                      { std::pointer_traits<Pointer<Pointee>>::pointer_to(object) } -> std::convertible_to<Pointer<Pointee>>;
                  }
-    constexpr Pointer<Pointee> pointer_to(Pointee& object) noexcept(noexcept(Pointer<Pointee>(std::pointer_traits<Pointer<Pointee>>::pointer_to(object))))
+    constexpr Pointer<Pointee> pointer_to(Pointee& object) noexcept(noexcept(std::pointer_traits<Pointer<Pointee>>::pointer_to(object)) && std::is_nothrow_convertible_v<decltype(std::pointer_traits<Pointer<Pointee>>::pointer_to(object)), Pointer<Pointee>>)
     {
         return std::pointer_traits<Pointer<Pointee>>::pointer_to(object);
     }
