@@ -5,11 +5,11 @@
 # //CMakeLists.txt
 # ===========================================================================
 
-cmake_minimum_required(VERSION 4.1.2)
-# Will be bumped to 4.3 most likely when "import std;" is no longer experimental
+cmake_minimum_required(VERSION 4.4.0)
+# Will be bumped to 4.5 most likely when "import std;" is no longer experimental
 
 # Experimental "import std;" until it's a first-class feature
-set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "d0edc3af-4c50-42ea-a356-e2862fe7a444")
+set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "f35a9ac6-8463-4d38-8eec-5d6008153e7d")
 
 project(cpp-projects
   LANGUAGES CXX
