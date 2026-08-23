@@ -224,8 +224,7 @@ SpacesInSquareBrackets:    false
 
 PointerAlignment:   Left
 ReferenceAlignment: Pointer
-QualifierAlignment: Custom
-QualifierOrder: [inline, friend, static, constexpr, consteval, constinit, explicit, const, volatile, unsigned, long, type]
+QualifierAlignment: Left
 
 # -------------------------------------------------------------------
 # Comments & documentation
