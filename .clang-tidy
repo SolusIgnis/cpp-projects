@@ -38,7 +38,7 @@ Checks:
   # ============================================================
   # Readability & maintainability (policy-driven)
   # ============================================================
-  - '-readability-*'
+  - 'readability-*'
   
   # Const parameters may be necessary with contract post-conditions
   - '-readability-avoid-const-params-in-decls'
@@ -57,9 +57,6 @@ Checks:
 
   # Redundant declarations are generally benign, and this check does not play well with `import std;` 
   - '-readability-redundant-declaration'
- 
-  #
-  - '-readability-trailing-comma'
  
   # This is extremely noisy with dependency headers, and the more verbose form is just as readable.
   - '-readability-use-concise-preprocessor-directives'
@@ -436,6 +433,9 @@ CheckOptions:
   readability-simplify-boolean-expr.IgnoreMacros:                 'false'
   readability-simplify-boolean-expr.SimplifyDeMorgan:             'true'
   readability-simplify-boolean-expr.SimplifyDeMorganRelaxed:      'false'
+  
+  readability-trailing-comma.SingleLineCommaPolicy: 'Ignore'
+  readability-trailing-comma.MultiLineCommaPolicy:  'Append'
   
   readability-uniqueptr-delete-release.PreferResetCall: 'false'
   
