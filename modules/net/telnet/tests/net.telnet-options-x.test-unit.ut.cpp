@@ -33,7 +33,7 @@ suite telnet_options_tests = [] mutable {
         expect(eq(opt.supports(negotiation_direction::local), false));
         expect(eq(opt.supports(negotiation_direction::remote), false));
         expect(eq(opt.supports_subnegotiation(), false));
-        expect(eq(opt.max_subnegotiation_size(), 1024uz));
+        expect(eq(opt.max_subnegotiation_size(), 1024UZ));
     };
 
     "option with custom predicates and subnegotiation"_test = [] mutable {
@@ -45,7 +45,7 @@ suite telnet_options_tests = [] mutable {
         expect(eq(opt.supports(negotiation_direction::local), true));
         expect(eq(opt.supports(negotiation_direction::remote), true));
         expect(eq(opt.supports_subnegotiation(), true));
-        expect(eq(opt.max_subnegotiation_size(), 512uz));
+        expect(eq(opt.max_subnegotiation_size(), 512UZ));
     };
 
     "make_option factory"_test = [] mutable {
@@ -60,7 +60,7 @@ suite telnet_options_tests = [] mutable {
         expect(eq(opt2.supports_local(), false));
         expect(eq(opt2.supports_remote(), true));
         expect(eq(opt2.supports_subnegotiation(), true));
-        expect(eq(opt2.max_subnegotiation_size(), 256uz));
+        expect(eq(opt2.max_subnegotiation_size(), 256UZ));
     };
 
     "option always_accept / always_reject predicates"_test = [] mutable {
@@ -146,12 +146,12 @@ suite telnet_options_tests = [] mutable {
     "option_registry upsert variadic"_test = [] mutable {
         option_registry reg{};
         const auto& opt =
-            reg.upsert(option::id_num::charset, "Charset", option::always_accept, option::always_reject, true, 128uz);
+            reg.upsert(option::id_num::charset, "Charset", option::always_accept, option::always_reject, true, 128UZ);
         expect(eq(opt.get_name(), "Charset"s));
         expect(eq(opt.supports_local(), true));
         expect(eq(opt.supports_remote(), false));
         expect(eq(opt.supports_subnegotiation(), true));
-        expect(eq(opt.max_subnegotiation_size(), 128uz));
+        expect(eq(opt.max_subnegotiation_size(), 128UZ));
     };
 
     "option formatter default 'd'"_test = [] mutable {
