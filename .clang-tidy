@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: 2026 Jeremy Murphy
-# clang-tidy version 21.1.6
+# clang-tidy version 23
 ---
 Checks:
   - '-*'
@@ -58,19 +58,20 @@ Checks:
   # Redundant declarations are generally benign, and this check does not play well with `import std;` 
   - '-readability-redundant-declaration'
   
-  # This is extremely noisy with dependency headers.
+  # This is extremely noisy with dependency headers, and the more verbose form is just as readable.
   - '-readability-use-concise-preprocessor-directives'
 
   # ============================================================
   # Vendor / legacy rule sets
   # ============================================================
+  - 'boost-use-to-string'
+
   - 'google-build-explicit-make-pair'
   - 'google-build-using-namespace'
   - 'google-default-arguments'
   - 'google-explicit-constructor'
   - 'google-runtime-float'
   - 'google-runtime-int'
-  
   - 'google-readability-avoid-underscore-in-googletest-name'
   - 'google-upgrade-googletest-case'
   
@@ -106,11 +107,10 @@ Checks:
   # This is noisy and doesn't play well with asio.
   - '-portability-template-virtual-member-function'
   
-  - 'boost-use-to-string'
-  
 WarningsAsErrors: ''
 HeaderFileExtensions:
   - ''       # Catch-all for unnamed extensions, sometimes needed
+  - cppm     # Modern (>= C++20) module interface units
   - h        # Traditional C headers
   - hh       # Older C++ headers
   - hpp      # Modern C++ headers
@@ -121,7 +121,6 @@ ImplementationFileExtensions:
   - cc       # Older C++ source files
   - cpp      # Modern C++ source files
   - cxx      # Alternate modern C++ source files
-  - cppm     # Modern (>= C++20) module interface units
   - ixx      # Alternate module interface units
 HeaderFilterRegex: '^(?!.*(usr/|lib/|v1/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|std\.cppm|std\.compat\.cppm)).*$'
 #ExcludeHeaderFilterRegex: '/include/c\+\+/v1/'
