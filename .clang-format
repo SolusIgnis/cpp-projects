@@ -206,7 +206,7 @@ SpaceBeforeRangeBasedForLoopColon:  true
 SpaceBeforeSquareBrackets:          false
 SpacesBeforeTrailingComments:       1
 
-SpaceInEmptyBraces:        false
+SpaceInEmptyBraces:        Never
 SpaceInEmptyParentheses:   false
 SpacesInAngles:            Never
 SpacesInContainerLiterals: false
@@ -224,7 +224,8 @@ SpacesInSquareBrackets:    false
 
 PointerAlignment:   Left
 ReferenceAlignment: Pointer
-QualifierAlignment: Left
+QualifierAlignment: Custom
+QualifierOrder: [inline, friend, static, constexpr, consteval, constinit, explicit, const, volatile, unsigned, long, type]
 
 # -------------------------------------------------------------------
 # Comments & documentation
