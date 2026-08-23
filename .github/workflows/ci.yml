@@ -34,12 +34,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Inspect libc++ installation
+        run: |
+          dpkg -l | grep -E 'libc\+\+|libcxx' || true
+          find /usr /opt /lib -name 'std.cppm' -o -name 'libc++.modules.json' 2>/dev/null || true
+          clang++ --version
+          clang++ -print-resource-dir
+          clang++ -v -E -x c++ /dev/null
+
       - name: Configure
         run: |
           cmake --preset=clang-debug \
             -DBUILD_TESTING=ON \
-            -DCMAKE_CXX_FLAGS="-nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx-21/include/c++/v1 -nostdlib++ -Wall -Wextra -fcolor-diagnostics" \
-            -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx-21/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx-21/lib"
+            -DCMAKE_CXX_STANDARD=23 \
+            -DCMAKE_CXX_STDLIB_MODULES_JSON=/usr/lib/llvm-23/lib/libc++.modules.json
 
       - name: Build
         run: cmake --build --preset=clang-debug
@@ -71,8 +79,8 @@ jobs:
         run: |
           cmake --preset=clang-debug \
             -DBUILD_TESTING=OFF \
-            -DCMAKE_CXX_FLAGS="-nostdinc++ -isystem $GITHUB_WORKSPACE/libcxx-21/include/c++/v1 -nostdlib++ -Wall -Wextra -fcolor-diagnostics" \
-            -DCMAKE_EXE_LINKER_FLAGS="-L$GITHUB_WORKSPACE/libcxx-21/lib -lc++ -lc++abi -Wl,-rpath,$GITHUB_WORKSPACE/libcxx-21/lib"
+            -DCMAKE_CXX_STANDARD=23 \
+            -DCMAKE_CXX_STDLIB_MODULES_JSON=/usr/lib/llvm-23/lib/libc++.modules.json
 
       - name: clang-format check
         run: cmake --build --preset=clang-debug --target=format-check
