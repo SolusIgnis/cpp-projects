@@ -38,6 +38,9 @@ Checks:
   # This is a redundant alias of 'misc-explicit-constructor'.
   - '-cppcoreguidelines-explicit-constructor'
   
+  # Temporarily disabled while I review interaction with explicit object parameters.
+  - '-cppcoreguidelines-missing-std-forward'
+  
   # ============================================================
   # Readability & maintainability (policy-driven)
   # ============================================================
@@ -379,7 +382,7 @@ CheckOptions:
   readability-identifier-naming.EnumConstantCase:                lower_case
   readability-identifier-naming.TypedefCase:                     lower_case
   readability-identifier-naming.TypeAliasCase:                   lower_case
-  readability-identifier-naming.ConceptCase:                     CamelCase
+  readability-identifier-naming.ConceptCase:                     lower_case
   # ---------- Functions ----------
   readability-identifier-naming.FunctionCase:                    lower_case
   readability-identifier-naming.MethodCase:                      lower_case
