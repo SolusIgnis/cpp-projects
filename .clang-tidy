@@ -34,6 +34,9 @@ Checks:
   
   # Do-While loops are idiomatic for compare-exchange.
   - '-cppcoreguidelines-avoid-do-while'
+
+  # This is a redundant alias of 'misc-explicit-constructor'.
+  - '-cppcoreguidelines-explicit-constructor'
   
   # ============================================================
   # Readability & maintainability (policy-driven)
@@ -69,7 +72,6 @@ Checks:
   - 'google-build-explicit-make-pair'
   - 'google-build-using-namespace'
   - 'google-default-arguments'
-  - 'google-explicit-constructor'
   - 'google-runtime-float'
   - 'google-runtime-int'
   - 'google-readability-avoid-underscore-in-googletest-name'
@@ -98,6 +100,9 @@ Checks:
   
   # Unfortunately, this doesn't work with import std yet.
   - '-misc-include-cleaner'
+
+  # This seems to have a bug surrounding explicit(false) warnings.
+  - '-misc-explicit-constructor'
   
   - 'portability-*'
 
@@ -122,7 +127,7 @@ ImplementationFileExtensions:
   - cpp      # Modern C++ source files
   - cxx      # Alternate modern C++ source files
   - ixx      # Alternate module interface units
-HeaderFilterRegex: '^(?!.*(usr/|lib/|v1/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|std\.cppm|std\.compat\.cppm)).*$'
+HeaderFilterRegex: '^(?!.*(usr/|lib/|v1/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|std\.cppm|std\.compat\.cppm|_deps/)).*$'
 #ExcludeHeaderFilterRegex: '/include/c\+\+/v1/'
 FormatStyle: file
 CheckOptions:
