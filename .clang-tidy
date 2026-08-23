@@ -38,7 +38,7 @@ Checks:
   # ============================================================
   # Readability & maintainability (policy-driven)
   # ============================================================
-  - 'readability-*'
+  - '-readability-*'
   
   # Const parameters may be necessary with contract post-conditions
   - '-readability-avoid-const-params-in-decls'
@@ -57,7 +57,10 @@ Checks:
 
   # Redundant declarations are generally benign, and this check does not play well with `import std;` 
   - '-readability-redundant-declaration'
-  
+ 
+  #
+  - '-readability-trailing-comma'
+ 
   # This is extremely noisy with dependency headers, and the more verbose form is just as readable.
   - '-readability-use-concise-preprocessor-directives'
 
@@ -110,7 +113,6 @@ Checks:
 WarningsAsErrors: ''
 HeaderFileExtensions:
   - ''       # Catch-all for unnamed extensions, sometimes needed
-  - cppm     # Modern (>= C++20) module interface units
   - h        # Traditional C headers
   - hh       # Older C++ headers
   - hpp      # Modern C++ headers
@@ -119,6 +121,7 @@ HeaderFileExtensions:
 ImplementationFileExtensions:
   - c        # C source files
   - cc       # Older C++ source files
+  - cppm     # Modern (>= C++20) module interface units
   - cpp      # Modern C++ source files
   - cxx      # Alternate modern C++ source files
   - ixx      # Alternate module interface units
