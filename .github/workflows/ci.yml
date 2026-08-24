@@ -34,14 +34,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Inspect libc++ installation
-        run: |
-          dpkg -l | grep -E 'libc\+\+|libcxx' || true
-          find /usr /opt /lib -name 'std.cppm' -o -name 'libc++.modules.json' 2>/dev/null || true
-          clang++ --version
-          clang++ -print-resource-dir
-          clang++ -v -E -x c++ /dev/null
-
       - name: Configure
         run: |
           cmake --preset=clang-debug \
