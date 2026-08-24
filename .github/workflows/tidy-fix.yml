@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: 2026 Jeremy Murphy
+name: Tidy Fixer
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix-formatting:
+    runs-on: ubuntu-latest
+
+    container:
+      options: --user 1001:1001
+      image: ghcr.io/solusignis/ci-env-llvm:latest
+
+    permissions:
+      contents: write
+
+    if: github.actor != 'github-actions[bot]'
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.BOT_PUSH_CI_TRIGGER_TOKEN }}
+
+      - name: Configure
+        run: |
+          cmake --preset=clang-debug \
+            -DCMAKE_CXX_STANDARD=23 \
+            -DCMAKE_CXX_STDLIB_MODULES_JSON=/usr/lib/llvm-23/lib/libc++.modules.json
+
+      - name: Build
+        run: cmake --build --preset=clang-debug
+        
+      - name: clang-tidy fixes
+        run: |
+          cmake --build --preset=clang-debug --target=tidy-fix-fast
+          git add modules
+          
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          # Using the official GitHub Actions Bot identity
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git commit -m "chore: Ran clang-tidy -fix."
+          git push origin "${GITHUB_REF_NAME}"
+          echo "Committed tidy fixes."
