@@ -101,17 +101,17 @@ namespace {
             expect(eq(dummy_ptr->counter == nullptr, true));
             dummy_ptr->counter = std::addressof(count);
 
-            expect(eq(*dummy_ptr->counter, 0zu));
+            expect(eq(*dummy_ptr->counter, 0ZU));
 
             required_ptr local_counter = dummy_ptr->counter;
             (*local_counter)++;
 
-            expect(eq(*dummy_ptr->counter, 1zu));
+            expect(eq(*dummy_ptr->counter, 1ZU));
 
             (*dummy_obj.counter)++;
 
-            expect(eq(*dummy_ptr->counter, 2zu));
-            expect(eq(count, 2zu));
+            expect(eq(*dummy_ptr->counter, 2ZU));
+            expect(eq(count, 2ZU));
 
             static_assert(
                 sizeof(derived_type) > sizeof(base_type),
@@ -139,7 +139,7 @@ namespace {
             // converts argument from cursor_ptr<required_ptr<base_type>> to required_ptr<required_ptr<base_type>>
             auto unwrap = [](required_ptr<required_ptr<base_type>> param) { return *param; };
 
-            for (auto [cursor, i] = std::tuple{cursor_ptr{vec.data()}, 0zu}; i < vec.size(); ++cursor, ++i) {
+            for (auto [cursor, i] = std::tuple{cursor_ptr{vec.data()}, 0ZU}; i < vec.size(); ++cursor, ++i) {
                 bool is_derived = (i == 1) || (i == 3); // 0 and 2 are base_type; 1 and 3 are derived_type
                 expect(eq(unwrap(cursor)->value, 0));
                 expect(eq(unwrap(cursor)->bar(), (is_derived ? 42 : 0)));

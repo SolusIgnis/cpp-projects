@@ -905,8 +905,9 @@ namespace {
 
         "nullable comparisons with nullptr"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding
-                              && pointer_test_traits<ConcretePtr>::is_nullable) {
+                if constexpr (
+                    pointer_test_traits<ConcretePtr>::allows_pointer_binding && pointer_test_traits<ConcretePtr>::is_nullable
+                ) {
                     std::int32_t value{};
 
                     ConcretePtr<std::int32_t> bound{std::addressof(value)};
@@ -1972,8 +1973,10 @@ namespace {
 
         "void pointer is equality comparable"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee
-                              && pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
+                if constexpr (
+                    pointer_test_traits<ConcretePtr>::permits_void_pointee
+                    && pointer_test_traits<ConcretePtr>::allows_pointer_binding
+                ) {
                     const std::int32_t value{42};
                     auto typed_ptr                = base::vocab::pointer_to<ConcretePtr>(value);
                     const std::int32_t* typed_raw = std::addressof(value);

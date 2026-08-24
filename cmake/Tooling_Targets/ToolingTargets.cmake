@@ -26,14 +26,14 @@ add_custom_target(format-check
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   add_custom_target(tidy-check
     COMMAND clang-tidy
-      --use-color -p ${CMAKE_BINARY_DIR} ${ALL_TOOLING_SOURCES}
+      --allow-no-checks --use-color -p ${CMAKE_BINARY_DIR} ${ALL_TOOLING_SOURCES}
     COMMENT "Checking code with clang-tidy"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
   
   add_custom_target(tidy-fix
     COMMAND clang-tidy
-      -fix --use-color -p ${CMAKE_BINARY_DIR} ${ALL_TOOLING_SOURCES}
+      --allow-no-checks -fix --use-color -p ${CMAKE_BINARY_DIR} ${ALL_TOOLING_SOURCES}
     COMMENT "Checking code with clang-tidy in \"fix\" mode"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
@@ -43,13 +43,13 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   endif()
   
   add_custom_target(tidy-check-fast
-    COMMAND run-clang-tidy -use-color -p ${CMAKE_BINARY_DIR} -j${TIDY_JOBS}
+    COMMAND run-clang-tidy -use-color -p ${CMAKE_BINARY_DIR} -j${TIDY_JOBS} -allow-no-checks
     COMMENT "Checking code with clang-tidy (parallelized by run-clang-tidy script)"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
   
   add_custom_target(tidy-fix-fast
-    COMMAND run-clang-tidy -fix -use-color -p ${CMAKE_BINARY_DIR} -j${TIDY_JOBS}
+    COMMAND run-clang-tidy -fix -use-color -p ${CMAKE_BINARY_DIR} -j${TIDY_JOBS} -allow-no-checks
     COMMENT "Checking code with clang-tidy in \"fix\" mode (parallelized by run-clang-tidy script)"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )

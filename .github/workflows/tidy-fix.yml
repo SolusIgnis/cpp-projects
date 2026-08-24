@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: 2026 Jeremy Murphy
-name: Fix Formatting
+name: Tidy Fixer
 
 on:
   workflow_dispatch:
@@ -31,9 +31,12 @@ jobs:
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_STDLIB_MODULES_JSON=/usr/lib/llvm-23/lib/libc++.modules.json
 
-      - name: Run clang-format
+      - name: Build
+        run: cmake --build --preset=clang-debug
+        
+      - name: clang-tidy fixes
         run: |
-          cmake --build --preset=clang-debug --target=format-fix
+          cmake --build --preset=clang-debug --target=tidy-fix-fast
           git add modules
           
           if git diff --cached --quiet; then
@@ -45,6 +48,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git commit -m "chore: Ran clang-format."
+          git commit -m "chore: Ran clang-tidy -fix."
           git push origin "${GITHUB_REF_NAME}"
-          echo "Committed format fixes."
+          echo "Committed tidy fixes."

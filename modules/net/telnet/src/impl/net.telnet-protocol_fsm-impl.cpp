@@ -278,8 +278,10 @@ namespace net::telnet {
         if (byte == std::to_underlying(telnet::command::iac)) {
             change_state(protocol_state::has_iac);
             return {std::error_code(), false, std::nullopt}; //discard IAC byte
-        } else if ((byte == static_cast<byte_t>('\r'))
-                   && (!option_status_[option::id_num::binary].enabled(negotiation_direction::remote))) {
+        } else if (
+            (byte == static_cast<byte_t>('\r'))
+            && (!option_status_[option::id_num::binary].enabled(negotiation_direction::remote))
+        ) {
             change_state(protocol_state::has_cr);
             return {std::error_code(), false, std::nullopt}; //discard CR byte
         } else if (byte == static_cast<byte_t>('\0')) {
@@ -584,7 +586,9 @@ namespace net::telnet {
                     );
                 }
                 bool request_to_enable = (*current_command_ == command::do_opt || *current_command_ == command::will_opt);
-                if (request_to_enable) { //Unregistered options are implicitly disabled, so requests to disable are ignored as redundant.
+                if (
+                    request_to_enable
+                ) { //Unregistered options are implicitly disabled, so requests to disable are ignored as redundant.
                     //Unregistered options MUST be refused per RFC 854 and RFC 1143
                     response = std::make_tuple(direction, false, static_cast<option::id_num>(byte));
                 }

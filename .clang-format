@@ -68,9 +68,11 @@ BreakAdjacentStringLiterals:     false
 BreakAfterAttributes:            Leave
 BreakAfterReturnType:            ExceptShortType
 
-BinPackArguments:      false
-BinPackParameters:     OnePerLine
-BinPackLongBracedList: false
+PackArguments:
+  BinPack:             OnePerLine
+PackParameters:
+  BinPack:             OnePerLine
+BinPackLongBracedList: true
 
 AllowAllArgumentsOnNextLine:               true
 AllowAllParametersOfDeclarationOnNextLine: false
@@ -90,6 +92,17 @@ PenaltyBreakAssignment:               100
 PenaltyBreakTemplateDeclaration:      10
 PenaltyExcessCharacter:               1000000  # strongly prefer your manual wrapping
 
+BreakAfterOpenBracketBracedList:   true
+BreakBeforeCloseBracketBracedList: true
+BreakAfterOpenBracketFunction:     true
+BreakBeforeCloseBracketFunction:   true
+BreakAfterOpenBracketIf:           true
+BreakBeforeCloseBracketIf:         true
+BreakAfterOpenBracketLoop:         true
+BreakBeforeCloseBracketLoop:       true
+BreakAfterOpenBracketSwitch:       true
+BreakBeforeCloseBracketSwitch:     true
+
 # -------------------------------------------------------------------
 # Control flow readability (FSM-friendly)
 # -------------------------------------------------------------------
@@ -101,15 +114,19 @@ AllowShortFunctionsOnASingleLine:           Inline
 AllowShortIfStatementsOnASingleLine:        Never
 AllowShortLambdasOnASingleLine:             All
 AllowShortLoopsOnASingleLine:               true
+AllowShortRecordOnASingleLine:              Empty
 
-BreakBeforeBinaryOperators:        NonAssignment
-BreakBeforeTemplateCloser:         true
-BreakBeforeTernaryOperators:       true
-BreakBinaryOperations:             Never
-BreakConstructorInitializers:      BeforeColon
-BreakFunctionDefinitionParameters: false
-BreakInheritanceList:              AfterComma
-BreakStringLiterals:               false
+BreakBeforeBinaryOperators:         NonAssignment
+BreakBeforeTemplateCloser:          true
+BreakBeforeTernaryOperators:        true
+BreakBeforeReturnType:              None
+BreakBinaryOperations:
+  Default:                          Never
+BreakConstructorInitializers:       BeforeColon
+BreakFunctionDeclarationParameters: false
+BreakFunctionDefinitionParameters:  false
+BreakInheritanceList:               AfterComma
+BreakStringLiterals:                false
 
 RemoveBracesLLVM:  false
 RemoveParentheses: Leave
@@ -120,39 +137,39 @@ SeparateDefinitionBlocks: Always
 # -------------------------------------------------------------------
 # Alignment
 # -------------------------------------------------------------------
-AlignAfterOpenBracket:  BlockIndent
+AlignAfterOpenBracket:  true
 AlignArrayOfStructures: Right
 
 AlignConsecutiveAssignments:
-  Enabled:          true
-  AcrossEmptyLines: false
-  AcrossComments:   false
-  AlignCompound:    true
-  PadOperators:     true
+  Enabled:                   true
+  AcrossEmptyLines:          false
+  AcrossComments:            false
+  AlignCompound:             true
+  PadOperators:              true
 AlignConsecutiveBitFields:
-  Enabled:          true
-  AcrossEmptyLines: false
-  AcrossComments:   false
+  Enabled:                   true
+  AcrossEmptyLines:          false
+  AcrossComments:            false
 AlignConsecutiveDeclarations:
-  Enabled:          false
-  AcrossEmptyLines: false
-  AcrossComments:   false
-#  AlignFunctionDeclarations: false
-  AlignFunctionPointers: false
+  Enabled:                   false
+  AcrossEmptyLines:          false
+  AcrossComments:            false
+  AlignFunctionDeclarations: false
+  AlignFunctionPointers:     false
 AlignConsecutiveMacros:
-  Enabled:          false
-  AcrossEmptyLines: false
-  AcrossComments:   false
+  Enabled:                   false
+  AcrossEmptyLines:          false
+  AcrossComments:            false
 AlignConsecutiveShortCaseStatements:
-  Enabled:          true
-  AcrossEmptyLines: true
-  AcrossComments:   false
-  AlignCaseColons:  false
-AlignEscapedNewlines: Left
-AlignOperands: AlignAfterOperator
+  Enabled:                   true
+  AcrossEmptyLines:          true
+  AcrossComments:            false
+  AlignCaseColons:           false
+AlignEscapedNewlines:        Left
+AlignOperands:               AlignAfterOperator
 AlignTrailingComments:
-  Kind:           Always
-  OverEmptyLines: 0
+  Kind:                      Always
+  OverEmptyLines:            0
 
 # -------------------------------------------------------------------
 # Spacing
@@ -166,28 +183,30 @@ SpaceAfterTemplateKeyword: false
 
 SpaceAroundPointerQualifiers: Default
 
-SpaceBeforeAssignmentOperators:    true
-SpaceBeforeCaseColon:              false
-SpaceBeforeCpp11BracedList:        false
-SpaceBeforeCtorInitializerColon:   true
-SpaceBeforeInheritanceColon:       true
-SpaceBeforeParens:                 Custom
+SpaceBeforeAssignmentOperators:     true
+SpaceBeforeCaseColon:               false
+SpaceBeforeCpp11BracedList:         false
+SpaceBeforeCtorInitializerColon:    true
+SpaceBeforeEnumUnderlyingTypeColon: true
+SpaceBeforeInheritanceColon:        true
+SpaceBeforeParens:                  Custom
 SpaceBeforeParensOptions:
-  AfterControlStatements:          true
-  AfterForeachMacros:              false
-  AfterFunctionDefinitionName:     false
-  AfterFunctionDeclarationName:    false
-  AfterIfMacros:                   true
-  AfterNot:                        true
-  AfterOverloadedOperator:         false
-  AfterPlacementOperator:          false
-  AfterRequiresInClause:           true
-  AfterRequiresInExpression:       false
-  BeforeNonEmptyParentheses:       false
-SpaceBeforeRangeBasedForLoopColon: true
-SpaceBeforeSquareBrackets:         false
-SpacesBeforeTrailingComments:      1
+  AfterControlStatements:           true
+  AfterForeachMacros:               false
+  AfterFunctionDefinitionName:      false
+  AfterFunctionDeclarationName:     false
+  AfterIfMacros:                    true
+  AfterNot:                         true
+  AfterOverloadedOperator:          false
+  AfterPlacementOperator:           false
+  AfterRequiresInClause:            true
+  AfterRequiresInExpression:        false
+  BeforeNonEmptyParentheses:        false
+SpaceBeforeRangeBasedForLoopColon:  true
+SpaceBeforeSquareBrackets:          false
+SpacesBeforeTrailingComments:       1
 
+SpaceInEmptyBraces:        Never
 SpaceInEmptyParentheses:   false
 SpacesInAngles:            Never
 SpacesInContainerLiterals: false
@@ -230,6 +249,7 @@ CommentPragmas: '^@'
 SortIncludes:
   Enabled:         false
   IgnoreCase:      false
+  IgnoreExtension: true
 SortUsingDeclarations: Never
 IncludeBlocks: Preserve
 
@@ -242,7 +262,7 @@ IndentRequiresClause: true
 RequiresExpressionIndentation: Keyword
 
 BreakBeforeConceptDeclarations: Always
-Cpp11BracedListStyle: true
+Cpp11BracedListStyle: FunctionCall
 
 # -------------------------------------------------------------------
 # Misc
@@ -252,76 +272,32 @@ LineEnding: DeriveLF
 
 IntegerLiteralSeparator:
   Binary:                 0
+  BinaryMinDigitsInsert:  0
+  BinaryMaxDigitsRemove:  0
   Decimal:                0
+  DecimalMinDigitsInsert: 0
+  DecimalMaxDigitsRemove: 0
   Hex:                    0
+  HexMinDigitsInsert:     0
+  HexMaxDigitsRemove:     0
+
+NumericLiteralCase:
+  ExponentLetter: Leave
+  HexDigit:       Upper
+  Prefix:         Lower
+  Suffix:         Upper
 
 ---
 # -------------------------------------------------------------------
-# ClangFormatVersion: 22
+# ClangFormatVersion: 24
 #
 # Since clang-format isn't multi-version capable, the following
 # configuration options need to be uncommented and integrated into
-# the initial part of the document once clang-format version 22 is
+# the initial part of the document once clang-format version 24 is
 # readily available.
 # -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
-# Line breaking
-# -------------------------------------------------------------------
-#BreakAfterOpenBracketBracedList: false
-#BreakAfterOpenBracketFunction:   false
-#BreakAfterOpenBracketIf:         false
-#BreakAfterOpenBracketLoop:       false
-#BreakAfterOpenBracketSwitch:     false
-
-# -------------------------------------------------------------------
-# Control flow readability (FSM-friendly)
-# -------------------------------------------------------------------
-#BreakBeforeCloseBracketBracedList: true
-#BreakBeforeCloseBracketFunction:   true
-#BreakBeforeCloseBracketIf:         true
-#BreakBeforeCloseBracketLoop:       true
-#BreakBeforeCloseBracketSwitch:     true
-
-# -------------------------------------------------------------------
-# Alignment
-# -------------------------------------------------------------------
-#AlignAfterOpenBracket: true
-
-# -------------------------------------------------------------------
 # Spacing
 # -------------------------------------------------------------------
-#SpaceInEmptyBraces:        false
-
-# -------------------------------------------------------------------
-# Includes / imports
-# -------------------------------------------------------------------
-#SortIncludes:
-#  Enabled:         false
-#  IgnoreCase:      false
-#  IgnoreExtension: true
-
-# -------------------------------------------------------------------
-# Modern C++ / modules
-# -------------------------------------------------------------------
-#Cpp11BracedListStyle: FunctionCall
-
-# -------------------------------------------------------------------
-# Misc
-# -------------------------------------------------------------------
-#IntegerLiteralSeparator:
-#  Binary:                 0
-#  BinaryMinDigitsInsert:  0
-#  BinaryMaxDigitsRemove:  0
-#  Decimal:                0
-#  DecimalMinDigitsInsert: 0
-#  DecimalMaxDigitsRemove: 0
-#  Hex:                    0
-#  HexMinDigitsInsert:     0
-#  HexMaxDigitsRemove:     0
-
-#NumericLiteralCase:
-#  ExponentLetter: Leave
-#  HexDigit:       Upper
-#  Prefix:         Lower
-#  Suffix:         Upper
+#SpacesInBlockComments: Leave

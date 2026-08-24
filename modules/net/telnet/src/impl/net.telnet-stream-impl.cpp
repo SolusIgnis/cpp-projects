@@ -114,8 +114,9 @@ namespace net::telnet {
                 escaped_data.push_back(*iter);
                 if (*iter == std::to_underlying(telnet::command::iac)) {
                     escaped_data.push_back(*iter); //double IAC (IAC -> IAC IAC)
-                } else if ((*iter == static_cast<byte_t>('\r'))
-                           && !fsm_.enabled(option::id_num::binary, negotiation_direction::local)) {
+                } else if (
+                    (*iter == static_cast<byte_t>('\r')) && !fsm_.enabled(option::id_num::binary, negotiation_direction::local)
+                ) {
                     escaped_data.push_back('\0'); //append NUL after CR (CR -> CR NUL)
                 }
             }
