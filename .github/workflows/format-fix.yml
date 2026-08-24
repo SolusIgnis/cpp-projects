@@ -32,7 +32,6 @@ jobs:
             -DCMAKE_CXX_STDLIB_MODULES_JSON=/usr/lib/llvm-23/lib/libc++.modules.json
 
       - name: Run clang-format
-        id: format-run
         run: |
           cmake --build --preset=clang-debug --target=format-fix
           git add modules
