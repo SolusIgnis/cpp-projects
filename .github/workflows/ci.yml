@@ -21,7 +21,7 @@ on:
         description: "Skip clang-format and clang-tidy?"
         required: false
         type: boolean
-        default: true
+        default: false
 
 jobs:
   ci-build_and_test:
@@ -52,15 +52,7 @@ jobs:
     container:
       image: ghcr.io/solusignis/ci-env-llvm:latest
     if: >-
-      ${{ 
-        (
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'push' && github.ref_name == 'main') ||
-          github.event_name == 'workflow_dispatch'
-        )
-        && 
-        (github.event.inputs.notooling != 'true')
-      }}
+      ${{ github.event.inputs.notooling != 'true' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
