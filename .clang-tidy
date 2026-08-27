@@ -38,9 +38,6 @@ Checks:
   # This is a redundant alias of 'misc-explicit-constructor'.
   - '-cppcoreguidelines-explicit-constructor'
   
-  # Temporarily disabled while I review interaction with explicit object parameters.
-  - '-cppcoreguidelines-missing-std-forward'
-  
   # ============================================================
   # Readability & maintainability (policy-driven)
   # ============================================================
@@ -101,10 +98,13 @@ Checks:
   # Recursion is perfectly valid.
   - '-misc-no-recursion'
   
-  # Unfortunately, this doesn't work with import std yet.
+  # Module linkage is generally preferred for interface units.
+  - '-misc-use-internal-linkage'
+  
+  # Unfortunately, this doesn't work with `import std` yet.
   - '-misc-include-cleaner'
 
-  # This seems to have a bug surrounding explicit(false) warnings.
+  # This seems to have a bug surrounding `explicit(false)` warnings.
   - '-misc-explicit-constructor'
   
   - 'portability-*'
@@ -114,7 +114,14 @@ Checks:
 
   # This is noisy and doesn't play well with asio.
   - '-portability-template-virtual-member-function'
-  
+
+  # Temporarily disabled while running -fix
+  - '-readability-identifier-naming'
+  - '-readability-convert-member-functions-to-static'
+  - '-performance-unnecessary-value-param'
+  - '-cppcoreguidelines-missing-std-forward'
+  - '-misc-const-correctness'
+
 WarningsAsErrors: ''
 HeaderFileExtensions:
   - ''       # Catch-all for unnamed extensions, sometimes needed
@@ -134,15 +141,15 @@ HeaderFilterRegex: '^(?!.*(usr/|lib/|v1/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|st
 #ExcludeHeaderFilterRegex: '/include/c\+\+/v1/'
 FormatStyle: file
 CheckOptions:
-  bugprone-argument-comment.CommentBoolLiterals:        '1'
-  bugprone-argument-comment.CommentCharacterLiterals:   '1'
-  bugprone-argument-comment.CommentFloatLiterals:       '1'
-  bugprone-argument-comment.CommentIntegerLiterals:     '1'
-  bugprone-argument-comment.CommentNullPtrs:            '1'
-  bugprone-argument-comment.CommentStringLiterals:      '1'
-  bugprone-argument-comment.CommentUserDefinedLiterals: '1'
-  bugprone-argument-comment.IgnoreSingleArgument:       '1'
-  bugprone-argument-comment.StrictMode:                 '1'
+  bugprone-argument-comment.CommentBoolLiterals:        'false'
+  bugprone-argument-comment.CommentCharacterLiterals:   'true'
+  bugprone-argument-comment.CommentFloatLiterals:       'true'
+  bugprone-argument-comment.CommentIntegerLiterals:     'true'
+  bugprone-argument-comment.CommentNullPtrs:            'true'
+  bugprone-argument-comment.CommentStringLiterals:      'true'
+  bugprone-argument-comment.CommentUserDefinedLiterals: 'true'
+  bugprone-argument-comment.IgnoreSingleArgument:       'true'
+  bugprone-argument-comment.StrictMode:                 'true'
   
   bugprone-assert-side-effect.CheckFunctionCalls: 'false'
   
@@ -268,6 +275,11 @@ CheckOptions:
   
   misc-unused-parameters.IgnoreVirtual: 'false'
   misc-unused-parameters.StrictMode:    'true'
+  
+  misc-use-internal-linkage.FixMode:          'None'
+  misc-use-internal-linkage.AnalyzeFunctions: 'true'
+  misc-use-internal-linkage.AnalyzeVariables: 'true'
+  misc-use-internal-linkage.AnalyzeTypes:     'true'
   
   modernize-avoid-c-arrays.AllowStringArrays: 'false'
   
