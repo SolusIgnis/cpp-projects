@@ -64,7 +64,7 @@ export namespace net::telnet {
         wont_opt = 0xFC, ///< Sender wants to disable option
         do_opt   = 0xFD, ///< Sender requests receiver to enable option
         dont_opt = 0xFE, ///< Sender requests receiver to disable option
-        iac      = 0xFF  ///< Interpret As Command
+        iac      = 0xFF,  ///< Interpret As Command
     }; //enum class command
 
     /**
@@ -74,7 +74,7 @@ export namespace net::telnet {
      */
     enum class negotiation_direction : std::uint8_t {
         local, ///< Local side ("us", sends WILL/WONT, receives DO/DONT)
-        remote ///< Remote side ("them", sends DO/DONT, receives WILL/WONT)
+        remote, ///< Remote side ("them", sends DO/DONT, receives WILL/WONT)
     }; //enum class NegotiationDirection
 } //namespace net::telnet
 

@@ -97,7 +97,7 @@ namespace {
     concept ArrowAccessible = requires(T t) { t.operator->(); };
 
     template<typename T>
-    concept HasPointerTo = requires(typename T::element_type obj) { T::pointer_to(obj); };
+    concept HasPointerTo = requires(T::element_type obj) { T::pointer_to(obj); };
 
     struct mixin_1 {
         virtual ~mixin_1() = default;
@@ -109,12 +109,12 @@ namespace {
 
     struct base_type : mixin_1,
                        mixin_2 {
-        virtual ~base_type() = default;
+        ~base_type() override = default;
         std::int32_t value{0};
     };
 
     struct derived_type : base_type {
-        virtual ~derived_type() = default;
+        ~derived_type() override = default;
         std::int32_t extra{42};
     };
 
@@ -127,7 +127,7 @@ namespace {
     struct trivial_smart_ptr {
         T* address{};
 
-        T* get() const { return address; }
+        [[nodiscard]] T* get() const { return address; }
 
         T* operator->() const { return address; }
     };
@@ -155,7 +155,7 @@ namespace {
     };
 
     template<typename T, typename Tag>
-    using source_t = typename source_category<T, Tag>::type;
+    using source_t = source_category<T, Tag>::type;
 
     suite concrete_pointer_parameterized_tests = [] mutable {
         //============================================================
@@ -163,7 +163,7 @@ namespace {
         //============================================================
 
         "template instantiation checks"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using base::meta::concepts::InstantiableWith;
                 expect(eq(InstantiableWith<ConcretePtr, std::int32_t>, true));
                 expect(eq(InstantiableWith<ConcretePtr, std::int32_t*>, true));
@@ -186,8 +186,8 @@ namespace {
         //============================================================
 
         "triviality"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                auto test_impl = []<typename Pointee>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
+                auto test_impl = []<typename Pointee> {
                     expect(eq(std::is_standard_layout_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_trivially_copyable_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_trivially_destructible_v<ConcretePtr<Pointee>>, true));
@@ -205,7 +205,7 @@ namespace {
         };
 
         "size and alignment match raw pointers"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using simple_t = std::int32_t;
 
                 expect(eq(sizeof(ConcretePtr<simple_t>), sizeof(simple_t*)));
@@ -223,7 +223,7 @@ namespace {
         //============================================================
 
         "type aliases are correct"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using T      = ConcretePtr<const std::int32_t>;
                 using traits = std::pointer_traits<T>;
 
@@ -250,7 +250,7 @@ namespace {
         };
 
         "`rebind` metafunctions preserve the pointer template while changing the pointee type"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using pointee1 = std::int32_t;
                 using pointee2 = const std::map<std::string, std::vector<std::int32_t>>;
 
@@ -272,7 +272,7 @@ namespace {
         //============================================================
 
         "bindable from nullptr according to nullability policy"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(
                     eq(std::constructible_from<ConcretePtr<std::int32_t>, std::nullptr_t>,
                        pointer_test_traits<ConcretePtr>::is_nullable)
@@ -285,13 +285,13 @@ namespace {
         };
 
         "pointer binding according to policies"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 auto verify_binding_operations = []<typename Pointee,
                                                     typename SourceTag,
                                                     bool IsConstructibleFrom,
                                                     bool IsConvertibleFrom,
                                                     bool IsAssignableFrom = IsConstructibleFrom
-                                                                         && !std::same_as<SourceTag, ref_tag>>() {
+                                                                         && !std::same_as<SourceTag, ref_tag>> {
                     //Explicitly constructible unless removing qualifier
                     expect(
                         eq(std::constructible_from<ConcretePtr<Pointee>, source_t<Pointee, SourceTag>>, IsConstructibleFrom)
@@ -464,7 +464,7 @@ namespace {
         };
 
         "not bindable from pointee rvalue"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, std::int32_t>, false));
                 expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, std::int32_t>, false));
                 expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, const std::int32_t>, false));
@@ -480,7 +480,7 @@ namespace {
         };
 
         "not bindable from smart pointer rvalue"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>>, false));
                 expect(eq(std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>>, false));
                 expect(
@@ -506,7 +506,7 @@ namespace {
         //============================================================
 
         "`pointer_to` forms a valid pointer instance whose `get` returns its stored address"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using pointee_t = std::int32_t;
                 using pointer_t = ConcretePtr<pointee_t>;
 
@@ -527,7 +527,7 @@ namespace {
         };
 
         "`to_address` returns stored address as raw pointer"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using pointee_t = const std::int32_t;
                 using pointer_t = ConcretePtr<pointee_t>;
 
@@ -547,7 +547,7 @@ namespace {
         };
 
         "operator* dereferences correctly"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value = 55;
                 auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
 
@@ -556,7 +556,7 @@ namespace {
         };
 
         "operator-> provides member access"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(eq(ArrowAccessible<ConcretePtr<std::uint8_t>>, false));
                 expect(eq(ArrowAccessible<ConcretePtr<std::float_round_style>>, false));
                 expect(eq(ArrowAccessible<ConcretePtr<std::memory_order>>, false));
@@ -568,7 +568,7 @@ namespace {
                 c_obj.value = 123;
                 auto ptr1   = base::vocab::pointer_to<ConcretePtr>(c_obj);
 
-                union_type u_obj;
+                union_type u_obj{};
                 u_obj.value = 321;
                 auto ptr2   = base::vocab::pointer_to<ConcretePtr>(u_obj);
 
@@ -578,7 +578,7 @@ namespace {
         };
 
         "implicit conversion to raw pointer"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using test_type = std::int32_t;
 
                 expect(eq(std::convertible_to<ConcretePtr<test_type>, test_type*>, true));
@@ -601,7 +601,7 @@ namespace {
         };
 
         "conversion to raw pointer preserves address"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const std::int32_t value{};
                 auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
@@ -612,7 +612,7 @@ namespace {
         };
 
         "contextual boolean conversion is supported"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(eq(std::constructible_from<bool, ConcretePtr<std::int32_t>>, true));
 
                 const std::int32_t value{};
@@ -634,7 +634,7 @@ namespace {
         //============================================================
 
         "rebind via copy-assignment from reference construction"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
                     const std::int32_t a{};
                     const std::int32_t b = 2;
@@ -650,7 +650,7 @@ namespace {
         };
 
         "rebind via `reset` call with reference argument"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
                     const std::int32_t a{};
                     const std::int32_t b = 2;
@@ -665,7 +665,7 @@ namespace {
         };
 
         "moved-from object may be rebound"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t a = 1;
                 std::int32_t b = 2;
 
@@ -681,7 +681,7 @@ namespace {
         };
 
         "rebind via `reset()` disengages the pointer"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     const std::int32_t a{};
 
@@ -698,7 +698,7 @@ namespace {
         //============================================================
 
         "constructing from null raw pointer throws according to policy"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     const std::int32_t value{42};
                     const std::int32_t* const bound_source{std::addressof(value)};
@@ -733,7 +733,7 @@ namespace {
         };
 
         "constructing from null smart pointer throws according to policy"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     const std::int32_t value{42};
                     const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
@@ -768,7 +768,7 @@ namespace {
         };
 
         "assigning from null raw pointer throws according to policy"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     const std::int32_t value{42};
                     const std::int32_t other{};
@@ -814,7 +814,7 @@ namespace {
         };
 
         "assigning from null smart pointer throws according to policy"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     const std::int32_t value{42};
                     const std::int32_t other{};
@@ -864,7 +864,7 @@ namespace {
         //============================================================
 
         "swap exchanges bindings"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const std::int32_t a = 1;
                 const std::int32_t b = 2;
 
@@ -887,7 +887,7 @@ namespace {
         //============================================================
 
         "equality compares pointer identity"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(eq(std::equality_comparable<ConcretePtr<std::int32_t>>, true));
 
                 std::int32_t x = 1;
@@ -904,7 +904,7 @@ namespace {
         };
 
         "nullable comparisons with nullptr"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (
                     pointer_test_traits<ConcretePtr>::allows_pointer_binding && pointer_test_traits<ConcretePtr>::is_nullable
                 ) {
@@ -930,7 +930,7 @@ namespace {
         };
 
         "null pointers of same pointer type compare equal"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     ConcretePtr<std::int32_t> lhs{nullptr};
                     ConcretePtr<const std::int32_t> rhs{nullptr};
@@ -946,7 +946,7 @@ namespace {
         //============================================================
 
         "construct base from derived pointer"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 derived_type d;
                 auto dptr = base::vocab::pointer_to<ConcretePtr>(d);
 
@@ -957,7 +957,7 @@ namespace {
         };
 
         "construct base from derived reference"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 derived_type d;
 
                 auto bptr = base::vocab::pointer_to<ConcretePtr, base_type>(d);
@@ -967,7 +967,7 @@ namespace {
         };
 
         "assign base from derived pointer"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 derived_type d;
                 auto dptr = base::vocab::pointer_to<ConcretePtr>(d);
 
@@ -981,7 +981,7 @@ namespace {
         };
 
         "rebind base from derived reference"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
                     derived_type d;
 
@@ -996,7 +996,7 @@ namespace {
         };
 
         "assign const base from derived pointer"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 derived_type d;
                 auto dptr = base::vocab::pointer_to<ConcretePtr>(d);
 
@@ -1010,7 +1010,7 @@ namespace {
         };
 
         "rebind const base from derived reference"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
                     derived_type d;
 
@@ -1025,7 +1025,7 @@ namespace {
         };
 
         "covariant equality comparison"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(eq(std::equality_comparable_with<ConcretePtr<base_type>, ConcretePtr<derived_type>>, true));
                 expect(eq(std::equality_comparable_with<ConcretePtr<base_type>, derived_type*>, true));
                 expect(eq(std::equality_comparable_with<base_type*, ConcretePtr<derived_type>>, true));
@@ -1037,8 +1037,8 @@ namespace {
         //============================================================
 
         "const_pointer_cast alters pointee cv-qualifications"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                auto test_cast = []<typename Source, typename Destination>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
+                auto test_cast = []<typename Source, typename Destination> {
                     Source value{};
 
                     auto source = base::vocab::pointer_to<ConcretePtr>(value);
@@ -1068,7 +1068,7 @@ namespace {
         };
 
         "const_pointer_cast preserves null state"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     ConcretePtr<std::int32_t> source{nullptr};
 
@@ -1080,7 +1080,7 @@ namespace {
         };
 
         "static_pointer_cast converts static pointee type up and down inheritance hierarchies"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 derived_type object;
 
                 ConcretePtr<derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
@@ -1097,7 +1097,7 @@ namespace {
         };
 
         "static_pointer_cast preserves cv-qualifications"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const derived_type object;
 
                 ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
@@ -1108,7 +1108,7 @@ namespace {
         };
 
         "static_pointer_cast preserves null state"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     ConcretePtr<derived_type> source{nullptr};
 
@@ -1120,7 +1120,7 @@ namespace {
         };
 
         "dynamic_pointer_cast performs multiple-inheritance upcasts"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 derived_type value;
 
                 auto source = base::vocab::pointer_to<ConcretePtr>(value);
@@ -1137,7 +1137,7 @@ namespace {
         };
 
         "dynamic_pointer_cast performs successful downcasts"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 derived_type value;
 
                 ConcretePtr<base_type> source = base::vocab::pointer_to<ConcretePtr>(value);
@@ -1151,7 +1151,7 @@ namespace {
         };
 
         "dynamic_pointer_cast handles failed downcasts according to policy"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 struct wrong_derived : base_type {};
 
                 derived_type value;
@@ -1176,7 +1176,7 @@ namespace {
         };
 
         "dynamic_pointer_cast preserves cv-qualifications"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const derived_type object;
 
                 ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
@@ -1187,7 +1187,7 @@ namespace {
         };
 
         "dynamic_pointer_cast preserves null state"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     ConcretePtr<derived_type> source{nullptr};
 
@@ -1199,13 +1199,13 @@ namespace {
         };
 
         "reinterpret_pointer_cast views objects as raw bytes"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 struct object {
                     std::int32_t x;
                     double y;
                 };
 
-                object value;
+                object value{};
 
                 auto source       = base::vocab::pointer_to<ConcretePtr>(value);
                 auto result_bytes = reinterpret_pointer_cast<std::byte>(source);
@@ -1220,7 +1220,7 @@ namespace {
         };
 
         "reinterpret_pointer_cast alters how a pointer sees its pointee type"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 struct origin_t {
                     std::int32_t foo;
                     char bar;
@@ -1232,7 +1232,7 @@ namespace {
                     std::uint8_t baz;
                 };
 
-                origin_t value;
+                origin_t value{};
 
                 auto source = base::vocab::pointer_to<ConcretePtr>(value);
                 //WARNING: Using this result pointer's stored address potentially invokes undefined behavior.
@@ -1244,7 +1244,7 @@ namespace {
         };
 
         "reinterpret_pointer_cast preserves cv-qualifications"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const derived_type object;
 
                 ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
@@ -1255,7 +1255,7 @@ namespace {
         };
 
         "reinterpret_pointer_cast preserves null state"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     ConcretePtr<std::int32_t> source{nullptr};
 
@@ -1303,7 +1303,7 @@ namespace {
         //============================================================
 
         "basic_common_reference preserves concrete pointer type with cv-qualifications"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, true));
                 expect(
                     eq(std::same_as<
@@ -1360,7 +1360,7 @@ namespace {
         };
 
         "basic_common_reference uses reference-to-pointer value category propagation"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 static_assert(
                     std::same_as<std::common_reference_t<std::int32_t*&, const std::int32_t*&>, const std::int32_t*>,
                     "Sanity check for raw pointer common_reference_t<T*&, const T*&> -> const T*"
@@ -1418,7 +1418,7 @@ namespace {
         };
 
         "basic_common_reference matches raw pointer common_reference"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(
                     eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const volatile std::int32_t>>, true)
                 );
@@ -1435,7 +1435,7 @@ namespace {
         };
 
         "vocabulary pointer and raw pointer share raw pointer common reference"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, std::int32_t*>, true));
                 expect(
                     eq(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, std::int32_t*>, std::int32_t*>, true)
@@ -1449,7 +1449,7 @@ namespace {
         };
 
         "common_reference supports covariance"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(eq(std::common_reference_with<ConcretePtr<derived_type>, ConcretePtr<base_type>>, true));
                 expect(
                     eq(std::same_as<
@@ -1508,7 +1508,7 @@ namespace {
         //============================================================
 
         "pointer arithmetic operations according to policy"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using T = ConcretePtr<std::int32_t>;
 
                 expect(eq(HasAddition<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
@@ -1522,7 +1522,7 @@ namespace {
         };
 
         "ordering comparisons according to policy"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(
                     eq(std::three_way_comparable<ConcretePtr<std::int32_t>>,
                        pointer_test_traits<ConcretePtr>::has_arithmetic_traversal)
@@ -1551,7 +1551,7 @@ namespace {
         };
 
         "input_or _output_iterator according to policy"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 //note: all other iterator concepts subsume this one and thus are implicitly false when it is false
                 expect(
                     eq(std::input_or_output_iterator<ConcretePtr<std::int32_t>>,
@@ -1565,7 +1565,7 @@ namespace {
         //============================================================
 
         "pointer arithmetic preserves native traversal semantics"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {10, 20, 30, 40};
 
@@ -1588,48 +1588,48 @@ namespace {
                     expect(eq(advanced.get(), values + step));
                     expect(eq(ptr < advanced, true));
                     expect(eq(advanced > ptr, true));
-                    expect(eq(advanced >= (values + step / 2), true));
+                    expect(eq(advanced >= (values + (step / 2)), true));
                 }
             });
         };
 
         "difference matches raw pointer semantics"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {10, 20, 30, 40};
 
                     auto first = base::vocab::pointer_to<ConcretePtr>(values[0]);
                     auto last  = base::vocab::pointer_to<ConcretePtr>(values[3]);
 
-                    expect(eq(last - first, 3L));
+                    expect(eq(last - first, /*rhs=*/3L));
                 }
             });
         };
 
         "increment and decrement traverse correctly"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {1, 2, 3};
 
                     auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
 
                     ++ptr;
-                    expect(eq(*ptr, 2));
+                    expect(eq(*ptr, /*rhs=*/2));
 
                     ptr++;
-                    expect(eq(*ptr, 3));
+                    expect(eq(*ptr, /*rhs=*/3));
 
                     --ptr;
-                    expect(eq(*ptr, 2));
+                    expect(eq(*ptr, /*rhs=*/2));
 
                     ptr--;
-                    expect(eq(*ptr, 1));
+                    expect(eq(*ptr, /*rhs=*/1));
                 }
             });
         };
 
         "subscript matches raw pointer indexing"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {5, 6, 7, 8};
 
@@ -1646,7 +1646,7 @@ namespace {
         };
 
         "mixed raw and cursor arithmetic produce identical addresses"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {1, 2, 3, 4};
 
@@ -1663,7 +1663,7 @@ namespace {
         //============================================================
 
         "const element forbids mutation through dereference"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const std::int32_t value{};
                 auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
@@ -1675,18 +1675,18 @@ namespace {
         };
 
         "non-const element allows mutation"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value = 5;
                 auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
 
                 *ptr = 10;
 
-                expect(eq(value, 10));
+                expect(eq(value, /*rhs=*/10));
             });
         };
 
         "`address_type` nested type preserves top-level const"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using T = ConcretePtr<const std::int32_t>;
 
                 expect(eq(std::same_as<typename T::address_type, const std::int32_t*>, true));
@@ -1694,7 +1694,7 @@ namespace {
         };
 
         "`reference` nested type preserves const"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using T = ConcretePtr<const std::int32_t>;
 
                 expect(eq(std::same_as<typename T::reference, const std::int32_t&>, true));
@@ -1702,7 +1702,7 @@ namespace {
         };
 
         "const pointer prevents rebinding but not mutation"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value{};
 
                 const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
@@ -1711,13 +1711,13 @@ namespace {
 
                 constexpr bool can_rebind = std::is_assignable_v<const ConcretePtr<std::int32_t>&, std::int32_t&>;
 
-                expect(eq(value, 10));
+                expect(eq(value, /*rhs=*/10));
                 expect(eq(can_rebind, false));
             });
         };
 
         "qualification climbing construction and assignment"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value{42};
                 std::int32_t other{};
                 auto mutable_ptr = base::vocab::pointer_to<ConcretePtr, std::int32_t>(value);
@@ -1734,7 +1734,7 @@ namespace {
         };
 
         "volatile qualifier preservation"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 volatile std::int32_t hardware_register = 0xAA;
                 auto ptr                                = base::vocab::pointer_to<ConcretePtr>(hardware_register);
 
@@ -1753,7 +1753,7 @@ namespace {
         };
 
         "common_type preserves const qualification"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using common_t = std::common_type_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>;
 
                 expect(eq(std::same_as<common_t, ConcretePtr<const std::int32_t>>, true));
@@ -1761,7 +1761,7 @@ namespace {
         };
 
         "common_reference preserves const qualification"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using common_ref = std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>;
 
                 expect(eq(std::same_as<common_ref, ConcretePtr<const std::int32_t>>, true));
@@ -1773,8 +1773,8 @@ namespace {
         //============================================================
 
         "implicit conversion works with raw pointer API"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                auto takes_ptr = [](std::int32_t* p) { return *p; };
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
+                auto takes_ptr = [](const std::int32_t* p) { return *p; };
 
                 std::int32_t value = 3;
                 auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
@@ -1784,8 +1784,8 @@ namespace {
         };
 
         "get() works with raw pointer API"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
-                auto takes_ptr = [](std::int32_t* p) { return *p; };
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
+                auto takes_ptr = [](const std::int32_t* p) { return *p; };
 
                 std::int32_t value = 4;
                 auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
@@ -1795,7 +1795,7 @@ namespace {
         };
 
         "not constructible, convertible, nor assignable from C-array decay"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t array[3] = {0, 1, 2};
 
                 //ConcretePtr<std::int32_t> should_fail{array};
@@ -1814,11 +1814,11 @@ namespace {
         };
 
         "not constructible, convertible, nor assignable from C-array decay when pointing to an array"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t array[3][3] = {
                     {0, 1, 2},
                     {3, 4, 5},
-                    {6, 7, 8}
+                    {6, 7, 8},
                 };
 
                 //ConcretePtr<std::int32_t[3]> should_fail{array};
@@ -1843,11 +1843,11 @@ namespace {
         struct incomplete_type;
 
         "incomplete type support"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     expect(eq(base::meta::concepts::InstantiableWith<ConcretePtr, incomplete_type>, true));
 
-                    incomplete_type* raw = reinterpret_cast<incomplete_type*>(0x1234);
+                    auto* raw = reinterpret_cast<incomplete_type*>(0x1234);
 
                     ConcretePtr<incomplete_type> ptr{raw};
 
@@ -1861,7 +1861,7 @@ namespace {
         };
 
         "incomplete type becomes usable after completion"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 incomplete_type obj{42};
 
                 auto ptr = base::vocab::pointer_to<ConcretePtr>(obj);
@@ -1876,7 +1876,7 @@ namespace {
         //============================================================
 
         "type aliases are correct for `void`"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
                     using T = ConcretePtr<void>;
 
@@ -1894,7 +1894,7 @@ namespace {
         };
 
         "void specialization supports type erasure"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
                     std::int32_t x{};
 
@@ -1907,7 +1907,7 @@ namespace {
         };
 
         "void specialization disables dereference operators"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
                     expect(eq(Dereferenceable<ConcretePtr<base_type>>, true));
                     expect(eq(ArrowAccessible<ConcretePtr<base_type>>, true));
@@ -1919,7 +1919,7 @@ namespace {
         };
 
         "construction from void raw pointer is explicit"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
                     expect(eq(std::convertible_to<void*, ConcretePtr<void>>, false));
                     expect(eq(std::constructible_from<ConcretePtr<void>, void*>, true));
@@ -1928,7 +1928,7 @@ namespace {
         };
 
         "construction from void smart pointer is explicit"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
                     expect(eq(std::convertible_to<trivial_smart_ptr<void>&, ConcretePtr<void>>, false));
                     expect(eq(std::constructible_from<ConcretePtr<void>, trivial_smart_ptr<void>&>, true));
@@ -1937,7 +1937,7 @@ namespace {
         };
 
         "void pointer constructs implicitly from typed pointer"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
                     expect(eq(std::convertible_to<ConcretePtr<std::int32_t>, ConcretePtr<void>>, true));
                     expect(eq(std::convertible_to<ConcretePtr<void>, ConcretePtr<std::int32_t>>, false));
@@ -1953,9 +1953,9 @@ namespace {
         };
 
         "static_pointer_cast converts static pointee type to and from void"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-                    std::int32_t object;
+                    std::int32_t object = 0;
 
                     ConcretePtr<std::int32_t> source = base::vocab::pointer_to<ConcretePtr>(object);
                     auto result1                     = static_pointer_cast<void>(source);
@@ -1972,7 +1972,7 @@ namespace {
         };
 
         "void pointer is equality comparable"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (
                     pointer_test_traits<ConcretePtr>::permits_void_pointee
                     && pointer_test_traits<ConcretePtr>::allows_pointer_binding
@@ -1998,7 +1998,7 @@ namespace {
         //============================================================
 
         "deduction guides work"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 constexpr std::int32_t value{};
 
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
@@ -2023,7 +2023,7 @@ namespace {
         //============================================================
 
         "constexpr construction and dereference"_test = [] {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 static constexpr std::int32_t value = 42;
 
                 constexpr auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
@@ -2033,7 +2033,7 @@ namespace {
         };
 
         "constexpr arithmetic"_test = [] {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     static constexpr std::int32_t values[] = {2, 4, 6};
 
@@ -2046,7 +2046,7 @@ namespace {
         };
 
         "constexpr get and boolean conversion"_test = [] {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 static constexpr std::int32_t value = 7;
 
                 constexpr auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
@@ -2057,7 +2057,7 @@ namespace {
         };
 
         "constexpr equality"_test = [] {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 static constexpr std::int32_t value = 11;
 
                 constexpr auto a = base::vocab::pointer_to<ConcretePtr>(value);
@@ -2068,7 +2068,7 @@ namespace {
         };
 
         "constexpr rebinding"_test = [] {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 static constexpr std::int32_t a = 1;
                 static constexpr std::int32_t b = 2;
 
@@ -2084,7 +2084,7 @@ namespace {
         };
 
         "constexpr swap"_test = [] {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 static constexpr std::int32_t a = 1;
                 static constexpr std::int32_t b = 2;
 
@@ -2108,7 +2108,7 @@ namespace {
         //============================================================
 
         "hash matches raw pointer hash"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value{};
 
                 auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
@@ -2121,7 +2121,7 @@ namespace {
         };
 
         "equal pointers produce equal hashes"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value{};
 
                 auto lhs = base::vocab::pointer_to<ConcretePtr, std::int32_t>(value);
@@ -2140,7 +2140,7 @@ namespace {
         //============================================================
 
         "std::formatter formats as raw pointer"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value{};
 
                 auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
@@ -2153,7 +2153,7 @@ namespace {
         };
 
         "std::formatter formats null equivalently to raw pointer"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     ConcretePtr<std::int32_t> ptr{nullptr};
 
@@ -2166,7 +2166,7 @@ namespace {
         };
 
         "std::formatter supports cv-qualified element types"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const std::int32_t value{};
 
                 auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
@@ -2179,7 +2179,7 @@ namespace {
         };
 
         "ostream insertion outputs raw pointer representation"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value{};
 
                 auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
@@ -2195,7 +2195,7 @@ namespace {
         };
 
         "ostream insertion outputs null equivalently to raw pointer"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     ConcretePtr<std::int32_t> ptr{nullptr};
 
@@ -2211,7 +2211,7 @@ namespace {
         };
 
         "ostream insertion supports cv-qualified element types"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
+            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 volatile std::int32_t value{};
 
                 auto ptr = base::vocab::pointer_to<ConcretePtr>(value);

@@ -41,7 +41,7 @@ export namespace tools::test::coroutine_harness {
         enum class path : std::uint8_t {
             none,   ///< Not awaited
             lvalue, ///< Awaited as an lvalue
-            rvalue  ///< Awaited as an rvalue
+            rvalue,  ///< Awaited as an rvalue
         };
 
         bool done{false};            ///< Final suspend reached
@@ -128,7 +128,7 @@ export namespace tools::test::coroutine_harness {
         explicit operator bool() const noexcept { return handle_ != nullptr; }
 
         /// @brief Check completion state.
-        [[nodiscard]] bool done() const { return (handle_) ? (handle_.done()) : false; }
+        [[nodiscard]] bool done() const { return handle_ ? handle_.done() : false; }
 
         /// @brief Access promise.
         [[nodiscard]] decltype(auto) promise(this auto&& self) { return self.handle_.promise(); }

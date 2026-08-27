@@ -30,7 +30,7 @@ suite tagged_awaitable_unit_tests = [] mutable {
 
     "tagged_awaitable constructs from awaitable"_test = [] mutable {
         coroutine_probe probe;
-        auto coro = []() -> test_task<void> { co_return; };
+        auto coro = [] -> test_task<void> { co_return; };
 
         tagged_awaitable<test_tag, test_task<void>> a{coro().set_probe(&probe)};
 
@@ -91,7 +91,7 @@ suite tagged_awaitable_unit_tests = [] mutable {
     // ============================================================
 
     "tagged_awaitable has zero size overhead"_test = [] mutable {
-        auto tester = []<typename AwaitableT>() {
+        auto tester = []<typename AwaitableT> {
             using raw_t          = AwaitableT;
             using tagged_t       = tagged_awaitable<test_tag, AwaitableT>;
             using pathological_t = tagged_awaitable<std::array<int, 4>, AwaitableT>;
@@ -131,7 +131,7 @@ suite tagged_awaitable_unit_tests = [] mutable {
         auto coro = echo(expected);
         coro.get().set_probe(&probe);
 
-        auto test = [&]() -> test_task<int> {
+        auto test = [&] -> test_task<int> {
             int v = co_await coro;
             co_return v;
         };
@@ -148,7 +148,7 @@ suite tagged_awaitable_unit_tests = [] mutable {
         auto coro = echo(expected);
         coro.get().set_probe(&probe);
 
-        auto test = [&]() -> test_task<int> {
+        auto test = [&] -> test_task<int> {
             int v = co_await std::move(coro);
             co_return v;
         };
@@ -177,7 +177,7 @@ suite tagged_awaitable_unit_tests = [] mutable {
 
         expect(eq(run(as_task<int>(wrapped)), expected));
         expect(eq(run(as_task<int>(std::as_const(wrapped))), expected));
-        expect(eq(run(as_task<int>(std::move(wrapped))), expected));
+        expect(eq(run(as_task<int>(wrapped)), expected));
     };
 
     // ============================================================
@@ -192,7 +192,7 @@ suite tagged_awaitable_unit_tests = [] mutable {
         auto wrapped = echo(expected);
         wrapped.get().set_probe(&probe);
 
-        auto test = [&]() -> test_task<int> { co_return co_await wrapped; };
+        auto test = [&] -> test_task<int> { co_return co_await wrapped; };
 
         auto result = run(test());
 
@@ -227,9 +227,9 @@ suite tagged_awaitable_unit_tests = [] mutable {
         int mult     = 3;
         int expected = base * mult;
 
-        auto sub = [&]() -> tagged_awaitable<test_tag, test_task<int>> { co_return base; };
+        auto sub = [&] -> tagged_awaitable<test_tag, test_task<int>> { co_return base; };
 
-        auto main = [&]() -> tagged_awaitable<test_tag, test_task<int>> { co_return (co_await sub()) * mult; };
+        auto main = [&] -> tagged_awaitable<test_tag, test_task<int>> { co_return (co_await sub()) * mult; };
 
         auto result = run(main());
         expect(eq(result, expected));

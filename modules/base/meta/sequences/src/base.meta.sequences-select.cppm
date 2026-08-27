@@ -49,7 +49,7 @@ namespace base::meta::sequences {
 
     template<typename T, TypeSequence Seq, template<typename> typename UnaryTypePredicate>
     struct try_find_type_if_impl<false, T, Seq, UnaryTypePredicate> {
-        using type = typename try_find_type_if<Seq, UnaryTypePredicate>::type;
+        using type = try_find_type_if<Seq, UnaryTypePredicate>::type;
     };
 
     /**
@@ -86,7 +86,7 @@ namespace base::meta::sequences {
 
     template<auto Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
     struct try_find_value_if_impl<false, Element, Seq, UnaryValuePredicate> {
-        using type = typename try_find_value_if<Seq, UnaryValuePredicate>::type;
+        using type = try_find_value_if<Seq, UnaryValuePredicate>::type;
     };
 
     /**
@@ -114,7 +114,7 @@ namespace base::meta::sequences {
 
     template<typename T, T Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
     struct try_find_uniform_value_if_impl<T, false, Element, Seq, UnaryValuePredicate> {
-        using type = typename try_find_value_if<Seq, UnaryValuePredicate>::type;
+        using type = try_find_value_if<Seq, UnaryValuePredicate>::type;
     };
 
     /**
@@ -142,11 +142,11 @@ namespace base::meta::sequences {
      * @brief Alias for the first type satisfying a predicate.
      */
     export template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
-    using try_find_type_if_t = typename try_find_type_if<std::remove_cvref_t<Seq>, UnaryTypePredicate>::type;
+    using try_find_type_if_t = try_find_type_if<std::remove_cvref_t<Seq>, UnaryTypePredicate>::type;
 
     /**
      * @brief Alias for the first value satisfying a predicate.
      */
     export template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
-    using try_find_value_if_t = typename try_find_value_if<std::remove_cvref_t<Seq>, UnaryValuePredicate>::type;
+    using try_find_value_if_t = try_find_value_if<std::remove_cvref_t<Seq>, UnaryValuePredicate>::type;
 } // namespace base::meta::sequences

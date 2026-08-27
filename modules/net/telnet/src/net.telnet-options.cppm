@@ -327,7 +327,7 @@ export namespace net::telnet {
         atcp                               = 0xC8, ///< Achaea Telnet Communication Protocol
         gmcp                               = 0xC9, ///< Generic MUD Communication Protocol (aka ATCP2)
         /* Range 0xCA-0xFE Unused per IANA */        
-        extended_options_list              = 0xFF  ///< Extended-Options-List (@see RFC 861)
+        extended_options_list              = 0xFF,  ///< Extended-Options-List (@see RFC 861)
         // clang-format on
     }; //enum class option::id_num
 
@@ -384,7 +384,7 @@ export namespace net::telnet {
         [[nodiscard]] bool has(option::id_num opt_id) const noexcept
         {
             const std::shared_lock<std::shared_mutex> lock(mutex_);
-            return (registry_.find(opt_id) != registry_.end());
+            return (registry_.contains(opt_id));
         } //has(option::id_num)
 
         ///@brief Inserts or updates an `option` in the registry.

@@ -60,21 +60,21 @@ suite overload_tests = [] mutable {
 
     "overload{...} composes overload sets of multiple multi-overload bases"_test = [] mutable {
         struct f1 {
-            std::string operator()(int) { return "int"s; }
-            std::string operator()(double) { return "double"s; }
+            std::string operator()(int /*unused*/) { return "int"s; }
+            std::string operator()(double /*unused*/) { return "double"s; }
         };
 
         struct f2 {
-            std::string operator()(std::string) { return "string"s; }
-            std::string operator()(std::string_view) { return "string view"s; }
+            std::string operator()(std::string /*unused*/) { return "string"s; }
+            std::string operator()(std::string_view /*unused*/) { return "string view"s; }
         };
 
         auto overloaded = overload{f1{}, f2{}};
 
-        expect(eq(overloaded(1), "int"s));
-        expect(eq(overloaded(3.14), "double"s));
-        expect(eq(overloaded("hello"s), "string"s));
-        expect(eq(overloaded("view"sv), "string view"s));
+        expect(eq(overloaded(1), /*rhs=*/"int"s));
+        expect(eq(overloaded(3.14), /*rhs=*/"double"s));
+        expect(eq(overloaded("hello"s), /*rhs=*/"string"s));
+        expect(eq(overloaded("view"sv), /*rhs=*/"string view"s));
     };
 
     "overload{ overload{...}, ... } composes overload sets"_test = [] {
@@ -82,10 +82,10 @@ suite overload_tests = [] mutable {
 
         auto extended = overload{base, [](std::string) { return "string"s; }, [](std::string_view) { return "string view"s; }};
 
-        expect(eq(extended(1), "int"s));
-        expect(eq(extended(3.14), "double"s));
-        expect(eq(extended("hello"s), "string"s));
-        expect(eq(extended("view"sv), "string view"s));
+        expect(eq(extended(1), /*rhs=*/"int"s));
+        expect(eq(extended(3.14), /*rhs=*/"double"s));
+        expect(eq(extended("hello"s), /*rhs=*/"string"s));
+        expect(eq(extended("view"sv), /*rhs=*/"string view"s));
     };
 
     "overload{...} preserves value category"_test = [] mutable {
@@ -93,12 +93,12 @@ suite overload_tests = [] mutable {
             enum class val_cat : std::uint8_t {
                 lval,
                 clval,
-                rval
+                rval,
             };
 
-            std::uint8_t operator()(this function_obj&) { return std::to_underlying(val_cat::lval); }
-            std::uint8_t operator()(this const function_obj&) { return std::to_underlying(val_cat::clval); }
-            std::uint8_t operator()(this function_obj&&) { return std::to_underlying(val_cat::rval); }
+            std::uint8_t operator()(this function_obj& /*unused*/) { return std::to_underlying(val_cat::lval); }
+            std::uint8_t operator()(this const function_obj& /*unused*/) { return std::to_underlying(val_cat::clval); }
+            std::uint8_t operator()(this function_obj&& /*unused*/) { return std::to_underlying(val_cat::rval); }
             std::uint8_t operator()(this const function_obj&&) = delete;
         };
 
@@ -115,12 +115,12 @@ suite overload_tests = [] mutable {
         using var_t = std::variant<int, std::string, double>;
 
         auto visitor = overload{
-            [](int) { return "int"s; }, [](const std::string&) { return "string"s; }, [](double) { return "double"s; }
+            [](int) { return "int"s; }, [](const std::string&) { return "string"s; }, [](double) { return "double"s; },
         };
 
-        expect(eq(std::visit(visitor, var_t{42}), "int"s));
-        expect(eq(std::visit(visitor, var_t{"hello"s}), "string"s));
-        expect(eq(std::visit(visitor, var_t{3.14}), "double"s));
+        expect(eq(std::visit(visitor, var_t{42}), /*rhs=*/"int"s));
+        expect(eq(std::visit(visitor, var_t{"hello"s}), /*rhs=*/"string"s));
+        expect(eq(std::visit(visitor, var_t{3.14}), /*rhs=*/"double"s));
     };
 
     "overload{...} preserves ambiguity across identical signatures"_test = [] {
@@ -132,21 +132,21 @@ suite overload_tests = [] mutable {
     "overload{...} preserves ambiguity and overload ranking across multiple composed and aggregated callables"_test =
         [] mutable {
             struct f1 {
-                auto operator()(int) { return "f1 int"s; }
-                auto operator()(double) { return "f1 double"s; }
-                auto operator()(const char*) { return "f1 const char*"s; }
+                auto operator()(int /*unused*/) { return "f1 int"s; }
+                auto operator()(double /*unused*/) { return "f1 double"s; }
+                auto operator()(const char* /*unused*/) { return "f1 const char*"s; }
             };
 
             auto f2 = overload{
                 [](int) mutable { return "f2 int"s; },           //mutable => non-const operator()
-                [](std::string) mutable { return "f2 string"s; } //mutable => non-const operator()
+                [](std::string) mutable { return "f2 string"s; }, //mutable => non-const operator()
             };
 
             auto overloaded = overload{
                 f1{},
                 f2,
                 [](double) mutable { return "lambda double"s; },  //mutable => non-const operator()
-                [](const char*) { return "lambda const char*"s; } //const operator()
+                [](const char*) { return "lambda const char*"s; }, //const operator()
             };
 
             // ambiguous: f1(int) vs f2(int)
@@ -157,12 +157,12 @@ suite overload_tests = [] mutable {
 
             // unambiguous: only f2(std::string) [const char* is not a match]
             expect(eq(std::invocable<decltype(overloaded), std::string>, true));
-            expect(eq(std::invoke(overloaded, "std::string"s), "f2 string"s));
+            expect(eq(std::invoke(overloaded, "std::string"s), /*rhs=*/"f2 string"s));
 
             // unambiguous: 1) non-const f1 beats const lambda [better implicit object parameter binding],
             // 2) and f1(const char*) beats f2(std::string) [conversion is a worse match]
             expect(eq(std::invocable<decltype(overloaded), const char*>, true));
-            expect(eq(std::invoke(overloaded, "c-string"), "f1 const char*"s));
+            expect(eq(std::invoke(overloaded, "c-string"), /*rhs=*/"f1 const char*"s));
         };
 
     "overload{...} with deduced `this` lambda sees derived object identity"_test = [] mutable {
@@ -174,36 +174,38 @@ suite overload_tests = [] mutable {
                     return "non-const"s;
                 }
             },
-            [](this const auto&, std::string arg) { return arg; }
+            [](this const auto&, std::string arg) { return arg; },
         };
 
         const auto& const_ov = overloaded;
 
         // Deduced `self` reflects the `const`-ness of the `overload` object (derived type).
-        expect(eq(overloaded(0), "non-const"s));
-        expect(eq(const_ov(0), "const"s));
+        expect(eq(overloaded(0), /*rhs=*/"non-const"s));
+        expect(eq(const_ov(0), /*rhs=*/"const"s));
 
         // Explicit `std::string` parameter is a better match than template parameter
-        expect(eq(const_ov("foo"s), "foo"s));
+        expect(eq(const_ov("foo"s), /*rhs=*/"foo"s));
 
         // Template wins: better object parameter binding (non-`const` vs `const`) outweighs non-template preference
-        expect(eq(overloaded("foo"s), "non-const"s));
+        expect(eq(overloaded("foo"s), /*rhs=*/"non-const"s));
     };
 
     "overload{...} supports simple recursion"_test = [] mutable {
         auto factorial_tester = [](int n, int expected) {
             // fail fast for ill-formed test.
-            if (n < 1)
+            if (n < 1) {
                 throw std::logic_error("factorial test runner requires n >= 1");
+}
 
             int steps = 0;
 
             auto factorial = overload{[&steps](this auto& self, int n) -> int {
                 ++steps;
-                if (n <= 1)
+                if (n <= 1) {
                     return 1;
+}
                 return n * self(n - 1);
-            }};
+            },};
 
             expect(eq(factorial(n), expected));
             expect(eq(steps, n));
@@ -236,8 +238,9 @@ suite overload_tests = [] mutable {
         auto tree_traverse = overload{
             // Pointer: Unwrap any pointers (safely).
             []<typename T>(this auto& self, alias_ptr<T> ptr) -> int {
-                if (!ptr)
+                if (!ptr) {
                     throw std::logic_error("test tree node holds null pointer");
+}
                 return self(*ptr);
             },
             // Branch: Sum the values of both children recursively.
@@ -246,7 +249,7 @@ suite overload_tests = [] mutable {
                 return self(left) + self(right);
             },
             // Node: Visit the value of a node to dispatch into a leaf or recurse into a branch.
-            [](this auto& self, const node& tree_node) -> int { return std::visit(self, tree_node.value); }
+            [](this auto& self, const node& tree_node) -> int { return std::visit(self, tree_node.value); },
         };
 
         // Compose value summation leaf handling with reusable traversal component
@@ -265,17 +268,17 @@ suite overload_tests = [] mutable {
         node leaf5{++i};
 
         node branch1{
-            std::tuple{&leaf1, &leaf2}
+            std::tuple{&leaf1, &leaf2},
         };
         node branch2{
-            std::tuple{&leaf3, &branch1}
+            std::tuple{&leaf3, &branch1},
         };
         node branch3{
-            std::tuple{&leaf4, &leaf5}
+            std::tuple{&leaf4, &leaf5},
         };
 
         node tree{
-            std::tuple{&branch2, &branch3}
+            std::tuple{&branch2, &branch3},
         };
 
         // There should thus be `i` leaf nodes, and their sum the sum of the first `i` counting numbers.

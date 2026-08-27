@@ -92,7 +92,7 @@ export namespace base::vocab::inline ptr {
                                 >
                             > {
     private:
-        using base_type = typename alias_ptr::core_type;
+        using base_type = alias_ptr::core_type;
 
     public:
         using base_type::base_type;

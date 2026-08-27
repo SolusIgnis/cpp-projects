@@ -67,7 +67,7 @@ suite coroutine_harness_tests = [] mutable {
     "run returns void"_test = [] mutable {
         coroutine_probe probe;
 
-        auto task = []() -> test_task<void> { co_return; }();
+        auto task = [] -> test_task<void> { co_return; }();
 
         task.set_probe(&probe);
 
@@ -422,7 +422,7 @@ suite coroutine_harness_tests = [] mutable {
     };
 
     "exception propagates"_test = [] mutable {
-        auto task = []() -> test_task<int> {
+        auto task = [] -> test_task<int> {
             throw std::runtime_error("boom");
             co_return {};
         }();
@@ -439,7 +439,7 @@ suite coroutine_harness_tests = [] mutable {
     "stalled coroutine detected"_test = [] mutable {
         coroutine_probe probe;
 
-        auto make_task = [&]() -> test_task<void> { co_await std::suspend_always{}; };
+        auto make_task = [&] -> test_task<void> { co_await std::suspend_always{}; };
 
         auto task = make_task();
 
@@ -477,17 +477,17 @@ suite coroutine_harness_tests = [] mutable {
         auto taskB = echo(divisor).set_probe(&probeB);
 
         // Factory for rvalue task
-        auto make_taskC = []() -> test_task<int> { co_return co_await echo(subtrahend); };
+        auto make_taskC = [] -> test_task<int> { co_return co_await echo(subtrahend); };
 
-        auto make_taskE = [&]() -> test_task<int> {
-            int quotient; //42 / 7 == 6
-            co_await (
-                [&]() -> test_task<void> {
+        auto make_taskE = [&] -> test_task<int> {
+            int quotient = 0; //42 / 7 == 6
+            co_await 
+                [&] -> test_task<void> {
                     quotient = (co_await taskA) / (co_await taskB);
                     co_return;
                 }()
                              .set_probe(&probeD)
-            );
+            ;
 
             const auto difference = quotient - co_await make_taskC().set_probe(&probeC); //6 - 1 == 5
             co_return difference;                                                        //5
@@ -553,18 +553,18 @@ suite coroutine_harness_tests = [] mutable {
         constexpr int fifth  = 5;
         std::vector<int> expected{first, second, third, fourth, fifth};
 
-        auto leaf = [&]() -> test_task<void> {
+        auto leaf = [&] -> test_task<void> {
             trace.push_back(third);
             co_return;
         };
 
-        auto mid = [&]() -> test_task<void> {
+        auto mid = [&] -> test_task<void> {
             trace.push_back(second);
             co_await leaf();
             trace.push_back(fourth);
         };
 
-        auto root = [&]() -> test_task<void> {
+        auto root = [&] -> test_task<void> {
             trace.push_back(first);
             co_await mid();
             trace.push_back(fifth);

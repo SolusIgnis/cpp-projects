@@ -70,7 +70,7 @@ namespace net::telnet {
     template<typename Awaitable>
     auto stream<NLS, PC>::sync_await(Awaitable&& awaitable)
     {
-        using result_type = typename Awaitable::value_type;
+        using result_type = Awaitable::value_type;
         asio::io_context temp_ctx;
         std::promise<result_type> promise;
         std::future<result_type> future = promise.get_future();
@@ -556,7 +556,7 @@ namespace net::telnet {
     template<MutableBufferSequence MBS>
     template<typename Self>
     void stream<NLS, PC>::input_processor<MBS>::do_response(
-        typename stream::fsm_type::negotiation_response response,
+        stream::fsm_type::negotiation_response response,
         Self&& self
     )
     {
@@ -592,7 +592,7 @@ namespace net::telnet {
         asio::co_spawn(
             parent_stream_.get_executor(),
             //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): Lambda closure lifetime is ensured by Asio. `this` lifetime is bound to parent operation which will not continue until the coroutine returns.
-            [this, handler_awaitable = std::move(awaitable)]() mutable -> asio::awaitable<std::size_t> {
+            [this, handler_awaitable = std::move(awaitable)] mutable -> asio::awaitable<std::size_t> {
                 try {
                     auto [opt, subneg_buffer] = co_await handler_awaitable;
                     if (!subneg_buffer.empty()) {
@@ -632,7 +632,7 @@ namespace net::telnet {
             //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): Lambda closure lifetime is ensured by Asio. `this` lifetime is bound to parent operation which will not continue until the coroutine returns.
             [this,
              awaitable   = std::move(awaitable),
-             negotiation = std::move(negotiation)]() mutable -> asio::awaitable<std::size_t> {
+             negotiation = std::move(negotiation)] mutable -> asio::awaitable<std::size_t> {
                 try {
                     std::size_t bytes_transferred = 0;
                     if (negotiation) {

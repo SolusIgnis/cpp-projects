@@ -149,6 +149,6 @@ namespace std {
     ///@brief Partial specialization of `std::coroutine_traits` forwarding the promise type for a `tagged_awaitable` to the promise type of its underlying awaitable type.
     template<typename Tag, typename AwaitableT, typename... Args>
     struct coroutine_traits<framework::coroutines::tagged_awaitable<Tag, AwaitableT>, Args...> {
-        using promise_type = typename std::coroutine_traits<AwaitableT, Args...>::promise_type;
+        using promise_type = std::coroutine_traits<AwaitableT, Args...>::promise_type;
     };
 } //namespace std

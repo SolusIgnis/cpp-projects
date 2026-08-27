@@ -88,7 +88,7 @@ namespace net::telnet {
                 //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): Lambda closure lifetime is ensured by Asio. `this` lifetime is bound to parent stream and must be guaranteed for the operation to complete.
                 [this,
                  response  = std::move(response),
-                 awaitable = std::move(awaitable)]() mutable -> asio::awaitable<std::size_t> {
+                 awaitable = std::move(awaitable)] mutable -> asio::awaitable<std::size_t> {
                     try {
                         std::size_t bytes_transferred = 0;
                         if (response) {
@@ -313,13 +313,13 @@ namespace net::telnet {
      */
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<WriteToken CompletionToken>
-    auto stream<NLS, PC>::async_write_negotiation(typename fsm_type::negotiation_response response, CompletionToken&& token)
+    auto stream<NLS, PC>::async_write_negotiation(fsm_type::negotiation_response response, CompletionToken&& token)
     {
         auto [dir, enable, opt] = response;
         static std::array<byte_t, 3>
             buf{std::to_underlying(telnet::command::iac),
                 std::to_underlying(fsm_type::make_negotiation_command(dir, enable)),
-                std::to_underlying(opt)};
+                std::to_underlying(opt),};
         return asio::async_write(
             this->next_layer_,
             asio::buffer(buf),

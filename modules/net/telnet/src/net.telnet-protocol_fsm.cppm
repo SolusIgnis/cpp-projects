@@ -185,7 +185,7 @@ export namespace net::telnet {
             option_negotiation,    ///< Processing option ID after WILL/WONT/DO/DONT
             subnegotiation_option, ///< Processing option ID after SB
             subnegotiation,        ///< Processing subnegotiation data
-            subnegotiation_iac     ///< Processing IAC during subnegotiation
+            subnegotiation_iac,     ///< Processing IAC during subnegotiation
         };
 
         ///@brief Changes the FSM state.

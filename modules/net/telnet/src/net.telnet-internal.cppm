@@ -91,7 +91,7 @@ export namespace net::telnet {
         )
         {
             handlers_[opt] = option_handler_record{
-                std::move(enablement_handler), std::move(disablement_handler), std::move(subnegotiation_handler)
+                std::move(enablement_handler), std::move(disablement_handler), std::move(subnegotiation_handler),
             };
         } //register_handlers(option::id_num, std::optional<OptionEnablementHandler>, std::optional<OptionDisablementHandler>, std::optional<SubnegotiationHandler>)
 
@@ -204,7 +204,7 @@ export namespace net::telnet {
             no       = 0,
             yes      = 1,
             want_no  = 2,
-            want_yes = 3
+            want_yes = 3,
         };
 
         //Local state queries (us)
@@ -718,7 +718,7 @@ export namespace net::telnet {
 
         ///@brief The number of possible `option::id_num` values. (@note Assuming no changes to the Telnet specification, this should be 256 in perpetuity, but never assume when you can assert/compute.)
         static constexpr size_t max_option_count{
-            std::numeric_limits<std::underlying_type_t<option::id_num>>::max() + std::size_t{1}
+            std::numeric_limits<std::underlying_type_t<option::id_num>>::max() + std::size_t{1},
         };
 
     private:

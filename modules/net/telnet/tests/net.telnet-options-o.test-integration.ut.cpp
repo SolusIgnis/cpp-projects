@@ -14,7 +14,7 @@ suite net_telnet_option_registry_tests = [] mutable {
     "registry get and has work"_test = [] mutable {
         option_registry registry{
             option{option::id_num::binary, "Binary"},
-            option{  option::id_num::echo,   "Echo"}
+            option{  option::id_num::echo,   "Echo"},
         };
 
         expect(eq(registry.has(option::id_num::binary), true));
@@ -28,7 +28,7 @@ suite net_telnet_option_registry_tests = [] mutable {
     "upsert inserts new option"_test = [] mutable {
         option_registry registry{};
 
-        auto& inserted = registry.upsert(option{option::id_num::binary, "Binary"});
+        const auto& inserted = registry.upsert(option{option::id_num::binary, "Binary"});
 
         expect(eq((inserted.get_id() == option::id_num::binary), true));
         expect(eq(registry.has(option::id_num::binary), true));
@@ -36,7 +36,7 @@ suite net_telnet_option_registry_tests = [] mutable {
 
     "upsert replaces existing option"_test = [] mutable {
         option_registry registry{
-            option{option::id_num::binary, "OldName"}
+            option{option::id_num::binary, "OldName"},
         };
 
         registry.upsert(option{option::id_num::binary, "NewName"});
@@ -52,7 +52,7 @@ suite net_telnet_option_registry_tests = [] mutable {
         std::error_code ec;
         registry.upsert(option{option::id_num::binary, "Binary"}, ec);
 
-        expect(eq(ec.value(), static_cast<int>(0)));
+        expect(eq(ec.value(), 0));
     };
 };
 

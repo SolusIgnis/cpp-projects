@@ -92,7 +92,7 @@ namespace base::meta::sequences {
 
     export template<TypeSequence Seq>
         requires NonEmptySequence<Seq>
-    using front_t = typename front<std::remove_cvref_t<Seq>>::type;
+    using front_t = front<std::remove_cvref_t<Seq>>::type;
 
     export template<ValueSequence Seq>
         requires NonEmptySequence<Seq>
@@ -125,7 +125,7 @@ namespace base::meta::sequences {
 
     template<typename T, TypeSequence Seq, template<typename> typename UnaryTypePredicate>
     struct find_type_if_impl<false, T, Seq, UnaryTypePredicate> {
-        using type = typename find_type_if<Seq, UnaryTypePredicate>::type;
+        using type = find_type_if<Seq, UnaryTypePredicate>::type;
     };
 
     /**
@@ -212,7 +212,7 @@ namespace base::meta::sequences {
      */
     export template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
         requires NonEmptySequence<Seq>
-    using find_type_if_t = typename find_type_if<std::remove_cvref_t<Seq>, UnaryTypePredicate>::type;
+    using find_type_if_t = find_type_if<std::remove_cvref_t<Seq>, UnaryTypePredicate>::type;
 
     /**
      * @brief Alias for the first value satisfying a predicate.

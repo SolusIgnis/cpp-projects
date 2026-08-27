@@ -95,14 +95,14 @@ export namespace net::telnet {
          * @brief Executor type for the stream.
          * @remark Matches the executor type of the next-layer stream.
          */
-        using executor_type = typename next_layer_type::executor_type;
+        using executor_type = next_layer_type::executor_type;
 
         /**
          * @typedef lowest_layer_type
          * @brief Type of the lowest layer stream.
          * @remark Provides access to the lowest layer of the stream stack.
          */
-        using lowest_layer_type = typename next_layer_type::lowest_layer_type;
+        using lowest_layer_type = next_layer_type::lowest_layer_type;
 
         /**
          * @typedef fsm_type
@@ -208,13 +208,13 @@ export namespace net::telnet {
         ///@todo Future Development: make this private
         ///@brief Asynchronously writes a Telnet negotiation command with an option.
         template<WriteToken CompletionToken>
-        auto async_write_negotiation(typename fsm_type::negotiation_response response, CompletionToken&& token);
+        auto async_write_negotiation(fsm_type::negotiation_response response, CompletionToken&& token);
 
         ///@brief Synchronously writes a Telnet negotiation command with an option.
-        std::size_t write_negotiation(typename fsm_type::negotiation_response response);
+        std::size_t write_negotiation(fsm_type::negotiation_response response);
 
         ///@brief Synchronously writes a Telnet negotiation command with an option.
-        std::size_t write_negotiation(typename fsm_type::negotiation_response response, std::error_code& ec) noexcept;
+        std::size_t write_negotiation(fsm_type::negotiation_response response, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously writes a Telnet subnegotiation command.
         template<WriteToken CompletionToken>
@@ -257,7 +257,7 @@ export namespace net::telnet {
                 enum class urgent_data_state : byte_t {
                     no_urgent_data,
                     has_urgent_data,
-                    unexpected_data_mark
+                    unexpected_data_mark,
                 };
                 std::atomic<urgent_data_state> state_{urgent_data_state::no_urgent_data};
 
@@ -326,7 +326,7 @@ export namespace net::telnet {
 
             ///@brief Handle a `negotiation_response` by initiating an async write of the negotiation.
             template<typename Self>
-            void do_response(typename stream::fsm_type::negotiation_response response, Self&& self);
+            void do_response(stream::fsm_type::negotiation_response response, Self&& self);
 
             ///@brief Handle a `std::string` by initiating an async write of raw data.
             template<typename Self>
@@ -364,7 +364,7 @@ export namespace net::telnet {
                 initializing,
                 reading,
                 processing,
-                done
+                done,
             } state_;
         }; //class input_processor
 

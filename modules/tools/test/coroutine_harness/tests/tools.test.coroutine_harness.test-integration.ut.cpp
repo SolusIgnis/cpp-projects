@@ -21,44 +21,48 @@ suite coroutine_harness_integration_tests = [] mutable {
 
         std::vector<int> trace;
 
-        coroutine_probe probeIntLvalue, probeIntRvalue;
-        coroutine_probe probePtr, probeVoid, probeThrow, probeNested;
+        coroutine_probe probeIntLvalue;
+        coroutine_probe probeIntRvalue;
+        coroutine_probe probePtr;
+        coroutine_probe probeVoid;
+        coroutine_probe probeThrow;
+        coroutine_probe probeNested;
 
         // -------------------------------
         // Leaf tasks
         // -------------------------------
 
         // int via ready_awaiter (lvalue)
-        auto leafIntL = [&]() -> test_task<int> {
+        auto leafIntL = [&] -> test_task<int> {
             trace.push_back(second);
             co_return run(as_task<int>(dummies::ready_awaiter{42}));
         };
 
         // int via ready_awaiter (rvalue)
-        auto leafIntR = [&]() -> test_task<int> {
+        auto leafIntR = [&] -> test_task<int> {
             trace.push_back(third);
             co_return run(as_task<int>(dummies::ready_awaiter{58}));
         };
 
         // unique_ptr via immediate_awaiter
-        auto leafPtr = [&]() -> test_task<std::unique_ptr<int>> {
+        auto leafPtr = [&] -> test_task<std::unique_ptr<int>> {
             trace.push_back(fourth);
             auto awaiter = dummies::immediate_awaiter{std::make_unique<int>(99)};
             co_return run(as_task<std::unique_ptr<int>>(std::move(awaiter)));
         };
 
         // void via immediate_awaiter
-        auto leafVoid = [&]() -> test_task<void> {
+        auto leafVoid = [&] -> test_task<void> {
             trace.push_back(fifth);
             co_await as_task<void>(dummies::immediate_awaiter<void>{});
         };
 
         // throwing awaiter
-        auto leafThrow = [&]() -> test_task<void> {
+        auto leafThrow = [&] -> test_task<void> {
             trace.push_back(sixth);
             struct throwing_awaiter {
-                constexpr bool await_ready() const noexcept { return true; }
-                void await_suspend(std::coroutine_handle<>) const noexcept {}
+                [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
+                void await_suspend(std::coroutine_handle<> /*unused*/) const noexcept {}
                 [[noreturn]] void await_resume() const { throw std::runtime_error("boom"); }
             };
             co_await as_task<void>(throwing_awaiter{});
@@ -67,7 +71,7 @@ suite coroutine_harness_integration_tests = [] mutable {
         // -------------------------------
         // Nested composition task
         // -------------------------------
-        auto make_nested = [&]() -> test_task<int> {
+        auto make_nested = [&] -> test_task<int> {
             trace.push_back(first);
 
             int valL = co_await leafIntL().set_probe(&probeIntLvalue);            // 42
@@ -100,7 +104,7 @@ suite coroutine_harness_integration_tests = [] mutable {
         // -------------------------------
         // Verify result
         // -------------------------------
-        expect(eq(result, 199));
+        expect(eq(result, /*rhs=*/199));
 
         // -------------------------------
         // Verify trace order

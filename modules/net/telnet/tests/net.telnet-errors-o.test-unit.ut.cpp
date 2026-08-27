@@ -34,26 +34,26 @@ suite net_telnet_errors_unit = [] mutable {
     // ============================================================
 
     "telnet_error_category singleton identity"_test = [] mutable {
-        auto& a = telnet_error_category::instance();
-        auto& b = telnet_error_category::instance();
+        const auto& a = telnet_error_category::instance();
+        const auto& b = telnet_error_category::instance();
 
         expect(eq(&a, &b));
     };
 
     "telnet_processing_signal_category singleton identity"_test = [] mutable {
-        auto& a = telnet_processing_signal_category::instance();
-        auto& b = telnet_processing_signal_category::instance();
+        const auto& a = telnet_processing_signal_category::instance();
+        const auto& b = telnet_processing_signal_category::instance();
 
         expect(eq(&a, &b));
     };
 
     "telnet_error_category name"_test = [] mutable {
-        auto& cat = telnet_error_category::instance();
+        const auto& cat = telnet_error_category::instance();
         expect(eq(std::string{cat.name()}, std::string{"telnet"}));
     };
 
     "telnet_processing_signal_category name"_test = [] mutable {
-        auto& cat = telnet_processing_signal_category::instance();
+        const auto& cat = telnet_processing_signal_category::instance();
         expect(eq(std::string{cat.name()}, std::string{"telnet_processing_signal"}));
     };
 
@@ -62,7 +62,7 @@ suite net_telnet_errors_unit = [] mutable {
     // ============================================================
 
     "error message coverage"_test = [] mutable {
-        auto& cat = telnet_error_category::instance();
+        const auto& cat = telnet_error_category::instance();
 
         expect(eq(cat.message(static_cast<int>(error::protocol_violation)), std::string{"Telnet protocol violation"}));
 
@@ -108,7 +108,7 @@ suite net_telnet_errors_unit = [] mutable {
     };
 
     "processing_signal message coverage"_test = [] mutable {
-        auto& cat = telnet_processing_signal_category::instance();
+        const auto& cat = telnet_processing_signal_category::instance();
 
         expect(
             eq(cat.message(static_cast<int>(processing_signal::end_of_line)),
@@ -166,14 +166,14 @@ suite net_telnet_errors_unit = [] mutable {
     // ============================================================
 
     "unknown error message fallback"_test = [] mutable {
-        auto& cat = telnet_error_category::instance();
+        const auto& cat = telnet_error_category::instance();
 
         constexpr int invalid_value = 255;
         expect(eq(cat.message(invalid_value), std::string{"Unknown Telnet error"}));
     };
 
     "unknown processing_signal message fallback"_test = [] mutable {
-        auto& cat = telnet_processing_signal_category::instance();
+        const auto& cat = telnet_processing_signal_category::instance();
 
         constexpr int invalid_value = 255;
         expect(eq(cat.message(invalid_value), std::string{"Unknown Telnet processing signal"}));

@@ -34,7 +34,7 @@ struct NotABufferSequence {};
 struct NotACompletionToken {};
 
 struct BadSocketOption {
-    int value() const { return 42; } // wrong return type for most cases
+    [[nodiscard]] int value() const { return 42; } // wrong return type for most cases
 };
 
 struct NoExecutorType {
@@ -78,7 +78,7 @@ int main()
         using broadcast  = asio::socket_base::broadcast;
         using linger     = asio::socket_base::linger;
         using recv_buf   = asio::socket_base::receive_buffer_size;
-        using join_group = asio::ip::multicast::join_group;
+        using asio::ip::multicast::join_group;
 
         expect(_b{true} == BooleanSocketOption<broadcast>);
         expect(_b{true} == CompositeSocketOption<linger>);

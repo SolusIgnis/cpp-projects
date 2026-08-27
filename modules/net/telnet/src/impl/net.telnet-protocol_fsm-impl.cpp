@@ -198,7 +198,7 @@ namespace net::telnet {
             return {
                 std::error_code{},
                 negotiation_response_type{direction, false, opt},
-                std::move(awaitable)
+                std::move(awaitable),
             };
         }
         protocol_config_type::log_error(
@@ -505,7 +505,7 @@ namespace net::telnet {
                             //WILL/DO in WANTYES with EMPTY queue bit: complete negotiation.
                             current_status.enable(direction);
                             response = std::tuple{
-                                option_handler_registry_.handle_enablement(*current_option_, direction), std::nullopt
+                                option_handler_registry_.handle_enablement(*current_option_, direction), std::nullopt,
                             };
                         }
                     } else if (current_status.pending_disable(direction)) {
@@ -515,7 +515,7 @@ namespace net::telnet {
                             current_status.dequeue(direction);
                             current_status.enable(direction);
                             response = std::tuple{
-                                option_handler_registry_.handle_enablement(*current_option_, direction), std::nullopt
+                                option_handler_registry_.handle_enablement(*current_option_, direction), std::nullopt,
                             };
                         } else {
                             //WANTNO with EMPTY queue bit. Invalid Negotiation.
@@ -534,7 +534,7 @@ namespace net::telnet {
                         current_status.enable(direction);
                         response = std::tuple{
                             option_handler_registry_.handle_enablement(*current_option_, direction),
-                            negotiation_response_type{direction, true, *current_option_}
+                            negotiation_response_type{direction, true, *current_option_},
                         };
                     } else {
                         //Unsupported option
@@ -567,7 +567,7 @@ namespace net::telnet {
                         current_status.disable(direction);
                         response = std::tuple{
                             option_handler_registry_.handle_disablement(*current_option_, direction),
-                            negotiation_response_type{direction, false, *current_option_}
+                            negotiation_response_type{direction, false, *current_option_},
                         };
                     }
                 }
@@ -629,7 +629,7 @@ namespace net::telnet {
                 telnet::command::sb,
                 *current_option_
             );
-        } else if (!current_option_->supports_subnegotiation() || !(option_status_[*current_option_].is_enabled())) {
+        } else if (!current_option_->supports_subnegotiation() || !option_status_[*current_option_].is_enabled()) {
             protocol_config_type::log_error(
                 make_error_code(error::invalid_subnegotiation),
                 "byte: 0x{:02x}, cmd: {}, opt: {}",

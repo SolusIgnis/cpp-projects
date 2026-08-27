@@ -27,40 +27,40 @@ suite telnet_options_tests = [] mutable {
     "option default construction and accessors"_test = [] mutable {
         option opt{option::id_num::echo, "Echo"};
         expect(eq(opt.get_id(), option::id_num::echo));
-        expect(eq(opt.get_name(), "Echo"s));
+        expect(eq(opt.get_name(), /*rhs=*/"Echo"s));
         expect(eq(opt.supports_local(), false));
         expect(eq(opt.supports_remote(), false));
         expect(eq(opt.supports(negotiation_direction::local), false));
         expect(eq(opt.supports(negotiation_direction::remote), false));
         expect(eq(opt.supports_subnegotiation(), false));
-        expect(eq(opt.max_subnegotiation_size(), 1024UZ));
+        expect(eq(opt.max_subnegotiation_size(), /*rhs=*/1024UZ));
     };
 
     "option with custom predicates and subnegotiation"_test = [] mutable {
         auto always_on = [](option::id_num) { return true; };
-        option opt{option::id_num::terminal_type, "Terminal Type", always_on, always_on, true, 512};
+        option opt{option::id_num::terminal_type, "Terminal Type", always_on, always_on, true, /*max_subneg_size=*/512};
 
         expect(eq(opt.supports_local(), true));
         expect(eq(opt.supports_remote(), true));
         expect(eq(opt.supports(negotiation_direction::local), true));
         expect(eq(opt.supports(negotiation_direction::remote), true));
         expect(eq(opt.supports_subnegotiation(), true));
-        expect(eq(opt.max_subnegotiation_size(), 512UZ));
+        expect(eq(opt.max_subnegotiation_size(), /*rhs=*/512UZ));
     };
 
     "make_option factory"_test = [] mutable {
         auto opt1 = option::make_option(option::id_num::echo, "Echo", true, false);
         expect(eq(opt1.get_id(), option::id_num::echo));
-        expect(eq(opt1.get_name(), "Echo"s));
+        expect(eq(opt1.get_name(), /*rhs=*/"Echo"s));
         expect(eq(opt1.supports_local(), true));
         expect(eq(opt1.supports_remote(), false));
         expect(eq(opt1.supports_subnegotiation(), false));
 
-        auto opt2 = option::make_option(option::id_num::linemode, "Linemode", false, true, true, 256);
+        auto opt2 = option::make_option(option::id_num::linemode, "Linemode", false, true, true, /*max_subneg_size=*/256);
         expect(eq(opt2.supports_local(), false));
         expect(eq(opt2.supports_remote(), true));
         expect(eq(opt2.supports_subnegotiation(), true));
-        expect(eq(opt2.max_subnegotiation_size(), 256UZ));
+        expect(eq(opt2.max_subnegotiation_size(), /*rhs=*/256UZ));
     };
 
     "option always_accept / always_reject predicates"_test = [] mutable {
@@ -103,14 +103,14 @@ suite telnet_options_tests = [] mutable {
         option_registry
             reg{option::make_option(option::id_num::echo, "Echo", true, true),
                 option::make_option(option::id_num::suppress_go_ahead, "SGA", true, false),
-                option::make_option(option::id_num::linemode, "Linemode", false, true, true)};
+                option::make_option(option::id_num::linemode, "Linemode", false, true, true),};
 
         expect(eq(reg.has(option::id_num::echo), true));
         expect(eq(reg.has(option::id_num::terminal_type), false));
 
         auto maybe_echo = reg.get(option::id_num::echo);
         expect(eq(maybe_echo.has_value(), true));
-        expect(eq(maybe_echo->get_name(), "Echo"s));
+        expect(eq(maybe_echo->get_name(), /*rhs=*/"Echo"s));
         expect(eq(maybe_echo->supports_local(), true));
         expect(eq(maybe_echo->supports_remote(), true));
     };
@@ -120,14 +120,14 @@ suite telnet_options_tests = [] mutable {
 
         // Insert new
         const auto& inserted = reg.upsert(option::make_option(option::id_num::binary, "Binary", true, true));
-        expect(eq(inserted.get_name(), "Binary"s));
+        expect(eq(inserted.get_name(), /*rhs=*/"Binary"s));
         expect(eq(reg.has(option::id_num::binary), true));
 
         // Update existing
         reg.upsert(option::make_option(option::id_num::binary, "Binary Transmission", false, true));
         auto updated = reg.get(option::id_num::binary);
         expect(eq(updated.has_value(), true));
-        expect(eq(updated->get_name(), "Binary Transmission"s));
+        expect(eq(updated->get_name(), /*rhs=*/"Binary Transmission"s));
         expect(eq(updated->supports_local(), false));
     };
 
@@ -147,32 +147,32 @@ suite telnet_options_tests = [] mutable {
         option_registry reg{};
         const auto& opt =
             reg.upsert(option::id_num::charset, "Charset", option::always_accept, option::always_reject, true, 128UZ);
-        expect(eq(opt.get_name(), "Charset"s));
+        expect(eq(opt.get_name(), /*rhs=*/"Charset"s));
         expect(eq(opt.supports_local(), true));
         expect(eq(opt.supports_remote(), false));
         expect(eq(opt.supports_subnegotiation(), true));
-        expect(eq(opt.max_subnegotiation_size(), 128UZ));
+        expect(eq(opt.max_subnegotiation_size(), /*rhs=*/128UZ));
     };
 
     "option formatter default 'd'"_test = [] mutable {
         option opt{option::id_num::echo, "Echo"};
-        expect(eq(std::format("{}", opt), "0x01 (Echo)"s));
+        expect(eq(std::format("{}", opt), /*rhs=*/"0x01 (Echo)"s));
 
         option unnamed{option::id_num::xauth};
-        expect(eq(std::format("{}", unnamed), "0x29 (unknown)"s));
+        expect(eq(std::format("{}", unnamed), /*rhs=*/"0x29 (unknown)"s));
     };
 
     "option formatter 'n'"_test = [] mutable {
         option opt{option::id_num::linemode, "Linemode"};
-        expect(eq(std::format("{:n}", opt), "Linemode"s));
+        expect(eq(std::format("{:n}", opt), /*rhs=*/"Linemode"s));
 
         option unnamed{option::id_num::mcp};
-        expect(eq(std::format("{:n}", unnamed), "unknown"s));
+        expect(eq(std::format("{:n}", unnamed), /*rhs=*/"unknown"s));
     };
 
     "option formatter 'x'"_test = [] mutable {
         option opt{option::id_num::gmcp};
-        expect(eq(std::format("{:x}", opt), "0xc9"s));
+        expect(eq(std::format("{:x}", opt), /*rhs=*/"0xc9"s));
     };
 };
 

@@ -375,7 +375,7 @@ export namespace base::vocab::inline ptr {
         //===== Universal Core =====
 
         ///@brief Constructs from a pre-validated address.
-        constexpr explicit ptr_core(validated_address_tag, address_type address) noexcept : address_{address} {}
+        constexpr explicit ptr_core(validated_address_tag /*unused*/, address_type address) noexcept : address_{address} {}
 
     public:
         ///@brief (Conversion) Implicitly converts from another `ConcretePtr` specialization according to nested `address_type` type conversions.
@@ -697,7 +697,7 @@ export namespace base::vocab::inline ptr {
         {
             return ConcretePtr<Destination>(
                 typename ConcretePtr<Destination>::validated_address_tag{},
-                const_cast<typename ConcretePtr<Destination>::address_type>(source.get())
+                const_cast<ConcretePtr<Destination>::address_type>(source.get())
             );
         }
 
@@ -709,24 +709,24 @@ export namespace base::vocab::inline ptr {
             using destination = base::meta::traits::copy_cv_t<element_type, Target>;
             return ConcretePtr<destination>(
                 typename ConcretePtr<destination>::validated_address_tag{},
-                static_cast<typename ConcretePtr<destination>::address_type>(source.get())
+                static_cast<ConcretePtr<destination>::address_type>(source.get())
             );
         }
 
         ///@brief Converts the dynamic pointee type of a pointer along a class hierarchy using RTTI.
         template<typename Target>
             requires is_valid_pointee_v<Target>
-        [[nodiscard]] friend inline auto
+        [[nodiscard]] friend auto
             dynamic_pointer_cast(concrete_ptr_instance source) noexcept(ptr_policies::nullable_nullability_v<policy_set>)
         {
             using destination = base::meta::traits::copy_cv_t<element_type, Target>;
             if constexpr (ptr_policies::nullable_nullability_v<policy_set>) {
                 return ConcretePtr<destination>(
                     typename ConcretePtr<destination>::validated_address_tag{},
-                    dynamic_cast<typename ConcretePtr<destination>::address_type>(source.get())
+                    dynamic_cast<ConcretePtr<destination>::address_type>(source.get())
                 );
             } else {
-                if (auto* p = dynamic_cast<typename ConcretePtr<destination>::address_type>(source.get()); !p) {
+                if (auto* p = dynamic_cast<ConcretePtr<destination>::address_type>(source.get()); !p) {
                     throw std::bad_cast{};
                 } else {
                     return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, p);
@@ -737,12 +737,12 @@ export namespace base::vocab::inline ptr {
         ///@brief Reinterprets the pointer's stored address as pointing to an arbitrary destination type.
         template<typename Target>
             requires is_valid_pointee_v<Target>
-        [[nodiscard]] friend inline auto reinterpret_pointer_cast(concrete_ptr_instance source) noexcept
+        [[nodiscard]] friend auto reinterpret_pointer_cast(concrete_ptr_instance source) noexcept
         {
             using destination = base::meta::traits::copy_cv_t<element_type, Target>;
             return ConcretePtr<destination>(
                 typename ConcretePtr<destination>::validated_address_tag{},
-                reinterpret_cast<typename ConcretePtr<destination>::address_type>(source.get())
+                reinterpret_cast<ConcretePtr<destination>::address_type>(source.get())
             );
         }
 
@@ -779,7 +779,7 @@ export namespace base::vocab::inline ptr {
         //===== Nullability (Always Engaged) =====
 
         ///@brief Contextually converts to `bool` to "test" if the pointer is engaged. Always returns `true` to confirm invariant.
-        [[nodiscard]] constexpr explicit operator bool(this auto&&) noexcept
+        [[nodiscard]] constexpr explicit operator bool(this auto&& /*unused*/) noexcept
             requires ptr_policies::always_engaged_nullability_v<policy_set>
         {
             return true;
@@ -1890,21 +1890,21 @@ export namespace base::vocab::inline ptr {
 template<base::vocab::ptr::VocabPtr T>
 struct std::pointer_traits<T> {
     using pointer         = T;
-    using element_type    = typename pointer::element_type;
-    using difference_type = typename pointer::difference_type;
+    using element_type    = pointer::element_type;
+    using difference_type = pointer::difference_type;
 
     template<class OtherPointee>
-    using rebind = typename pointer::template rebind<OtherPointee>;
+    using rebind = pointer::template rebind<OtherPointee>;
 
     ///@brief Produces a pointer instanc bound to a given object.
-    static constexpr pointer pointer_to(typename pointer::reference object) noexcept(noexcept(pointer::pointer_to(object)))
+    static constexpr pointer pointer_to(pointer::reference object) noexcept(noexcept(pointer::pointer_to(object)))
         requires (!std::is_void_v<element_type>)
     {
         return pointer::pointer_to(object);
     }
 
     ///@brief Returns the pointer's stored address.
-    static constexpr typename pointer::address_type to_address(pointer ptr) noexcept(noexcept(ptr.get())) { return ptr.get(); }
+    static constexpr pointer::address_type to_address(pointer ptr) noexcept(noexcept(ptr.get())) { return ptr.get(); }
 }; //struct std::pointer_traits
 
 /**

@@ -123,7 +123,7 @@ export namespace net::telnet {
                        "Status", option::always_accept,
                        option::always_reject,
                        /*subneg_supported=*/true
-                }
+                },
             };
         } //initialize_option_registry()
 
