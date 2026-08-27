@@ -503,7 +503,7 @@ namespace {
             static_buffer<std::int32_t, 8> buffer;
 
             // Copy raw-pointer iterators -> `cursor_ptr` into underlying memory sequence
-            std::ranges::copy(source,, buffer.data());
+            std::ranges::copy(source, buffer.data());
 
             // Reverse with `iterator_ptr` iterators in and out
             static_assert(std::sentinel_for<decltype(buffer.end()), decltype(buffer.begin())>);
