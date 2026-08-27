@@ -75,9 +75,9 @@ int main()
     };
 
     "socket_options"_test = [] mutable {
-        using broadcast  = asio::socket_base::broadcast;
-        using linger     = asio::socket_base::linger;
-        using recv_buf   = asio::socket_base::receive_buffer_size;
+        using broadcast = asio::socket_base::broadcast;
+        using linger    = asio::socket_base::linger;
+        using recv_buf  = asio::socket_base::receive_buffer_size;
         using asio::ip::multicast::join_group;
 
         expect(_b{true} == BooleanSocketOption<broadcast>);

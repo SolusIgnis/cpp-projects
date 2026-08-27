@@ -91,7 +91,9 @@ export namespace net::telnet {
         )
         {
             handlers_[opt] = option_handler_record{
-                std::move(enablement_handler), std::move(disablement_handler), std::move(subnegotiation_handler),
+                std::move(enablement_handler),
+                std::move(disablement_handler),
+                std::move(subnegotiation_handler),
             };
         } //register_handlers(option::id_num, std::optional<OptionEnablementHandler>, std::optional<OptionDisablementHandler>, std::optional<SubnegotiationHandler>)
 

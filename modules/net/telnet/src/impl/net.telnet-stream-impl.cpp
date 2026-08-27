@@ -555,10 +555,7 @@ namespace net::telnet {
     template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
     template<MutableBufferSequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::input_processor<MBS>::do_response(
-        stream::fsm_type::negotiation_response response,
-        Self&& self
-    )
+    void stream<NLS, PC>::input_processor<MBS>::do_response(stream::fsm_type::negotiation_response response, Self&& self)
     {
         parent_stream_.async_write_negotiation(response, std::forward<Self>(self));
     } //stream::input_processor::do_response(negotiation_response, Self&&)

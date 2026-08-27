@@ -505,7 +505,8 @@ namespace net::telnet {
                             //WILL/DO in WANTYES with EMPTY queue bit: complete negotiation.
                             current_status.enable(direction);
                             response = std::tuple{
-                                option_handler_registry_.handle_enablement(*current_option_, direction), std::nullopt,
+                                option_handler_registry_.handle_enablement(*current_option_, direction),
+                                std::nullopt,
                             };
                         }
                     } else if (current_status.pending_disable(direction)) {
@@ -515,7 +516,8 @@ namespace net::telnet {
                             current_status.dequeue(direction);
                             current_status.enable(direction);
                             response = std::tuple{
-                                option_handler_registry_.handle_enablement(*current_option_, direction), std::nullopt,
+                                option_handler_registry_.handle_enablement(*current_option_, direction),
+                                std::nullopt,
                             };
                         } else {
                             //WANTNO with EMPTY queue bit. Invalid Negotiation.

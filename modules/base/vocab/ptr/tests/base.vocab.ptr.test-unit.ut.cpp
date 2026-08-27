@@ -286,162 +286,185 @@ namespace {
 
         "pointer binding according to policies"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                auto verify_binding_operations = []<typename Pointee,
-                                                    typename SourceTag,
-                                                    bool IsConstructibleFrom,
-                                                    bool IsConvertibleFrom,
-                                                    bool IsAssignableFrom = IsConstructibleFrom
-                                                                         && !std::same_as<SourceTag, ref_tag>> {
-                    //Explicitly constructible unless removing qualifier
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<Pointee>, source_t<Pointee, SourceTag>>, IsConstructibleFrom)
-                    );
-                    expect(eq(std::constructible_from<ConcretePtr<Pointee>, source_t<const Pointee, SourceTag>>, false));
-                    expect(eq(std::constructible_from<ConcretePtr<Pointee>, source_t<volatile Pointee, SourceTag>>, false));
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<Pointee>, source_t<const volatile Pointee, SourceTag>>, false)
-                    );
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<const Pointee>, source_t<Pointee, SourceTag>>,
-                           IsConstructibleFrom)
-                    );
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<const Pointee>, source_t<const Pointee, SourceTag>>,
-                           IsConstructibleFrom)
-                    );
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<const Pointee>, source_t<volatile Pointee, SourceTag>>, false)
-                    );
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<const Pointee>, source_t<const volatile Pointee, SourceTag>>,
-                           false)
-                    );
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<volatile Pointee>, source_t<Pointee, SourceTag>>,
-                           IsConstructibleFrom)
-                    );
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<volatile Pointee>, source_t<const Pointee, SourceTag>>, false)
-                    );
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<volatile Pointee>, source_t<volatile Pointee, SourceTag>>,
-                           IsConstructibleFrom)
-                    );
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<volatile Pointee>, source_t<const volatile Pointee, SourceTag>>,
-                           false)
-                    );
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<const volatile Pointee>, source_t<Pointee, SourceTag>>,
-                           IsConstructibleFrom)
-                    );
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<const volatile Pointee>, source_t<const Pointee, SourceTag>>,
-                           IsConstructibleFrom)
-                    );
-                    expect(
-                        eq(std::constructible_from<ConcretePtr<const volatile Pointee>, source_t<volatile Pointee, SourceTag>>,
-                           IsConstructibleFrom)
-                    );
-                    expect(
-                        eq(std::constructible_from<
-                               ConcretePtr<const volatile Pointee>,
-                               source_t<const volatile Pointee, SourceTag>
-                           >,
-                           IsConstructibleFrom)
-                    );
+                auto
+                    verify_binding_operations = [] < typename Pointee,
+                    typename SourceTag, bool IsConstructibleFrom, bool IsConvertibleFrom,
+                    bool IsAssignableFrom = IsConstructibleFrom && !std::same_as < SourceTag, ref_tag >> {
+                        //Explicitly constructible unless removing qualifier
+                        expect(
+                            eq(std::constructible_from<ConcretePtr<Pointee>, source_t<Pointee, SourceTag>>, IsConstructibleFrom)
+                        );
+                        expect(eq(std::constructible_from<ConcretePtr<Pointee>, source_t<const Pointee, SourceTag>>, false));
+                        expect(eq(std::constructible_from<ConcretePtr<Pointee>, source_t<volatile Pointee, SourceTag>>, false));
+                        expect(
+                            eq(std::constructible_from<ConcretePtr<Pointee>, source_t<const volatile Pointee, SourceTag>>,
+                               false)
+                        );
+                        expect(
+                            eq(std::constructible_from<ConcretePtr<const Pointee>, source_t<Pointee, SourceTag>>,
+                               IsConstructibleFrom)
+                        );
+                        expect(
+                            eq(std::constructible_from<ConcretePtr<const Pointee>, source_t<const Pointee, SourceTag>>,
+                               IsConstructibleFrom)
+                        );
+                        expect(
+                            eq(std::constructible_from<ConcretePtr<const Pointee>, source_t<volatile Pointee, SourceTag>>,
+                               false)
+                        );
+                        expect(
+                            eq(std::constructible_from<ConcretePtr<const Pointee>, source_t<const volatile Pointee, SourceTag>>,
+                               false)
+                        );
+                        expect(
+                            eq(std::constructible_from<ConcretePtr<volatile Pointee>, source_t<Pointee, SourceTag>>,
+                               IsConstructibleFrom)
+                        );
+                        expect(
+                            eq(std::constructible_from<ConcretePtr<volatile Pointee>, source_t<const Pointee, SourceTag>>,
+                               false)
+                        );
+                        expect(
+                            eq(std::constructible_from<ConcretePtr<volatile Pointee>, source_t<volatile Pointee, SourceTag>>,
+                               IsConstructibleFrom)
+                        );
+                        expect(eq(
+                            std::constructible_from<ConcretePtr<volatile Pointee>, source_t<const volatile Pointee, SourceTag>>,
+                            false
+                        ));
+                        expect(
+                            eq(std::constructible_from<ConcretePtr<const volatile Pointee>, source_t<Pointee, SourceTag>>,
+                               IsConstructibleFrom)
+                        );
+                        expect(
+                            eq(std::constructible_from<ConcretePtr<const volatile Pointee>, source_t<const Pointee, SourceTag>>,
+                               IsConstructibleFrom)
+                        );
+                        expect(eq(
+                            std::constructible_from<ConcretePtr<const volatile Pointee>, source_t<volatile Pointee, SourceTag>>,
+                            IsConstructibleFrom
+                        ));
+                        expect(
+                            eq(std::constructible_from<
+                                   ConcretePtr<const volatile Pointee>,
+                                   source_t<const volatile Pointee, SourceTag>
+                               >,
+                               IsConstructibleFrom)
+                        );
 
-                    //Implicitly convertible unless removing qualifier
-                    expect(eq(std::convertible_to<source_t<Pointee, SourceTag>, ConcretePtr<Pointee>>, IsConvertibleFrom));
-                    expect(eq(std::convertible_to<source_t<const Pointee, SourceTag>, ConcretePtr<Pointee>>, false));
-                    expect(eq(std::convertible_to<source_t<volatile Pointee, SourceTag>, ConcretePtr<Pointee>>, false));
-                    expect(eq(std::convertible_to<source_t<const volatile Pointee, SourceTag>, ConcretePtr<Pointee>>, false));
-                    expect(
-                        eq(std::convertible_to<source_t<Pointee, SourceTag>, ConcretePtr<const Pointee>>, IsConvertibleFrom)
-                    );
-                    expect(
-                        eq(std::convertible_to<source_t<const Pointee, SourceTag>, ConcretePtr<const Pointee>>,
-                           IsConvertibleFrom)
-                    );
-                    expect(eq(std::convertible_to<source_t<volatile Pointee, SourceTag>, ConcretePtr<const Pointee>>, false));
-                    expect(
-                        eq(std::convertible_to<source_t<const volatile Pointee, SourceTag>, ConcretePtr<const Pointee>>, false)
-                    );
-                    expect(
-                        eq(std::convertible_to<source_t<Pointee, SourceTag>, ConcretePtr<volatile Pointee>>, IsConvertibleFrom)
-                    );
-                    expect(eq(std::convertible_to<source_t<const Pointee, SourceTag>, ConcretePtr<volatile Pointee>>, false));
-                    expect(
-                        eq(std::convertible_to<source_t<volatile Pointee, SourceTag>, ConcretePtr<volatile Pointee>>,
-                           IsConvertibleFrom)
-                    );
-                    expect(
-                        eq(std::convertible_to<source_t<const volatile Pointee, SourceTag>, ConcretePtr<volatile Pointee>>,
-                           false)
-                    );
-                    expect(
-                        eq(std::convertible_to<source_t<Pointee, SourceTag>, ConcretePtr<const volatile Pointee>>,
-                           IsConvertibleFrom)
-                    );
-                    expect(
-                        eq(std::convertible_to<source_t<const Pointee, SourceTag>, ConcretePtr<const volatile Pointee>>,
-                           IsConvertibleFrom)
-                    );
-                    expect(
-                        eq(std::convertible_to<source_t<volatile Pointee, SourceTag>, ConcretePtr<const volatile Pointee>>,
-                           IsConvertibleFrom)
-                    );
-                    expect(eq(
-                        std::convertible_to<source_t<const volatile Pointee, SourceTag>, ConcretePtr<const volatile Pointee>>,
-                        IsConvertibleFrom
-                    ));
+                        //Implicitly convertible unless removing qualifier
+                        expect(eq(std::convertible_to<source_t<Pointee, SourceTag>, ConcretePtr<Pointee>>, IsConvertibleFrom));
+                        expect(eq(std::convertible_to<source_t<const Pointee, SourceTag>, ConcretePtr<Pointee>>, false));
+                        expect(eq(std::convertible_to<source_t<volatile Pointee, SourceTag>, ConcretePtr<Pointee>>, false));
+                        expect(
+                            eq(std::convertible_to<source_t<const volatile Pointee, SourceTag>, ConcretePtr<Pointee>>, false)
+                        );
+                        expect(
+                            eq(std::convertible_to<source_t<Pointee, SourceTag>, ConcretePtr<const Pointee>>, IsConvertibleFrom)
+                        );
+                        expect(
+                            eq(std::convertible_to<source_t<const Pointee, SourceTag>, ConcretePtr<const Pointee>>,
+                               IsConvertibleFrom)
+                        );
+                        expect(
+                            eq(std::convertible_to<source_t<volatile Pointee, SourceTag>, ConcretePtr<const Pointee>>, false)
+                        );
+                        expect(
+                            eq(std::convertible_to<source_t<const volatile Pointee, SourceTag>, ConcretePtr<const Pointee>>,
+                               false)
+                        );
+                        expect(
+                            eq(std::convertible_to<source_t<Pointee, SourceTag>, ConcretePtr<volatile Pointee>>,
+                               IsConvertibleFrom)
+                        );
+                        expect(
+                            eq(std::convertible_to<source_t<const Pointee, SourceTag>, ConcretePtr<volatile Pointee>>, false)
+                        );
+                        expect(
+                            eq(std::convertible_to<source_t<volatile Pointee, SourceTag>, ConcretePtr<volatile Pointee>>,
+                               IsConvertibleFrom)
+                        );
+                        expect(
+                            eq(std::convertible_to<source_t<const volatile Pointee, SourceTag>, ConcretePtr<volatile Pointee>>,
+                               false)
+                        );
+                        expect(
+                            eq(std::convertible_to<source_t<Pointee, SourceTag>, ConcretePtr<const volatile Pointee>>,
+                               IsConvertibleFrom)
+                        );
+                        expect(
+                            eq(std::convertible_to<source_t<const Pointee, SourceTag>, ConcretePtr<const volatile Pointee>>,
+                               IsConvertibleFrom)
+                        );
+                        expect(
+                            eq(std::convertible_to<source_t<volatile Pointee, SourceTag>, ConcretePtr<const volatile Pointee>>,
+                               IsConvertibleFrom)
+                        );
+                        expect(
+                            eq(std::convertible_to<
+                                   source_t<const volatile Pointee, SourceTag>,
+                                   ConcretePtr<const volatile Pointee>
+                               >,
+                               IsConvertibleFrom)
+                        );
 
-                    //Assignable unless removing qualifier or rebinding from reference
-                    expect(eq(std::is_assignable_v<ConcretePtr<Pointee>&, source_t<Pointee, SourceTag>>, IsAssignableFrom));
-                    expect(eq(std::is_assignable_v<ConcretePtr<Pointee>&, source_t<const Pointee, SourceTag>>, false));
-                    expect(eq(std::is_assignable_v<ConcretePtr<Pointee>&, source_t<volatile Pointee, SourceTag>>, false));
-                    expect(eq(std::is_assignable_v<ConcretePtr<Pointee>&, source_t<const volatile Pointee, SourceTag>>, false));
-                    expect(
-                        eq(std::is_assignable_v<ConcretePtr<const Pointee>&, source_t<Pointee, SourceTag>>, IsAssignableFrom)
-                    );
-                    expect(
-                        eq(std::is_assignable_v<ConcretePtr<const Pointee>&, source_t<const Pointee, SourceTag>>,
-                           IsAssignableFrom)
-                    );
-                    expect(eq(std::is_assignable_v<ConcretePtr<const Pointee>&, source_t<volatile Pointee, SourceTag>>, false));
-                    expect(
-                        eq(std::is_assignable_v<ConcretePtr<const Pointee>&, source_t<const volatile Pointee, SourceTag>>,
-                           false)
-                    );
-                    expect(
-                        eq(std::is_assignable_v<ConcretePtr<volatile Pointee>&, source_t<Pointee, SourceTag>>, IsAssignableFrom)
-                    );
-                    expect(eq(std::is_assignable_v<ConcretePtr<volatile Pointee>&, source_t<const Pointee, SourceTag>>, false));
-                    expect(
-                        eq(std::is_assignable_v<ConcretePtr<volatile Pointee>&, source_t<volatile Pointee, SourceTag>>,
-                           IsAssignableFrom)
-                    );
-                    expect(
-                        eq(std::is_assignable_v<ConcretePtr<volatile Pointee>&, source_t<const volatile Pointee, SourceTag>>,
-                           false)
-                    );
-                    expect(
-                        eq(std::is_assignable_v<ConcretePtr<const volatile Pointee>&, source_t<Pointee, SourceTag>>,
-                           IsAssignableFrom)
-                    );
-                    expect(
-                        eq(std::is_assignable_v<ConcretePtr<const volatile Pointee>&, source_t<const Pointee, SourceTag>>,
-                           IsAssignableFrom)
-                    );
-                    expect(
-                        eq(std::is_assignable_v<ConcretePtr<const volatile Pointee>&, source_t<volatile Pointee, SourceTag>>,
-                           IsAssignableFrom)
-                    );
-                    expect(eq(
-                        std::is_assignable_v<ConcretePtr<const volatile Pointee>&, source_t<const volatile Pointee, SourceTag>>,
-                        IsAssignableFrom
-                    ));
-                };
+                        //Assignable unless removing qualifier or rebinding from reference
+                        expect(eq(std::is_assignable_v<ConcretePtr<Pointee>&, source_t<Pointee, SourceTag>>, IsAssignableFrom));
+                        expect(eq(std::is_assignable_v<ConcretePtr<Pointee>&, source_t<const Pointee, SourceTag>>, false));
+                        expect(eq(std::is_assignable_v<ConcretePtr<Pointee>&, source_t<volatile Pointee, SourceTag>>, false));
+                        expect(
+                            eq(std::is_assignable_v<ConcretePtr<Pointee>&, source_t<const volatile Pointee, SourceTag>>, false)
+                        );
+                        expect(
+                            eq(std::is_assignable_v<ConcretePtr<const Pointee>&, source_t<Pointee, SourceTag>>,
+                               IsAssignableFrom)
+                        );
+                        expect(
+                            eq(std::is_assignable_v<ConcretePtr<const Pointee>&, source_t<const Pointee, SourceTag>>,
+                               IsAssignableFrom)
+                        );
+                        expect(
+                            eq(std::is_assignable_v<ConcretePtr<const Pointee>&, source_t<volatile Pointee, SourceTag>>, false)
+                        );
+                        expect(
+                            eq(std::is_assignable_v<ConcretePtr<const Pointee>&, source_t<const volatile Pointee, SourceTag>>,
+                               false)
+                        );
+                        expect(
+                            eq(std::is_assignable_v<ConcretePtr<volatile Pointee>&, source_t<Pointee, SourceTag>>,
+                               IsAssignableFrom)
+                        );
+                        expect(
+                            eq(std::is_assignable_v<ConcretePtr<volatile Pointee>&, source_t<const Pointee, SourceTag>>, false)
+                        );
+                        expect(
+                            eq(std::is_assignable_v<ConcretePtr<volatile Pointee>&, source_t<volatile Pointee, SourceTag>>,
+                               IsAssignableFrom)
+                        );
+                        expect(eq(
+                            std::is_assignable_v<ConcretePtr<volatile Pointee>&, source_t<const volatile Pointee, SourceTag>>,
+                            false
+                        ));
+                        expect(
+                            eq(std::is_assignable_v<ConcretePtr<const volatile Pointee>&, source_t<Pointee, SourceTag>>,
+                               IsAssignableFrom)
+                        );
+                        expect(
+                            eq(std::is_assignable_v<ConcretePtr<const volatile Pointee>&, source_t<const Pointee, SourceTag>>,
+                               IsAssignableFrom)
+                        );
+                        expect(eq(
+                            std::is_assignable_v<ConcretePtr<const volatile Pointee>&, source_t<volatile Pointee, SourceTag>>,
+                            IsAssignableFrom
+                        ));
+                        expect(
+                            eq(std::is_assignable_v<
+                                   ConcretePtr<const volatile Pointee>&,
+                                   source_t<const volatile Pointee, SourceTag>
+                               >,
+                               IsAssignableFrom)
+                        );
+                    };
 
                 //Reference binding is explicit when allowed
                 verify_binding_operations.template

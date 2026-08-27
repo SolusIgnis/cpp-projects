@@ -316,10 +316,11 @@ namespace net::telnet {
     auto stream<NLS, PC>::async_write_negotiation(fsm_type::negotiation_response response, CompletionToken&& token)
     {
         auto [dir, enable, opt] = response;
-        static std::array<byte_t, 3>
-            buf{std::to_underlying(telnet::command::iac),
-                std::to_underlying(fsm_type::make_negotiation_command(dir, enable)),
-                std::to_underlying(opt),};
+        static std::array<byte_t, 3> buf{
+            std::to_underlying(telnet::command::iac),
+            std::to_underlying(fsm_type::make_negotiation_command(dir, enable)),
+            std::to_underlying(opt),
+        };
         return asio::async_write(
             this->next_layer_,
             asio::buffer(buf),

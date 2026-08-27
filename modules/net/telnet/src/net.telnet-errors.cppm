@@ -48,7 +48,7 @@ export namespace net::telnet {
         ignored_go_ahead,        ///< Go-Ahead command ignored due to `SUPPRESS_GO_AHEAD` (@see `:protocol_fsm`)
         user_handler_forbidden,  ///< Attempt to register handler for reserved option (@see `:protocol_fsm`)
         user_handler_not_found,  ///< No handler registered for requested option (@see `:protocol_fsm`)
-        negotiation_queue_error,  ///< The negotiation queue bit was set in a forbidden `NegotiationState` (@see `:internal`)
+        negotiation_queue_error, ///< The negotiation queue bit was set in a forbidden `NegotiationState` (@see `:internal`)
     }; //enum class error
 
     /**
@@ -66,7 +66,7 @@ export namespace net::telnet {
         abort_output,      ///< Encountered Abort Output (`IAC AO`) in byte stream (@see RFC 854, `:protocol_fsm`)
         interrupt_process, ///< Encountered Interrupt Process (`IAC IP`) in byte stream (@see RFC 854, `:protocol_fsm`)
         telnet_break,      ///< Encountered Break (`IAC BRK`) in byte stream (@see RFC 854, `:protocol_fsm`)
-        data_mark,          ///< Encountered Data Mark (`IAC DM`) in byte stream (@see RFC 854, `:protocol_fsm`)
+        data_mark,         ///< Encountered Data Mark (`IAC DM`) in byte stream (@see RFC 854, `:protocol_fsm`)
     }; //enum class processing_signal
 
     /**

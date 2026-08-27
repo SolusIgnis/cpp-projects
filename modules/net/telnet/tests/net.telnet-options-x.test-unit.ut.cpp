@@ -100,10 +100,11 @@ suite telnet_options_tests = [] mutable {
     };
 
     "option_registry initializer_list construction"_test = [] mutable {
-        option_registry
-            reg{option::make_option(option::id_num::echo, "Echo", true, true),
-                option::make_option(option::id_num::suppress_go_ahead, "SGA", true, false),
-                option::make_option(option::id_num::linemode, "Linemode", false, true, true),};
+        option_registry reg{
+            option::make_option(option::id_num::echo, "Echo", true, true),
+            option::make_option(option::id_num::suppress_go_ahead, "SGA", true, false),
+            option::make_option(option::id_num::linemode, "Linemode", false, true, true),
+        };
 
         expect(eq(reg.has(option::id_num::echo), true));
         expect(eq(reg.has(option::id_num::terminal_type), false));

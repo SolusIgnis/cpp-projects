@@ -120,7 +120,7 @@ export namespace tools::test::coroutine_harness::dummies {
         {
             if (typename test_promise<U>::probe_ptr probe{caller.promise().probe}; probe) {
                 probe->suspended = true;
-}
+            }
             return caller; // symmetric transfer → resume caller right away
         }
 

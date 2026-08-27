@@ -41,7 +41,7 @@ export namespace tools::test::coroutine_harness {
         enum class path : std::uint8_t {
             none,   ///< Not awaited
             lvalue, ///< Awaited as an lvalue
-            rvalue,  ///< Awaited as an rvalue
+            rvalue, ///< Awaited as an rvalue
         };
 
         bool done{false};            ///< Final suspend reached

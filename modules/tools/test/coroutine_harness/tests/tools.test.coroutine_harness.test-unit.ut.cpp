@@ -481,13 +481,11 @@ suite coroutine_harness_tests = [] mutable {
 
         auto make_taskE = [&] -> test_task<int> {
             int quotient = 0; //42 / 7 == 6
-            co_await 
-                [&] -> test_task<void> {
-                    quotient = (co_await taskA) / (co_await taskB);
-                    co_return;
-                }()
-                             .set_probe(&probeD)
-            ;
+            co_await [&] -> test_task<void> {
+                quotient = (co_await taskA) / (co_await taskB);
+                co_return;
+            }()
+                                .set_probe(&probeD);
 
             const auto difference = quotient - co_await make_taskC().set_probe(&probeC); //6 - 1 == 5
             co_return difference;                                                        //5

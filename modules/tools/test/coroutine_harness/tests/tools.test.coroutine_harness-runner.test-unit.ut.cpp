@@ -42,7 +42,7 @@ suite as_task_adapter_tests = [] mutable {
             {
                 if (test_promise<int>::probe_ptr probe{caller.promise().probe}; probe) {
                     probe->suspended = true;
-}
+                }
                 return caller; // symmetric transfer → resume caller right away
             }
             [[nodiscard]] constexpr int await_resume() const { return value; }

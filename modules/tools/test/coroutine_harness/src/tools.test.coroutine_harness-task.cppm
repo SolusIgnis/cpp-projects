@@ -130,7 +130,7 @@ export namespace tools::test::coroutine_harness {
         {
             if (handle_ && handle_.promise().probe) {
                 handle_.promise().probe->moved = true;
-}
+            }
         }
 
         test_task& operator=(test_task&& other) noexcept(std::is_nothrow_swappable_v<test_task>)
@@ -140,7 +140,7 @@ export namespace tools::test::coroutine_harness {
 
                 if (handle_ && handle_.promise().probe) {
                     handle_.promise().probe->moved = true;
-}
+                }
             }
             return *this;
         }
@@ -183,7 +183,7 @@ export namespace tools::test::coroutine_harness {
         {
             if (handle_) {
                 handle_.promise().probe = new_probe;
-}
+            }
         }
 
         void prepare_co_await(coroutine_probe::path await_path)

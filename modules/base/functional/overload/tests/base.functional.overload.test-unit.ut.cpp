@@ -115,7 +115,9 @@ suite overload_tests = [] mutable {
         using var_t = std::variant<int, std::string, double>;
 
         auto visitor = overload{
-            [](int) { return "int"s; }, [](const std::string&) { return "string"s; }, [](double) { return "double"s; },
+            [](int) { return "int"s; },
+            [](const std::string&) { return "string"s; },
+            [](double) { return "double"s; },
         };
 
         expect(eq(std::visit(visitor, var_t{42}), /*rhs=*/"int"s));
@@ -138,14 +140,14 @@ suite overload_tests = [] mutable {
             };
 
             auto f2 = overload{
-                [](int) mutable { return "f2 int"s; },           //mutable => non-const operator()
+                [](int) mutable { return "f2 int"s; },            //mutable => non-const operator()
                 [](std::string) mutable { return "f2 string"s; }, //mutable => non-const operator()
             };
 
             auto overloaded = overload{
                 f1{},
                 f2,
-                [](double) mutable { return "lambda double"s; },  //mutable => non-const operator()
+                [](double) mutable { return "lambda double"s; },   //mutable => non-const operator()
                 [](const char*) { return "lambda const char*"s; }, //const operator()
             };
 
@@ -195,17 +197,19 @@ suite overload_tests = [] mutable {
             // fail fast for ill-formed test.
             if (n < 1) {
                 throw std::logic_error("factorial test runner requires n >= 1");
-}
+            }
 
             int steps = 0;
 
-            auto factorial = overload{[&steps](this auto& self, int n) -> int {
-                ++steps;
-                if (n <= 1) {
-                    return 1;
-}
-                return n * self(n - 1);
-            },};
+            auto factorial = overload{
+                [&steps](this auto& self, int n) -> int {
+                    ++steps;
+                    if (n <= 1) {
+                        return 1;
+                    }
+                    return n * self(n - 1);
+                },
+            };
 
             expect(eq(factorial(n), expected));
             expect(eq(steps, n));
@@ -240,7 +244,7 @@ suite overload_tests = [] mutable {
             []<typename T>(this auto& self, alias_ptr<T> ptr) -> int {
                 if (!ptr) {
                     throw std::logic_error("test tree node holds null pointer");
-}
+                }
                 return self(*ptr);
             },
             // Branch: Sum the values of both children recursively.
