@@ -390,6 +390,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self, typename OtherPointee>
             requires (!std::is_const_v<Self>) && (!std::same_as<OtherPointee, element_type>)
                   && std::convertible_to<std::add_pointer_t<OtherPointee>, address_type>
+        //NOLINTNEXTLINE(misc-unconventional-assign-operator, cppcoreguidelines-c-copy-assignment-signature): This assignment operator intentionally has the deduced derived type of its explicit object parameter rather than `ptr_core` as its return type.
         constexpr Self& operator=(this Self& self, const ConcretePtr<OtherPointee>& source) noexcept
         {
             self.address_ = source.get();
@@ -432,6 +433,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self, VocabPtrSourceFor<ConcretePtr, address_type> Source>
             requires (!std::is_const_v<Self>)
                   && AlwaysEngagedVocabPtr<std::remove_cvref_t<Source>>
+                     //NOLINTNEXTLINE(misc-unconventional-assign-operator, cppcoreguidelines-c-copy-assignment-signature): This assignment operator intentionally has the deduced derived type of its explicit object parameter rather than `ptr_core` as its return type.
                      constexpr Self& operator=(this Self& self, Source&& source) noexcept
                          requires ptr_policies::allowed_pointer_binding_v<policy_set>
         {
@@ -453,6 +455,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self, VocabPtrSourceFor<ConcretePtr, address_type> Source>
             requires (!std::is_const_v<Self>)
                   && NullableVocabPtr<std::remove_cvref_t<Source>>
+                     //NOLINTNEXTLINE(misc-unconventional-assign-operator, cppcoreguidelines-c-copy-assignment-signature): This assignment operator intentionally has the deduced derived type of its explicit object parameter rather than `ptr_core` as its return type.
                      constexpr Self& operator=(this Self& self, Source&& source) noexcept(
                          noexcept(apply_nullability_policy(std::forward<Source>(source)))
                      )
@@ -477,6 +480,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
             requires (!std::is_const_v<Self>)
                   && (std::is_lvalue_reference_v<Source> || std::is_pointer_v<std::remove_cvref_t<Source>>)
+                     //NOLINTNEXTLINE(misc-unconventional-assign-operator, cppcoreguidelines-c-copy-assignment-signature): This assignment operator intentionally has the deduced derived type of its explicit object parameter rather than `ptr_core` as its return type.
                      constexpr Self& operator=(this Self& self, Source&& source) noexcept(
                          noexcept(apply_nullability_policy(std::to_address(std::forward<Source>(source))))
                      )
@@ -503,6 +507,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Assignment from `nullptr` rebinds to null.
         template<typename Self>
             requires (!std::is_const_v<Self>)
+        //NOLINTNEXTLINE(misc-unconventional-assign-operator, cppcoreguidelines-c-copy-assignment-signature): This assignment operator intentionally has the deduced derived type of its explicit object parameter rather than `ptr_core` as its return type.
         Self& operator=(this Self& self, std::nullptr_t null) noexcept
             requires ptr_policies::nullable_nullability_v<policy_set>
         {
@@ -726,10 +731,10 @@ export namespace base::vocab::inline ptr {
                     dynamic_cast<ConcretePtr<destination>::address_type>(source.get())
                 );
             } else {
-                if (auto* p = dynamic_cast<ConcretePtr<destination>::address_type>(source.get()); !p) {
+                if (auto* address_ptr = dynamic_cast<ConcretePtr<destination>::address_type>(source.get()); !address_ptr) {
                     throw std::bad_cast{};
                 } else {
-                    return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, p);
+                    return ConcretePtr<destination>(typename ConcretePtr<destination>::validated_address_tag{}, address_ptr);
                 }
             }
         }
@@ -742,6 +747,7 @@ export namespace base::vocab::inline ptr {
             using destination = base::meta::traits::copy_cv_t<element_type, Target>;
             return ConcretePtr<destination>(
                 typename ConcretePtr<destination>::validated_address_tag{},
+                //NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): This operation provides a `reinterpret_cast` facility for vocabulary pointers, so it necessarily implements it in terms of one.
                 reinterpret_cast<ConcretePtr<destination>::address_type>(source.get())
             );
         }
@@ -1094,6 +1100,7 @@ export namespace base::vocab::inline ptr {
             // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
             // 2. `const_cast` to `const void*` to satisfy the inserter's interface which lacks `volatile void*` overloads.
             // This is safe because formatting is a read-only numerical operation on the address.
+            //NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
             return stream << const_cast<const void*>(static_cast<const volatile void*>(ptr.get()));
         }
 
@@ -1941,6 +1948,7 @@ struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
         // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
         // 2. `const_cast` to `const void*` to satisfy the formatter's interface which lacks `volatile void*` specializations.
         // This is safe because formatting is a read-only numerical operation on the address.
+        //NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         return std::formatter<const void*, CharT>::format(
             const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx
         );
