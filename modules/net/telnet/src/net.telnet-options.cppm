@@ -62,7 +62,7 @@ export namespace net::telnet {
         using enable_predicate_type = std::function<bool(id_num /*id*/)>;
 
         ///@brief Constructs an `option` with the given ID and optional parameters.
-        //NOLINTNEXTLINE(google-explicit-constructor)
+        //NOLINTNEXTLINE(misc-explicit-constructor)
         option(
             id_num id,
             std::string name                  = "",
@@ -101,6 +101,7 @@ export namespace net::telnet {
         [[nodiscard]] constexpr auto operator<=>(option::id_num other_id) const noexcept { return id_ <=> other_id; }
 
         ///@brief Implicitly converts to `option::id_num`.
+        //NOLINTNEXTLINE(misc-explicit-constructor)
         [[nodiscard]] operator id_num() const noexcept { return id_; } //NOLINT(google-explicit-constructor)
 
         ///@brief Gets the Telnet `option::id_num`.
@@ -384,7 +385,7 @@ export namespace net::telnet {
         [[nodiscard]] bool has(option::id_num opt_id) const noexcept
         {
             const std::shared_lock<std::shared_mutex> lock(mutex_);
-            return (registry_.contains(opt_id));
+            return registry_.contains(opt_id);
         } //has(option::id_num)
 
         ///@brief Inserts or updates an `option` in the registry.
