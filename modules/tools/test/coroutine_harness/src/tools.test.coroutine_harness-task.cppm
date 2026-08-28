@@ -118,7 +118,7 @@ export namespace tools::test::coroutine_harness {
     public:
         test_task() = default;
 
-        test_task(std::coroutine_handle<promise_type> h) : handle_(h) {}
+        test_task(std::coroutine_handle<promise_type> handle) : handle_(handle) {}
 
         ~test_task() = default;
 
@@ -245,9 +245,9 @@ export namespace tools::test::coroutine_harness {
     /// @brief Promise for non-void coroutine results.
     template<typename T>
     struct test_promise : test_promise_base<T> {
-        void return_value(T v) noexcept
+        void return_value(T new_value) noexcept
         try {
-            this->value.emplace(std::move(v));
+            this->value.emplace(std::move(new_value));
         } catch (...) {
             this->unhandled_exception();
         }

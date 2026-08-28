@@ -88,7 +88,7 @@ export namespace tools::test::coroutine_harness {
          *
          * @throws std::logic_error if coroutine is incomplete and no probe is attached.
          */
-        ~coroutine_handle_manager() noexcept(false)
+        ~coroutine_handle_manager() noexcept(false) //NOLINT(bugprone-unsafe-to-allow-exceptions): This test support fixture uses a destructor exception to catch an otherwise undetectable class of test failures.
         {
             if (handle_) {
                 bool done{handle_.done()};
