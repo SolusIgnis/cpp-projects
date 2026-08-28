@@ -691,6 +691,7 @@ export namespace net::telnet {
 
     /**
      * @brief Collection of `option_status_record` objects for tracking Telnet option statuses.
+     * @note The `operator[]` implementation is well-defined for all inputs as the bounds of the underlying array are defined to hold all values of the underlying type of its parameter.
      * @remark Provides array-based access to option statuses by `option::id_num`.
      * @remark Used by `:protocol_fsm` to manage the state of Telnet options.
      * @remark Instantiated per-`ProtocolFSM` and used in a single thread/strand.
