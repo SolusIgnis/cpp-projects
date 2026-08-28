@@ -220,7 +220,7 @@ CheckOptions:
   cppcoreguidelines-macro-usage.CheckCapsOnly:           'false'
   cppcoreguidelines-macro-usage.IgnoreCommandLineMacros: 'true'
 
-  cppcoreguidelines-bounds-avoid-unchecked-container-access.ExcludeClasses: '::std::map;::std::unordered_map;::std::flat_map,::net::telnet::option_status_db'
+  cppcoreguidelines-bounds-avoid-unchecked-container-access.ExcludeClasses: '::std::map;::std::unordered_map;::std::flat_map;::net::telnet::option_status_db'
   cppcoreguidelines-bounds-avoid-unchecked-container-access.FixMode:        'none'
 
   cppcoreguidelines-pro-type-const-cast.StrictMode: 'false'
