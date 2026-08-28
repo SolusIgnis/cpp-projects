@@ -1950,7 +1950,8 @@ struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
         // This is safe because formatting is a read-only numerical operation on the address.
         return std::formatter<const void*, CharT>::format(
             //NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast): See above.
-            const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx
+            const_cast<const void*>(static_cast<const volatile void*>(ptr.get())),
+            ctx
         );
     }
 }; //struct std::formatter
