@@ -701,14 +701,14 @@ export namespace net::telnet {
         ///@brief Accesses or creates an `option_status_record` for a Telnet option.
         option_status_record& operator[](option::id_num opt)
         {
-            //NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index): Safe by construction as the array bounds are defined to hold all values of the underlying type.
+            //NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access): Safe by construction as the array bounds are defined to hold all values of the underlying type.
             return status_records_[std::to_underlying(opt)];
         } //operator[](option::id_num)
 
         ///@brief Retrieves an `option_status_record` for a Telnet option.
         const option_status_record& operator[](option::id_num opt) const
         {
-            //NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index): Safe by construction as the array bounds are defined to hold all values of the underlying type.
+            //NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access): Safe by construction as the array bounds are defined to hold all values of the underlying type.
             return status_records_[std::to_underlying(opt)];
         } //operator[](option::id_num) const
 
