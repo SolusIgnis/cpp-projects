@@ -119,7 +119,7 @@ Checks:
   - '-readability-identifier-naming'
   - '-readability-convert-member-functions-to-static'
   - '-performance-unnecessary-value-param'
-  - '-cppcoreguidelines-missing-std-forward'
+  # '-cppcoreguidelines-missing-std-forward'
   - '-misc-const-correctness'
 
 WarningsAsErrors: ''
