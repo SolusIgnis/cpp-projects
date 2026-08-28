@@ -1100,7 +1100,7 @@ export namespace base::vocab::inline ptr {
             // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
             // 2. `const_cast` to `const void*` to satisfy the inserter's interface which lacks `volatile void*` overloads.
             // This is safe because formatting is a read-only numerical operation on the address.
-            //NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+            //NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast): See above.
             return stream << const_cast<const void*>(static_cast<const volatile void*>(ptr.get()));
         }
 
@@ -1948,8 +1948,8 @@ struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
         // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
         // 2. `const_cast` to `const void*` to satisfy the formatter's interface which lacks `volatile void*` specializations.
         // This is safe because formatting is a read-only numerical operation on the address.
-        //NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
         return std::formatter<const void*, CharT>::format(
+            //NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast): See above.
             const_cast<const void*>(static_cast<const volatile void*>(ptr.get())), ctx
         );
     }
