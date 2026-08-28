@@ -745,11 +745,11 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] friend auto reinterpret_pointer_cast(concrete_ptr_instance source) noexcept
         {
             using destination = base::meta::traits::copy_cv_t<element_type, Target>;
-            return ConcretePtr<destination>(
-                typename ConcretePtr<destination>::validated_address_tag{},
-                //NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): This operation provides a `reinterpret_cast` facility for vocabulary pointers, so it necessarily implements it in terms of one.
-                reinterpret_cast<ConcretePtr<destination>::address_type>(source.get())
-            );
+            return ConcretePtr<
+                destination
+            >(typename ConcretePtr<destination>::validated_address_tag{},
+              //NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): This operation provides a `reinterpret_cast` facility for vocabulary pointers, so it necessarily implements it in terms of one.
+              reinterpret_cast<ConcretePtr<destination>::address_type>(source.get()));
         }
 
         //===== Nullability (Nullable) =====
