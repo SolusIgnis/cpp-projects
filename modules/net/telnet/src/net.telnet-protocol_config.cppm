@@ -113,7 +113,7 @@ export namespace net::telnet {
 
     private:
         ///@brief Initializes the option registry with default options.
-        static option_registry initialize_option_registry()
+        static option_registry initialize_option_registry() noexcept
         {
             return {
                 option{option::id_num::binary, "Binary Transmission", option::always_accept, option::always_accept},
@@ -146,7 +146,9 @@ export namespace net::telnet {
 
         static inline unknown_option_handler_type unknown_option_handler;
         static inline error_logger_type error_logger;
+        //NOLINTNEXTLINE(bugprone-throwing-static-initialization): Initialization failure is intrinsically unrecoverable.
         static inline std::string ayt_response = "Telnet system is active."; ///Default AYT response
+        //NOLINTNEXTLINE(bugprone-throwing-static-initialization): Initialization failure is intrinsically unrecoverable.
         static inline std::shared_mutex mutex;                               ///Mutex to protect shared static members
         static inline std::once_flag initialization_flag; ///Ensures initialize() is idempotent; only invokes init() once
     }; //class default_protocol_fsm_config
@@ -210,6 +212,7 @@ export namespace net::telnet {
      *
      * @remark Initializes options for `BINARY`, `SUPPRESS_GO_AHEAD`, and `STATUS` to support default implementations.
      * @note `STATUS` is supported locally but not remotely by default as the core implementation can send a status report but will not request one and cannot understand receipt of one.
+     * @note Declared `noexcept` because failure to construct the initial option registry is intrinsically unrecoverable and thus should unconditionally and immediately terminate.
      */
     /**
      * @fn void default_protocol_fsm_config::init()
