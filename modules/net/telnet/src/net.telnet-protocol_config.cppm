@@ -149,7 +149,7 @@ export namespace net::telnet {
         //NOLINTNEXTLINE(bugprone-throwing-static-initialization): Initialization failure is intrinsically unrecoverable.
         static inline std::string ayt_response = "Telnet system is active."; ///Default AYT response
         //NOLINTNEXTLINE(bugprone-throwing-static-initialization): Initialization failure is intrinsically unrecoverable.
-        static inline std::shared_mutex mutex;                               ///Mutex to protect shared static members
+        static inline std::shared_mutex mutex;            ///Mutex to protect shared static members
         static inline std::once_flag initialization_flag; ///Ensures initialize() is idempotent; only invokes init() once
     }; //class default_protocol_fsm_config
 
