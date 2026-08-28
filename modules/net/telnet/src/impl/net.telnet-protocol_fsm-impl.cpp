@@ -769,7 +769,7 @@ namespace net::telnet {
                 error::invalid_subnegotiation, "Invalid STATUS subnegotiation: no data between IAC SB STATUS and IAC SE"
             );
             co_return std::make_tuple(opt, std::vector<byte_t>{});
-        } else if (buffer[0] == subcommand_is) {
+        } else if (buffer.front() == subcommand_is) {
             if (option_status_[option::id_num::status].remote_enabled()) {
                 //Delegate processing of subcommand IS to user-provided handler.
                 co_return co_await option_handler_registry_.handle_subnegotiation(opt, std::move(buffer));
@@ -779,7 +779,7 @@ namespace net::telnet {
                 );
                 co_return std::make_tuple(opt, std::vector<byte_t>{});
             }
-        } else if (buffer[0] == subcommand_send) {
+        } else if (buffer.front() == subcommand_send) {
             if (option_status_[option::id_num::status].local_enabled()) {
                 std::vector<byte_t> payload = {subcommand_is}; //IS
                 for (std::size_t i = 0; i < option_status_db::max_option_count; ++i) {
@@ -815,7 +815,7 @@ namespace net::telnet {
             protocol_config_type::log_error(
                 error::invalid_subnegotiation,
                 "Invalid STATUS subnegotiation: expected IS (0) or SEND (1); received {}",
-                buffer[0]
+                buffer.front()
             );
             co_return std::make_tuple(opt, std::vector<byte_t>{});
         }
