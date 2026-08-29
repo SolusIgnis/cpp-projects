@@ -70,7 +70,6 @@ Checks:
   - 'boost-use-to-string'
 
   - 'google-build-explicit-make-pair'
-  - 'google-build-using-namespace'
   - 'google-default-arguments'
   - 'google-runtime-float'
   - 'google-runtime-int'
