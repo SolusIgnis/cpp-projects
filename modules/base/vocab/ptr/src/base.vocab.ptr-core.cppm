@@ -850,6 +850,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Postfix increment: increments the stored address but returns a pointer to the prior stored address.
         template<typename Self>
+        //NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward): Explicit object parameter `self` is incremented directly; forwarding is neither required nor intended.
         constexpr auto operator++(this Self&& self, int) noexcept
             requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
@@ -860,6 +861,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Postfix decrement: decrements the stored address but returns a pointer to the prior stored address.
         template<typename Self>
+        //NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward): Explicit object parameter `self` is decremented directly; forwarding is neither required nor intended.
         constexpr auto operator--(this Self&& self, int) noexcept
             requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
