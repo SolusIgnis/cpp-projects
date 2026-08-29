@@ -11,6 +11,8 @@ using net::telnet::error;
 using net::telnet::processing_signal;
 using net::telnet::make_error_code;
 
+namespace {
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite net_telnet_errors_integration = [] mutable {
     // ============================================================
     // make_error_code correctness
@@ -76,5 +78,6 @@ suite net_telnet_errors_integration = [] mutable {
         expect(neq(e1, e2));
     };
 };
+} //namespace
 
 int main() {}

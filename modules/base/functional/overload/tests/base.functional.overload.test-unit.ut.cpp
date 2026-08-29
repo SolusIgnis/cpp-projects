@@ -20,6 +20,8 @@ using namespace std::literals;
 using base::functional::overload;
 using base::vocab::alias_ptr;
 
+namespace {
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite overload_tests = [] mutable {
     "overload{...} produces an invocable object"_test = [] mutable {
         constexpr int expected = 42;
@@ -290,5 +292,6 @@ suite overload_tests = [] mutable {
         expect(eq(tree_count(tree), i));
     };
 };
+} //namespace
 
 int main() {}

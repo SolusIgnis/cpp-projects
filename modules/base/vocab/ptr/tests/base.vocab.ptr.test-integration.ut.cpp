@@ -82,6 +82,7 @@ namespace {
         [[nodiscard]] constexpr const_pointer cdata() const noexcept { return data(); }
     };
 
+    //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
     suite vocabulary_pointer_integration_tests = [] mutable {
         "vocabulary pointers interoperate to model object relationships"_test = [] mutable {
             struct dummy_type {

@@ -10,6 +10,8 @@ using namespace ut;
 using namespace net::telnet;
 using namespace std::literals;
 
+namespace {
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite telnet_options_tests = [] mutable {
     using net::telnet::byte_t;
 
@@ -176,5 +178,6 @@ suite telnet_options_tests = [] mutable {
         expect(eq(std::format("{:x}", opt), /*rhs=*/"0xc9"s));
     };
 };
+} //namespace
 
 int main() {}

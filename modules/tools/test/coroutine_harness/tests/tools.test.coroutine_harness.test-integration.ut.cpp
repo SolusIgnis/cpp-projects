@@ -9,6 +9,8 @@ import std;
 using namespace ut;
 using namespace tools::test::coroutine_harness;
 
+namespace {
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite coroutine_harness_integration_tests = [] mutable {
     "mega coroutine harness: full integration"_test = [] mutable {
         constexpr int first   = 1;
@@ -168,5 +170,6 @@ suite coroutine_harness_integration_tests = [] mutable {
         expect(eq(probeNested.destroyed, false));
     };
 };
+} //namespace
 
 int main() {}

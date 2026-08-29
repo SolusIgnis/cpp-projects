@@ -9,11 +9,13 @@ import std;
 using namespace ut;
 using namespace tools::test::coroutine_harness;
 
+namespace {
 test_task<int> echo(int value)
 {
     co_return value;
 }
 
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite as_task_adapter_tests = [] mutable {
     // ============================================================
     // as_task adapter
@@ -146,5 +148,6 @@ suite as_task_adapter_tests = [] mutable {
         expect(eq(result, expected));
     };
 };
+} //namespace
 
 int main() {}

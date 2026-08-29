@@ -22,6 +22,7 @@ import std;
 using namespace ut;
 using namespace tools::test::coroutine_harness;
 
+namespace {
 test_task<int> echo(int value)
 {
     co_return value;
@@ -32,6 +33,7 @@ test_task<test_task<int>> make_echo(int value, base::vocab::alias_ptr<coroutine_
     co_return echo(value).set_probe(probe);
 }
 
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite coroutine_harness_tests = [] mutable {
     "probe initialization"_test = [] mutable {
         coroutine_probe probe;
@@ -578,5 +580,6 @@ suite coroutine_harness_tests = [] mutable {
         }
     };
 };
+} //namespace
 
 int main() {}

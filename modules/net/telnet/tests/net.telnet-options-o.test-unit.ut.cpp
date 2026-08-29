@@ -7,6 +7,8 @@ import std;
 
 using namespace ut;
 
+namespace {
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite net_telnet_option_unit_tests = [] mutable {
     using net::telnet::option;
     using net::telnet::negotiation_direction;
@@ -92,5 +94,6 @@ suite net_telnet_option_unit_tests = [] mutable {
         expect(eq((id == option::id_num::echo), true));
     };
 };
+} //namespace
 
 int main() {}

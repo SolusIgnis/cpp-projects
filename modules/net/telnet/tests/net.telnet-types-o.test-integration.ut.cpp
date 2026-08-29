@@ -7,6 +7,8 @@ import std;
 
 using namespace ut;
 
+namespace {
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite net_telnet_types_format_tests = [] mutable {
     using net::telnet::command;
     using net::telnet::negotiation_direction;
@@ -104,5 +106,6 @@ suite net_telnet_types_format_tests = [] mutable {
         expect(eq(msg, std::string{"[IAC (0xFF):remote]"}));
     };
 };
+} //namespace
 
 int main() {}

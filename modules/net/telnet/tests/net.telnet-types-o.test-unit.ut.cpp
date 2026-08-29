@@ -7,6 +7,8 @@ import std;
 
 using namespace ut;
 
+namespace {
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite net_telnet_types_unit = [] mutable {
     using net::telnet::byte_t;
     using net::telnet::command;
@@ -63,5 +65,6 @@ suite net_telnet_types_unit = [] mutable {
         expect(eq(sizeof(negotiation_direction), std::size_t{1}));
     };
 };
+} //namespace
 
 int main() {}

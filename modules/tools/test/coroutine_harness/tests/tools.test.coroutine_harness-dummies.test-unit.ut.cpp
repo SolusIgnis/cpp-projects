@@ -9,9 +9,11 @@ import std;
 using namespace ut;
 using namespace tools::test::coroutine_harness;
 
+namespace {
 template<typename AwaiterT, typename T>
 concept const_lvalue_resumable = requires(T& result, AwaiterT& awaiter) { result = std::as_const(awaiter).await_resume(); };
 
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite dummy_awaitable_tests = [] mutable {
     // ============================================================
     // trivial_awaiter_base
@@ -165,5 +167,6 @@ suite dummy_awaitable_tests = [] mutable {
         expect(eq(probe.suspended, false)); // uses ready_awaiter
     };
 };
+} //namespace
 
 int main() {}

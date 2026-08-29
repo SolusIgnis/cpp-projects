@@ -7,6 +7,8 @@ import std;
 
 using namespace ut;
 
+namespace {
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite net_telnet_option_registry_tests = [] mutable {
     using net::telnet::option;
     using net::telnet::option_registry;
@@ -56,6 +58,7 @@ suite net_telnet_option_registry_tests = [] mutable {
     };
 };
 
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite net_telnet_option_formatter_tests = [] mutable {
     using net::telnet::option;
 
@@ -91,5 +94,6 @@ suite net_telnet_option_formatter_tests = [] mutable {
         expect(eq(s, std::string{"unknown"}));
     };
 };
+} //namespace
 
 int main() {}

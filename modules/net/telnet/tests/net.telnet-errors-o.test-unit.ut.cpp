@@ -12,6 +12,8 @@ using net::telnet::processing_signal;
 using net::telnet::telnet_error_category;
 using net::telnet::telnet_processing_signal_category;
 
+namespace {
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite net_telnet_errors_unit = [] mutable {
     // ============================================================
     // Enum structural guarantees
@@ -179,5 +181,6 @@ suite net_telnet_errors_unit = [] mutable {
         expect(eq(cat.message(invalid_value), std::string{"Unknown Telnet processing signal"}));
     };
 };
+} //namespace
 
 int main() {}

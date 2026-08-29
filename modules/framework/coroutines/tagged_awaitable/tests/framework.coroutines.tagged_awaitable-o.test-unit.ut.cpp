@@ -12,6 +12,7 @@ using framework::coroutines::tagged_awaitable;
 using namespace tools::test::coroutine_harness;
 using namespace std::literals;
 
+namespace {
 struct test_tag;
 
 tagged_awaitable<test_tag, test_task<int>> echo(int value)
@@ -19,6 +20,7 @@ tagged_awaitable<test_tag, test_task<int>> echo(int value)
     co_return value;
 }
 
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite tagged_awaitable_unit_tests = [] mutable {
     // ============================================================
     // Basic construction
@@ -310,5 +312,6 @@ suite tagged_awaitable_unit_tests = [] mutable {
         expect(eq(result, expected));
     };
 };
+} //namespace
 
 int main() {}

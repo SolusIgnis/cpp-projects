@@ -157,6 +157,7 @@ namespace {
     template<typename T, typename Tag>
     using source_t = source_category<T, Tag>::type;
 
+    //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
     suite concrete_pointer_parameterized_tests = [] mutable {
         //============================================================
         // Template Constraint Validation

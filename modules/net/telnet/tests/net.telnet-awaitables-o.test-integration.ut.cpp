@@ -14,6 +14,7 @@ using namespace net::telnet::awaitables;
 using framework::coroutines::tagged_awaitable;
 using namespace tools::test::coroutine_harness;
 
+namespace {
 struct test_tag;
 using test_wrapper_int  = tagged_awaitable<test_tag, asio::awaitable<int>>;
 using test_wrapper_void = tagged_awaitable<test_tag, asio::awaitable<void>>;
@@ -28,6 +29,7 @@ test_wrapper_int tagged_echo(int value)
     co_return value;
 }
 
+//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
 suite net_telnet_awaitables_integration_tests = [] mutable {
     // ============================================================
     // Basic constructibility
@@ -251,5 +253,6 @@ suite net_telnet_awaitables_integration_tests = [] mutable {
         expect(eq(fut.get(), expected));
     };
 };
+} //namespace
 
 int main() {}
