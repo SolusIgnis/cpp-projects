@@ -373,7 +373,7 @@ export namespace net::telnet {
         std::optional<option> get(option::id_num opt_id) const noexcept
         {
             const std::shared_lock<std::shared_mutex> lock(mutex_);
-            
+
             if (const auto iter = registry_.find(opt_id); iter != registry_.end()) {
                 return *iter;
             } else {
