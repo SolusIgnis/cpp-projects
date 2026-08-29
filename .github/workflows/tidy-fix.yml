@@ -34,9 +34,13 @@ jobs:
       - name: Build
         run: cmake --build --preset=clang-debug
         
+      - name: Check Compilation Database
+        run: jq -r '.[].file' build/clang/clang-debug/compile_commands.json | grep -E '(^|/)tests?/'
+
       - name: clang-tidy fixes
         run: |
           cmake --build --preset=clang-debug --target=tidy-fix-fast
+          
           git add modules
           
           if git diff --cached --quiet; then
