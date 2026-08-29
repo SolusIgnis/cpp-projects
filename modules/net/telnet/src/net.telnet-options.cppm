@@ -373,8 +373,8 @@ export namespace net::telnet {
         std::optional<option> get(option::id_num opt_id) const noexcept
         {
             const std::shared_lock<std::shared_mutex> lock(mutex_);
-            auto iter = registry_.find(opt_id);
-            if (iter != registry_.end()) {
+            
+            if (const auto iter = registry_.find(opt_id); iter != registry_.end()) {
                 return *iter;
             } else {
                 return std::nullopt;
@@ -392,12 +392,12 @@ export namespace net::telnet {
         const option& upsert(const option& opt)
         {
             const std::lock_guard<std::shared_mutex> lock(mutex_);
-            auto [add_result, success] = registry_.insert(opt);
+            const auto [add_result, success] = registry_.insert(opt);
             if (success) {
                 return *add_result;
             } else {
                 //Use iterator from erase as hint to insert new option at same position, optimizing insertion to O(1)
-                auto replace_result = registry_.insert(registry_.erase(add_result), opt);
+                const auto replace_result = registry_.insert(registry_.erase(add_result), opt);
                 return *replace_result;
             }
         } //upsert(const option&)

@@ -783,7 +783,7 @@ namespace net::telnet {
             if (option_status_[option::id_num::status].local_enabled()) {
                 std::vector<byte_t> payload = {subcommand_is}; //IS
                 for (std::size_t i = 0; i < option_status_db::max_option_count; ++i) {
-                    auto opt_id = static_cast<option::id_num>(i);
+                    const auto opt_id = static_cast<option::id_num>(i);
 
                     const auto& status = option_status_[opt_id];
                     if (status.local_enabled()) {
