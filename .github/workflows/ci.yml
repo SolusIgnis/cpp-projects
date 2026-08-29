@@ -73,7 +73,24 @@ jobs:
         run: cmake --build --preset=clang-debug
         
       - name: Check Compilation Database
-        run: jq -r '.[].file' build/clang/clang-debug/compile_commands.json | grep -E '(^|/)tests?/'
+        run: |
+          python3 - <<'PY'
+          import json
+          import re
+
+          with open("build/clang/clang-debug/compile_commands.json") as f:
+              commands = json.load(f)
+
+          test_tus = [
+              entry["file"]
+              for entry in commands
+              if re.search(r"(^|/)tests/", entry["file"])
+          ]
+
+          print(f"Test TUs in compilation database: {len(test_tus)}")
+          for path in test_tus:
+              print(f"  {path}")
+          PY
 
       - name: clang-tidy checks
         run: cmake --build --preset=clang-debug --target=tidy-check-fast
