@@ -62,7 +62,7 @@ jobs:
       - name: Configure
         run: |
           cmake --preset=clang-debug \
-            -DBUILD_TESTING=OFF \
+            -DBUILD_TESTING=ON \
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_STDLIB_MODULES_JSON=/usr/lib/llvm-23/lib/libc++.modules.json
 
