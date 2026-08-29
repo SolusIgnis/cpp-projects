@@ -117,7 +117,7 @@ Checks:
 
   # Temporarily disabled while running -fix
   - '-readability-identifier-naming'
-  - '-readability-convert-member-functions-to-static'
+  #- '-readability-convert-member-functions-to-static'
   #- '-performance-unnecessary-value-param'
   #- '-cppcoreguidelines-missing-std-forward'
   #- '-misc-const-correctness'
