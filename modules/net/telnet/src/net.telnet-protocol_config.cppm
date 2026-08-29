@@ -113,6 +113,7 @@ export namespace net::telnet {
 
     private:
         ///@brief Initializes the option registry with default options.
+        //NOLINTNEXTLINE(bugprone-exception-escape): Failure to construct the initial option registry is intrinsically unrecoverable and thus should unconditionally and immediately terminate.
         static option_registry initialize_option_registry() noexcept
         {
             return {
