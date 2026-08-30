@@ -200,15 +200,13 @@ namespace {
                 expect(eq(wrong_exception, false));
             }
 
-            lookup = (data + 5); //NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-avoid-magic-numbers)
+            //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-avoid-magic-numbers): Test string character offsets are hardcoded for readability.
+            lookup = (data + 5);
 
             expect(eq(test_map[lookup], i_count));
-            expect(
-                eq(test_map[required_ptr{data[6]}], s_count)
-            ); //NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-avoid-magic-numbers)
-            expect(
-                eq(test_map[cursor_ptr{data} + 10], t_count)
-            ); //NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-avoid-magic-numbers)
+            expect(eq(test_map[required_ptr{data[6]}], s_count));
+            expect(eq(test_map[cursor_ptr{data} + 10], t_count));
+            //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-avoid-magic-numbers)
 
             expect(eq(test_set.contains(lookup), true));
             expect(eq(test_set.size(), sview.size()));
