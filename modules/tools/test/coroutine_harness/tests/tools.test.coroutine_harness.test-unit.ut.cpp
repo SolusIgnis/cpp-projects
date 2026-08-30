@@ -33,7 +33,7 @@ namespace {
         co_return echo(value).set_probe(probe);
     }
 
-    //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
+    //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables, readability-function-cognitive-complexity): Test framework.
     suite coroutine_harness_tests = [] mutable {
         "probe initialization"_test = [] mutable {
             const coroutine_probe probe;
