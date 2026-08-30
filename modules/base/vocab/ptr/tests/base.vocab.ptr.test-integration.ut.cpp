@@ -28,7 +28,7 @@ namespace {
                        mixin_2 {
         ~base_type() override = default; //NOLINT(cppcoreguidelines-special-member-functions): Trivial fixture.
 
-        static inline constexpr std::int32_t default_value{0}
+        static inline constexpr std::int32_t default_value{0};
         std::int32_t value{default_value};
 
         [[nodiscard]] std::int32_t bar() override { return value; }
@@ -168,9 +168,9 @@ namespace {
             constexpr auto data = "This is a test.";
             std::string_view sview{data};
             
-            const auto i_count = std::ranges::count(sview, 'i');
-            const auto s_count = std::ranges::count(sview, 's');
-            const auto t_count = std::ranges::count(sview, 't');
+            const std::int32_t i_count = std::ranges::count(sview, 'i');
+            const std::int32_t s_count = std::ranges::count(sview, 's');
+            const std::int32_t t_count = std::ranges::count(sview, 't');
 
             for (cursor_ptr<const char> datum{data[0]}; *datum != '\0'; ++datum) {
                 //Convert the `cursor_ptr` to `required_ptr` to populate the map.

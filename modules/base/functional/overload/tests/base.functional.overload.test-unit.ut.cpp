@@ -72,7 +72,7 @@ namespace {
                 std::string operator()(std::string_view /*unused*/) { return "string view"s; }
             };
 
-            const auto overloaded = overload{fobj1{}, fobj2{}};
+            auto overloaded = overload{fobj1{}, fobj2{}};
 
             expect(eq(overloaded(1), "int"s));
             expect(eq(overloaded(3.14), "double"s));
@@ -143,12 +143,12 @@ namespace {
                     auto operator()(const char* /*unused*/) { return "fobj1 const char*"s; }
                 };
 
-                const auto fobj2 = overload{
+                auto fobj2 = overload{
                     [](int) mutable { return "fobj2 int"s; },            //mutable => non-const operator()
                     [](std::string) mutable { return "fobj2 string"s; }, //mutable => non-const operator()
                 };
 
-                const auto overloaded = overload{
+                auto overloaded = overload{
                     fobj1{},
                     fobj2,
                     [](double) mutable { return "lambda double"s; },   //mutable => non-const operator()
@@ -206,7 +206,7 @@ namespace {
 
                 std::int32_t steps = 0;
 
-                auto factorial = overload{
+                const auto factorial = overload{
                     [&steps](this auto& self, std::int32_t n) -> std::int32_t {
                         ++steps;
                         if (n <= 1) {
