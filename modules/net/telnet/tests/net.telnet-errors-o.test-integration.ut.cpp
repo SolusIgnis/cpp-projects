@@ -39,8 +39,8 @@ namespace {
         // ============================================================
 
         "default_error_condition mapping"_test = [] mutable {
-            auto expect_ec_mapping = [](std::error_code code, std::error_condition expected_condition) {
-                auto cond = code.default_error_condition();
+            const auto expect_ec_mapping = [](std::error_code code, std::error_condition expected_condition) {
+                const auto cond = code.default_error_condition();
 
                 expect(eq(cond.value(), expected_condition.value()));
                 expect(eq(&cond.category(), &expected_condition.category()));
@@ -71,11 +71,11 @@ namespace {
         // ============================================================
 
         "error and processing_signal categories are distinct"_test = [] mutable {
-            std::error_code e1 = error::protocol_violation;
-            std::error_code e2 = processing_signal::end_of_line;
+            std::error_code ec1 = error::protocol_violation;
+            std::error_code ec2 = processing_signal::end_of_line;
 
-            expect(neq(&e1.category(), &e2.category()));
-            expect(neq(e1, e2));
+            expect(neq(&ec1.category(), &ec2.category()));
+            expect(neq(ec1, ec2));
         };
     };
 } //namespace

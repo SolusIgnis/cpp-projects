@@ -18,8 +18,8 @@ namespace {
         // ------------------------------------------------------------
 
         "default format produces name and hex"_test = [] mutable {
-            auto s = std::format("{}", command::will_opt);
-            expect(eq(s, std::string{"WILL (0xFB)"}));
+            const auto formatted = std::format("{}", command::will_opt);
+            expect(eq(formatted, std::string{"WILL (0xFB)"}));
         };
 
         // ------------------------------------------------------------
@@ -27,8 +27,8 @@ namespace {
         // ------------------------------------------------------------
 
         "name-only formatting works"_test = [] mutable {
-            auto s = std::format("{:n}", command::brk);
-            expect(eq(s, std::string{"BRK"}));
+            const auto formatted = std::format("{:n}", command::brk);
+            expect(eq(formatted, std::string{"BRK"}));
         };
 
         // ------------------------------------------------------------
@@ -36,11 +36,11 @@ namespace {
         // ------------------------------------------------------------
 
         "hex-only formatting works"_test = [] mutable {
-            auto s1 = std::format("{:x}", command::ec);
-            expect(eq(s1, std::string{"0xf7"}));
+            const auto formatted1 = std::format("{:x}", command::ec);
+            expect(eq(formatted1, std::string{"0xf7"}));
 
-            auto s2 = std::format("{:X}", command::ec);
-            expect(eq(s2, std::string{"0xF7"}));
+            const auto formatted2 = std::format("{:X}", command::ec);
+            expect(eq(formatted2, std::string{"0xF7"}));
         };
 
         // ------------------------------------------------------------
@@ -48,17 +48,19 @@ namespace {
         // ------------------------------------------------------------
 
         "unknown command formats as UNKNOWN in name mode"_test = [] mutable {
-            auto unknown = static_cast<command>(0x0A);
-            auto s       = std::format("{:n}", unknown);
-            expect(eq(s, std::string{"UNKNOWN"}));
+            constexpr auto invalid_command_num{0x0A};
+            const auto unknown   = static_cast<command>(invalid_command_num); //NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+            const auto formatted = std::format("{:n}", unknown);
+            expect(eq(formatted, std::string{"UNKNOWN"}));
         };
 
         "unknown command formats as hex in hex mode"_test = [] mutable {
-            auto unknown = static_cast<command>(0x0A);
-            auto s1      = std::format("{:x}", unknown);
-            expect(eq(s1, std::string{"0x0a"}));
-            auto s2 = std::format("{:X}", unknown);
-            expect(eq(s2, std::string{"0x0A"}));
+            constexpr auto invalid_command_num{0x0A};
+            const auto unknown    = static_cast<command>(invalid_command_num); //NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+            const auto formatted1 = std::format("{:x}", unknown);
+            expect(eq(formatted1, std::string{"0x0a"}));
+            const auto formatted2 = std::format("{:X}", unknown);
+            expect(eq(formatted2, std::string{"0x0A"}));
         };
 
         // ------------------------------------------------------------
@@ -68,7 +70,7 @@ namespace {
         "invalid command format specifier throws"_test = [] mutable {
             bool threw = false;
             try {
-                [[maybe_unused]] auto x = std::format("{:z}", command::iac);
+                [[maybe_unused]] const auto formatted = std::format("{:z}", command::iac);
             } catch (const std::format_error&) {
                 threw = true;
             }
@@ -80,17 +82,17 @@ namespace {
         // ------------------------------------------------------------
 
         "negotiation_direction formats correctly"_test = [] mutable {
-            auto s1 = std::format("{}", negotiation_direction::local);
-            auto s2 = std::format("{}", negotiation_direction::remote);
+            const auto formatted1 = std::format("{}", negotiation_direction::local);
+            const auto formatted2 = std::format("{}", negotiation_direction::remote);
 
-            expect(eq(s1, std::string{"local"}));
-            expect(eq(s2, std::string{"remote"}));
+            expect(eq(formatted1, std::string{"local"}));
+            expect(eq(formatted2, std::string{"remote"}));
         };
 
         "invalid negotiation_direction format throws"_test = [] mutable {
             bool threw = false;
             try {
-                [[maybe_unused]] auto x = std::format("{:x}", negotiation_direction::local);
+                [[maybe_unused]] const auto formatted = std::format("{:x}", negotiation_direction::local);
             } catch (const std::format_error&) {
                 threw = true;
             }
@@ -102,7 +104,7 @@ namespace {
         // ============================================================
 
         "formatter composes inside nested format expressions"_test = [] mutable {
-            auto msg = std::format("[{}:{}]", command::iac, negotiation_direction::remote);
+            const auto msg = std::format("[{}:{}]", command::iac, negotiation_direction::remote);
             expect(eq(msg, std::string{"[IAC (0xFF):remote]"}));
         };
     };

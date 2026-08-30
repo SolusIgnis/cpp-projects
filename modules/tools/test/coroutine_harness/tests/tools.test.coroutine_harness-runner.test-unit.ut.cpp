@@ -22,13 +22,15 @@ namespace {
         // ============================================================
 
         "as_task forwards value (ready path)"_test = [] mutable {
-            // Bespoke trivial awaiter for bootstrapping tests. as_task tests can't depend on the test dummies namespace since their tests depend on as_task.
+            //Bespoke trivial awaiter for bootstrapping tests. as_task tests can't depend on the test dummies namespace since their tests depend on as_task.
+            //NOLINTBEGIN(readability-convert-member-functions-to-static): Awaiter protocol.
             struct echo_ready_awaiter {
                 int value{};
                 [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
                 constexpr void await_suspend(std::coroutine_handle<> /*unused*/) const noexcept {}
                 [[nodiscard]] constexpr int await_resume() const { return value; }
             };
+            //NOLINTEND(readability-convert-member-functions-to-static)
 
             constexpr int expected = 55;
             const auto result      = run(as_task<int>(echo_ready_awaiter{expected}));
@@ -36,7 +38,8 @@ namespace {
         };
 
         "as_task preserves suspension semantics"_test = [] mutable {
-            // Bespoke trivial awaiter for bootstrapping tests. as_task tests can't depend on the test dummies namespace since their tests depend on as_task.
+            //Bespoke trivial awaiter for bootstrapping tests. as_task tests can't depend on the test dummies namespace since their tests depend on as_task.
+            //NOLINTBEGIN(readability-convert-member-functions-to-static): Awaiter protocol.
             struct echo_immediate_awaiter {
                 int value{};
                 [[nodiscard]] constexpr bool await_ready() const noexcept { return false; }
@@ -49,6 +52,7 @@ namespace {
                 }
                 [[nodiscard]] constexpr int await_resume() const { return value; }
             };
+            //NOLINTEND(readability-convert-member-functions-to-static)
 
             constexpr int expected = 10;
 
@@ -65,16 +69,18 @@ namespace {
         };
 
         "as_task propagates exception from await_resume"_test = [] mutable {
+            //NOLINTBEGIN(readability-convert-member-functions-to-static): Awaiter protocol.
             struct throwing_awaiter {
                 [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
                 constexpr void await_suspend(std::coroutine_handle<> /*unused*/) const noexcept {}
                 [[noreturn]] int await_resume() { throw std::runtime_error("boom"); }
             };
+            //NOLINTEND(readability-convert-member-functions-to-static)
 
             bool threw = false;
 
             try {
-                [[maybe_unused]] auto result = run(as_task<int>(throwing_awaiter{}));
+                [[maybe_unused]] const auto result = run(as_task<int>(throwing_awaiter{}));
             } catch (const std::runtime_error&) {
                 threw = true;
             }
@@ -83,11 +89,13 @@ namespace {
         };
 
         "as_task propagates exception from await_suspend"_test = [] mutable {
+            //NOLINTBEGIN(readability-convert-member-functions-to-static): Awaiter protocol.
             struct throwing_suspend_awaiter {
                 [[nodiscard]] constexpr bool await_ready() const noexcept { return false; }
                 [[noreturn]] void await_suspend(std::coroutine_handle<> /*unused*/) { throw std::runtime_error("boom"); }
                 constexpr void await_resume() const noexcept { return; }
             };
+            //NOLINTEND(readability-convert-member-functions-to-static)
 
             bool threw = false;
             try {
@@ -100,12 +108,14 @@ namespace {
 
         "as_task supports move-only return types (unique_ptr)"_test = [] mutable {
             // Bespoke trivial awaiter for bootstrapping tests. as_task tests can't depend on the test dummies namespace since their tests depend on as_task.
+            //NOLINTBEGIN(readability-convert-member-functions-to-static): Awaiter protocol.
             struct echo_ready_awaiter {
                 std::unique_ptr<int> value;
                 [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
                 constexpr void await_suspend(std::coroutine_handle<> /*unused*/) const noexcept {}
                 [[nodiscard]] constexpr std::unique_ptr<int> await_resume() { return std::move(value); }
             };
+            //NOLINTEND(readability-convert-member-functions-to-static)
 
             constexpr int expected = 42;
 
@@ -125,26 +135,29 @@ namespace {
         };
 
         "as_task supports wrapping a test_task"_test = [] mutable {
-            int expected = 42;
-            auto result  = run(as_task<int>(echo(expected)));
+            constexpr int expected = 42;
+            const auto result  = run(as_task<int>(echo(expected)));
 
             expect(eq(result, expected));
         };
 
         "as_task supports nested calls"_test = [] mutable {
             // Bespoke trivial awaiter for bootstrapping tests. as_task tests can't depend on the test dummies namespace since their tests depend on as_task.
+            //NOLINTBEGIN(readability-convert-member-functions-to-static): Awaiter protocol.
             struct echo_ready_awaiter {
                 int value{};
                 [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
                 constexpr void await_suspend(std::coroutine_handle<> /*unused*/) const noexcept {}
                 [[nodiscard]] constexpr int await_resume() const { return value; }
             };
-            int expected = 42;
+            //NOLINTEND(readability-convert-member-functions-to-static)
+
+            constexpr int expected = 42;
 
             auto taskA = as_task<int>(echo_ready_awaiter{expected});
             auto taskB = as_task<int>(as_task<int>(std::move(taskA)));
 
-            auto result = run(taskB);
+            const auto result = run(taskB);
             expect(eq(result, expected));
         };
     };

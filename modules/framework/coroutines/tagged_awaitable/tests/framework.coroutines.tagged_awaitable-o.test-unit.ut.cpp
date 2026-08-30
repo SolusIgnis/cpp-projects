@@ -15,7 +15,7 @@ using namespace std::literals;
 namespace {
     struct test_tag;
 
-    tagged_awaitable<test_tag, test_task<int>> echo(int value)
+    tagged_awaitable<test_tag, test_task<std::int32_t>> echo(std::int32_t value)
     {
         co_return value;
     }
@@ -27,14 +27,14 @@ namespace {
         // ============================================================
 
         "tagged_awaitable default constructible"_test = [] mutable {
-            expect(eq(std::is_default_constructible_v<tagged_awaitable<test_tag, test_task<int>>>, true));
+            expect(eq(std::is_default_constructible_v<tagged_awaitable<test_tag, test_task<std::int32_t>>>, true));
         };
 
         "tagged_awaitable constructs from awaitable"_test = [] mutable {
             coroutine_probe probe;
-            auto coro = [] -> test_task<void> { co_return; };
+            const auto coro = [] -> test_task<void> { co_return; };
 
-            tagged_awaitable<test_tag, test_task<void>> a{coro().set_probe(&probe)};
+            const tagged_awaitable<test_tag, test_task<void>> tagged{coro().set_probe(&probe)};
 
             expect(eq(probe.done, false));
         };
@@ -75,8 +75,8 @@ namespace {
         };
 
         "tagged_awaitables with different underlying awaitable types are distinct types"_test = [] mutable {
-            using foo_t = tagged_awaitable<test_tag, dummies::immediate_awaiter<int>>;
-            using bar_t = tagged_awaitable<test_tag, test_task<int>>;
+            using foo_t = tagged_awaitable<test_tag, dummies::immediate_awaiter<std::int32_t>>;
+            using bar_t = tagged_awaitable<test_tag, test_task<std::int32_t>>;
 
             // Verify they are not the same type
             expect(eq(std::same_as<foo_t, bar_t>, false));
@@ -93,10 +93,10 @@ namespace {
         // ============================================================
 
         "tagged_awaitable has zero size overhead"_test = [] mutable {
-            auto tester = []<typename AwaitableT> {
+            const auto tester = []<typename AwaitableT> {
                 using raw_t          = AwaitableT;
                 using tagged_t       = tagged_awaitable<test_tag, AwaitableT>;
-                using pathological_t = tagged_awaitable<std::array<int, 4>, AwaitableT>;
+                using pathological_t = tagged_awaitable<std::array<std::int32_t, 4>, AwaitableT>;
 
                 // The wrapper should be exactly the size of the thing it wraps.
                 expect(eq(sizeof(raw_t), sizeof(tagged_t)));
@@ -107,19 +107,19 @@ namespace {
             };
 
             tester.operator()<test_task<void>>();
-            tester.operator()<test_task<int>>();
-            tester.operator()<test_task<std::array<int, 4>>>();
+            tester.operator()<test_task<std::int32_t>>();
+            tester.operator()<test_task<std::array<std::int32_t, 4>>>();
 
             tester.operator()<dummies::ready_awaiter<void>>();
-            tester.operator()<dummies::ready_awaiter<int>>();
-            tester.operator()<dummies::ready_awaiter<std::array<int, 4>>>();
+            tester.operator()<dummies::ready_awaiter<std::int32_t>>();
+            tester.operator()<dummies::ready_awaiter<std::array<std::int32_t, 4>>>();
 
             tester.operator()<dummies::immediate_awaiter<void>>();
-            tester.operator()<dummies::immediate_awaiter<int>>();
-            tester.operator()<dummies::immediate_awaiter<std::array<int, 4>>>();
+            tester.operator()<dummies::immediate_awaiter<std::int32_t>>();
+            tester.operator()<dummies::immediate_awaiter<std::array<std::int32_t, 4>>>();
 
-            tester.operator()<dummies::adl::awaitable_by_adl<int>>();
-            tester.operator()<dummies::adl::awaitable_by_adl<std::array<int, 4>>>();
+            tester.operator()<dummies::adl::awaitable_by_adl<std::int32_t>>();
+            tester.operator()<dummies::adl::awaitable_by_adl<std::array<std::int32_t, 4>>>();
         };
 
         // ============================================================
@@ -128,58 +128,58 @@ namespace {
 
         "tagged_awaitable supports lvalue co_await"_test = [] mutable {
             coroutine_probe probe;
-            int expected = 42;
+            constexpr std::int32_t expected = 42;
 
             auto coro = echo(expected);
             coro.get().set_probe(&probe);
 
-            auto test = [&] -> test_task<int> {
-                int v = co_await coro;
-                co_return v;
+            const auto test = [&] -> test_task<std::int32_t> {
+                const std::int32_t val = co_await coro;
+                co_return val;
             };
 
-            auto result = run(test());
+            const auto result = run(test());
             expect(eq(result, expected));
-            expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
+            expect(eq(static_cast<std::int32_t>(probe.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
         };
 
         "tagged_awaitable supports rvalue co_await"_test = [] mutable {
             coroutine_probe probe;
-            int expected = 42;
+            constexpr std::int32_t expected = 42;
 
             auto coro = echo(expected);
             coro.get().set_probe(&probe);
 
-            auto test = [&] -> test_task<int> {
-                int v = co_await std::move(coro);
-                co_return v;
+            const auto test = [&] -> test_task<std::int32_t> {
+                const std::int32_t val = co_await std::move(coro);
+                co_return val;
             };
 
-            auto result = run(test());
+            const auto result = run(test());
             expect(eq(result, expected));
-            expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
+            expect(eq(static_cast<std::int32_t>(probe.await_path), static_cast<std::int32_t>(coroutine_probe::path::rvalue)));
         };
 
         "tagged_awaitable supports co_await by free function (ADL)"_test = [] mutable {
-            int expected = 42;
+            constexpr std::int32_t expected = 42;
 
-            using wrapper_t = tagged_awaitable<test_tag, dummies::adl::awaitable_by_adl<int>>;
+            using wrapper_t = tagged_awaitable<test_tag, dummies::adl::awaitable_by_adl<std::int32_t>>;
             // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
-            wrapper_t wrapped = dummies::adl::awaitable_by_adl{expected};
+            const wrapper_t wrapped = dummies::adl::awaitable_by_adl{expected};
 
-            expect(eq(run(as_task<int>(wrapped)), expected));
+            expect(eq(run(as_task<std::int32_t>(wrapped)), expected));
         };
 
         "tagged_awaitable supports co_await of wrapped awaiter"_test = [] mutable {
-            int expected = 42;
+            constexpr std::int32_t expected = 42;
 
-            using wrapper_t = tagged_awaitable<test_tag, dummies::immediate_awaiter<int>>;
+            using wrapper_t = tagged_awaitable<test_tag, dummies::immediate_awaiter<std::int32_t>>;
             // Note: This awaitable is trivially multi-shot because it doesn't require its own coroutine frame.
             wrapper_t wrapped = dummies::immediate_awaiter{expected};
 
-            expect(eq(run(as_task<int>(wrapped)), expected));
-            expect(eq(run(as_task<int>(std::as_const(wrapped))), expected));
-            expect(eq(run(as_task<int>(wrapped)), expected));
+            expect(eq(run(as_task<std::int32_t>(wrapped)), expected));
+            expect(eq(run(as_task<std::int32_t>(std::as_const(wrapped))), expected));
+            expect(eq(run(as_task<std::int32_t>(wrapped)), expected));
         };
 
         // ============================================================
@@ -187,16 +187,16 @@ namespace {
         // ============================================================
 
         "tagged_awaitable propagates coroutine lifecycle"_test = [] mutable {
-            int expected = 42;
+            constexpr std::int32_t expected = 42;
 
             coroutine_probe probe;
 
             auto wrapped = echo(expected);
             wrapped.get().set_probe(&probe);
 
-            auto test = [&] -> test_task<int> { co_return co_await wrapped; };
+            const auto test = [&] -> test_task<std::int32_t> { co_return co_await wrapped; };
 
-            auto result = run(test());
+            const auto result = run(test());
 
             expect(eq(result, expected));
             expect(eq(probe.awaited, true));
@@ -225,15 +225,15 @@ namespace {
         // ============================================================
 
         "tagged_awaitable composes inside other coroutines"_test = [] mutable {
-            int base     = 7;
-            int mult     = 3;
-            int expected = base * mult;
+            constexpr std::int32_t base     = 7;
+            constexpr std::int32_t mult     = 3;
+            constexpr std::int32_t expected = base * mult;
 
-            auto sub = [&] -> tagged_awaitable<test_tag, test_task<int>> { co_return base; };
+            const auto sub = [&] -> tagged_awaitable<test_tag, test_task<std::int32_t>> { co_return base; };
 
-            auto main = [&] -> tagged_awaitable<test_tag, test_task<int>> { co_return (co_await sub()) * mult; };
+            const auto main = [&] -> tagged_awaitable<test_tag, test_task<std::int32_t>> { co_return (co_await sub()) * mult; };
 
-            auto result = run(main());
+            const auto result = run(main());
             expect(eq(result, expected));
         };
 
@@ -242,12 +242,12 @@ namespace {
         // ============================================================
 
         "tagged_awaitable converts to underlying awaitable"_test = [] mutable {
-            int expected = 42;
-            auto wrapped{echo(expected)};
+            constexpr std::int32_t expected = 42;
+            const auto wrapped{echo(expected)};
 
-            auto run_underlying = [](test_task<int> task) { return run(task); };
+            const auto run_underlying = [](test_task<std::int32_t> task) { return run(task); };
 
-            auto result = run_underlying(std::move(wrapped));
+            const auto result = run_underlying(std::move(wrapped));
             expect(eq(result, expected));
         };
 
@@ -257,13 +257,13 @@ namespace {
 
         "tagged_awaitable preserves underlying awaitable's promise type"_test = [] mutable {
             static_assert(std::same_as<
-                          test_task<int>::promise_type,
-                          std::coroutine_traits<tagged_awaitable<test_tag, test_task<int>>>::promise_type
+                          test_task<std::int32_t>::promise_type,
+                          std::coroutine_traits<tagged_awaitable<test_tag, test_task<std::int32_t>>>::promise_type
             >);
             expect(
                 eq(std::same_as<
-                       test_task<int>::promise_type,
-                       std::coroutine_traits<tagged_awaitable<test_tag, test_task<int>>>::promise_type
+                       test_task<std::int32_t>::promise_type,
+                       std::coroutine_traits<tagged_awaitable<test_tag, test_task<std::int32_t>>>::promise_type
                    >,
                    true)
             );
@@ -277,11 +277,11 @@ namespace {
         };
 
         "tagged_awaitable usable as coroutine return type"_test = [] mutable {
-            auto tagged_echo_coro = [](int value) -> tagged_awaitable<test_tag, test_task<int>> { co_return value; };
+            const auto tagged_echo_coro = [](std::int32_t value) -> tagged_awaitable<test_tag, test_task<std::int32_t>> { co_return value; };
 
-            int expected = 42;
+            constexpr std::int32_t expected = 42;
 
-            auto result = run(tagged_echo_coro(expected));
+            const auto result = run(tagged_echo_coro(expected));
 
             expect(eq(result, expected));
         };
@@ -291,14 +291,15 @@ namespace {
         // ============================================================
 
         "tagged_awaitable propagates exceptions"_test = [] mutable {
-            auto wrapped = [](int value) -> tagged_awaitable<test_tag, test_task<int>> {
+            const auto wrapped = [](std::int32_t value) -> tagged_awaitable<test_tag, test_task<std::int32_t>> {
                 throw std::runtime_error("boom");
                 co_return value;
             };
 
-            int expected = 0;
-            int result   = expected;
-            int herring  = 42;
+            constexpr std::int32_t herring  = 42;
+            constexpr std::int32_t expected = 0;
+
+            std::int32_t result = expected;
 
             bool threw = false;
 

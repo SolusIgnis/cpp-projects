@@ -28,72 +28,74 @@ namespace {
         // ============================================================
 
         "option stores id and name"_test = [] mutable {
-            option opt{option::id_num::echo, "Echo"};
+            const option opt{option::id_num::echo, "Echo"};
 
             expect(eq((opt.get_id() == option::id_num::echo), true));
             expect(eq(opt.get_name(), std::string{"Echo"}));
         };
 
         "default predicates reject"_test = [] mutable {
-            option opt{option::id_num::echo};
+            const option opt{option::id_num::echo};
 
             expect(eq(opt.supports_local(), false));
             expect(eq(opt.supports_remote(), false));
         };
 
         "always_accept predicate works"_test = [] mutable {
-            option opt{option::id_num::echo, "Echo", option::always_accept, option::always_accept};
+            const option opt{option::id_num::echo, "Echo", option::always_accept, option::always_accept};
 
             expect(eq(opt.supports_local(), true));
             expect(eq(opt.supports_remote(), true));
         };
 
         "supports(direction) dispatches correctly"_test = [] mutable {
-            option opt{option::id_num::echo, "Echo", option::always_accept, option::always_reject};
+            const option opt{option::id_num::echo, "Echo", option::always_accept, option::always_reject};
 
             expect(eq(opt.supports(negotiation_direction::local), true));
             expect(eq(opt.supports(negotiation_direction::remote), false));
         };
 
         "make_option sets predicates from booleans"_test = [] mutable {
-            auto opt = option::make_option(option::id_num::binary, "Binary", true, false);
+            const auto opt = option::make_option(option::id_num::binary, "Binary", true, false);
 
             expect(eq(opt.supports_local(), true));
             expect(eq(opt.supports_remote(), false));
         };
 
         "subnegotiation defaults"_test = [] mutable {
-            option opt{option::id_num::binary};
+            constexpr std::size_t subnegotiation_limit{1024};
+            const option opt{option::id_num::binary};
 
             expect(eq(opt.supports_subnegotiation(), false));
-            expect(eq(opt.max_subnegotiation_size(), static_cast<std::size_t>(1024)));
+            expect(eq(opt.max_subnegotiation_size(), subnegotiation_limit));
         };
 
         "subnegotiation configuration honored"_test = [] mutable {
-            option
+            constexpr std::size_t subnegotiation_limit{4096};
+            const option
                 opt{option::id_num::binary,
                     "Binary",
                     option::always_accept,
                     option::always_accept,
                     true,
-                    static_cast<std::size_t>(4096)};
+                    static_cast<std::size_t>(subnegotiation_limit)};
 
             expect(eq(opt.supports_subnegotiation(), true));
-            expect(eq(opt.max_subnegotiation_size(), static_cast<std::size_t>(4096)));
+            expect(eq(opt.max_subnegotiation_size(), subnegotiation_limit));
         };
 
         "three-way comparison based on id"_test = [] mutable {
-            option a{option::id_num::binary};
-            option b{option::id_num::echo};
+            const option opt_a{option::id_num::binary};
+            const option opt_b{option::id_num::echo};
 
-            expect(eq((a < b), true));
-            expect(eq((b > a), true));
-            expect(eq((a == option::id_num::binary), true));
+            expect(eq((opt_a < opt_b), true));
+            expect(eq((opt_b > opt_a), true));
+            expect(eq((opt_a == option::id_num::binary), true));
         };
 
         "implicit conversion to id_num works"_test = [] mutable {
-            option opt{option::id_num::echo};
-            option::id_num id = opt;
+            const option opt{option::id_num::echo};
+            const option::id_num id = opt;
 
             expect(eq((id == option::id_num::echo), true));
         };

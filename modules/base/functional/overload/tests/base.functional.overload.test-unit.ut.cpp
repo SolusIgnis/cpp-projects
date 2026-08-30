@@ -24,65 +24,66 @@ namespace {
     //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
     suite overload_tests = [] mutable {
         "overload{...} produces an invocable object"_test = [] mutable {
-            constexpr int expected = 42;
+            constexpr std::int32_t expected = 42;
 
-            auto overloaded = overload{[](int i) { return i; }};
+            const auto overloaded = overload{[](std::int32_t i) { return i; }};
 
             auto result = std::invoke(overloaded, expected);
             expect(eq(result, expected));
         };
 
         "overload{...} produces a resolvable overload set"_test = [] mutable {
-            constexpr int expected_int = 42;
+            constexpr std::int32_t expected_int = 42;
 
             constexpr std::string_view expected_sv = "42"sv;
 
-            auto overloaded = overload{[](int i) { return i; }, [](std::string_view str_v) { return str_v; }};
+            const auto overloaded = overload{[](std::int32_t i) { return i; }, [](std::string_view str_v) { return str_v; }};
 
-            auto result_int = overloaded(expected_int);
+            const auto result_int = overloaded(expected_int);
             expect(eq(result_int, expected_int));
 
-            auto result_sv = overloaded(expected_sv);
+            const auto result_sv = overloaded(expected_sv);
             expect(eq(result_sv, expected_sv));
         };
 
         "overload{...} resolves by arity"_test = [] mutable {
-            constexpr int arg1      = 40;
-            constexpr int arg2      = 2;
-            constexpr int expected1 = -arg1;
-            constexpr int expected2 = arg1 + arg2;
+            constexpr std::int32_t arg1      = 40;
+            constexpr std::int32_t arg2      = 2;
+            constexpr std::int32_t expected1 = -arg1;
+            constexpr std::int32_t expected2 = arg1 + arg2;
 
-            auto overloaded = overload{[](auto i, auto j) { return i + j; }, [](auto i) { return -i; }};
-            int result2     = overloaded(arg1, arg2);
-            expect(eq(result2, expected2));
+            const auto overloaded = overload{[](auto i, auto j) { return i + j; }, [](auto i) { return -i; }};
 
-            int result1 = overloaded(arg1);
+            const std::int32_t result1 = overloaded(arg1);
             expect(eq(result1, expected1));
+
+            const std::int32_t result2  = overloaded(arg1, arg2);
+            expect(eq(result2, expected2));
         };
 
         "overload{...} composes overload sets of multiple multi-overload bases"_test = [] mutable {
-            struct f1 {
-                std::string operator()(int /*unused*/) { return "int"s; }
+            struct fobj1 {
+                std::string operator()(std::int32_t /*unused*/) { return "int"s; }
                 std::string operator()(double /*unused*/) { return "double"s; }
             };
 
-            struct f2 {
+            struct fobj2 {
                 std::string operator()(std::string /*unused*/) { return "string"s; }
                 std::string operator()(std::string_view /*unused*/) { return "string view"s; }
             };
 
-            auto overloaded = overload{f1{}, f2{}};
+            const auto overloaded = overload{fobj1{}, fobj2{}};
 
-            expect(eq(overloaded(1), /*rhs=*/"int"s));
-            expect(eq(overloaded(3.14), /*rhs=*/"double"s));
-            expect(eq(overloaded("hello"s), /*rhs=*/"string"s));
-            expect(eq(overloaded("view"sv), /*rhs=*/"string view"s));
+            expect(eq(overloaded(1), "int"s));
+            expect(eq(overloaded(3.14), "double"s));
+            expect(eq(overloaded("hello"s), "string"s));
+            expect(eq(overloaded("view"sv), "string view"s));
         };
 
         "overload{ overload{...}, ... } composes overload sets"_test = [] {
-            auto base = overload{[](int) { return "int"s; }, [](double) { return "double"s; }};
+            const auto base = overload{[](int) { return "int"s; }, [](double) { return "double"s; }};
 
-            auto extended =
+            const auto extended =
                 overload{base, [](std::string) { return "string"s; }, [](std::string_view) { return "string view"s; }};
 
             expect(eq(extended(1), /*rhs=*/"int"s));
@@ -105,7 +106,7 @@ namespace {
                 std::uint8_t operator()(this const function_obj&&) = delete;
             };
 
-            auto overloaded             = overload{function_obj{}};
+            auto overloaded             = overload{function_obj{}}; //NOLINT(misc-const-correctness)
             const auto const_overloaded = overloaded;
 
             using enum function_obj::val_cat;
@@ -117,7 +118,7 @@ namespace {
         "overload{...} integrates with std::visit"_test = [] mutable {
             using var_t = std::variant<int, std::string, double>;
 
-            auto visitor = overload{
+            const auto visitor = overload{
                 [](int) { return "int"s; },
                 [](const std::string&) { return "string"s; },
                 [](double) { return "double"s; },
@@ -129,48 +130,49 @@ namespace {
         };
 
         "overload{...} preserves ambiguity across identical signatures"_test = [] {
-            auto overloaded = overload{[](int) { return 1; }, [](int) { return 2; }};
+            const auto overloaded = overload{[](int) { return 1; }, [](int) { return 2; }};
 
             expect(eq(std::invocable<decltype(overloaded), int>, false));
         };
 
         "overload{...} preserves ambiguity and overload ranking across multiple composed and aggregated callables"_test =
             [] mutable {
-                struct f1 {
-                    auto operator()(int /*unused*/) { return "f1 int"s; }
-                    auto operator()(double /*unused*/) { return "f1 double"s; }
-                    auto operator()(const char* /*unused*/) { return "f1 const char*"s; }
+                struct fobj1 {
+                    auto operator()(std::int32_t /*unused*/) { return "fobj1 int"s; }
+                    auto operator()(double /*unused*/) { return "fobj1 double"s; }
+                    auto operator()(const char* /*unused*/) { return "fobj1 const char*"s; }
                 };
 
-                auto f2 = overload{
-                    [](int) mutable { return "f2 int"s; },            //mutable => non-const operator()
-                    [](std::string) mutable { return "f2 string"s; }, //mutable => non-const operator()
+                const auto fobj2 = overload{
+                    [](int) mutable { return "fobj2 int"s; },            //mutable => non-const operator()
+                    [](std::string) mutable { return "fobj2 string"s; }, //mutable => non-const operator()
                 };
 
-                auto overloaded = overload{
-                    f1{},
-                    f2,
+                const auto overloaded = overload{
+                    fobj1{},
+                    fobj2,
                     [](double) mutable { return "lambda double"s; },   //mutable => non-const operator()
                     [](const char*) { return "lambda const char*"s; }, //const operator()
                 };
 
-                // ambiguous: f1(int) vs f2(int)
-                expect(eq(std::invocable<decltype(overloaded), int>, false));
+                // ambiguous: fobj1(int) vs fobj2(int)
+                expect(eq(std::invocable<decltype(overloaded), std::int32_t>, false));
 
-                // ambiguous: f1(double) vs lambda(double) [both non-const]
+                // ambiguous: fobj1(double) vs lambda(double) [both non-const]
                 expect(eq(std::invocable<decltype(overloaded), double>, false));
 
-                // unambiguous: only f2(std::string) [const char* is not a match]
+                // unambiguous: only fobj2(std::string) [const char* is not a match]
                 expect(eq(std::invocable<decltype(overloaded), std::string>, true));
-                expect(eq(std::invoke(overloaded, "std::string"s), /*rhs=*/"f2 string"s));
+                expect(eq(std::invoke(overloaded, "std::string"s), "fobj2 string"s));
 
                 // unambiguous: 1) non-const f1 beats const lambda [better implicit object parameter binding],
                 // 2) and f1(const char*) beats f2(std::string) [conversion is a worse match]
                 expect(eq(std::invocable<decltype(overloaded), const char*>, true));
-                expect(eq(std::invoke(overloaded, "c-string"), /*rhs=*/"f1 const char*"s));
+                expect(eq(std::invoke(overloaded, "c-string"), "fobj1 const char*"s));
             };
 
         "overload{...} with deduced `this` lambda sees derived object identity"_test = [] mutable {
+            //NOLINTNEXTLINE(misc-const-correctness)
             auto overloaded = overload{
                 []<typename SelfT>(this SelfT&&, auto) {
                     if constexpr (std::is_const_v<std::remove_reference_t<SelfT>>) {
@@ -196,16 +198,16 @@ namespace {
         };
 
         "overload{...} supports simple recursion"_test = [] mutable {
-            auto factorial_tester = [](int n, int expected) {
+            const auto factorial_tester = [](std::int32_t n, std::int32_t expected) {
                 // fail fast for ill-formed test.
                 if (n < 1) {
                     throw std::logic_error("factorial test runner requires n >= 1");
                 }
 
-                int steps = 0;
+                std::int32_t steps = 0;
 
                 auto factorial = overload{
-                    [&steps](this auto& self, int n) -> int {
+                    [&steps](this auto& self, std::int32_t n) -> std::int32_t {
                         ++steps;
                         if (n <= 1) {
                             return 1;
@@ -218,22 +220,22 @@ namespace {
                 expect(eq(steps, n));
             };
 
-            constexpr int num1      = 5;
-            constexpr int expected1 = 120; // 5 * 4 * 3 * 2 * 1
+            constexpr std::int32_t num1      = 5;
+            constexpr std::int32_t expected1 = 120; // 5 * 4 * 3 * 2 * 1
             factorial_tester(num1, expected1);
 
-            constexpr int num2      = 4;
-            constexpr int expected2 = 24; // 4 * 3 * 2 * 1
+            constexpr std::int32_t num2      = 4;
+            constexpr std::int32_t expected2 = 24; // 4 * 3 * 2 * 1
             factorial_tester(num2, expected2);
 
-            constexpr int num3      = 1;
-            constexpr int expected3 = 1; // sanity check
+            constexpr std::int32_t num3      = 1;
+            constexpr std::int32_t expected3 = 1; // sanity check
             factorial_tester(num3, expected3);
         };
 
         "overload{...} supports composed recursive multi-overload dispatch/visitation (binary tree)"_test = [] mutable {
             // Gauss Summation Formula
-            auto sum_to = [](int n) { return (n * (n + 1)) / 2; };
+            const auto sum_to = [](std::int32_t n) { return (n * (n + 1)) / 2; };
 
             // Recursive data structure defining a binary tree by its nodes
             struct node {
@@ -242,31 +244,31 @@ namespace {
 
             // Reusable recursive traversal component
             // Note: Leaf handling is NOT part of the traversal overload set.
-            auto tree_traverse = overload{
+            const auto tree_traverse = overload{
                 // Pointer: Unwrap any pointers (safely).
-                []<typename T>(this auto& self, alias_ptr<T> ptr) -> int {
+                []<typename T>(this auto& self, alias_ptr<T> ptr) -> std::int32_t {
                     if (!ptr) {
                         throw std::logic_error("test tree node holds null pointer");
                     }
                     return self(*ptr);
                 },
                 // Branch: Sum the values of both children recursively.
-                []<typename T>(this auto& self, const std::tuple<T, T>& children) -> int {
+                []<typename T>(this auto& self, const std::tuple<T, T>& children) -> std::int32_t {
                     auto [left, right] = children;
                     return self(left) + self(right);
                 },
                 // Node: Visit the value of a node to dispatch into a leaf or recurse into a branch.
-                [](this auto& self, const node& tree_node) -> int { return std::visit(self, tree_node.value); },
+                [](this auto& self, const node& tree_node) -> std::int32_t { return std::visit(self, tree_node.value); },
             };
 
             // Compose value summation leaf handling with reusable traversal component
-            auto tree_sum = overload{[](int val) -> int { return val; }, tree_traverse};
+            const auto tree_sum = overload{[](std::int32_t val) -> std::int32_t { return val; }, tree_traverse};
 
             // Compose fixed (counting) summation leaf handling with reusable traversal component
-            auto tree_count = overload{[](int) -> int { return 1; }, tree_traverse};
+            const auto tree_count = overload{[](int) -> std::int32_t { return 1; }, tree_traverse};
 
             // Initialize the tree with the `i`th counting number for each leaf.
-            int i = 0;
+            std::int32_t i = 0;
 
             node leaf1{++i};
             node leaf2{++i};

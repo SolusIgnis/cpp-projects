@@ -15,6 +15,7 @@ namespace {
     suite telnet_options_tests = [] mutable {
         using net::telnet::byte_t;
 
+        //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Verifying literal values.
         "option::id_num enum values (selected)"_test = [] mutable {
             expect(eq(std::to_underlying(option::id_num::binary), static_cast<byte_t>(0x00)));
             expect(eq(std::to_underlying(option::id_num::echo), static_cast<byte_t>(0x01)));
@@ -25,11 +26,12 @@ namespace {
             expect(eq(std::to_underlying(option::id_num::gmcp), static_cast<byte_t>(0xC9)));
             expect(eq(std::to_underlying(option::id_num::extended_options_list), static_cast<byte_t>(0xFF)));
         };
+        //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 
         "option default construction and accessors"_test = [] mutable {
-            option opt{option::id_num::echo, "Echo"};
+            const option opt{option::id_num::echo, "Echo"};
             expect(eq(opt.get_id(), option::id_num::echo));
-            expect(eq(opt.get_name(), /*rhs=*/"Echo"s));
+            expect(eq(opt.get_name(), "Echo"s));
             expect(eq(opt.supports_local(), false));
             expect(eq(opt.supports_remote(), false));
             expect(eq(opt.supports(negotiation_direction::local), false));
@@ -39,26 +41,26 @@ namespace {
         };
 
         "option with custom predicates and subnegotiation"_test = [] mutable {
-            auto always_on = [](option::id_num) { return true; };
-            option opt{option::id_num::terminal_type, "Terminal Type", always_on, always_on, true, /*max_subneg_size=*/512};
+            const auto always_on = [](option::id_num) { return true; };
+            const option opt{option::id_num::terminal_type, "Terminal Type", always_on, always_on, true, 512};
 
             expect(eq(opt.supports_local(), true));
             expect(eq(opt.supports_remote(), true));
             expect(eq(opt.supports(negotiation_direction::local), true));
             expect(eq(opt.supports(negotiation_direction::remote), true));
             expect(eq(opt.supports_subnegotiation(), true));
-            expect(eq(opt.max_subnegotiation_size(), /*rhs=*/512UZ));
+            expect(eq(opt.max_subnegotiation_size(), 512UZ));
         };
 
         "make_option factory"_test = [] mutable {
-            auto opt1 = option::make_option(option::id_num::echo, "Echo", true, false);
+            const auto opt1 = option::make_option(option::id_num::echo, "Echo", true, false);
             expect(eq(opt1.get_id(), option::id_num::echo));
             expect(eq(opt1.get_name(), /*rhs=*/"Echo"s));
             expect(eq(opt1.supports_local(), true));
             expect(eq(opt1.supports_remote(), false));
             expect(eq(opt1.supports_subnegotiation(), false));
 
-            auto opt2 = option::make_option(option::id_num::linemode, "Linemode", false, true, true, /*max_subneg_size=*/256);
+            const auto opt2 = option::make_option(option::id_num::linemode, "Linemode", false, true, true, /*max_subneg_size=*/256);
             expect(eq(opt2.supports_local(), false));
             expect(eq(opt2.supports_remote(), true));
             expect(eq(opt2.supports_subnegotiation(), true));
@@ -71,38 +73,38 @@ namespace {
         };
 
         "option three-way comparison (same type)"_test = [] mutable {
-            option a{option::id_num::echo, "Echo"};
-            option b{option::id_num::suppress_go_ahead, "SGA"};
-            option c{option::id_num::echo, "Echo again"};
+            const option echo1{option::id_num::echo, "Echo"};
+            const option sga{option::id_num::suppress_go_ahead, "SGA"};
+            const option echo2{option::id_num::echo, "Echo again"};
 
-            expect(eq((a <=> b) == std::strong_ordering::less, true));
-            expect(eq((b <=> a) == std::strong_ordering::greater, true));
-            expect(eq((a <=> c) == std::strong_ordering::equal, true));
+            expect(eq((echo <=> sga) == std::strong_ordering::less, true));
+            expect(eq((sga <=> echo) == std::strong_ordering::greater, true));
+            expect(eq((echo <=> echo2) == std::strong_ordering::equal, true));
         };
 
         "option comparison with id_num"_test = [] mutable {
-            option opt{option::id_num::terminal_type};
+            const option opt{option::id_num::terminal_type};
             expect(eq((opt <=> option::id_num::echo) == std::strong_ordering::greater, true));
             expect(eq((opt <=> option::id_num::terminal_type) == std::strong_ordering::equal, true));
             expect(eq((opt <=> option::id_num::linemode) == std::strong_ordering::less, true));
         };
 
         "option implicit conversion to id_num"_test = [] mutable {
-            option opt{option::id_num::gmcp};
-            option::id_num id = opt; // implicit
+            const option opt{option::id_num::gmcp};
+            const option::id_num id = opt; // implicit
             expect(eq(id, option::id_num::gmcp));
             expect(eq(opt == option::id_num::gmcp, true));
             expect(eq(opt != option::id_num::mccp2, true));
         };
 
         "option_registry default empty"_test = [] mutable {
-            option_registry reg{};
+            const option_registry reg{};
             expect(eq(reg.has(option::id_num::echo), false));
             expect(eq(reg.get(option::id_num::echo).has_value(), false));
         };
 
         "option_registry initializer_list construction"_test = [] mutable {
-            option_registry reg{
+            const option_registry reg{
                 option::make_option(option::id_num::echo, "Echo", true, true),
                 option::make_option(option::id_num::suppress_go_ahead, "SGA", true, false),
                 option::make_option(option::id_num::linemode, "Linemode", false, true, true),
@@ -111,7 +113,7 @@ namespace {
             expect(eq(reg.has(option::id_num::echo), true));
             expect(eq(reg.has(option::id_num::terminal_type), false));
 
-            auto maybe_echo = reg.get(option::id_num::echo);
+            const auto maybe_echo = reg.get(option::id_num::echo);
             expect(eq(maybe_echo.has_value(), true));
             expect(eq(maybe_echo->get_name(), /*rhs=*/"Echo"s));
             expect(eq(maybe_echo->supports_local(), true));
@@ -128,7 +130,7 @@ namespace {
 
             // Update existing
             reg.upsert(option::make_option(option::id_num::binary, "Binary Transmission", false, true));
-            auto updated = reg.get(option::id_num::binary);
+            const auto updated = reg.get(option::id_num::binary);
             expect(eq(updated.has_value(), true));
             expect(eq(updated->get_name(), /*rhs=*/"Binary Transmission"s));
             expect(eq(updated->supports_local(), false));
@@ -154,28 +156,28 @@ namespace {
             expect(eq(opt.supports_local(), true));
             expect(eq(opt.supports_remote(), false));
             expect(eq(opt.supports_subnegotiation(), true));
-            expect(eq(opt.max_subnegotiation_size(), /*rhs=*/128UZ));
+            expect(eq(opt.max_subnegotiation_size(), 128UZ));
         };
 
         "option formatter default 'd'"_test = [] mutable {
-            option opt{option::id_num::echo, "Echo"};
-            expect(eq(std::format("{}", opt), /*rhs=*/"0x01 (Echo)"s));
+            const option opt{option::id_num::echo, "Echo"};
+            expect(eq(std::format("{}", opt), "0x01 (Echo)"s));
 
-            option unnamed{option::id_num::xauth};
-            expect(eq(std::format("{}", unnamed), /*rhs=*/"0x29 (unknown)"s));
+            const option unnamed{option::id_num::xauth};
+            expect(eq(std::format("{}", unnamed), "0x29 (unknown)"s));
         };
 
         "option formatter 'n'"_test = [] mutable {
-            option opt{option::id_num::linemode, "Linemode"};
-            expect(eq(std::format("{:n}", opt), /*rhs=*/"Linemode"s));
+            const option opt{option::id_num::linemode, "Linemode"};
+            expect(eq(std::format("{:n}", opt), "Linemode"s));
 
-            option unnamed{option::id_num::mcp};
-            expect(eq(std::format("{:n}", unnamed), /*rhs=*/"unknown"s));
+            const option unnamed{option::id_num::mcp};
+            expect(eq(std::format("{:n}", unnamed), "unknown"s));
         };
 
         "option formatter 'x'"_test = [] mutable {
-            option opt{option::id_num::gmcp};
-            expect(eq(std::format("{:x}", opt), /*rhs=*/"0xc9"s));
+            const option opt{option::id_num::gmcp};
+            expect(eq(std::format("{:x}", opt), "0xc9"s));
         };
     };
 } //namespace

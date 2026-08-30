@@ -23,12 +23,12 @@ using namespace ut;
 using namespace tools::test::coroutine_harness;
 
 namespace {
-    test_task<int> echo(int value)
+    test_task<std::int32_t> echo(std::int32_t value)
     {
         co_return value;
     }
 
-    test_task<test_task<int>> make_echo(int value, base::vocab::alias_ptr<coroutine_probe> probe = nullptr)
+    test_task<test_task<std::int32_t>> make_echo(std::int32_t value, base::vocab::alias_ptr<coroutine_probe> probe = nullptr)
     {
         co_return echo(value).set_probe(probe);
     }
@@ -36,7 +36,7 @@ namespace {
     //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
     suite coroutine_harness_tests = [] mutable {
         "probe initialization"_test = [] mutable {
-            coroutine_probe probe;
+            const coroutine_probe probe;
 
             expect(eq(probe.done, false));
             expect(eq(probe.destroyed, false));
@@ -44,13 +44,14 @@ namespace {
             expect(eq(probe.suspended, false));
             expect(eq(probe.resumed, false));
             expect(eq(probe.moved, false));
-            expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::none)));
+            expect(eq(static_cast<std::int32_t>(probe.await_path), static_cast<std::int32_t>(coroutine_probe::path::none)));
         };
 
         "test_task default-constructs empty"_test = [] mutable {
-            test_task<int> task1;
-            test_task<void> task2;
-            test_task<std::array<int, 1024>> task3;
+            constexpr auto kiloword;
+            const test_task<std::int32_t> task1;
+            const test_task<void> task2;
+            const test_task<std::array<std::int32_t, kiloword>> task3;
 
             expect(eq(static_cast<bool>(task1), false));
             expect(eq(static_cast<bool>(task2), false));
@@ -58,8 +59,9 @@ namespace {
         };
 
         "run returns value"_test = [] mutable {
-            constexpr int expected = 42;
-            auto task              = echo(expected);
+            constexpr std::int32_t expected = 42;
+
+            auto task = echo(expected);
 
             const auto result = run(task);
 
@@ -119,7 +121,7 @@ namespace {
                 expect(eq(probe.done, true));
                 expect(eq(probe.destroyed, false));
                 expect(eq(probe.moved, false));
-                expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
+                expect(eq(static_cast<std::int32_t>(probe.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
             }
 
             expect(eq(probe.destroyed, true));
@@ -137,7 +139,7 @@ namespace {
             expect(eq(probe.resumed, true));
             expect(eq(probe.done, true));
             expect(eq(probe.moved, false)); //rvalue used in-place
-            expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
+            expect(eq(static_cast<std::int32_t>(probe.await_path), static_cast<std::int32_t>(coroutine_probe::path::rvalue)));
         };
 
         "premature destruction"_test = [] mutable {
@@ -153,7 +155,7 @@ namespace {
         "premature destruction throws without probe"_test = [] mutable {
             bool threw = false;
             try {
-                auto unawaited_task = echo({});
+                const auto unawaited_task = echo({});
             } catch (const std::logic_error&) {
                 threw = true;
             }
@@ -161,8 +163,8 @@ namespace {
         };
 
         "swap exchanges tasks and preserves invariants"_test = [] mutable {
-            constexpr int expected1 = 1; //A
-            constexpr int expected2 = 2; //B
+            constexpr std::int32_t expected1 = 1; //A
+            constexpr std::int32_t expected2 = 2; //B
 
             coroutine_probe probe1{};
             coroutine_probe probe2{};
@@ -209,8 +211,8 @@ namespace {
         };
 
         "swap is its own inverse operation (involution)"_test = [] mutable {
-            constexpr int expected1 = 1; //A
-            constexpr int expected2 = 2; //B
+            constexpr std::int32_t expected1 = 1; //A
+            constexpr std::int32_t expected2 = 2; //B
 
             coroutine_probe probe1{};
             coroutine_probe probe2{};
@@ -243,7 +245,7 @@ namespace {
         };
 
         "self-swap is idempotent"_test = [] mutable {
-            constexpr int expected = 42;
+            constexpr std::int32_t expected = 42;
 
             coroutine_probe probe{};
 
@@ -273,8 +275,8 @@ namespace {
         };
 
         "move assignment sets moved and destroys assigned-to"_test = [] mutable {
-            constexpr int expected  = 5;
-            constexpr int discarded = 10;
+            constexpr std::int32_t expected  = 5;
+            constexpr std::int32_t discarded = 10;
 
             coroutine_probe probe1;
             coroutine_probe probe2;
@@ -304,7 +306,7 @@ namespace {
 #pragma GCC diagnostic ignored "-Wself-assign"
 #pragma GCC diagnostic ignored "-Wself-move"
         "self assignment is safe"_test = [] mutable {
-            constexpr int expected = 42;
+            constexpr std::int32_t expected = 42;
             coroutine_probe probe;
 
             auto task = echo(expected);
@@ -316,12 +318,12 @@ namespace {
 #pragma GCC diagnostic pop
 
         "task factory"_test = [] mutable {
-            constexpr int expected = 42;
+            constexpr std::int32_t expected = 42;
 
             coroutine_probe factory_probe;
             coroutine_probe task_probe;
 
-            test_task<int> task;
+            test_task<std::int32_t> task;
 
             { //make sure factory is destroyed before we run the result task
                 auto factory = make_echo(expected, &task_probe);
@@ -393,7 +395,7 @@ namespace {
 
             auto task2 = std::move(task1); //move construction
 
-            expect(eq(static_cast<bool>(task1), false));
+            expect(eq(static_cast<bool>(task1), false)); //NOLINT(bugprone-use-after-move): Testing moved-from state.
 
             bool threw = false;
             try {
@@ -412,7 +414,7 @@ namespace {
 
             task2 = std::move(task1); //move assignment
 
-            expect(eq(static_cast<bool>(task1), false));
+            expect(eq(static_cast<bool>(task1), false)); //NOLINT(bugprone-use-after-move): Testing moved-from state.
 
             bool threw = false;
             try {
@@ -424,14 +426,14 @@ namespace {
         };
 
         "exception propagates"_test = [] mutable {
-            auto task = [] -> test_task<int> {
+            auto task = [] -> test_task<std::int32_t> {
                 throw std::runtime_error("boom");
                 co_return {};
             }();
 
             bool threw = false;
             try {
-                [[maybe_unused]] auto result = run(task);
+                [[maybe_unused]] const auto result = run(task);
             } catch (const std::runtime_error&) {
                 threw = true;
             }
@@ -441,7 +443,7 @@ namespace {
         "stalled coroutine detected"_test = [] mutable {
             coroutine_probe probe;
 
-            auto make_task = [&] -> test_task<void> { co_await std::suspend_always{}; };
+            const auto make_task = [&] -> test_task<void> { co_await std::suspend_always{}; };
 
             auto task = make_task();
 
@@ -460,10 +462,10 @@ namespace {
         };
 
         "nested coroutine await"_test = [] mutable {
-            constexpr int dividend   = 42;
-            constexpr int divisor    = 7;
-            constexpr int subtrahend = 1;
-            constexpr int expected   = (dividend / divisor) - subtrahend;
+            constexpr std::int32_t dividend   = 42;
+            constexpr std::int32_t divisor    = 7;
+            constexpr std::int32_t subtrahend = 1;
+            constexpr std::int32_t expected   = (dividend / divisor) - subtrahend;
 
             coroutine_probe probeA;
             coroutine_probe probeB;
@@ -479,10 +481,10 @@ namespace {
             auto taskB = echo(divisor).set_probe(&probeB);
 
             // Factory for rvalue task
-            auto make_taskC = [] -> test_task<int> { co_return co_await echo(subtrahend); };
+            const auto make_taskC = [] -> test_task<std::int32_t> { co_return co_await echo(subtrahend); };
 
-            auto make_taskE = [&] -> test_task<int> {
-                int quotient = 0; //42 / 7 == 6
+            const auto make_taskE = [&] -> test_task<std::int32_t> {
+                std::int32_t quotient = 0; //42 / 7 == 6
                 co_await [&] -> test_task<void> {
                     quotient = (co_await taskA) / (co_await taskB);
                     co_return;
@@ -495,7 +497,7 @@ namespace {
             auto taskE = make_taskE();
             taskE.set_probe(&probeE);
 
-            const int result = run(taskE);
+            const std::int32_t result = run(taskE);
             expect(eq(result, expected));
 
             // Assertions for taskA (unmoved lvalue)
@@ -505,7 +507,7 @@ namespace {
             expect(eq(probeA.moved, false));
             expect(eq(probeA.done, true));
             expect(eq(probeA.destroyed, false));
-            expect(eq(static_cast<int>(probeA.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
+            expect(eq(static_cast<std::int32_t>(probeA.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
 
             // Assertions for taskB (moved lvalue)
             expect(eq(probeB.awaited, true));
@@ -514,7 +516,7 @@ namespace {
             expect(eq(probeB.moved, true));
             expect(eq(probeB.done, true));
             expect(eq(probeB.destroyed, false));
-            expect(eq(static_cast<int>(probeB.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
+            expect(eq(static_cast<std::int32_t>(probeB.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
 
             // Assertions for taskC (rvalue)
             expect(eq(probeC.awaited, true));
@@ -523,7 +525,7 @@ namespace {
             expect(eq(probeC.moved, false)); // rvalue temporary is never moved after probe is attached
             expect(eq(probeC.done, true));
             expect(eq(probeC.destroyed, true));
-            expect(eq(static_cast<int>(probeC.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
+            expect(eq(static_cast<std::int32_t>(probeC.await_path), static_cast<std::int32_t>(coroutine_probe::path::rvalue)));
 
             // Assertions for taskD (unmaterialized rvalue)
             expect(eq(probeD.awaited, true));
@@ -532,7 +534,7 @@ namespace {
             expect(eq(probeD.moved, false));
             expect(eq(probeD.done, true));
             expect(eq(probeD.destroyed, true));
-            expect(eq(static_cast<int>(probeD.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
+            expect(eq(static_cast<std::int32_t>(probeD.await_path), static_cast<std::int32_t>(coroutine_probe::path::rvalue)));
 
             // Assertions for taskE (lvalue)
             expect(eq(probeE.awaited, true));
@@ -541,30 +543,30 @@ namespace {
             expect(eq(probeE.moved, false)); // rvalue returned by lambda used in-place
             expect(eq(probeE.done, true));
             expect(eq(probeE.destroyed, false));
-            expect(eq(static_cast<int>(probeE.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
+            expect(eq(static_cast<std::int32_t>(probeE.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
         };
 
         "continuation chaining preserves strict resume order"_test = [] mutable {
-            std::vector<int> trace;
-            constexpr int first  = 1;
-            constexpr int second = 2;
-            constexpr int third  = 3;
-            constexpr int fourth = 4;
-            constexpr int fifth  = 5;
-            std::vector<int> expected{first, second, third, fourth, fifth};
+            std::vector<std::int32_t> trace;
+            constexpr std::int32_t first  = 1;
+            constexpr std::int32_t second = 2;
+            constexpr std::int32_t third  = 3;
+            constexpr std::int32_t fourth = 4;
+            constexpr std::int32_t fifth  = 5;
+            std::vector<std::int32_t> expected{first, second, third, fourth, fifth};
 
-            auto leaf = [&] -> test_task<void> {
+            const auto leaf = [&] -> test_task<void> {
                 trace.push_back(third);
                 co_return;
             };
 
-            auto mid = [&] -> test_task<void> {
+            const auto mid = [&] -> test_task<void> {
                 trace.push_back(second);
                 co_await leaf();
                 trace.push_back(fourth);
             };
 
-            auto root = [&] -> test_task<void> {
+            const auto root = [&] -> test_task<void> {
                 trace.push_back(first);
                 co_await mid();
                 trace.push_back(fifth);

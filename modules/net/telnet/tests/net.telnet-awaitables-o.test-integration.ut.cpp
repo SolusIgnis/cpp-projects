@@ -19,12 +19,12 @@ namespace {
     using test_wrapper_int  = tagged_awaitable<test_tag, asio::awaitable<int>>;
     using test_wrapper_void = tagged_awaitable<test_tag, asio::awaitable<void>>;
 
-    asio::awaitable<int> echo(int value)
+    asio::awaitable<int> echo(std::int32_t value)
     {
         co_return value;
     }
 
-    test_wrapper_int tagged_echo(int value)
+    test_wrapper_int tagged_echo(std::int32_t value)
     {
         co_return value;
     }
@@ -61,7 +61,7 @@ namespace {
         // ============================================================
 
         "tagged_awaitable (un)wraps on assignment to/from asio::awaitable"_test = [] mutable {
-            int expected = 42;
+            constexpr std::int32_t expected = 42;
 
             test_wrapper_int wrapped       = echo(expected);
             asio::awaitable<int> unwrapped = std::move(wrapped);
@@ -76,7 +76,7 @@ namespace {
         };
 
         "tagged_awaitable forwards result correctly"_test = [] mutable {
-            int expected = 42;
+            constexpr std::int32_t expected = 42;
 
             asio::io_context ctx;
 
@@ -92,7 +92,7 @@ namespace {
         // ============================================================
 
         "rvalue tagged_awaitable co_await works"_test = [] mutable {
-            int expected = 5;
+            constexpr std::int32_t expected = 5;
 
             asio::io_context ctx;
 
@@ -115,7 +115,7 @@ namespace {
         // ============================================================
 
         "tagged_awaitable composes inside nested coroutines"_test = [] mutable {
-            int expected = 9;
+            constexpr std::int32_t expected = 9;
 
             asio::io_context ctx;
 
@@ -138,7 +138,7 @@ namespace {
         "tagged_awaitable works with void coroutine"_test = [] mutable {
             asio::io_context ctx;
 
-            bool executed = false;
+            constexpr bool executed = false;
 
             auto wrap = [&] mutable -> asio::awaitable<void> {
                 executed = true;
@@ -195,7 +195,7 @@ namespace {
 
         "tagged_awaitable preserves executor context"_test = [] mutable {
             bool ran_on_executor = false;
-            int expected         = 123;
+            std::int32_t expected         = 123;
 
             asio::io_context ctx;
 
@@ -221,10 +221,10 @@ namespace {
         // ============================================================
 
         "tagged_awaitable composes across coroutine layers"_test = [] mutable {
-            int start    = 10;
-            int inc      = 5;
-            int mult     = 2;
-            int expected = (start + inc) * mult;
+            constexpr std::int32_t start    = 10;
+            constexpr std::int32_t inc      = 5;
+            constexpr std::int32_t mult     = 2;
+            constexpr std::int32_t expected = (start + inc) * mult;
 
             bool ran_on_executor = false;
 
@@ -233,7 +233,7 @@ namespace {
             auto leaf = echo(start);
 
             auto make_middle = [&] mutable -> test_wrapper_int {
-                int res         = co_await std::move(leaf);
+                std::int32_t res         = co_await std::move(leaf);
                 auto exec       = co_await asio::this_coro::executor;
                 ran_on_executor = (exec == ctx.get_executor());
                 co_return res + inc;
@@ -242,7 +242,7 @@ namespace {
             auto middle = make_middle();
 
             auto top = [&] mutable -> asio::awaitable<int> {
-                int res = co_await std::move(middle).get();
+                std::int32_t res = co_await std::move(middle).get();
                 co_return res* mult;
             };
 

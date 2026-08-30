@@ -20,8 +20,8 @@ namespace {
         // ============================================================
 
         "trivial_awaiter_base returns stored value"_test = [] mutable {
-            constexpr int expected = 42;
-            dummies::trivial_awaiter_base<int> base{expected};
+            constexpr std::int32_t expected = 42;
+            dummies::trivial_awaiter_base<std::int32_t> base{expected};
             expect(eq(base.await_resume(), expected));
         };
 
@@ -39,8 +39,8 @@ namespace {
         };
 
         "trivial_awaiter_base supports move-only return types (unique_ptr)"_test = [] mutable {
-            constexpr int expected = 42;
-            dummies::trivial_awaiter_base<std::unique_ptr<int>> base{std::make_unique<int>(expected)};
+            constexpr std::int32_t expected = 42;
+            dummies::trivial_awaiter_base<std::unique_ptr<std::int32_t>> base{std::make_unique<std::int32_t>(expected)};
 
             const auto result = base.await_resume();
 
@@ -51,13 +51,13 @@ namespace {
         };
 
         "trivial_awaiter_base await_resume value category correctness"_test = [] mutable {
-            bool lvalue = requires(int& result, dummies::trivial_awaiter_base<int>& base) { result = base.await_resume(); };
-            bool rvalue = requires(int& result, dummies::trivial_awaiter_base<int>& base) {
-                              result = std::move(base).await_resume();
-                          };
-            bool const_lvalue = const_lvalue_resumable<dummies::trivial_awaiter_base<int>, int>;
-            bool clvalue_move =
-                const_lvalue_resumable<dummies::trivial_awaiter_base<std::unique_ptr<int>>, std::unique_ptr<int>>;
+            constexpr bool lvalue = requires(std::int32_t& result, dummies::trivial_awaiter_base<std::int32_t>& base) { result = base.await_resume(); };
+            constexpr bool rvalue = requires(std::int32_t& result, dummies::trivial_awaiter_base<std::int32_t>& base) {
+                                        result = std::move(base).await_resume();
+                                    };
+            constexpr bool const_lvalue = const_lvalue_resumable<dummies::trivial_awaiter_base<std::int32_t>, std::int32_t>;
+            constexpr bool clvalue_move =
+                const_lvalue_resumable<dummies::trivial_awaiter_base<std::unique_ptr<std::int32_t>>, std::unique_ptr<std::int32_t>>;
 
             expect(eq(const_lvalue, true));
             expect(eq(lvalue, true));
@@ -70,7 +70,7 @@ namespace {
         // ============================================================
 
         "ready_awaiter await_suspend throws (contract enforcement)"_test = [] mutable {
-            dummies::ready_awaiter<int> awaiter{};
+            const dummies::ready_awaiter<std::int32_t> awaiter{};
 
             bool threw = false;
             try {
@@ -82,11 +82,11 @@ namespace {
         };
 
         "ready_awaiter returns value without suspension"_test = [] mutable {
-            int expected = 42;
+            constexpr std::int32_t expected = 42;
 
             coroutine_probe probe;
 
-            auto task = as_task<int>(dummies::ready_awaiter{expected});
+            auto task = as_task<std::int32_t>(dummies::ready_awaiter{expected});
             task.set_probe(&probe);
 
             const auto result = run(task);
@@ -111,11 +111,11 @@ namespace {
         // ============================================================
 
         "immediate_awaiter suspends and resumes"_test = [] mutable {
-            int expected = 7;
+            std::int32_t expected = 7;
 
             coroutine_probe probe;
 
-            auto task = as_task<int>(dummies::immediate_awaiter{expected});
+            auto task = as_task<std::int32_t>(dummies::immediate_awaiter{expected});
 
             task.set_probe(&probe);
 
@@ -140,9 +140,9 @@ namespace {
         };
 
         "immediate_awaiter fallback path (non-test_task)"_test = [] mutable {
-            dummies::immediate_awaiter<void> awaiter{};
+            constexpr dummies::immediate_awaiter<void> awaiter{};
 
-            auto coro         = std::noop_coroutine();
+            const auto coro   = std::noop_coroutine();
             const auto result = awaiter.await_suspend(coro);
 
             // This confirms immediate symmetric transfer back to the caller.
@@ -154,11 +154,11 @@ namespace {
         // ============================================================
 
         "adl awaitable resolves via operator co_await"_test = [] mutable {
-            int expected = 42;
+            constexpr std::int32_t expected = 42;
 
             coroutine_probe probe;
 
-            auto task = as_task<int>(dummies::adl::awaitable_by_adl<int>{expected});
+            auto task = as_task<std::int32_t>(dummies::adl::awaitable_by_adl<std::int32_t>{expected});
 
             task.set_probe(&probe);
 

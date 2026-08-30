@@ -29,19 +29,20 @@ using namespace net::asio_concepts; //NOLINT(google-build-using-namespace)
 // Minimal dummy types for negative testing (intentionally fail concepts)
 // ─────────────────────────────────────────────────────────────────────────────
 
-struct NotABufferSequence {};
+struct not_a_buffer_sequence {};
 
-struct NotACompletionToken {};
+struct not_a_completion_token {};
 
-struct BadSocketOption {
-    [[nodiscard]] int value() const { return 42; } // wrong return type for most cases
+struct bad_socket_option {
+    //NOLINTNEXTLINE(readability-convert-member-functions-to-static): Test fixture.
+    [[nodiscard]] int value() const { return {}; } // wrong return type for most cases
 };
 
-struct NoExecutorType {
+struct no_executor_type {
     // missing get_executor()
 };
 
-struct FakeWaitableNoWait {
+struct fake_waitable_no_wait {
     // missing wait() / async_wait()
 };
 
@@ -59,8 +60,8 @@ int main()
         expect(_b{true} == AsioConstBufferSequence<asio::const_buffer>);
         expect(_b{true} == AsioConstBufferSequence<std::span<const asio::const_buffer>>);
 
-        expect(_b{false} == AsioMutableBufferSequence<NotABufferSequence>);
-        expect(_b{false} == AsioConstBufferSequence<NotABufferSequence>);
+        expect(_b{false} == AsioMutableBufferSequence<not_a_buffer_sequence>);
+        expect(_b{false} == AsioConstBufferSequence<not_a_buffer_sequence>);
     };
 
     "tokens"_test = [] mutable {
@@ -71,7 +72,7 @@ int main()
         expect(_b{true} == AsioWriteToken<decltype(asio::use_awaitable)>);
         expect(_b{true} == AsioConnectToken<decltype(asio::detached)>);
 
-        expect(_b{false} == AsioReadToken<NotACompletionToken>);
+        expect(_b{false} == AsioReadToken<not_a_completion_token>);
     };
 
     "socket_options"_test = [] mutable {
@@ -94,7 +95,7 @@ int main()
         expect(_b{true} == SocketOptionGetter<tcp_socket>);
         expect(_b{true} == SocketOptionSetter<tcp_socket>);
 
-        expect(_b{false} == BooleanSocketOption<BadSocketOption>);
+        expect(_b{false} == BooleanSocketOption<bad_socket_option>);
     };
 
     "io_flags_executor"_test = [] mutable {
@@ -105,7 +106,7 @@ int main()
         expect(_b{true} == AsioExecutorProvider<tcp_socket>);
         expect(_b{true} == AsioExecutorAssociated<tcp_socket>);
 
-        expect(_b{false} == AsioExecutorAssociated<NoExecutorType>);
+        expect(_b{false} == AsioExecutorAssociated<no_executor_type>);
     };
 
     "streams"_test = [] mutable {
@@ -118,7 +119,7 @@ int main()
 
         expect(_b{true} == AsioStream<tcp_socket>);
 
-        expect(_b{false} == AsioAsyncReadStream<NoExecutorType>);
+        expect(_b{false} == AsioAsyncReadStream<no_executor_type>);
     };
 
     "waitables"_test = [] mutable {
@@ -131,7 +132,7 @@ int main()
         expect(_b{true} == AsioAsyncActivityWaitable<tcp_socket>);
         expect(_b{true} == AsioSyncActivityWaitable<tcp_socket>);
 
-        expect(_b{false} == AsioAsyncTimedWaitable<FakeWaitableNoWait>);
+        expect(_b{false} == AsioAsyncTimedWaitable<fake_waitable_no_wait>);
     };
 
     "transmission"_test = [] mutable {
@@ -189,8 +190,8 @@ int main()
         expect(_b{true} == AsioLayerableStreamSocket<ssl_stream>);
 #endif
 
-        expect(_b{false} == AsioSocket<NotABufferSequence>);
-        expect(_b{false} == AsioStreamSocket<BadSocketOption>);
+        expect(_b{false} == AsioSocket<not_a_buffer_sequence>);
+        expect(_b{false} == AsioStreamSocket<bad_socket_option>);
     };
 
     // All tests are now registered — ut will run them and report results

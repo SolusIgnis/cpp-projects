@@ -36,17 +36,17 @@ namespace {
         // ============================================================
 
         "telnet_error_category singleton identity"_test = [] mutable {
-            const auto& a = telnet_error_category::instance();
-            const auto& b = telnet_error_category::instance();
+            const auto& ref1 = telnet_error_category::instance();
+            const auto& ref2 = telnet_error_category::instance();
 
-            expect(eq(&a, &b));
+            expect(eq(&ref1, &ref2));
         };
 
         "telnet_processing_signal_category singleton identity"_test = [] mutable {
-            const auto& a = telnet_processing_signal_category::instance();
-            const auto& b = telnet_processing_signal_category::instance();
+            const auto& ref1 = telnet_processing_signal_category::instance();
+            const auto& ref2 = telnet_processing_signal_category::instance();
 
-            expect(eq(&a, &b));
+            expect(eq(&ref1, &ref2));
         };
 
         "telnet_error_category name"_test = [] mutable {

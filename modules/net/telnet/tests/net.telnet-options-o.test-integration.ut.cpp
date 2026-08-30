@@ -49,12 +49,14 @@ namespace {
         };
 
         "upsert with error_code does not set error on success"_test = [] mutable {
+            constexpr auto no_error{0};
+
             option_registry registry{};
 
             std::error_code ec;
             registry.upsert(option{option::id_num::binary, "Binary"}, ec);
 
-            expect(eq(ec.value(), 0));
+            expect(eq(ec.value(), no_error));
         };
     };
 
@@ -65,33 +67,33 @@ namespace {
         "default format prints hex and name"_test = [] mutable {
             option opt{option::id_num::binary, "Binary"};
 
-            auto s = std::format("{}", opt);
+            const auto formatted = std::format("{}", opt);
 
-            expect(eq(s, std::string{"0x00 (Binary)"}));
+            expect(eq(formatted, std::string{"0x00 (Binary)"}));
         };
 
         "name-only format"_test = [] mutable {
             option opt{option::id_num::binary, "Binary"};
 
-            auto s = std::format("{:n}", opt);
+            const auto formatted = std::format("{:n}", opt);
 
-            expect(eq(s, std::string{"Binary"}));
+            expect(eq(formatted, std::string{"Binary"}));
         };
 
         "hex-only format"_test = [] mutable {
             option opt{option::id_num::binary, "Binary"};
 
-            auto s = std::format("{:x}", opt);
+            const auto formatted = std::format("{:x}", opt);
 
-            expect(eq(s, std::string{"0x00"}));
+            expect(eq(formatted, std::string{"0x00"}));
         };
 
         "empty name formats as unknown"_test = [] mutable {
             option opt{option::id_num::binary};
 
-            auto s = std::format("{:n}", opt);
+            const auto formatted = std::format("{:n}", opt);
 
-            expect(eq(s, std::string{"unknown"}));
+            expect(eq(formatted, std::string{"unknown"}));
         };
     };
 } //namespace

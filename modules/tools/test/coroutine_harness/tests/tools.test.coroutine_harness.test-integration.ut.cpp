@@ -13,15 +13,15 @@ namespace {
     //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
     suite coroutine_harness_integration_tests = [] mutable {
         "mega coroutine harness: full integration"_test = [] mutable {
-            constexpr int first   = 1;
-            constexpr int second  = 2;
-            constexpr int third   = 3;
-            constexpr int fourth  = 4;
-            constexpr int fifth   = 5;
-            constexpr int sixth   = 6;
-            constexpr int seventh = 7;
+            constexpr std::int32_t first   = 1;
+            constexpr std::int32_t second  = 2;
+            constexpr std::int32_t third   = 3;
+            constexpr std::int32_t fourth  = 4;
+            constexpr std::int32_t fifth   = 5;
+            constexpr std::int32_t sixth   = 6;
+            constexpr std::int32_t seventh = 7;
 
-            std::vector<int> trace;
+            std::vector<std::int32_t> trace;
 
             coroutine_probe probeIntLvalue;
             coroutine_probe probeIntRvalue;
@@ -35,22 +35,22 @@ namespace {
             // -------------------------------
 
             // int via ready_awaiter (lvalue)
-            auto leafIntL = [&] -> test_task<int> {
+            auto leafIntL = [&] -> test_task<std::int32_t> {
                 trace.push_back(second);
-                co_return run(as_task<int>(dummies::ready_awaiter{42}));
+                co_return run(as_task<std::int32_t>(dummies::ready_awaiter{42}));
             };
 
             // int via ready_awaiter (rvalue)
-            auto leafIntR = [&] -> test_task<int> {
+            auto leafIntR = [&] -> test_task<std::int32_t> {
                 trace.push_back(third);
-                co_return run(as_task<int>(dummies::ready_awaiter{58}));
+                co_return run(as_task<std::int32_t>(dummies::ready_awaiter{58}));
             };
 
             // unique_ptr via immediate_awaiter
-            auto leafPtr = [&] -> test_task<std::unique_ptr<int>> {
+            auto leafPtr = [&] -> test_task<std::unique_ptr<std::int32_t>> {
                 trace.push_back(fourth);
-                auto awaiter = dummies::immediate_awaiter{std::make_unique<int>(99)};
-                co_return run(as_task<std::unique_ptr<int>>(std::move(awaiter)));
+                auto awaiter = dummies::immediate_awaiter{std::make_unique<std::int32_t>(99)};
+                co_return run(as_task<std::unique_ptr<std::int32_t>>(std::move(awaiter)));
             };
 
             // void via immediate_awaiter
@@ -60,6 +60,7 @@ namespace {
             };
 
             // throwing awaiter
+            //NOLINTBEGIN(readability-convert-member-functions-to-static): Awaiter protocol.
             auto leafThrow = [&] -> test_task<void> {
                 trace.push_back(sixth);
                 struct throwing_awaiter {
@@ -69,16 +70,17 @@ namespace {
                 };
                 co_await as_task<void>(throwing_awaiter{});
             };
+            //NOLINTEND(readability-convert-member-functions-to-static)
 
             // -------------------------------
             // Nested composition task
             // -------------------------------
-            auto make_nested = [&] -> test_task<int> {
+            const auto make_nested = [&] -> test_task<std::int32_t> {
                 trace.push_back(first);
 
-                int valL = co_await leafIntL().set_probe(&probeIntLvalue);            // 42
-                int valR = co_await std::move(leafIntR().set_probe(&probeIntRvalue)); // 58
-                auto ptr = co_await leafPtr().set_probe(&probePtr);                   // 99
+                const std::int32_t valL = co_await leafIntL().set_probe(&probeIntLvalue);            // 42
+                const std::int32_t valR = co_await std::move(leafIntR().set_probe(&probeIntRvalue)); // 58
+                const auto ptr = co_await leafPtr().set_probe(&probePtr);                   // 99
                 co_await leafVoid().set_probe(&probeVoid);                            // void task
 
                 // Exception propagation check
@@ -101,17 +103,17 @@ namespace {
             // -------------------------------
             // Run mega-task
             // -------------------------------
-            int result = run(nested);
+            const auto result = run(nested);
 
             // -------------------------------
             // Verify result
             // -------------------------------
-            expect(eq(result, /*rhs=*/199));
+            expect(eq(result, 199));
 
             // -------------------------------
             // Verify trace order
             // -------------------------------
-            std::vector<int> expectedTrace{first, second, third, fourth, fifth, sixth, seventh};
+            std::vector<std::int32_t> expectedTrace{first, second, third, fourth, fifth, sixth, seventh};
             expect(eq(trace.size(), expectedTrace.size()));
             for (std::size_t i = 0; i < trace.size(); ++i) {
                 expect(eq(trace[i], expectedTrace[i]));
