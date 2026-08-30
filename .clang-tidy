@@ -375,8 +375,8 @@ CheckOptions:
   readability-enum-initial-value.AllowExplicitSequentialInitialValues: 'true'
   readability-enum-initial-value.AllowExplicitZeroFirstInitialValue:   'true'
   
-  readability-identifier-length.IgnoredParameterNames:        '^[n]$|^ec$|^id$'
-  readability-identifier-length.IgnoredVariableNames:         '^ec$|^id$'
+  readability-identifier-length.IgnoredParameterNames:        '^([nx]|ec|id)$'
+  readability-identifier-length.IgnoredVariableNames:         '^([ij]|ec|id)$'
   readability-identifier-length.MinimumExceptionNameLength:   '2'
   readability-identifier-length.MinimumLoopCounterNameLength: '2'
   readability-identifier-length.MinimumParameterNameLength:   '3'
