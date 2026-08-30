@@ -13,20 +13,23 @@ using namespace ut;
 using namespace base::vocab::ptr;
 
 namespace {
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct mixin_1 {
         virtual ~mixin_1()         = default; //NOLINT(cppcoreguidelines-special-member-functions): Trivial fixture.
         virtual std::int32_t bar() = 0;
     };
 
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct mixin_2 {
         virtual ~mixin_2() = default; //NOLINT(cppcoreguidelines-special-member-functions): Trivial fixture.
 
         [[nodiscard]] std::size_t foo(this auto&& self) { return sizeof(self); }
     };
 
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct base_type : mixin_1,
                        mixin_2 {
-        ~base_type() override = default; //NOLINT(cppcoreguidelines-special-member-functions): Trivial fixture.
+        ~base_type() override = default;
 
         static inline constexpr std::int32_t default_value{0};
         std::int32_t value{default_value};
@@ -58,8 +61,8 @@ namespace {
         using value_type     = pointer::value_type;
 
     private:
-        element_type storage
-            [N]{}; //NOLINT(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays): This fixture needs raw storage to test the vocabulary pointers. It is essentially implementing an analogue to `std::array`.
+        //NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays): This fixture needs raw storage to test the vocabulary pointers. It is essentially implementing an analogue to `std::array`.
+        element_type storage[N]{};
 
     public:
         [[nodiscard]] constexpr size_type size() const noexcept { return N; }
@@ -164,14 +167,14 @@ namespace {
         "vocabulary pointers interoperate with unordered associative containers"_test = [] mutable {
             std::unordered_set<alias_ptr<const char>> test_set;
             //Note, we get an automatic null check when converting to `required_ptr` to access the map.
-            std::unordered_map<required_ptr<const char>, std::int32_t> test_map;
+            std::unordered_map<required_ptr<const char>, std::int64_t> test_map;
 
             constexpr auto data = "This is a test.";
             std::string_view sview{data};
 
-            const std::int32_t i_count = std::ranges::count(sview, 'i');
-            const std::int32_t s_count = std::ranges::count(sview, 's');
-            const std::int32_t t_count = std::ranges::count(sview, 't');
+            const auto i_count = std::ranges::count(sview, 'i');
+            const auto s_count = std::ranges::count(sview, 's');
+            const auto t_count = std::ranges::count(sview, 't');
 
             for (cursor_ptr<const char> datum{data[0]}; *datum != '\0'; ++datum) {
                 //Convert the `cursor_ptr` to `required_ptr` to populate the map.
@@ -197,11 +200,11 @@ namespace {
                 expect(eq(wrong_exception, false));
             }
 
-            lookup = (data + 5);
+            lookup = (data + 5); //NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-avoid-magic-numbers)
 
             expect(eq(test_map[lookup], i_count));
-            expect(eq(test_map[required_ptr{data[6]}], s_count));
-            expect(eq(test_map[cursor_ptr{data} + 10], t_count));
+            expect(eq(test_map[required_ptr{data[6]}], s_count)); //NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-avoid-magic-numbers)
+            expect(eq(test_map[cursor_ptr{data} + 10], t_count)); //NOLINT(cppcoreguidelines-avoid-magic-numbers, readability-avoid-magic-numbers)
 
             expect(eq(test_set.contains(lookup), true));
             expect(eq(test_set.size(), sview.size()));
