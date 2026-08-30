@@ -48,7 +48,7 @@ namespace {
         };
 
         "test_task default-constructs empty"_test = [] mutable {
-            constexpr auto kiloword;
+            constexpr auto kiloword{1024};
             const test_task<std::int32_t> task1;
             const test_task<void> task2;
             const test_task<std::array<std::int32_t, kiloword>> task3;
