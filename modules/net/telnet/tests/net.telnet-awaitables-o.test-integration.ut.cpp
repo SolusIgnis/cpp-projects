@@ -138,7 +138,7 @@ namespace {
         "tagged_awaitable works with void coroutine"_test = [] mutable {
             asio::io_context ctx;
 
-            constexpr bool executed = false;
+            bool executed = false;
 
             auto wrap = [&] mutable -> asio::awaitable<void> {
                 executed = true;
