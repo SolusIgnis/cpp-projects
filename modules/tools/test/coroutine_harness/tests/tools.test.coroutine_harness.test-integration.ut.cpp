@@ -80,8 +80,8 @@ namespace {
 
                 const std::int32_t valL = co_await leafIntL().set_probe(&probeIntLvalue);            // 42
                 const std::int32_t valR = co_await std::move(leafIntR().set_probe(&probeIntRvalue)); // 58
-                const auto ptr = co_await leafPtr().set_probe(&probePtr);                   // 99
-                co_await leafVoid().set_probe(&probeVoid);                            // void task
+                const auto ptr          = co_await leafPtr().set_probe(&probePtr);                   // 99
+                co_await leafVoid().set_probe(&probeVoid);                                           // void task
 
                 // Exception propagation check
                 bool threw = false;

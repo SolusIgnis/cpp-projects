@@ -277,7 +277,9 @@ namespace {
         };
 
         "tagged_awaitable usable as coroutine return type"_test = [] mutable {
-            const auto tagged_echo_coro = [](std::int32_t value) -> tagged_awaitable<test_tag, test_task<std::int32_t>> { co_return value; };
+            const auto tagged_echo_coro = [](std::int32_t value) -> tagged_awaitable<test_tag, test_task<std::int32_t>> {
+                co_return value;
+            };
 
             constexpr std::int32_t expected = 42;
 

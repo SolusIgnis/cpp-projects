@@ -136,7 +136,7 @@ namespace {
 
         "as_task supports wrapping a test_task"_test = [] mutable {
             constexpr int expected = 42;
-            const auto result  = run(as_task<int>(echo(expected)));
+            const auto result      = run(as_task<int>(echo(expected)));
 
             expect(eq(result, expected));
         };

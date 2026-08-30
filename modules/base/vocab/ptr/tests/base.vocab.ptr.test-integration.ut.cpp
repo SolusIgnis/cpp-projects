@@ -58,7 +58,8 @@ namespace {
         using value_type     = pointer::value_type;
 
     private:
-        element_type storage[N]{}; //NOLINT(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays): This fixture needs raw storage to test the vocabulary pointers. It is essentially implementing an analogue to `std::array`.
+        element_type storage
+            [N]{}; //NOLINT(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays): This fixture needs raw storage to test the vocabulary pointers. It is essentially implementing an analogue to `std::array`.
 
     public:
         [[nodiscard]] constexpr size_type size() const noexcept { return N; }
@@ -167,7 +168,7 @@ namespace {
 
             constexpr auto data = "This is a test.";
             std::string_view sview{data};
-            
+
             const std::int32_t i_count = std::ranges::count(sview, 'i');
             const std::int32_t s_count = std::ranges::count(sview, 's');
             const std::int32_t t_count = std::ranges::count(sview, 't');

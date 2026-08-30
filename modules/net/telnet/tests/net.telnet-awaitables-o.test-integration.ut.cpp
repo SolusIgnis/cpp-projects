@@ -194,8 +194,8 @@ namespace {
         // ============================================================
 
         "tagged_awaitable preserves executor context"_test = [] mutable {
-            bool ran_on_executor = false;
-            std::int32_t expected         = 123;
+            bool ran_on_executor  = false;
+            std::int32_t expected = 123;
 
             asio::io_context ctx;
 
@@ -233,9 +233,9 @@ namespace {
             auto leaf = echo(start);
 
             auto make_middle = [&] mutable -> test_wrapper_int {
-                std::int32_t res         = co_await std::move(leaf);
-                auto exec       = co_await asio::this_coro::executor;
-                ran_on_executor = (exec == ctx.get_executor());
+                std::int32_t res = co_await std::move(leaf);
+                auto exec        = co_await asio::this_coro::executor;
+                ran_on_executor  = (exec == ctx.get_executor());
                 co_return res + inc;
             };
 

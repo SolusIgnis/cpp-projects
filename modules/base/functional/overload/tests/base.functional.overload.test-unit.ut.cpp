@@ -57,7 +57,7 @@ namespace {
             const std::int32_t result1 = overloaded(arg1);
             expect(eq(result1, expected1));
 
-            const std::int32_t result2  = overloaded(arg1, arg2);
+            const std::int32_t result2 = overloaded(arg1, arg2);
             expect(eq(result2, expected2));
         };
 

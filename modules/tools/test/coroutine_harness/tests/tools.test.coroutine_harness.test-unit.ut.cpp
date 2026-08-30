@@ -121,7 +121,9 @@ namespace {
                 expect(eq(probe.done, true));
                 expect(eq(probe.destroyed, false));
                 expect(eq(probe.moved, false));
-                expect(eq(static_cast<std::int32_t>(probe.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
+                expect(
+                    eq(static_cast<std::int32_t>(probe.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue))
+                );
             }
 
             expect(eq(probe.destroyed, true));
