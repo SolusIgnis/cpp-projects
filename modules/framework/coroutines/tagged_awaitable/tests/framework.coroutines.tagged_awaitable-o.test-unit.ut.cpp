@@ -243,7 +243,7 @@ namespace {
 
         "tagged_awaitable converts to underlying awaitable"_test = [] mutable {
             constexpr std::int32_t expected = 42;
-            const auto wrapped{echo(expected)};
+            auto wrapped{echo(expected)};
 
             const auto run_underlying = [](test_task<std::int32_t> task) { return run(task); };
 
