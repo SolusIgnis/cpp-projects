@@ -77,9 +77,9 @@ namespace {
             const option sga{option::id_num::suppress_go_ahead, "SGA"};
             const option echo2{option::id_num::echo, "Echo again"};
 
-            expect(eq((echo <=> sga) == std::strong_ordering::less, true));
-            expect(eq((sga <=> echo) == std::strong_ordering::greater, true));
-            expect(eq((echo <=> echo2) == std::strong_ordering::equal, true));
+            expect(eq((echo1 <=> sga) == std::strong_ordering::less, true));
+            expect(eq((sga <=> echo1) == std::strong_ordering::greater, true));
+            expect(eq((echo1 <=> echo2) == std::strong_ordering::equal, true));
         };
 
         "option comparison with id_num"_test = [] mutable {
