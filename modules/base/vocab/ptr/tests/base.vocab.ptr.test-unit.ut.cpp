@@ -62,11 +62,11 @@ namespace {
     template<typename Lambda>
     constexpr void test_each_pointer_type_with(Lambda&& test_impl)
     {
-        test_impl.template operator()<base::vocab::ptr::dependency_ptr>();
-        test_impl.template operator()<base::vocab::ptr::required_ptr>();
-        test_impl.template operator()<base::vocab::ptr::alias_ptr>();
-        test_impl.template operator()<base::vocab::ptr::cursor_ptr>();
-        test_impl.template operator()<base::vocab::ptr::iterator_ptr>();
+        std::forward<Lambda>(test_impl).template operator()<base::vocab::ptr::dependency_ptr>();
+        std::forward<Lambda>(test_impl).template operator()<base::vocab::ptr::required_ptr>();
+        std::forward<Lambda>(test_impl).template operator()<base::vocab::ptr::alias_ptr>();
+        std::forward<Lambda>(test_impl).template operator()<base::vocab::ptr::cursor_ptr>();
+        std::forward<Lambda>(test_impl).template operator()<base::vocab::ptr::iterator_ptr>();
     }
 
     template<typename T>
@@ -540,9 +540,9 @@ namespace {
 
                 pointee_t obj{};
 
-                auto class_ptr = pointer_t::pointer_to(obj);
-                auto trait_ptr = std::pointer_traits<pointer_t>::pointer_to(obj);
-                auto free_ptr  = base::vocab::ptr::pointer_to<ConcretePtr>(obj);
+                const auto class_ptr = pointer_t::pointer_to(obj);
+                const auto trait_ptr = std::pointer_traits<pointer_t>::pointer_to(obj);
+                const auto free_ptr  = base::vocab::ptr::pointer_to<ConcretePtr>(obj);
 
                 expect(eq(std::same_as<decltype(class_ptr), pointer_t>, true));
                 expect(eq(std::same_as<decltype(trait_ptr), pointer_t>, true));
@@ -561,7 +561,7 @@ namespace {
 
                 pointee_t obj{};
 
-                auto ptr = pointer_t::pointer_to(obj);
+                const auto ptr = pointer_t::pointer_to(obj);
 
                 expect(eq(
                     std::same_as<decltype(std::pointer_traits<pointer_t>::to_address(ptr)), typename pointer_t::address_type>,
@@ -577,7 +577,7 @@ namespace {
         "operator* dereferences correctly"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value = 55;
-                auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
+                const auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
 
                 expect(eq(*ptr, value));
             });
@@ -594,11 +594,11 @@ namespace {
 
                 base_type c_obj;
                 c_obj.value = 123;
-                auto ptr1   = base::vocab::pointer_to<ConcretePtr>(c_obj);
+                const auto ptr1   = base::vocab::pointer_to<ConcretePtr>(c_obj);
 
                 union_type u_obj{};
                 u_obj.value = 321;
-                auto ptr2   = base::vocab::pointer_to<ConcretePtr>(u_obj);
+                const auto ptr2   = base::vocab::pointer_to<ConcretePtr>(u_obj);
 
                 expect(eq(ptr1->value, c_obj.value));
                 expect(eq(ptr2->value, u_obj.value));
@@ -631,7 +631,7 @@ namespace {
         "conversion to raw pointer preserves address"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const std::int32_t value{};
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                 const std::int32_t* raw = ptr;
 
@@ -644,7 +644,7 @@ namespace {
                 expect(eq(std::constructible_from<bool, ConcretePtr<std::int32_t>>, true));
 
                 const std::int32_t value{};
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                 bool converted{false};
                 if (ptr) {
@@ -1599,10 +1599,10 @@ namespace {
 
                     constexpr std::ptrdiff_t step = 2;
 
-                    auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
+                    const auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
 
-                    auto advanced = ptr + step;
-                    auto clone    = ptr;
+                    const auto advanced = ptr + step;
+                    auto clone          = ptr;
 
                     expect(eq(clone, ptr));
                     expect(neq(clone, advanced));
@@ -1626,8 +1626,8 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {10, 20, 30, 40};
 
-                    auto first = base::vocab::pointer_to<ConcretePtr>(values[0]);
-                    auto last  = base::vocab::pointer_to<ConcretePtr>(values[3]);
+                    const auto first = base::vocab::pointer_to<ConcretePtr>(values[0]);
+                    const auto last  = base::vocab::pointer_to<ConcretePtr>(values[3]);
 
                     expect(eq(last - first, /*rhs=*/3L));
                 }
@@ -1661,7 +1661,7 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {5, 6, 7, 8};
 
-                    auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
+                    const auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -1678,7 +1678,7 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     std::int32_t values[] = {1, 2, 3, 4};
 
-                    auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
+                    const auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
 
                     expect(eq((ptr + 3).get(), values + 3));
                     expect(eq((3 + ptr).get(), values + 3));
@@ -1693,7 +1693,7 @@ namespace {
         "const element forbids mutation through dereference"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const std::int32_t value{};
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                 // Compile-time: *ptr must NOT be assignable
                 constexpr bool can_assign = std::is_assignable_v<decltype(*ptr), std::int32_t>;
@@ -1702,14 +1702,22 @@ namespace {
             });
         };
 
-        "non-const element allows mutation"_test = [] mutable {
+        "const pointer prevents rebinding but not mutation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                std::int32_t value = 5;
-                auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
+                constexpr auto initial{5};
+                constexpr auto expected{10};
 
-                *ptr = 10;
+                auto value     = initial;
+                const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-                expect(eq(value, /*rhs=*/10));
+                *ptr = expected;
+
+                constexpr bool can_rebind = std::is_assignable_v<decltype(ptr)&, const decltype(ptr)&>;
+
+                expect(eq(can_rebind, false));
+
+                expect(neq(value, initial));
+                expect(eq(value, expected));
             });
         };
 
@@ -1729,21 +1737,7 @@ namespace {
             });
         };
 
-        "const pointer prevents rebinding but not mutation"_test = [] mutable {
-            test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                std::int32_t value{};
-
-                const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
-
-                *ptr = 10; // allowed
-
-                constexpr bool can_rebind = std::is_assignable_v<const ConcretePtr<std::int32_t>&, std::int32_t&>;
-
-                expect(eq(value, /*rhs=*/10));
-                expect(eq(can_rebind, false));
-            });
-        };
-
+        //NOLINTBEGIN(misc-const-correctness): Readability suffers with const correctness in this test.
         "qualification climbing construction and assignment"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value{42};
@@ -1760,11 +1754,13 @@ namespace {
                 expect(eq(const_copy.get() == mutable_ptr.get(), true));
             });
         };
+        //NOLINTEND(misc-const-correctness)
 
         "volatile qualifier preservation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
+                //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture needs a meaningless number.
                 volatile std::int32_t hardware_register = 0xAA;
-                auto ptr                                = base::vocab::pointer_to<ConcretePtr>(hardware_register);
+                const auto ptr                          = base::vocab::pointer_to<ConcretePtr>(hardware_register);
 
                 //Ensure the raw pointer retrieved is also volatile
                 expect(eq(std::same_as<decltype(ptr.get()), volatile std::int32_t*>, true));
@@ -1802,10 +1798,10 @@ namespace {
 
         "implicit conversion works with raw pointer API"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                auto takes_ptr = [](const std::int32_t* p) { return *p; };
+                const auto takes_ptr = [](const std::int32_t* p) { return *p; };
 
                 std::int32_t value = 3;
-                auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
+                const auto ptr     = base::vocab::pointer_to<ConcretePtr>(value);
 
                 expect(eq(takes_ptr(ptr), value));
             });
@@ -1816,7 +1812,7 @@ namespace {
                 auto takes_ptr = [](const std::int32_t* p) { return *p; };
 
                 std::int32_t value = 4;
-                auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
+                const auto ptr     = base::vocab::pointer_to<ConcretePtr>(value);
 
                 expect(eq(takes_ptr(ptr.get()), value));
             });
@@ -1834,7 +1830,7 @@ namespace {
 
                 expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, decltype(array[0])>, true));
 
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(array[1]);
+                const auto ptr = base::vocab::pointer_to<ConcretePtr>(array[1]);
 
                 //Ensure binding to the element is equivalent to expected array-to-pointer decay with pointer offset arithmetic
                 expect(eq(ptr.get(), array + 1));
@@ -1857,7 +1853,7 @@ namespace {
 
                 expect(eq(std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array[0])>, true));
 
-                auto ptr = base::vocab::pointer_to<ConcretePtr, std::int32_t[3]>(array[1]);
+                const auto ptr = base::vocab::pointer_to<ConcretePtr, std::int32_t[3]>(array[1]);
 
                 //Ensure binding to the element is equivalent to expected array-to-pointer decay with pointer offset arithmetic
                 expect(eq(ptr.get(), array + 1));
@@ -1875,7 +1871,8 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     expect(eq(base::meta::concepts::InstantiableWith<ConcretePtr, incomplete_type>, true));
 
-                    auto* raw = reinterpret_cast<incomplete_type*>(0x1234);
+                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture needs a meaningless number.
+                    const auto* raw = reinterpret_cast<incomplete_type*>(0x1234);
 
                     ConcretePtr<incomplete_type> ptr{raw};
 
@@ -1892,7 +1889,7 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 incomplete_type obj{42};
 
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(obj);
+                const auto ptr = base::vocab::pointer_to<ConcretePtr>(obj);
 
                 expect(eq(ptr->value, obj.value));
                 expect(eq((*ptr).value, obj.value));
@@ -1926,7 +1923,7 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
                     std::int32_t x{};
 
-                    auto typed = base::vocab::pointer_to<ConcretePtr>(x);
+                    const auto typed = base::vocab::pointer_to<ConcretePtr>(x);
                     ConcretePtr<void> erased{typed};
 
                     expect(eq(erased.get(), static_cast<void*>(std::addressof(x))));
@@ -1971,7 +1968,7 @@ namespace {
                     expect(eq(std::convertible_to<ConcretePtr<void>, ConcretePtr<std::int32_t>>, false));
 
                     const std::int32_t value{42};
-                    auto typed_ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                    const auto typed_ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                     // Should be implicit (convertible)
                     auto takes_void = [](ConcretePtr<const void> ptr) { return ptr.get(); };

@@ -23,7 +23,7 @@ using base::vocab::alias_ptr;
 namespace {
     //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
     suite overload_tests = [] mutable {
-        //NOLINTBEGIN(performance-unnecessary-value-param): Value categories are selected for overload resolution testing.
+        //NOLINTBEGIN(performance-unnecessary-value-param, performance-move-const-arg): Value categories are selected for overload resolution testing.
         "overload{...} produces an invocable object"_test = [] mutable {
             constexpr std::int32_t expected = 42;
 
@@ -91,7 +91,7 @@ namespace {
             const auto extended = overload{
                 base,
                 [](std::string /*unused*/) { return "string"s; },
-                [](std::string_view /*unused*/) { return "string view"s; }
+                [](std::string_view /*unused*/) { return "string view"s; },
             };
 
             //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): The types matter, but the values don't.
@@ -159,6 +159,7 @@ namespace {
                     auto operator()(const char* /*unused*/) { return "fobj1 const char*"s; }
                 };
 
+                //NOLINTNEXTLINE(misc-const-correctness): Non-const to test overload resolution.
                 auto fobj2 = overload{
                     [](int /*unused*/) mutable { return "fobj2 int"s; },            //mutable => non-const operator()
                     [](std::string /*unused*/) mutable { return "fobj2 string"s; }, //mutable => non-const operator()
@@ -306,7 +307,7 @@ namespace {
                 std::tuple{&leaf4, &leaf5},
             };
 
-            node tree{
+            const node tree{
                 std::tuple{&branch2, &branch3},
             };
 

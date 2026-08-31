@@ -189,7 +189,7 @@ namespace {
                 bool threw_when_null = false;
                 bool wrong_exception = false;
                 try {
-                    [[maybe_unused]] auto unused = test_map[lookup];
+                    [[maybe_unused]] const auto unused = test_map[lookup];
                 } catch (const std::invalid_argument&) {
                     threw_when_null = true;
                 } catch (...) {
@@ -206,7 +206,7 @@ namespace {
             expect(eq(test_map[lookup], i_count));
             expect(eq(test_map[required_ptr{data[6]}], s_count));
             expect(eq(test_map[cursor_ptr{data} + 10], t_count));
-            //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-avoid-magic-numbers)
+            //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 
             expect(eq(test_set.contains(lookup), true));
             expect(eq(test_set.size(), sview.size()));

@@ -83,9 +83,9 @@ namespace {
         };
 
         "option three-way comparison (same type)"_test = [] mutable {
-            const option echo1{option::id_num::echo, "Echo"s};
-            const option sga{option::id_num::suppress_go_ahead, "SGA"s};
-            const option echo2{option::id_num::echo, "Echo again"s};
+            const option echo1{option::id_num::echo, /*name=*/"Echo"s};
+            const option sga{option::id_num::suppress_go_ahead, /*name=*/"SGA"s};
+            const option echo2{option::id_num::echo, /*name=*/"Echo again"s};
 
             expect(eq((echo1 <=> sga) == std::strong_ordering::less, true));
             expect(eq((sga <=> echo1) == std::strong_ordering::greater, true));
