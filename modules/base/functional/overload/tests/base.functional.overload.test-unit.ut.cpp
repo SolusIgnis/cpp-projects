@@ -88,8 +88,11 @@ namespace {
         "overload{ overload{...}, ... } composes overload sets"_test = [] {
             const auto base = overload{[](int /*unused*/) { return "int"s; }, [](double /*unused*/) { return "double"s; }};
 
-            const auto extended =
-                overload{base, [](std::string /*unused*/) { return "string"s; }, [](std::string_view /*unused*/) { return "string view"s; }};
+            const auto extended = overload{
+                base,
+                [](std::string /*unused*/) { return "string"s; },
+                [](std::string_view /*unused*/) { return "string view"s; }
+            };
 
             //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): The types matter, but the values don't.
             //NOLINTBEGIN(bugprone-argument-comment): Matcher lhs/rhs.

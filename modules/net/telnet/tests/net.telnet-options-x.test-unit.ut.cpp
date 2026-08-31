@@ -70,8 +70,7 @@ namespace {
             expect(eq(opt1.supports_remote(), false));
             expect(eq(opt1.supports_subnegotiation(), false));
 
-            const auto opt2 =
-                option::make_option(option::id_num::linemode, opt_name2, false, true, true, buffer_size);
+            const auto opt2 = option::make_option(option::id_num::linemode, opt_name2, false, true, true, buffer_size);
             expect(eq(opt2.supports_local(), false));
             expect(eq(opt2.supports_remote(), true));
             expect(eq(opt2.supports_subnegotiation(), true));

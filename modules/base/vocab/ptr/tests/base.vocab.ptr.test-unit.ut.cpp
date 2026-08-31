@@ -292,10 +292,9 @@ namespace {
         "pointer binding according to policies"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const auto
-                    verify_binding_operations = [] <typename Pointee,
-                        typename SourceTag, bool IsConstructibleFrom, bool IsConvertibleFrom,
-                        bool IsAssignableFrom = IsConstructibleFrom && !std::same_as<SourceTag, ref_tag>
-                    > {
+                    verify_binding_operations = [] < typename Pointee,
+                    typename SourceTag, bool IsConstructibleFrom, bool IsConvertibleFrom,
+                    bool IsAssignableFrom = IsConstructibleFrom && !std::same_as<SourceTag, ref_tag> > {
                         //Explicitly constructible unless removing qualifier
                         expect(
                             eq(std::constructible_from<ConcretePtr<Pointee>, source_t<Pointee, SourceTag>>, IsConstructibleFrom)

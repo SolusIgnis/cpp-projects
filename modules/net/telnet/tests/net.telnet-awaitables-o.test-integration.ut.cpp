@@ -197,7 +197,7 @@ namespace {
         // ============================================================
 
         "tagged_awaitable preserves executor context"_test = [] mutable {
-            bool ran_on_executor  = false;
+            bool ran_on_executor            = false;
             constexpr std::int32_t expected = 123;
 
             asio::io_context ctx;
@@ -249,7 +249,7 @@ namespace {
             //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
             auto top = [&] mutable -> asio::awaitable<int> {
                 const std::int32_t res = co_await std::move(middle).get();
-                co_return res * mult;
+                co_return res* mult;
             };
 
             auto fut = asio::co_spawn(ctx, top(), asio::use_future);
