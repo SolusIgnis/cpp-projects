@@ -98,7 +98,7 @@ namespace {
 
             auto fut = asio::co_spawn(
                 ctx,
-                [expected] mutable -> asio::awaitable<int> {
+                [] mutable -> asio::awaitable<int> {
                     test_wrapper_int wrapped{echo(expected)};
                     co_return co_await std::move(wrapped).get();
                 },
