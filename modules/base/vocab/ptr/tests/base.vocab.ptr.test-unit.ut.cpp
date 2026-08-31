@@ -1018,7 +1018,7 @@ namespace {
                     derived_type d_obj;
 
                     base_type b_obj;
-                    ConcretePtr<base_type> bptr{b_obj};
+                    ConcretePtr<base_type> b_ptr{b_obj};
 
                     b_ptr = ConcretePtr{d_obj};
 
@@ -1047,7 +1047,7 @@ namespace {
                     derived_type d_obj;
 
                     base_type b_obj;
-                    ConcretePtr<const base_type> bptr{b_obj};
+                    ConcretePtr<const base_type> b_ptr{b_obj};
 
                     b_ptr = ConcretePtr{d_obj};
 
