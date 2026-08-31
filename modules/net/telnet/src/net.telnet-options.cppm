@@ -34,6 +34,8 @@ import std; //NOLINT For std::string, std::vector, std::function, std::optional,
 export import :types;  ///< @see "net.telnet-types.cppm" for `byte_t`
 export import :errors; ///< @see "net.telnet-errors.cppm" for `error` enum
 
+using namespace std::literals;
+
 export namespace net::telnet {
     /**
      * @brief Class to encapsulate Telnet option data and negotiation logic.
