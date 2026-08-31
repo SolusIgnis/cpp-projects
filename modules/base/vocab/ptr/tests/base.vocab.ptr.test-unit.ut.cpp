@@ -585,6 +585,7 @@ namespace {
         };
 
         //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture needs a meaningless number.
+        //NOLINTBEGIN(cppcoreguidelines-pro-type-union-access): Testing union access.
         "operator-> provides member access"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 expect(eq(ArrowAccessible<ConcretePtr<std::uint8_t>>, false));
@@ -603,10 +604,10 @@ namespace {
                 const auto ptr2 = base::vocab::pointer_to<ConcretePtr>(u_obj);
 
                 expect(eq(ptr1->value, c_obj.value));
-                //NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access): Testing union access.
                 expect(eq(ptr2->value, u_obj.value));
             });
         };
+        //NOLINTEND(cppcoreguidelines-pro-type-union-access)
         //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 
         "implicit conversion to raw pointer"_test = [] mutable {
