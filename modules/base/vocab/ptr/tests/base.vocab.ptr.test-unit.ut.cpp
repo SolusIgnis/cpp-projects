@@ -1639,7 +1639,7 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
                     //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
                     std::int32_t values[] = {10, 20, 30, 40};
-                    
+
                     constexpr std::ptrdiff_t first_index = 0;
                     constexpr std::ptrdiff_t last_index  = 3;
 
