@@ -99,20 +99,24 @@ namespace {
     template<typename T>
     concept HasPointerTo = requires(T::element_type obj) { T::pointer_to(obj); };
 
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct mixin_1 {
         virtual ~mixin_1() = default;
     };
 
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct mixin_2 {
         virtual ~mixin_2() = default;
     };
 
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct base_type : mixin_1,
                        mixin_2 {
         ~base_type() override = default;
         std::int32_t value{0};
     };
 
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct derived_type : base_type {
         ~derived_type() override = default;
         std::int32_t extra{42};
@@ -157,7 +161,7 @@ namespace {
     template<typename T, typename Tag>
     using source_t = source_category<T, Tag>::type;
 
-    //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
+    //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables, readability-function-cognitive-complexity): Test framework.
     suite concrete_pointer_parameterized_tests = [] mutable {
         //============================================================
         // Template Constraint Validation
@@ -188,7 +192,7 @@ namespace {
 
         "triviality"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                auto test_impl = []<typename Pointee> {
+                const auto test_impl = []<typename Pointee> {
                     expect(eq(std::is_standard_layout_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_trivially_copyable_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_trivially_destructible_v<ConcretePtr<Pointee>>, true));
@@ -287,10 +291,11 @@ namespace {
 
         "pointer binding according to policies"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                auto
-                    verify_binding_operations = [] < typename Pointee,
-                    typename SourceTag, bool IsConstructibleFrom, bool IsConvertibleFrom,
-                    bool IsAssignableFrom = IsConstructibleFrom && !std::same_as < SourceTag, ref_tag >> {
+                const auto
+                    verify_binding_operations = [] <typename Pointee,
+                        typename SourceTag, bool IsConstructibleFrom, bool IsConvertibleFrom,
+                        bool IsAssignableFrom = IsConstructibleFrom && !std::same_as<SourceTag, ref_tag>
+                    > {
                         //Explicitly constructible unless removing qualifier
                         expect(
                             eq(std::constructible_from<ConcretePtr<Pointee>, source_t<Pointee, SourceTag>>, IsConstructibleFrom)

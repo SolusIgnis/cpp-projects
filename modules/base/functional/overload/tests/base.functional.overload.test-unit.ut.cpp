@@ -23,12 +23,13 @@ using base::vocab::alias_ptr;
 namespace {
     //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
     suite overload_tests = [] mutable {
+        //NOLINTBEGIN(performance-unnecessary-value-param): Value categories are selected for overload resolution testing.
         "overload{...} produces an invocable object"_test = [] mutable {
             constexpr std::int32_t expected = 42;
 
-            const auto overloaded = overload{[](std::int32_t i) { return i; }};
+            const auto overloaded = overload{[](std::int32_t n) { return n; }};
 
-            auto result = std::invoke(overloaded, expected);
+            const auto result = std::invoke(overloaded, expected);
             expect(eq(result, expected));
         };
 
@@ -37,7 +38,7 @@ namespace {
 
             constexpr std::string_view expected_sv = "42"sv;
 
-            const auto overloaded = overload{[](std::int32_t i) { return i; }, [](std::string_view str_v) { return str_v; }};
+            const auto overloaded = overload{[](std::int32_t n) { return n; }, [](std::string_view str_v) { return str_v; }};
 
             const auto result_int = overloaded(expected_int);
             expect(eq(result_int, expected_int));
@@ -52,7 +53,7 @@ namespace {
             constexpr std::int32_t expected1 = -arg1;
             constexpr std::int32_t expected2 = arg1 + arg2;
 
-            const auto overloaded = overload{[](auto i, auto j) { return i + j; }, [](auto i) { return -i; }};
+            const auto overloaded = overload{[](auto n, auto x) { return n + x; }, [](auto n) { return -n; }};
 
             const std::int32_t result1 = overloaded(arg1);
             expect(eq(result1, expected1));
@@ -74,22 +75,30 @@ namespace {
 
             auto overloaded = overload{fobj1{}, fobj2{}};
 
+            //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): The types matter, but the values don't.
+            //NOLINTBEGIN(bugprone-argument-comment): Matcher lhs/rhs.
             expect(eq(overloaded(1), "int"s));
             expect(eq(overloaded(3.14), "double"s));
             expect(eq(overloaded("hello"s), "string"s));
             expect(eq(overloaded("view"sv), "string view"s));
+            //NOLINTEND(bugprone-argument-comment)
+            //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
         };
 
         "overload{ overload{...}, ... } composes overload sets"_test = [] {
-            const auto base = overload{[](int) { return "int"s; }, [](double) { return "double"s; }};
+            const auto base = overload{[](int /*unused*/) { return "int"s; }, [](double /*unused*/) { return "double"s; }};
 
             const auto extended =
-                overload{base, [](std::string) { return "string"s; }, [](std::string_view) { return "string view"s; }};
+                overload{base, [](std::string /*unused*/) { return "string"s; }, [](std::string_view /*unused*/) { return "string view"s; }};
 
-            expect(eq(extended(1), /*rhs=*/"int"s));
-            expect(eq(extended(3.14), /*rhs=*/"double"s));
-            expect(eq(extended("hello"s), /*rhs=*/"string"s));
-            expect(eq(extended("view"sv), /*rhs=*/"string view"s));
+            //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): The types matter, but the values don't.
+            //NOLINTBEGIN(bugprone-argument-comment): Matcher lhs/rhs.
+            expect(eq(extended(1), "int"s));
+            expect(eq(extended(3.14), "double"s));
+            expect(eq(extended("hello"s), "string"s));
+            expect(eq(extended("view"sv), "string view"s));
+            //NOLINTEND(bugprone-argument-comment)
+            //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
         };
 
         "overload{...} preserves value category"_test = [] mutable {
@@ -124,13 +133,17 @@ namespace {
                 [](double) { return "double"s; },
             };
 
-            expect(eq(std::visit(visitor, var_t{42}), /*rhs=*/"int"s));
-            expect(eq(std::visit(visitor, var_t{"hello"s}), /*rhs=*/"string"s));
-            expect(eq(std::visit(visitor, var_t{3.14}), /*rhs=*/"double"s));
+            //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): The types matter, but the values don't.
+            //NOLINTBEGIN(bugprone-argument-comment): Matcher lhs/rhs.
+            expect(eq(std::visit(visitor, var_t{42}), "int"s));
+            expect(eq(std::visit(visitor, var_t{"hello"s}), "string"s));
+            expect(eq(std::visit(visitor, var_t{3.14}), "double"s));
+            //NOLINTEND(bugprone-argument-comment)
+            //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
         };
 
         "overload{...} preserves ambiguity across identical signatures"_test = [] {
-            const auto overloaded = overload{[](int) { return 1; }, [](int) { return 2; }};
+            const auto overloaded = overload{[](int /*unused*/) { return 1; }, [](int /*unused*/) { return 2; }};
 
             expect(eq(std::invocable<decltype(overloaded), int>, false));
         };
@@ -144,17 +157,18 @@ namespace {
                 };
 
                 auto fobj2 = overload{
-                    [](int) mutable { return "fobj2 int"s; },            //mutable => non-const operator()
-                    [](std::string) mutable { return "fobj2 string"s; }, //mutable => non-const operator()
+                    [](int /*unused*/) mutable { return "fobj2 int"s; },            //mutable => non-const operator()
+                    [](std::string /*unused*/) mutable { return "fobj2 string"s; }, //mutable => non-const operator()
                 };
 
                 auto overloaded = overload{
                     fobj1{},
                     fobj2,
-                    [](double) mutable { return "lambda double"s; },   //mutable => non-const operator()
-                    [](const char*) { return "lambda const char*"s; }, //const operator()
+                    [](double /*unused*/) mutable { return "lambda double"s; },   //mutable => non-const operator()
+                    [](const char* /*unused*/) { return "lambda const char*"s; }, //const operator()
                 };
 
+                //NOLINTBEGIN(bugprone-argument-comment): Matcher lhs/rhs.
                 // ambiguous: fobj1(int) vs fobj2(int)
                 expect(eq(std::invocable<decltype(overloaded), std::int32_t>, false));
 
@@ -169,6 +183,7 @@ namespace {
                 // 2) and f1(const char*) beats f2(std::string) [conversion is a worse match]
                 expect(eq(std::invocable<decltype(overloaded), const char*>, true));
                 expect(eq(std::invoke(overloaded, "c-string"), "fobj1 const char*"s));
+                //NOLINTEND(bugprone-argument-comment)
             };
 
         "overload{...} with deduced `this` lambda sees derived object identity"_test = [] mutable {
@@ -186,15 +201,17 @@ namespace {
 
             const auto& const_ov = overloaded;
 
+            //NOLINTBEGIN(bugprone-argument-comment): Matcher lhs/rhs.
             // Deduced `self` reflects the `const`-ness of the `overload` object (derived type).
-            expect(eq(overloaded(0), /*rhs=*/"non-const"s));
-            expect(eq(const_ov(0), /*rhs=*/"const"s));
+            expect(eq(overloaded(0), "non-const"s));
+            expect(eq(const_ov(0), "const"s));
 
             // Explicit `std::string` parameter is a better match than template parameter
-            expect(eq(const_ov("foo"s), /*rhs=*/"foo"s));
+            expect(eq(const_ov("foo"s), "foo"s));
 
             // Template wins: better object parameter binding (non-`const` vs `const`) outweighs non-template preference
-            expect(eq(overloaded("foo"s), /*rhs=*/"non-const"s));
+            expect(eq(overloaded("foo"s), "non-const"s));
+            //NOLINTEND(bugprone-argument-comment)
         };
 
         "overload{...} supports simple recursion"_test = [] mutable {
@@ -294,6 +311,7 @@ namespace {
             expect(eq(tree_sum(tree), sum_to(i)));
             expect(eq(tree_count(tree), i));
         };
+        //NOLINTEND(performance-unnecessary-value-param)
     };
 } //namespace
 

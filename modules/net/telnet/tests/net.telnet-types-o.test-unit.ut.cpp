@@ -36,6 +36,7 @@ namespace {
         // command underlying values (RFC invariants)
         // ------------------------------------------------------------
 
+        //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Verifying literal values.
         "command numeric values match RFC definitions"_test = [] mutable {
             expect(eq(std::to_underlying(command::eor), byte_t{0xEF}));
             expect(eq(std::to_underlying(command::se), byte_t{0xF0}));
@@ -55,6 +56,7 @@ namespace {
             expect(eq(std::to_underlying(command::dont_opt), byte_t{0xFE}));
             expect(eq(std::to_underlying(command::iac), byte_t{0xFF}));
         };
+        //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 
         // ============================================================
         // negotiation_direction structural properties

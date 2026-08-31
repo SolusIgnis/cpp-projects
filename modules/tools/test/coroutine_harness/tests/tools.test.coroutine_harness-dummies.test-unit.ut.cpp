@@ -115,7 +115,7 @@ namespace {
         // ============================================================
 
         "immediate_awaiter suspends and resumes"_test = [] mutable {
-            std::int32_t expected = 7;
+            constexpr std::int32_t expected = 7;
 
             coroutine_probe probe;
 

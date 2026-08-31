@@ -121,6 +121,7 @@ namespace {
 
             auto leaf = echo(expected);
 
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
             auto wrap_leaf    = [&] mutable -> test_wrapper_int { co_return co_await std::move(leaf); };
             auto wrapped_leaf = wrap_leaf();
 
@@ -140,6 +141,7 @@ namespace {
 
             bool executed = false;
 
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
             auto wrap = [&] mutable -> asio::awaitable<void> {
                 executed = true;
                 co_return;
@@ -147,7 +149,7 @@ namespace {
 
             test_wrapper_void wrapped = wrap();
 
-            auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::use_future);
+            const auto fut = asio::co_spawn(ctx, std::move(wrapped).get(), asio::use_future);
 
             ctx.run();
 
@@ -174,6 +176,7 @@ namespace {
 
             auto fut = asio::co_spawn(
                 ctx,
+                //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
                 [wrapped = std::move(wrapped)] mutable
                     -> asio::awaitable<std::optional<std::tuple<option, std::vector<byte_t>>>> {
                     co_return std::optional{co_await std::move(wrapped).get()};
@@ -195,12 +198,13 @@ namespace {
 
         "tagged_awaitable preserves executor context"_test = [] mutable {
             bool ran_on_executor  = false;
-            std::int32_t expected = 123;
+            constexpr std::int32_t expected = 123;
 
             asio::io_context ctx;
 
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
             auto wrap = [&] mutable -> test_wrapper_int {
-                auto exec = co_await asio::this_coro::executor;
+                const auto exec = co_await asio::this_coro::executor;
 
                 ran_on_executor = (exec == ctx.get_executor());
                 co_return expected;
@@ -232,18 +236,20 @@ namespace {
 
             auto leaf = echo(start);
 
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
             auto make_middle = [&] mutable -> test_wrapper_int {
                 std::int32_t res = co_await std::move(leaf);
-                auto exec        = co_await asio::this_coro::executor;
+                const auto exec  = co_await asio::this_coro::executor;
                 ran_on_executor  = (exec == ctx.get_executor());
                 co_return res + inc;
             };
 
             auto middle = make_middle();
 
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
             auto top = [&] mutable -> asio::awaitable<int> {
-                std::int32_t res = co_await std::move(middle).get();
-                co_return res* mult;
+                const std::int32_t res = co_await std::move(middle).get();
+                co_return res * mult;
             };
 
             auto fut = asio::co_spawn(ctx, top(), asio::use_future);

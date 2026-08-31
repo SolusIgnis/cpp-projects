@@ -596,7 +596,7 @@ namespace net::telnet {
                         co_return co_await parent_stream_.async_write_subnegotiation(opt, subneg_buffer, asio::use_awaitable);
                     }
                     co_return std::size_t{0};
-                } catch (const std::system_error& se) {
+                } catch (const std::system_error& e) {
                     throw;
                 } catch (...) {
                     throw std::system_error(error::internal_error);
@@ -637,7 +637,7 @@ namespace net::telnet {
                     }
                     co_await awaitable;
                     co_return bytes_transferred;
-                } catch (const std::system_error& se) {
+                } catch (const std::system_error& e) {
                     throw;
                 } catch (...) {
                     throw std::system_error(error::internal_error);

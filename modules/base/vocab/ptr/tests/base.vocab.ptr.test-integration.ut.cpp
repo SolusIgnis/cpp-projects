@@ -31,14 +31,14 @@ namespace {
                        mixin_2 {
         ~base_type() override = default;
 
-        static inline constexpr std::int32_t default_value{0};
+        static constexpr std::int32_t default_value{0};
         std::int32_t value{default_value};
 
         [[nodiscard]] std::int32_t bar() override { return value; }
     };
 
     struct derived_type : base_type {
-        static inline constexpr std::int32_t default_extra{42};
+        static constexpr std::int32_t default_extra{42};
         std::int32_t extra{default_extra};
         std::array<std::byte, sizeof(base_type) + alignof(base_type)> make_derived_bigger_than_base_even_with_tail_padding{};
 
@@ -189,7 +189,7 @@ namespace {
                 bool threw_when_null = false;
                 bool wrong_exception = false;
                 try {
-                    [[maybe_unused]] std::int32_t unused = test_map[lookup];
+                    [[maybe_unused]] auto unused = test_map[lookup];
                 } catch (const std::invalid_argument&) {
                     threw_when_null = true;
                 } catch (...) {
@@ -200,7 +200,7 @@ namespace {
                 expect(eq(wrong_exception, false));
             }
 
-            //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-avoid-magic-numbers): Test string character offsets are hardcoded for readability.
+            //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test string character offsets are hardcoded for readability.
             lookup = (data + 5);
 
             expect(eq(test_map[lookup], i_count));

@@ -21,6 +21,11 @@ namespace {
             constexpr std::int32_t sixth   = 6;
             constexpr std::int32_t seventh = 7;
 
+            constexpr std::int32_t inputL   = 42;
+            constexpr std::int32_t inputR   = 58;
+            constexpr std::int32_t inputPtr = 99;
+            constexpr std::int32_t expected = inputL + inputR + inputPtr;
+
             std::vector<std::int32_t> trace;
 
             coroutine_probe probeIntLvalue;
@@ -30,6 +35,10 @@ namespace {
             coroutine_probe probeThrow;
             coroutine_probe probeNested;
 
+            //NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+            // These coroutine lambdas are invoked and completed synchronously by the test harness.
+            // Their closure objects therefore outlive the coroutine execution.
+
             // -------------------------------
             // Leaf tasks
             // -------------------------------
@@ -37,19 +46,19 @@ namespace {
             // int via ready_awaiter (lvalue)
             auto leafIntL = [&] -> test_task<std::int32_t> {
                 trace.push_back(second);
-                co_return run(as_task<std::int32_t>(dummies::ready_awaiter{42}));
+                co_return run(as_task<std::int32_t>(dummies::ready_awaiter{inputL}));
             };
 
             // int via ready_awaiter (rvalue)
             auto leafIntR = [&] -> test_task<std::int32_t> {
                 trace.push_back(third);
-                co_return run(as_task<std::int32_t>(dummies::ready_awaiter{58}));
+                co_return run(as_task<std::int32_t>(dummies::ready_awaiter{inputR}));
             };
 
             // unique_ptr via immediate_awaiter
             auto leafPtr = [&] -> test_task<std::unique_ptr<std::int32_t>> {
                 trace.push_back(fourth);
-                auto awaiter = dummies::immediate_awaiter{std::make_unique<std::int32_t>(99)};
+                auto awaiter = dummies::immediate_awaiter{std::make_unique<std::int32_t>(inputPtr)};
                 co_return run(as_task<std::unique_ptr<std::int32_t>>(std::move(awaiter)));
             };
 
@@ -78,10 +87,10 @@ namespace {
             const auto make_nested = [&] -> test_task<std::int32_t> {
                 trace.push_back(first);
 
-                const std::int32_t valL = co_await leafIntL().set_probe(&probeIntLvalue);            // 42
-                const std::int32_t valR = co_await std::move(leafIntR().set_probe(&probeIntRvalue)); // 58
-                const auto ptr          = co_await leafPtr().set_probe(&probePtr);                   // 99
-                co_await leafVoid().set_probe(&probeVoid);                                           // void task
+                const std::int32_t valL = co_await leafIntL().set_probe(&probeIntLvalue);
+                const std::int32_t valR = co_await std::move(leafIntR().set_probe(&probeIntRvalue));
+                const auto ptr          = co_await leafPtr().set_probe(&probePtr);
+                co_await leafVoid().set_probe(&probeVoid); // void task
 
                 // Exception propagation check
                 bool threw = false;
@@ -93,12 +102,12 @@ namespace {
                 expect(eq(threw, true));
 
                 trace.push_back(seventh);
-                co_return valL + valR + *ptr; // 42 + 58 + 99 == 199
+                co_return valL + valR + *ptr;
             };
 
             auto nested = make_nested();
-
             nested.set_probe(&probeNested);
+            //NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
             // -------------------------------
             // Run mega-task
@@ -108,15 +117,17 @@ namespace {
             // -------------------------------
             // Verify result
             // -------------------------------
-            expect(eq(result, 199));
+            expect(eq(result, expected));
 
             // -------------------------------
             // Verify trace order
             // -------------------------------
-            std::vector<std::int32_t> expectedTrace{first, second, third, fourth, fifth, sixth, seventh};
-            expect(eq(trace.size(), expectedTrace.size()));
-            for (std::size_t i = 0; i < trace.size(); ++i) {
-                expect(eq(trace[i], expectedTrace[i]));
+            std::vector<std::int32_t> expected_trace{first, second, third, fourth, fifth, sixth, seventh};
+            // Since std::vector isn't output streamable, check element-wise equality.
+            expect(eq(trace.size(), expected_trace.size()));
+            for (std::size_t i = 0; i < trace.size() && i < expected_trace.size(); ++i) {
+                //NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+                expect(eq(trace[i], expected_trace[i]));
             }
 
             // -------------------------------

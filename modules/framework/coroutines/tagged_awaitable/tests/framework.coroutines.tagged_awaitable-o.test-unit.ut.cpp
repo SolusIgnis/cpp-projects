@@ -133,6 +133,7 @@ namespace {
             auto coro = echo(expected);
             coro.get().set_probe(&probe);
 
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
             const auto test = [&] -> test_task<std::int32_t> {
                 const std::int32_t val = co_await coro;
                 co_return val;
@@ -150,6 +151,7 @@ namespace {
             auto coro = echo(expected);
             coro.get().set_probe(&probe);
 
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
             const auto test = [&] -> test_task<std::int32_t> {
                 const std::int32_t val = co_await std::move(coro);
                 co_return val;
@@ -194,6 +196,7 @@ namespace {
             auto wrapped = echo(expected);
             wrapped.get().set_probe(&probe);
 
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
             const auto test = [&] -> test_task<std::int32_t> { co_return co_await wrapped; };
 
             const auto result = run(test());
@@ -229,8 +232,10 @@ namespace {
             constexpr std::int32_t mult     = 3;
             constexpr std::int32_t expected = base * mult;
 
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
             const auto sub = [&] -> tagged_awaitable<test_tag, test_task<std::int32_t>> { co_return base; };
 
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
             const auto main = [&] -> tagged_awaitable<test_tag, test_task<std::int32_t>> { co_return (co_await sub()) * mult; };
 
             const auto result = run(main());

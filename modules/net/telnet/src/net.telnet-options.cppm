@@ -63,9 +63,9 @@ export namespace net::telnet {
 
         ///@brief Constructs an `option` with the given ID and optional parameters.
         //NOLINTNEXTLINE(misc-explicit-constructor)
-        option(
+        explicit(false) option(
             id_num id,
-            std::string name                  = "",
+            std::string name                  = ""s,
             enable_predicate_type local_pred  = always_reject,
             enable_predicate_type remote_pred = always_reject,
             bool subneg_supported             = false,
@@ -102,13 +102,13 @@ export namespace net::telnet {
 
         ///@brief Implicitly converts to `option::id_num`.
         //NOLINTNEXTLINE(misc-explicit-constructor)
-        [[nodiscard]] operator id_num() const noexcept { return id_; } //NOLINT(google-explicit-constructor)
+        [[nodiscard]] constexpr explicit(false) operator id_num() const noexcept { return id_; }
 
         ///@brief Gets the Telnet `option::id_num`.
-        [[nodiscard]] id_num get_id() const noexcept { return id_; }
+        [[nodiscard]] constexpr id_num get_id() const noexcept { return id_; }
 
         ///@brief Gets the `option` name.
-        [[nodiscard]] const std::string& get_name() const noexcept { return name_; }
+        [[nodiscard]] constexpr const std::string& get_name() const noexcept { return name_; }
 
         ///@brief Evaluates the local predicate to determine if the `option` can be enabled locally.
         [[nodiscard]] bool supports_local() const { return local_predicate_(id_); }
@@ -123,16 +123,16 @@ export namespace net::telnet {
         }
 
         ///@brief Gets the maximum subnegotiation buffer size.
-        [[nodiscard]] std::size_t max_subnegotiation_size() const noexcept { return max_subneg_size_; }
+        [[nodiscard]] constexpr std::size_t max_subnegotiation_size() const noexcept { return max_subneg_size_; }
 
         ///@brief Checks if the `option` supports subnegotiation.
-        [[nodiscard]] bool supports_subnegotiation() const noexcept { return supports_subnegotiation_; }
+        [[nodiscard]] constexpr bool supports_subnegotiation() const noexcept { return supports_subnegotiation_; }
 
         ///@brief Predicate that always accepts the `option`.
-        [[nodiscard]] static bool always_accept(id_num /*unused*/) noexcept { return true; }
+        [[nodiscard]] static constexpr bool always_accept(id_num /*unused*/) noexcept { return true; }
 
         ///@brief Predicate that always rejects the `option`.
-        [[nodiscard]] static bool always_reject(id_num /*unused*/) noexcept { return false; }
+        [[nodiscard]] static constexpr bool always_reject(id_num /*unused*/) noexcept { return false; }
 
     private:
         static constexpr std::size_t max_subnegotiation_buffer_size = 1024;

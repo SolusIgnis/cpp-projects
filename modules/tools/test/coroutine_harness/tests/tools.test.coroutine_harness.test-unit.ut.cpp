@@ -485,6 +485,9 @@ namespace {
             // Factory for rvalue task
             const auto make_taskC = [] -> test_task<std::int32_t> { co_return co_await echo(subtrahend); };
 
+            //NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+            // This coroutine lambda is invoked and completed synchronously by the test harness.
+            // Its closure object therefore outlives the coroutine execution.
             const auto make_taskE = [&] -> test_task<std::int32_t> {
                 std::int32_t quotient = 0; //42 / 7 == 6
                 co_await [&] -> test_task<void> {
@@ -498,6 +501,7 @@ namespace {
             };
             auto taskE = make_taskE();
             taskE.set_probe(&probeE);
+            //NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
             const std::int32_t result = run(taskE);
             expect(eq(result, expected));
@@ -557,6 +561,9 @@ namespace {
             constexpr std::int32_t fifth  = 5;
             std::vector<std::int32_t> expected{first, second, third, fourth, fifth};
 
+            //NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+            // This coroutine lambda is invoked and completed synchronously by the test harness.
+            // Its closure object therefore outlives the coroutine execution.
             const auto leaf = [&] -> test_task<void> {
                 trace.push_back(third);
                 co_return;
@@ -573,6 +580,7 @@ namespace {
                 co_await mid();
                 trace.push_back(fifth);
             };
+            //NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
             run(root());
 
