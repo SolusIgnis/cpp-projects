@@ -376,15 +376,15 @@ CheckOptions:
   readability-enum-initial-value.AllowExplicitZeroFirstInitialValue:   'true'
   
   readability-identifier-length.MinimumVariableNameLength:     '3'
-  readability-identifier-length.IgnoredVariableNames:          '^(ec|id)$'
+  readability-identifier-length.IgnoredVariableNames:          '^([_i]|ec|id)$'
   readability-identifier-length.MinimumBindingNameLength:      '3'
   readability-identifier-length.IgnoredBindingNames:           '^([_i]|ec|id)$'
   readability-identifier-length.MinimumParameterNameLength:    '3'
-  readability-identifier-length.IgnoredParameterNames:         '^([nx]|ec|id)$'
+  readability-identifier-length.IgnoredParameterNames:         '^([ntx]|ec|id|t[0-9])$'
   readability-identifier-length.MinimumLoopCounterNameLength:  '2'
   readability-identifier-length.IgnoredLoopCounterNames:       '^[_i]$'
   readability-identifier-length.MinimumExceptionNameLength:    '3'
-  readability-identifier-length.IgnoredExceptionVariableNames: '^([e]|ex)$'
+  readability-identifier-length.IgnoredExceptionVariableNames: '^([e]|ex|se)$'
   readability-identifier-length.LineCountThreshold:            '0'
 
   readability-identifier-naming.AggressiveDependentMemberLookup: 'true'
