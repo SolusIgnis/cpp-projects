@@ -376,7 +376,7 @@ CheckOptions:
   readability-enum-initial-value.AllowExplicitZeroFirstInitialValue:   'true'
   
   readability-identifier-length.MinimumVariableNameLength:     '3'
-  readability-identifier-length.IgnoredVariableNames:          '^([_i]|ec|id)$'
+  readability-identifier-length.IgnoredVariableNames:          '^([_ixyz]|ec|id)$'
   readability-identifier-length.MinimumBindingNameLength:      '3'
   readability-identifier-length.IgnoredBindingNames:           '^([_i]|ec|id)$'
   readability-identifier-length.MinimumParameterNameLength:    '3'
