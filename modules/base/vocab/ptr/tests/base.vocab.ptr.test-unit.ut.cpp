@@ -1822,7 +1822,7 @@ namespace {
 
         "implicit conversion works with raw pointer API"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                const auto takes_ptr = [](const std::int32_t* p) { return *p; };
+                const auto takes_ptr = [](const std::int32_t* iptr) { return *iptr; };
 
                 //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture needs a meaningless number.
                 std::int32_t value = 3;
@@ -1873,7 +1873,7 @@ namespace {
                     {3, 4, 5},
                     {6, 7, 8},
                 };
-                //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+                //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
 
                 //ConcretePtr<std::int32_t[3]> should_fail{array};
 
@@ -1889,7 +1889,7 @@ namespace {
                 expect(eq(ptr.get(), array + 1));
             });
         };
-        //NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay): Testing pointer arithmetic and indexing operations.
+        //NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
         //============================================================
         // Incomplete types
@@ -2089,9 +2089,11 @@ namespace {
             });
         };
 
+        //NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay): Testing pointer arithmetic and indexing operations.
         "constexpr arithmetic"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
+                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
                     static constexpr std::int32_t values[] = {2, 4, 6};
 
                     constexpr auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
@@ -2101,6 +2103,7 @@ namespace {
                 }
             });
         };
+        //NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
         "constexpr get and boolean conversion"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
@@ -2117,26 +2120,26 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 static constexpr std::int32_t value = 11;
 
-                constexpr auto a = base::vocab::pointer_to<ConcretePtr>(value);
-                constexpr auto b = base::vocab::pointer_to<ConcretePtr>(value);
+                constexpr auto ptr1 = base::vocab::pointer_to<ConcretePtr>(value);
+                constexpr auto ptr2 = base::vocab::pointer_to<ConcretePtr>(value);
 
-                expect(eq(a == b, true));
+                expect(eq(ptr1 == ptr2, true));
             });
         };
 
         "constexpr rebinding"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                static constexpr std::int32_t a = 1;
-                static constexpr std::int32_t b = 2;
+                static constexpr std::int32_t value1 = 1;
+                static constexpr std::int32_t value2 = 2;
 
                 constexpr auto rebound = std::invoke([] {
-                    auto ptr = base::vocab::pointer_to<ConcretePtr>(a);
-                    ptr      = ConcretePtr{b};
+                    auto ptr = base::vocab::pointer_to<ConcretePtr>(value1);
+                    ptr      = ConcretePtr{value2};
                     return ptr;
                 });
 
-                expect(eq(*rebound, b));
-                expect(eq(rebound.get(), std::addressof(b)));
+                expect(eq(*rebound, value2));
+                expect(eq(rebound.get(), std::addressof(value2)));
             });
         };
 
