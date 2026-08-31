@@ -536,7 +536,7 @@ namespace {
         "`pointer_to` forms a valid pointer instance whose `get` returns its stored address"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using pointee_t = std::int32_t;
-                using pointer_t = ConcretePtr<pointee_t>;
+                using pointer_t = const ConcretePtr<pointee_t>;
 
                 pointee_t obj{};
 
