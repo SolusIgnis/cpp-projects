@@ -577,7 +577,7 @@ namespace {
         "operator* dereferences correctly"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value = 55;
-                const auto ptr           = base::vocab::pointer_to<ConcretePtr>(value);
+                const auto ptr     = base::vocab::pointer_to<ConcretePtr>(value);
 
                 expect(eq(*ptr, value));
             });
@@ -593,12 +593,12 @@ namespace {
                 expect(eq(ArrowAccessible<ConcretePtr<union_type>>, true));
 
                 base_type c_obj;
-                c_obj.value = 123;
-                const auto ptr1   = base::vocab::pointer_to<ConcretePtr>(c_obj);
+                c_obj.value     = 123;
+                const auto ptr1 = base::vocab::pointer_to<ConcretePtr>(c_obj);
 
                 union_type u_obj{};
-                u_obj.value = 321;
-                const auto ptr2   = base::vocab::pointer_to<ConcretePtr>(u_obj);
+                u_obj.value     = 321;
+                const auto ptr2 = base::vocab::pointer_to<ConcretePtr>(u_obj);
 
                 expect(eq(ptr1->value, c_obj.value));
                 expect(eq(ptr2->value, u_obj.value));
