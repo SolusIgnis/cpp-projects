@@ -315,7 +315,7 @@ namespace {
             expect(eq(tree_sum(tree), sum_to(i)));
             expect(eq(tree_count(tree), i));
         };
-        //NOLINTEND(performance-unnecessary-value-param)
+        //NOLINTEND(performance-unnecessary-value-param, performance-move-const-arg)
     };
 } //namespace
 

@@ -60,13 +60,14 @@ namespace {
     };
 
     template<typename Lambda>
+    //NOLINTNEXTLINE(forward): Forwarding is not needed to call the lambda.
     constexpr void test_each_pointer_type_with(Lambda&& test_impl)
     {
-        std::forward<Lambda>(test_impl).template operator()<base::vocab::ptr::dependency_ptr>();
-        std::forward<Lambda>(test_impl).template operator()<base::vocab::ptr::required_ptr>();
-        std::forward<Lambda>(test_impl).template operator()<base::vocab::ptr::alias_ptr>();
-        std::forward<Lambda>(test_impl).template operator()<base::vocab::ptr::cursor_ptr>();
-        std::forward<Lambda>(test_impl).template operator()<base::vocab::ptr::iterator_ptr>();
+        test_impl.template operator()<base::vocab::ptr::dependency_ptr>();
+        test_impl.template operator()<base::vocab::ptr::required_ptr>();
+        test_impl.template operator()<base::vocab::ptr::alias_ptr>();
+        test_impl.template operator()<base::vocab::ptr::cursor_ptr>();
+        test_impl.template operator()<base::vocab::ptr::iterator_ptr>();
     }
 
     template<typename T>
