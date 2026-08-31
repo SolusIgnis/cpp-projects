@@ -1872,7 +1872,7 @@ namespace {
                     expect(eq(base::meta::concepts::InstantiableWith<ConcretePtr, incomplete_type>, true));
 
                     //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture needs a meaningless number.
-                    const auto* raw = reinterpret_cast<incomplete_type*>(0x1234);
+                    auto* const raw = reinterpret_cast<incomplete_type*>(0x1234);
 
                     ConcretePtr<incomplete_type> ptr{raw};
 
