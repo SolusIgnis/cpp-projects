@@ -926,9 +926,9 @@ namespace {
                 std::int32_t x = 1;
                 std::int32_t y = 1;
 
-                auto ptr1 = base::vocab::pointer_to<ConcretePtr, const std::int32_t>(x);
-                auto ptr2 = base::vocab::pointer_to<ConcretePtr>(x);
-                auto ptr3 = base::vocab::pointer_to<ConcretePtr>(y);
+                const auto ptr1 = base::vocab::pointer_to<ConcretePtr, const std::int32_t>(x);
+                const auto ptr2 = base::vocab::pointer_to<ConcretePtr>(x);
+                const auto ptr3 = base::vocab::pointer_to<ConcretePtr>(y);
 
                 expect(eq(ptr1 == ptr2, true));
                 expect(eq(ptr1 == ptr3, false));
@@ -1033,7 +1033,7 @@ namespace {
                 derived_type d_obj;
                 const auto d_ptr = base::vocab::pointer_to<ConcretePtr>(d_obj);
 
-                base_type b_obj;
+                const base_type b_obj;
                 auto b_ptr = base::vocab::pointer_to<ConcretePtr, const base_type>(b_obj);
 
                 b_ptr = d_ptr;
@@ -1068,7 +1068,7 @@ namespace {
         //============================================================
         // Pointer Casting & Lifetime Transmutation
         //============================================================
-        //NOLINTBEGIN(misc-const-correctness): `const` reduces the readabiliy of these tests to much.
+        //NOLINTBEGIN(misc-const-correctness): Readability suffers with const correctness in these tests.
         "const_pointer_cast alters pointee cv-qualifications"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const auto test_cast = []<typename Source, typename Destination> {
@@ -1231,6 +1231,7 @@ namespace {
             });
         };
 
+        //NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast): Testing `reinterpret_pointer_cast` in terms of `reinterpret_cast`.
         "reinterpret_pointer_cast views objects as raw bytes"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 struct object {
@@ -1298,6 +1299,8 @@ namespace {
                 }
             });
         };
+        //NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
+
 #if defined(__cpp_lib_start_lifetime_as)
         "start_lifetime_as alters pointee type"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr>() {
@@ -1329,6 +1332,7 @@ namespace {
             });
         };
 #else
+    //NOLINTNEXTLINE(clang-diagnostic-#warnings)
     #warning "std::start_lifetime_as not defined. Tests skipped."
 #endif
         //NOLINTEND(misc-const-correctness)
@@ -1599,10 +1603,12 @@ namespace {
         // Traversal identity
         //============================================================
 
+        //NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access): Testing pointer arithmetic and indexing operations.
         "pointer arithmetic preserves native traversal semantics"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
-                    std::int32_t values[] = {10, 20, 30, 40};
+                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
+                    constexpr std::int32_t values[] = {10, 20, 30, 40};
 
                     constexpr std::ptrdiff_t step = 2;
 
@@ -1631,12 +1637,13 @@ namespace {
         "difference matches raw pointer semantics"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
+                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
                     std::int32_t values[] = {10, 20, 30, 40};
 
                     const auto first = base::vocab::pointer_to<ConcretePtr>(values[0]);
                     const auto last  = base::vocab::pointer_to<ConcretePtr>(values[3]);
 
-                    expect(eq(last - first, /*rhs=*/3L));
+                    expect(eq(last - first, 3L));
                 }
             });
         };
@@ -1644,21 +1651,22 @@ namespace {
         "increment and decrement traverse correctly"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
+                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
                     std::int32_t values[] = {1, 2, 3};
 
                     auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
 
                     ++ptr;
-                    expect(eq(*ptr, /*rhs=*/2));
+                    expect(eq(*ptr, 2));
 
                     ptr++;
-                    expect(eq(*ptr, /*rhs=*/3));
+                    expect(eq(*ptr, 3));
 
                     --ptr;
-                    expect(eq(*ptr, /*rhs=*/2));
+                    expect(eq(*ptr, 2));
 
                     ptr--;
-                    expect(eq(*ptr, /*rhs=*/1));
+                    expect(eq(*ptr, 1));
                 }
             });
         };
@@ -1666,6 +1674,7 @@ namespace {
         "subscript matches raw pointer indexing"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
+                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
                     std::int32_t values[] = {5, 6, 7, 8};
 
                     const auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
@@ -1683,6 +1692,7 @@ namespace {
         "mixed raw and cursor arithmetic produce identical addresses"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
+                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
                     std::int32_t values[] = {1, 2, 3, 4};
 
                     const auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
@@ -1692,6 +1702,7 @@ namespace {
                 }
             });
         };
+        //NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
 
         //============================================================
         // CV-correctness propagation
