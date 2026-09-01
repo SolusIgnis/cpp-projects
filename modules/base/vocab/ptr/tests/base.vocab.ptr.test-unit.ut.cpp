@@ -1844,10 +1844,10 @@ namespace {
             });
         };
 
-        //NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay): Testing pointer arithmetic and indexing operations.
+        //NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay): Testing interactions with C Arrays, including pointer arithmetic and indexing operations.
         "not constructible, convertible, nor assignable from C-array decay"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
+                //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture.
                 std::int32_t array[3] = {0, 1, 2};
 
                 //ConcretePtr<std::int32_t> should_fail{array};
@@ -1867,13 +1867,13 @@ namespace {
 
         "not constructible, convertible, nor assignable from C-array decay when pointing to an array"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
+                //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture.
                 std::int32_t array[3][3] = {
                     {0, 1, 2},
                     {3, 4, 5},
                     {6, 7, 8},
                 };
-                //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
+                //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 
                 //ConcretePtr<std::int32_t[3]> should_fail{array};
 
@@ -1889,7 +1889,7 @@ namespace {
                 expect(eq(ptr.get(), array + 1));
             });
         };
-        //NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        //NOLINTEND(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
         //============================================================
         // Incomplete types
@@ -1902,7 +1902,7 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     expect(eq(base::meta::concepts::InstantiableWith<ConcretePtr, incomplete_type>, true));
 
-                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture needs a meaningless number.
+                    //NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test requires a fabricated pointer value to an incomplete type.
                     auto* const raw = reinterpret_cast<incomplete_type*>(0x1234);
 
                     const ConcretePtr<incomplete_type> ptr{raw};
@@ -2009,13 +2009,14 @@ namespace {
             });
         };
 
+        //NOLINTBEGIN(misc-const-correctness): Readability suffers with const correctness in this test.
         "static_pointer_cast converts static pointee type to and from void"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
                     std::int32_t object = 0;
 
-                    ConcretePtr<std::int32_t> source = base::vocab::pointer_to<ConcretePtr>(object);
-                    auto result1                     = static_pointer_cast<void>(source);
+                    auto source  = base::vocab::pointer_to<ConcretePtr>(object);
+                    auto result1 = static_pointer_cast<void>(source);
 
                     expect(eq(std::same_as<decltype(result1), ConcretePtr<void>>, true));
                     expect(eq(result1.get(), static_cast<void*>(std::addressof(object))));
@@ -2027,6 +2028,7 @@ namespace {
                 }
             });
         };
+        //NOLINTEND(misc-const-correctness)
 
         "void pointer is equality comparable"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
@@ -2035,12 +2037,12 @@ namespace {
                     && pointer_test_traits<ConcretePtr>::allows_pointer_binding
                 ) {
                     const std::int32_t value{42};
-                    auto typed_ptr                = base::vocab::pointer_to<ConcretePtr>(value);
-                    const std::int32_t* typed_raw = std::addressof(value);
-                    const void* erased_raw        = std::addressof(value);
+                    const auto typed_ptr                = base::vocab::pointer_to<ConcretePtr>(value);
+                    const std::int32_t* const typed_raw = std::addressof(value);
+                    const void* const erased_raw        = std::addressof(value);
 
-                    ConcretePtr<const void> erased_ptr1{typed_raw};
-                    ConcretePtr<const void> erased_ptr2{typed_ptr};
+                    const ConcretePtr<const void> erased_ptr1{typed_raw};
+                    const ConcretePtr<const void> erased_ptr2{typed_ptr};
 
                     expect(eq(erased_ptr1 == erased_ptr2, true));
                     expect(eq(erased_ptr1 == typed_ptr, true));
@@ -2059,15 +2061,15 @@ namespace {
                 constexpr std::int32_t value{};
 
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_reference_binding) {
-                    ConcretePtr ptr1{value};
+                    const ConcretePtr ptr1{value};
                     expect(eq(ptr1.get(), std::addressof(value)));
                 }
 
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
-                    ConcretePtr ptr2{std::addressof(value)};
+                    const ConcretePtr ptr2{std::addressof(value)};
 
                     trivial_smart_ptr<const std::int32_t> smart_pointer{std::addressof(value)};
-                    ConcretePtr ptr3{smart_pointer};
+                    const ConcretePtr ptr3{smart_pointer};
 
                     expect(eq(ptr2.get(), std::addressof(value)));
                     expect(eq(ptr3.get(), std::addressof(value)));
@@ -2145,12 +2147,12 @@ namespace {
 
         "constexpr swap"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                static constexpr std::int32_t a = 1;
-                static constexpr std::int32_t b = 2;
+                static constexpr std::int32_t value1 = 1;
+                static constexpr std::int32_t value2 = 2;
 
                 constexpr auto swapped = std::invoke([] {
-                    auto lhs = base::vocab::pointer_to<ConcretePtr>(a);
-                    auto rhs = base::vocab::pointer_to<ConcretePtr>(b);
+                    auto lhs = base::vocab::pointer_to<ConcretePtr>(value1);
+                    auto rhs = base::vocab::pointer_to<ConcretePtr>(value2);
 
                     using std::swap;
                     swap(lhs, rhs);
@@ -2158,8 +2160,8 @@ namespace {
                     return std::pair{lhs, rhs};
                 });
 
-                expect(eq(*swapped.first, b));
-                expect(eq(*swapped.second, a));
+                expect(eq(*swapped.first, value2));
+                expect(eq(*swapped.second, value1));
             });
         };
 
@@ -2171,7 +2173,7 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value{};
 
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                 const auto ptr_hash = std::hash<ConcretePtr<std::int32_t>>{}(ptr);
                 const auto raw_hash = std::hash<std::int32_t*>{}(std::addressof(value));
@@ -2184,8 +2186,8 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value{};
 
-                auto lhs = base::vocab::pointer_to<ConcretePtr, std::int32_t>(value);
-                auto rhs = base::vocab::pointer_to<ConcretePtr, const std::int32_t>(value);
+                const auto lhs = base::vocab::pointer_to<ConcretePtr, std::int32_t>(value);
+                const auto rhs = base::vocab::pointer_to<ConcretePtr, const std::int32_t>(value);
 
                 const auto lhs_hash = std::hash<ConcretePtr<std::int32_t>>{}(lhs);
                 const auto rhs_hash = std::hash<ConcretePtr<const std::int32_t>>{}(rhs);
@@ -2203,7 +2205,7 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value{};
 
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                 const auto formatted_ptr = std::format("{}", ptr);
                 const auto formatted_raw = std::format<void*>("{}", std::addressof(value));
@@ -2229,7 +2231,7 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const std::int32_t value{};
 
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                 const auto formatted_ptr = std::format("{}", ptr);
                 const auto formatted_raw = std::format<const void*>("{}", std::addressof(value));
@@ -2242,7 +2244,7 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 std::int32_t value{};
 
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                 std::ostringstream ptr_stream;
                 std::ostringstream raw_stream;
@@ -2257,7 +2259,7 @@ namespace {
         "ostream insertion outputs null equivalently to raw pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    ConcretePtr<std::int32_t> ptr{nullptr};
+                    const ConcretePtr<std::int32_t> ptr{nullptr};
 
                     std::ostringstream ptr_stream;
                     std::ostringstream raw_stream;
@@ -2274,7 +2276,7 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 volatile std::int32_t value{};
 
-                auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
+                const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                 std::ostringstream ptr_stream;
                 std::ostringstream raw_stream;
