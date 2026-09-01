@@ -584,7 +584,7 @@ namespace {
             });
         };
 
-        //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture needs a meaningless number.
+        //NOLINTBEGIN(readability-magic-numbers): Test fixture needs a meaningless number.
         //NOLINTBEGIN(cppcoreguidelines-pro-type-union-access): Testing union access.
         "operator-> provides member access"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
@@ -608,7 +608,7 @@ namespace {
             });
         };
         //NOLINTEND(cppcoreguidelines-pro-type-union-access)
-        //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+        //NOLINTEND(readability-magic-numbers)
 
         "implicit conversion to raw pointer"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
@@ -1607,7 +1607,7 @@ namespace {
         "pointer arithmetic preserves native traversal semantics"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
-                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
+                    //NOLINTNEXTLINE(readability-magic-numbers, modernize-avoid-c-arrays): Test fixture.
                     constexpr std::int32_t values[] = {10, 20, 30, 40};
 
                     constexpr std::ptrdiff_t step = 2;
@@ -1637,7 +1637,7 @@ namespace {
         "difference matches raw pointer semantics"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
-                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
+                    //NOLINTNEXTLINE(readability-magic-numbers, modernize-avoid-c-arrays): Test fixture.
                     std::int32_t values[] = {10, 20, 30, 40};
 
                     constexpr std::ptrdiff_t first_index = 0;
@@ -1655,7 +1655,7 @@ namespace {
         "increment and decrement traverse correctly"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
-                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
+                    //NOLINTNEXTLINE(readability-magic-numbers, modernize-avoid-c-arrays): Test fixture.
                     std::int32_t values[] = {1, 2, 3};
 
                     auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
@@ -1679,7 +1679,7 @@ namespace {
         "subscript matches raw pointer indexing"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
-                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
+                    //NOLINTNEXTLINE(readability-magic-numbers, modernize-avoid-c-arrays): Test fixture.
                     std::int32_t values[] = {5, 6, 7, 8};
 
                     const auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
@@ -1697,7 +1697,7 @@ namespace {
         "mixed raw and cursor arithmetic produce identical addresses"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
-                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
+                    //NOLINTNEXTLINE(readability-magic-numbers, modernize-avoid-c-arrays): Test fixture.
                     std::int32_t values[] = {1, 2, 3, 4};
 
                     const auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
@@ -1781,7 +1781,7 @@ namespace {
 
         "volatile qualifier preservation"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture needs a meaningless number.
+                //NOLINTNEXTLINE(readability-magic-numbers): Test fixture needs a meaningless number.
                 volatile std::int32_t hardware_register = 0xAA;
                 const auto ptr                          = base::vocab::pointer_to<ConcretePtr>(hardware_register);
 
@@ -1824,7 +1824,7 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const auto takes_ptr = [](const std::int32_t* iptr) { return *iptr; };
 
-                //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture needs a meaningless number.
+                //NOLINTNEXTLINE(readability-magic-numbers): Test fixture needs a meaningless number.
                 std::int32_t value = 3;
                 const auto ptr     = base::vocab::pointer_to<ConcretePtr>(value);
 
@@ -1836,7 +1836,7 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 const auto takes_ptr = [](const std::int32_t* iptr) { return *iptr; };
 
-                //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture needs a meaningless number.
+                //NOLINTNEXTLINE(readability-magic-numbers): Test fixture needs a meaningless number.
                 std::int32_t value = 4;
                 const auto ptr     = base::vocab::pointer_to<ConcretePtr>(value);
 
@@ -1844,10 +1844,10 @@ namespace {
             });
         };
 
-        //NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay): Testing interactions with C Arrays, including pointer arithmetic and indexing operations.
+        //NOLINTBEGIN(modernize-avoid-c-arrays, cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay): Testing interactions with C Arrays, including pointer arithmetic and indexing operations.
         "not constructible, convertible, nor assignable from C-array decay"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture.
+                //NOLINTNEXTLINE(readability-magic-numbers): Test fixture.
                 std::int32_t array[3] = {0, 1, 2};
 
                 //ConcretePtr<std::int32_t> should_fail{array};
@@ -1867,13 +1867,13 @@ namespace {
 
         "not constructible, convertible, nor assignable from C-array decay when pointing to an array"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture.
+                //NOLINTBEGIN(readability-magic-numbers): Test fixture.
                 std::int32_t array[3][3] = {
                     {0, 1, 2},
                     {3, 4, 5},
                     {6, 7, 8},
                 };
-                //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
+                //NOLINTEND(readability-magic-numbers)
 
                 //ConcretePtr<std::int32_t[3]> should_fail{array};
 
@@ -1889,7 +1889,7 @@ namespace {
                 expect(eq(ptr.get(), array + 1));
             });
         };
-        //NOLINTEND(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        //NOLINTEND(modernize-avoid-c-arrays, cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
         //============================================================
         // Incomplete types
@@ -1902,7 +1902,7 @@ namespace {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                     expect(eq(base::meta::concepts::InstantiableWith<ConcretePtr, incomplete_type>, true));
 
-                    //NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test requires a fabricated pointer value to an incomplete type.
+                    //NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, readability-magic-numbers): Test requires a fabricated pointer value to an incomplete type.
                     auto* const raw = reinterpret_cast<incomplete_type*>(0x1234);
 
                     const ConcretePtr<incomplete_type> ptr{raw};
@@ -1918,7 +1918,7 @@ namespace {
 
         "incomplete type becomes usable after completion"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test fixture needs a meaningless number.
+                //NOLINTNEXTLINE(readability-magic-numbers): Test fixture needs a meaningless number.
                 incomplete_type obj{42};
 
                 const auto ptr = base::vocab::pointer_to<ConcretePtr>(obj);
@@ -2095,7 +2095,7 @@ namespace {
         "constexpr arithmetic"_test = [] {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
-                    //NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers, cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): Test fixture.
+                    //NOLINTNEXTLINE(readability-magic-numbers, modernize-avoid-c-arrays): Test fixture.
                     static constexpr std::int32_t values[] = {2, 4, 6};
 
                     constexpr auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
