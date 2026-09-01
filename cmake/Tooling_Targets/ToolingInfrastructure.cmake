@@ -53,8 +53,8 @@ function(regex_escape out_var input)
   set(${out_var} "${_escaped}" PARENT_SCOPE)
 endfunction()
 
-# Helper function to escape $ to $$ for ninja.
-function(dollar_escape out_var input)
+# Helper function to escape $ to $$ for Ninja.
+function(ninja_dollar_escape out_var input)
   string(REPLACE "$" "$$" _escaped "${input}")
   set(${out_var} "${_escaped}" PARENT_SCOPE)
 endfunction()
@@ -73,7 +73,7 @@ function(get_tidy_source_filter out_var)
 
   set(_tidy_source_files_regex "^(?!(${_tidy_excluded_paths_regex})).*$")
 
-  dollar_escape(_tidy_source_files_regex "${_tidy_source_files_regex}")
+  ninja_dollar_escape(_tidy_source_files_regex "${_tidy_source_files_regex}")
 
   set(${out_var} "${_tidy_source_files_regex}" PARENT_SCOPE)
 endfunction()
