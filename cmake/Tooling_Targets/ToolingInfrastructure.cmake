@@ -38,8 +38,24 @@ function(register_tooling_test target)
   set_property(GLOBAL APPEND PROPERTY TOOLING_TEST_TARGETS ${target})
 endfunction()
 
+# Helper function to escape regex metacharacters in a string.
+function(regex_escape out_var input)
+  # First, double any \ present in ${input}. Note "\\" is a single \ inside the string.
+  string(REPLACE "\\" "\\\\" _escaped "${input}")
+
+  # Then, escape each regex metacharacter by adding a \. These MUST be inserted AFTER the \ doubling of the first step.
+  foreach(_char IN ITEMS
+    "." "^" "$" "*" "+" "?" "(" ")" "[" "]" "{" "}" "|"
+  )
+    string(REPLACE "${_char}" "\\${_char}" _escaped "${_escaped}")
+  endforeach()
+
+  set(${out_var} "${_escaped}" PARENT_SCOPE)
+endfunction()
+
+# Helper function to generate a regex for run-clang-tidy to filter sources from the compilation database.
 function(get_tidy_source_filter out_var)
-  string(REGEX ESCAPE "${CMAKE_BINARY_DIR}" _tidy_binary_dir_regex)
+  regex_escape(_tidy_binary_dir_regex "${CMAKE_BINARY_DIR}")
 
   set(_tidy_excluded_paths
     "${_tidy_binary_dir_regex}/"
