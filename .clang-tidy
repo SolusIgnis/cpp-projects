@@ -35,6 +35,12 @@ Checks:
   # Do-While loops are idiomatic for compare-exchange.
   - '-cppcoreguidelines-avoid-do-while'
 
+  # This is a redundant alias of 'readability-magic-numbers'
+  - '-cppcoreguidelines-avoid-magic-numbers'
+
+  # This is a redundant alias of 'modernize-avoid-c-arrays'
+  - '-cppcoreguidelines-avoid-c-arrays'
+
   # This is a redundant alias of 'misc-explicit-constructor'.
   - '-cppcoreguidelines-explicit-constructor'
   
@@ -115,7 +121,7 @@ Checks:
   - '-portability-template-virtual-member-function'
 
   # Temporarily disabled while running -fix
-  - '-readability-identifier-naming'
+  #- '-readability-identifier-naming'
   #- '-readability-convert-member-functions-to-static'
   #- '-performance-unnecessary-value-param'
   #- '-cppcoreguidelines-missing-std-forward'
