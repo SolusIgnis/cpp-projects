@@ -812,6 +812,7 @@ export namespace base::vocab::inline ptr {
         = delete /*("`start_lifetime_as` deleted by policy `nullability::nullable` because `std::start_lifetime_as` requires a pointer to a region of allocated storage.")*/
             ;
 #else
+    //NOLINTNEXTLINE(clang-diagnostic-#warnings)
     #warning "`std::start_lifetime_as` not defined. `base::vocab::ptr::start_lifetime_as` will be unavailable."
 #endif
         //================================================================================
