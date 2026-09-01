@@ -2272,6 +2272,7 @@ namespace {
             });
         };
 
+        //NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast): Raw pointer stream inserters lack support for `volatile` pointees, so a `const_cast` to remove the qualifier is required to stream the address value.
         "ostream insertion supports cv-qualified element types"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 volatile std::int32_t value{};
@@ -2282,13 +2283,14 @@ namespace {
                 std::ostringstream raw_stream;
 
                 ptr_stream << ptr;
-                raw_stream << const_cast<
-                    std::add_pointer_t<std::remove_volatile_t<std::remove_pointer_t<decltype(std::addressof(value))>>>
-                >(std::addressof(value));
+                raw_stream << const_cast<std::add_pointer_t<std::remove_volatile_t<std::remove_pointer_t<
+                    decltype(std::addressof(value))
+                >>>>(std::addressof(value));
 
                 expect(eq(ptr_stream.str(), raw_stream.str()));
             });
         };
+        //NOLINTEND(cppcoreguidelines-pro-type-const-cast)
     };
 } //namespace
 
