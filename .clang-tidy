@@ -35,14 +35,35 @@ Checks:
   # Do-While loops are idiomatic for compare-exchange.
   - '-cppcoreguidelines-avoid-do-while'
 
+  # This is a redundant alias of 'bugprone-narrowing-conversions'
+  - '-cppcoreguidelines-narrowing-conversions'
+
   # This is a redundant alias of 'readability-magic-numbers'
   - '-cppcoreguidelines-avoid-magic-numbers'
 
   # This is a redundant alias of 'modernize-avoid-c-arrays'
   - '-cppcoreguidelines-avoid-c-arrays'
 
+  # This is a redundant alias of 'modernize-use-override'
+  - '-cppcoreguidelines-explicit-virtual-functions'
+
+  # This is a redundant alias of 'modernize-macro-to-enum'
+  - '-cppcoreguidelines-macro-to-enum'
+  
+  # This is a redundant alias of 'modernize-use-default-member-init'
+  - '-cppcoreguidelines-use-default-member-init'
+
+  # This is a redundant alias of 'misc-non-private-member-variables-in-classes'
+  - '-cppcoreguidelines-non-private-member-variables-in-classes'
+
   # This is a redundant alias of 'misc-explicit-constructor'.
   - '-cppcoreguidelines-explicit-constructor'
+  
+  # This is a redundant alias of 'misc-unconventional-assign-operator'
+  - '-cppcoreguidelines-c-copy-assignment-signature'
+
+  # These are redundant aliases of the performance family.
+  - '-cppcoreguidelines-noexcept-*'
   
   # ============================================================
   # Readability & maintainability (policy-driven)
@@ -121,7 +142,7 @@ Checks:
   - '-portability-template-virtual-member-function'
 
   # Temporarily disabled while running -fix
-  #- '-readability-identifier-naming'
+  - '-readability-identifier-naming'
   #- '-readability-convert-member-functions-to-static'
   #- '-performance-unnecessary-value-param'
   #- '-cppcoreguidelines-missing-std-forward'
@@ -446,7 +467,7 @@ CheckOptions:
   readability-magic-numbers.IgnorePowersOf2IntegerValues: 'false'
   readability-magic-numbers.IgnoreTypeAliases:            'false'
   readability-magic-numbers.IgnoreUserDefinedLiterals:    'false'
-  readability-magic-numbers.IgnoredFloatingPointValues:   '1.0;100.0;'
+  readability-magic-numbers.IgnoredFloatingPointValues:   '0.0;1.0;100.0;'
   readability-magic-numbers.IgnoredIntegerValues:         '-1;0;1;2;3;4;'
   
   readability-named-parameter.InsertPlainNamesInForwardDecls: 'false'
