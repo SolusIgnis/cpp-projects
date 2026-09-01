@@ -37,3 +37,17 @@ endfunction()
 function(register_tooling_test target)
   set_property(GLOBAL APPEND PROPERTY TOOLING_TEST_TARGETS ${target})
 endfunction()
+
+function(get_tidy_source_filter out_var)
+  string(REGEX ESCAPE "${CMAKE_BINARY_DIR}" _tidy_binary_dir_regex)
+
+  set(_tidy_excluded_paths
+    "${_tidy_binary_dir_regex}/"
+    "(.*/)?std\\.cppm$"
+    "(.*/)?std\\.compat\\.cppm$"
+  )
+
+  list(JOIN _tidy_excluded_paths "|" _tidy_excluded_paths_regex)
+
+  set(${out_var} "^(?!(${_tidy_excluded_paths_regex})).*$" PARENT_SCOPE)
+endfunction()

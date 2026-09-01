@@ -42,14 +42,18 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(TIDY_JOBS 0) # 0 means use all available cores for run-clang-tidy
   endif()
   
+  if(NOT DEFINED TIDY_SOURCE_FILTER_REGEX)
+    get_tidy_source_filter(TIDY_SOURCE_FILTER_REGEX)
+  endif()  
+
   add_custom_target(tidy-check-fast
-    COMMAND run-clang-tidy -use-color -p ${CMAKE_BINARY_DIR} -j${TIDY_JOBS} -allow-no-checks
+    COMMAND run-clang-tidy -use-color -p ${CMAKE_BINARY_DIR} -j${TIDY_JOBS} -source-filter "${TIDY_SOURCE_FILTER_REGEX}" -allow-no-checks
     COMMENT "Checking code with clang-tidy (parallelized by run-clang-tidy script)"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
   
   add_custom_target(tidy-fix-fast
-    COMMAND run-clang-tidy -fix -use-color -p ${CMAKE_BINARY_DIR} -j${TIDY_JOBS} -allow-no-checks
+    COMMAND run-clang-tidy -fix -use-color -p ${CMAKE_BINARY_DIR} -j${TIDY_JOBS} -source-filter "${TIDY_SOURCE_FILTER_REGEX}" -allow-no-checks
     COMMENT "Checking code with clang-tidy in \"fix\" mode (parallelized by run-clang-tidy script)"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
