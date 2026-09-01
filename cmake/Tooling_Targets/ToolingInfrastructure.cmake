@@ -53,6 +53,12 @@ function(regex_escape out_var input)
   set(${out_var} "${_escaped}" PARENT_SCOPE)
 endfunction()
 
+# Helper function to escape $ to $$ for ninja.
+function(dollar_escape out_var input)
+  string(REPLACE "$" "$$" _escaped "${input}")
+  set(${out_var} "${_escaped}" PARENT_SCOPE)
+endfunction()
+
 # Helper function to generate a regex for run-clang-tidy to filter sources from the compilation database.
 function(get_tidy_source_filter out_var)
   regex_escape(_tidy_binary_dir_regex "${CMAKE_BINARY_DIR}")
@@ -65,5 +71,9 @@ function(get_tidy_source_filter out_var)
 
   list(JOIN _tidy_excluded_paths "|" _tidy_excluded_paths_regex)
 
-  set(${out_var} "^(?!(${_tidy_excluded_paths_regex})).*$" PARENT_SCOPE)
+  set(_tidy_source_files_regex "^(?!(${_tidy_excluded_paths_regex})).*$")
+
+  dollar_escape(_tidy_source_files_regex "${_tidy_source_files_regex}")
+
+  set(${out_var} "${_tidy_source_files_regex}" PARENT_SCOPE)
 endfunction()
