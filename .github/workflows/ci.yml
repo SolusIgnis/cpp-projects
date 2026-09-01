@@ -91,6 +91,7 @@ jobs:
           for path in test_tus:
               print(f"  {path}")
           PY
-
+          run-clang-tidy --help
+          
       - name: clang-tidy checks
         run: cmake --build --preset=clang-debug --target=tidy-check-fast
