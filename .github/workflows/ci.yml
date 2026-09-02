@@ -68,8 +68,7 @@ jobs:
           ) &&
           !inputs.tidy_skip_tests
         ) && 'ON' || 'OFF' }}
-    env:
-      TIDY_TESTS: ${{ inputs.tidy_skip_tests && 'OFF' || 'ON' }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
