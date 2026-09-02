@@ -24,7 +24,7 @@ namespace {
             constexpr std::int32_t input_l   = 42;
             constexpr std::int32_t input_r   = 58;
             constexpr std::int32_t input_ptr = 99;
-            constexpr std::int32_t expected = input_l + input_r + input_ptr;
+            constexpr std::int32_t expected  = input_l + input_r + input_ptr;
 
             std::vector<std::int32_t> trace;
 
@@ -89,7 +89,7 @@ namespace {
 
                 const std::int32_t val_l = co_await leaf_int_l().set_probe(&probe_int_lvalue);
                 const std::int32_t val_r = co_await std::move(leaf_int_r().set_probe(&probe_int_rvalue));
-                const auto ptr          = co_await leaf_ptr().set_probe(&probe_ptr);
+                const auto ptr           = co_await leaf_ptr().set_probe(&probe_ptr);
                 co_await leaf_void().set_probe(&probe_void); // void task
 
                 // Exception propagation check

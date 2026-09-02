@@ -497,7 +497,7 @@ namespace {
                                     .set_probe(&probe_d);
 
                 const auto difference = quotient - co_await make_task_c().set_probe(&probe_c); //6 - 1 == 5
-                co_return difference;                                                        //5
+                co_return difference;                                                          //5
             };
             auto task_e = make_task_e();
             task_e.set_probe(&probe_e);
