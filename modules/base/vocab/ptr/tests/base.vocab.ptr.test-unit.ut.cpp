@@ -170,20 +170,20 @@ namespace {
 
         "template instantiation checks"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                using base::meta::concepts::InstantiableWith;
-                expect(eq(InstantiableWith<ConcretePtr, std::int32_t>, true));
-                expect(eq(InstantiableWith<ConcretePtr, std::int32_t*>, true));
-                expect(eq(InstantiableWith<ConcretePtr, std::map<std::string, std::vector<std::int32_t>>>, true));
+                using base::meta::concepts::instantiable_with;
+                expect(eq(instantiable_with<ConcretePtr, std::int32_t>, true));
+                expect(eq(instantiable_with<ConcretePtr, std::int32_t*>, true));
+                expect(eq(instantiable_with<ConcretePtr, std::map<std::string, std::vector<std::int32_t>>>, true));
 
-                expect(eq(InstantiableWith<ConcretePtr, void>, pointer_test_traits<ConcretePtr>::permits_void_pointee));
+                expect(eq(instantiable_with<ConcretePtr, void>, pointer_test_traits<ConcretePtr>::permits_void_pointee));
 
-                expect(eq(InstantiableWith<ConcretePtr, std::int32_t&>, false));
-                expect(eq(InstantiableWith<ConcretePtr, std::int32_t&&>, false));
-                expect(eq(InstantiableWith<ConcretePtr, void(std::int32_t)>, false));
-                expect(eq(InstantiableWith<ConcretePtr, void (&)(std::int32_t)>, false));
-                expect(eq(InstantiableWith<ConcretePtr, void (*)(std::int32_t, float)>, false));
-                expect(eq(InstantiableWith<ConcretePtr, void (**)(std::string, std::int32_t)>, false));
-                expect(eq(InstantiableWith<ConcretePtr, void (*******)(std::int32_t)>, false));
+                expect(eq(instantiable_with<ConcretePtr, std::int32_t&>, false));
+                expect(eq(instantiable_with<ConcretePtr, std::int32_t&&>, false));
+                expect(eq(instantiable_with<ConcretePtr, void(std::int32_t)>, false));
+                expect(eq(instantiable_with<ConcretePtr, void (&)(std::int32_t)>, false));
+                expect(eq(instantiable_with<ConcretePtr, void (*)(std::int32_t, float)>, false));
+                expect(eq(instantiable_with<ConcretePtr, void (**)(std::string, std::int32_t)>, false));
+                expect(eq(instantiable_with<ConcretePtr, void (*******)(std::int32_t)>, false));
             });
         };
 
@@ -1900,7 +1900,7 @@ namespace {
         "incomplete type support"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
-                    expect(eq(base::meta::concepts::InstantiableWith<ConcretePtr, incomplete_type>, true));
+                    expect(eq(base::meta::concepts::instantiable_with<ConcretePtr, incomplete_type>, true));
 
                     //NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, readability-magic-numbers): Test requires a fabricated pointer value to an incomplete type.
                     auto* const raw = reinterpret_cast<incomplete_type*>(0x1234);
