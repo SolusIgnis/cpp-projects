@@ -588,12 +588,12 @@ namespace {
         //NOLINTBEGIN(cppcoreguidelines-pro-type-union-access): Testing union access.
         "operator-> provides member access"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                expect(eq(ArrowAccessible<ConcretePtr<std::uint8_t>>, false));
-                expect(eq(ArrowAccessible<ConcretePtr<std::float_round_style>>, false));
-                expect(eq(ArrowAccessible<ConcretePtr<std::memory_order>>, false));
-                expect(eq(ArrowAccessible<ConcretePtr<std::byte>>, false));
-                expect(eq(ArrowAccessible<ConcretePtr<base_type>>, true));
-                expect(eq(ArrowAccessible<ConcretePtr<union_type>>, true));
+                expect(eq(arrow_accessible<ConcretePtr<std::uint8_t>>, false));
+                expect(eq(arrow_accessible<ConcretePtr<std::float_round_style>>, false));
+                expect(eq(arrow_accessible<ConcretePtr<std::memory_order>>, false));
+                expect(eq(arrow_accessible<ConcretePtr<std::byte>>, false));
+                expect(eq(arrow_accessible<ConcretePtr<base_type>>, true));
+                expect(eq(arrow_accessible<ConcretePtr<union_type>>, true));
 
                 base_type c_obj;
                 c_obj.value     = 123;
@@ -1550,13 +1550,13 @@ namespace {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 using t = ConcretePtr<std::int32_t>;
 
-                expect(eq(HasAddition<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(HasSubtraction<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(HasDifference<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(HasPreIncrement<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(HasPostIncrement<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(HasPreDecrement<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(HasPostDecrement<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(has_addition<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(has_subtraction<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(has_difference<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(has_pre_increment<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(has_post_increment<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(has_pre_decrement<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(has_post_decrement<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
             });
         };
 
@@ -1966,11 +1966,11 @@ namespace {
         "void specialization disables dereference operators"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-                    expect(eq(Dereferenceable<ConcretePtr<base_type>>, true));
-                    expect(eq(ArrowAccessible<ConcretePtr<base_type>>, true));
+                    expect(eq(dereferenceable<ConcretePtr<base_type>>, true));
+                    expect(eq(arrow_accessible<ConcretePtr<base_type>>, true));
 
-                    expect(eq(Dereferenceable<ConcretePtr<void>>, false));
-                    expect(eq(ArrowAccessible<ConcretePtr<void>>, false));
+                    expect(eq(dereferenceable<ConcretePtr<void>>, false));
+                    expect(eq(arrow_accessible<ConcretePtr<void>>, false));
                 }
             });
         };
