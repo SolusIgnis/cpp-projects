@@ -143,8 +143,8 @@ namespace base::vocab::inline ptr {
      */
     template<typename T>
     concept resolvable_to_address = requires(const T& ptr) {
-                                      { std::to_address(ptr) };
-                                  };
+                                        { std::to_address(ptr) };
+                                    };
 
     /**
      * @brief Determines whether a pointer type can be resolved to a given raw address type by `std::to_address`.
@@ -158,8 +158,10 @@ namespace base::vocab::inline ptr {
      */
     template<typename T, typename AddressType>
     concept resolvable_to_address_as = resolvable_to_address<T> && requires(const T& ptr) {
-                                                                  { std::to_address(ptr) } -> std::convertible_to<AddressType>;
-                                                              };
+                                                                       {
+                                                                           std::to_address(ptr)
+                                                                       } -> std::convertible_to<AddressType>;
+                                                                   };
 
     /**
      * @brief Determines the type of the address resolved by applying `std::to_address` to an object of a given type.
