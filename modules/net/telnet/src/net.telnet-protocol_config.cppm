@@ -19,15 +19,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief Default configuration implementation for `ProtocolFSM`.
+ * @brief Default configuration implementation for `protocol_fsm`.
  * @remark Provides thread-safe, static configuration with option registry and handlers.
  * @example
- *   telnet::ProtocolFSM<> fsm;
+ *   telnet::protocol_fsm<> fsm;
  *   telnet::default_protocol_fsm_config::set_error_logger([](const std::error_code& ec, std::string msg) {
  *       std::cerr << "Error: " << ec.message() << " - " << msg << std::endl;
  *   });
  *
- * @see `:protocol_fsm` for `ProtocolFSM`, `:concepts` for `ProtocolFSMConfig`, `:options` for `option`
+ * @see `:protocol_fsm` for `protocol_fsm`, `:concepts` for `protocol_fsm_config`, `:options` for `option`
  */
 
 //Module partition interface unit
@@ -37,12 +37,12 @@ import std; //NOLINT For std::shared_mutex, std::lock_guard, std::shared_lock, s
 
 export import :types;    ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
 export import :errors;   ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-export import :concepts; ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
+export import :concepts; ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::protocol_fsm_config`
 export import :options;  ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
 
 export namespace net::telnet {
     /**
-     * @brief Default configuration class for `ProtocolFSM`, encapsulating options and handlers.
+     * @brief Default configuration class for `protocol_fsm`, encapsulating options and handlers.
      * @remark Provides thread-safe access to static members via `mutex`.
      * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, :options for `option` and `option::id_num`, :errors for error codes, :internal for implementation classes
      */

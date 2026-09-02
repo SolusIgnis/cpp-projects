@@ -27,7 +27,7 @@
  *   telnet::protocol_fsm<>::protocol_config_type::registered_options.upsert(telnet::option::id_num::negotiate_about_window_size, "NAWS", telnet::option::always_accept, telnet::option::always_accept, true, 4);
  *   telnet::protocol_fsm<>::protocol_config_type::set_error_logger([](const std::error_code& ec, std::string msg) { std::cout << "Error: " << ec.message() << " - " << msg << std::endl; });
  *
- * @see RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, `:types` for `telnet::command` and `negotiation_direction`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:stream` for FSM usage, `:internal` for implementation classes, , `:protocol_config` for `default_protocol_fsm_config`, and `:concepts` for `ProtocolFSMConfig`
+ * @see RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, `:types` for `telnet::command` and `negotiation_direction`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:stream` for FSM usage, `:internal` for implementation classes, , `:protocol_config` for `default_protocol_fsm_config`, and `:concepts` for `protocol_fsm_config`
  * @todo Phase 6: Add optional half-duplex support (RFC 854) if legacy peer requirements arise.
  */
 
@@ -38,7 +38,7 @@ import std; //NOLINT For std::function, std::optional, std::map, std::set, std::
 
 export import :types;      ///< @see "net.telnet-types.cppm" for `byte_t`, `telnet::command`, and `negotiation_direction`
 export import :errors;     ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-export import :concepts;   ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
+export import :concepts;   ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::protocol_fsm_config`
 export import :options;    ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
 export import :awaitables; ///< @see "net.telnet-awaitables.cppm" for `TaggedAwaitable`, semantic tags, and type aliases
 
@@ -49,7 +49,7 @@ import :protocol_config; ///< @see "net.telnet-protocol_config.cppm" for `defaul
 
 namespace net::telnet {
     //Non-exported using declarations to simplify template constraints below.
-    using concepts::ProtocolFSMConfig;
+    using concepts::protocol_fsm_config;
 } //namespace net::telnet
 
 export namespace net::telnet {
@@ -62,7 +62,7 @@ export namespace net::telnet {
      */
     template<typename ConfigT = default_protocol_fsm_config>
     class protocol_fsm {
-        static_assert(ProtocolFSMConfig<ConfigT>);
+        static_assert(protocol_fsm_config<ConfigT>);
 
     public:
         /**
