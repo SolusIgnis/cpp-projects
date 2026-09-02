@@ -235,18 +235,14 @@ namespace {
 
             asio::io_context ctx;
 
-            //auto leaf = echo(start);
-
-            //NOLINT NEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
             auto make_middle = [&ran_on_executor, &ctx, leaf = echo(start)] mutable -> test_wrapper_int {
                 std::int32_t res = co_await std::move(leaf);
                 //NOLINTNEXTLINE(clang-analyzer-core.CallAndMessage): Likely false-positive in Asio "awaitable.hpp".
-                const auto exec  = co_await asio::this_coro::executor;
-                ran_on_executor  = (exec == ctx.get_executor());
+                const auto exec = co_await asio::this_coro::executor;
+                ran_on_executor = (exec == ctx.get_executor());
                 co_return res + inc;
             };
-
-            //auto middle = make_middle();
 
             //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Its closure object therefore outlives the coroutine execution.
             auto top = [middle = make_middle()] mutable -> asio::awaitable<int> {
