@@ -127,7 +127,7 @@ int main()
         using tcp_socket = asio::ip::tcp::socket;
 
         expect(_b{true} == asio_async_timed_waitable<timer>);
-        expect(_b{true} == AsioSyncTimedWaitable<timer>);
+        expect(_b{true} == asio_sync_timed_waitable<timer>);
 
         expect(_b{true} == asio_async_activity_waitable<tcp_socket>);
         expect(_b{true} == asio_sync_activity_waitable<tcp_socket>);

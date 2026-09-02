@@ -184,13 +184,13 @@ export namespace net::asio_concepts {
         concept asio_addressible_socket_option = std::default_initializable<T> && std::constructible_from<T, asio::ip::address>;
 
         /**
-         * @concept SocketOption
+         * @concept socket_option
          * @brief Concept for types modeling general socket options.
          * @tparam T The type to check.
          * @remark Allows any of the four basic option types.
          */
         template<typename T>
-        concept SocketOption = boolean_socket_option<T> || integral_socket_option<T> || composite_socket_option<T>
+        concept socket_option = boolean_socket_option<T> || integral_socket_option<T> || composite_socket_option<T>
                             || asio_addressible_socket_option<T>;
 
         /**
