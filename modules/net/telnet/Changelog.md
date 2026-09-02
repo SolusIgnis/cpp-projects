@@ -3,6 +3,9 @@
 # Changelog.md
 
 ## [Unreleased] - TBD
+### Changed
+- Changed all `concept` names from `PascalCase` to `snake_case`.
+- Applied various fixes to issues uncovered by clang-tidy.
 
 ## [0.5.8] - August 18, 2026
 ### Added
