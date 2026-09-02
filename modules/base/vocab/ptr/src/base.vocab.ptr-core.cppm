@@ -564,7 +564,7 @@ export namespace base::vocab::inline ptr {
             ;
 
         ///@brief Deleted assignment from compatible pointer types to structurally guarantee non-null rebinding.
-        template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
+        template<typename Self, pointer_compatible_with<concrete_ptr_instance> Source>
         Self& operator=(this Self&&, Source&&)
             requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Assignment from raw pointers deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null assignment by the reference-binding assignment operator. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
