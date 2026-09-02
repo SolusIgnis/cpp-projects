@@ -109,11 +109,11 @@ export namespace base::vocab::inline ptr {
      * @tparam T The type of the referenced object.
      *
      * @remark Deduces `T` from the referenced object, preserving cv-qualification.
-     * @remark Excludes `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
-     * @remark Excludes non-array `ResolvableToAddress`s to avoid ambiguity with other CTAD guides.
+     * @remark Excludes `pointer_with_element_type`s to avoid ambiguity with other CTAD guides.
+     * @remark Excludes non-array `resolvable_to_address`s to avoid ambiguity with other CTAD guides.
      */
     template<typename T>
-        requires (!PointerWithElementType<T>) && ((!ResolvableToAddress<T>) || std::is_array_v<std::remove_cvref_t<T>>)
+        requires (!pointer_with_element_type<T>) && ((!resolvable_to_address<T>) || std::is_array_v<std::remove_cvref_t<T>>)
     required_ptr(T&&) -> required_ptr<std::remove_reference_t<T>>;
 
     /**
@@ -121,7 +121,7 @@ export namespace base::vocab::inline ptr {
      *
      * @tparam P A pointer-like type with an `element_type` exposed through `std::pointer_traits`.
      */
-    template<PointerWithElementType P>
+    template<pointer_with_element_type P>
     required_ptr(P) -> required_ptr<typename std::pointer_traits<P>::element_type>;
 
     /**
@@ -129,10 +129,10 @@ export namespace base::vocab::inline ptr {
      *
      * @tparam P A type resolvable by `std::to_address`.
      *
-     * @remark Excludes `PointerWithElementType`s to avoid ambiguity with other CTAD guides.
+     * @remark Excludes `pointer_with_element_type`s to avoid ambiguity with other CTAD guides.
      * @remark Excludes C arrays to avoid array-to-pointer decay in the type deduction.
      */
-    template<ResolvableToAddress P>
-        requires (!PointerWithElementType<P>) && (!std::is_array_v<P>)
+    template<resolvable_to_address P>
+        requires (!pointer_with_element_type<P>) && (!std::is_array_v<P>)
     required_ptr(P) -> required_ptr<address_resolved_element_t<P>>;
 } //namespace base::vocab::inline ptr

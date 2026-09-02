@@ -30,14 +30,14 @@
  * distinct semantic invariants.
  *
  * `ptr_core` centralizes address storage, pointer operations, and policy-driven
- * interface selection. `VocabPtr` uses a public nested tag type to identify
+ * interface selection. `vocab_ptr` uses a public nested tag type to identify
  * concrete pointer types derived from `ptr_core` specializations.
  * `CompatibleRawPtr` enables `ptr_core` to constrain raw pointer interactions to
  * address types convertible to the type of its stored address. `is_valid_pointee_v`
  * allows `ptr_core` and the concrete pointer types to validate their pointee
  * template parameter domain. `is_smart_ptr_convertible_to_v` enables `ptr_core` to
  * generally interface with other pointer(-like) types. The `std::hash` and
- * `std::formatter` specializations leverage `VocabPtr` to provide hashing and
+ * `std::formatter` specializations leverage `vocab_ptr` to provide hashing and
  * formatting facilities to all of the concrete vocabulary pointers.
  *
  * This partition is primarily intended for implementers of vocabulary pointer
@@ -76,39 +76,39 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T>
-    concept VocabPtr = requires { typename T::derived_from_ptr_core; };
+    concept vocab_ptr = requires { typename T::derived_from_ptr_core; };
 
     /**
      * @brief Detects vocabulary pointer types that permit a null state.
      *
      * @tparam T The type being tested.
      *
-     * @details Satisfied when `T` satisfies `VocabPtr` and its static policy member `T::is_nullable` evaluates to `true`.
+     * @details Satisfied when `T` satisfies `vocab_ptr` and its static policy member `T::is_nullable` evaluates to `true`.
      *
      * @note Expects an exact type. This concept does not remove reference or cv-qualifications from `T`. When constraining forwarding references (e.g., `T&&`), consider `std::remove_cvref_t<T>` at the use site.
      *
-     * @remark Primarily serves to constrain function templates taking `VocabPtr`s by nullability policy.
+     * @remark Primarily serves to constrain function templates taking `vocab_ptr`s by nullability policy.
      *
      * @internal
      */
     template<typename T>
-    concept NullableVocabPtr = VocabPtr<T> && T::is_nullable;
+    concept nullable_vocab_ptr = vocab_ptr<T> && T::is_nullable;
 
     /**
      * @brief Detects vocabulary pointer types that are guaranteed to never be null.
      *
      * @tparam T The type being tested.
      *
-     * @details Satisfied when `T` satisfies `VocabPtr` and its static policy member `T::is_nullable` evaluates to `false`.
+     * @details Satisfied when `T` satisfies `vocab_ptr` and its static policy member `T::is_nullable` evaluates to `false`.
      *
      * @note Expects an exact type. This concept does not remove reference or cv-qualifications from `T`. When constraining forwarding references (e.g., `T&&`), consider `std::remove_cvref_t<T>` at the use site.
      *
-     * @remark Primarily serves to constrain function templates taking `VocabPtr`s by nullability policy.
+     * @remark Primarily serves to constrain function templates taking `vocab_ptr`s by nullability policy.
      *
      * @internal
      */
     template<typename T>
-    concept AlwaysEngagedVocabPtr = VocabPtr<T> && (!T::is_nullable);
+    concept always_engaged_vocab_ptr = vocab_ptr<T> && (!T::is_nullable);
 
     /**
      * @brief Determines whether a vocabulary pointer type is a valid binding source for a target pointer type.
@@ -117,7 +117,7 @@ namespace base::vocab::inline ptr {
      * @tparam TargetTemplate The target concrete pointer class template.
      * @tparam TargetAddress The raw address type expected by the target pointer.
      *
-     * @details Satisfied when the underlying type of `T` satisfies `VocabPtr`, is
+     * @details Satisfied when the underlying type of `T` satisfies `vocab_ptr`, is
      * not a specialization of `TargetTemplate`, and exposes an `address_type`
      * implicitly convertible to `TargetAddress`.
      *
@@ -128,9 +128,9 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T, template<typename...> typename TargetTemplate, typename TargetAddress>
-    concept VocabPtrSourceFor = VocabPtr<std::remove_cvref_t<T>>
-                             && !base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<T>, TargetTemplate>
-                             && std::convertible_to<typename std::remove_cvref_t<T>::address_type, TargetAddress>;
+    concept vocab_ptr_source_for = vocab_ptr<std::remove_cvref_t<T>>
+                                && !base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<T>, TargetTemplate>
+                                && std::convertible_to<typename std::remove_cvref_t<T>::address_type, TargetAddress>;
 
     /**
      * @brief Determines whether a pointer type can be resolved to any raw address type by `std::to_address`.
@@ -142,7 +142,7 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T>
-    concept ResolvableToAddress = requires(const T& ptr) {
+    concept resolvable_to_address = requires(const T& ptr) {
                                       { std::to_address(ptr) };
                                   };
 
@@ -157,7 +157,7 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T, typename AddressType>
-    concept ResolvableToAddressAs = ResolvableToAddress<T> && requires(const T& ptr) {
+    concept resolvable_to_address_as = resolvable_to_address<T> && requires(const T& ptr) {
                                                                   { std::to_address(ptr) } -> std::convertible_to<AddressType>;
                                                               };
 
@@ -168,7 +168,7 @@ namespace base::vocab::inline ptr {
      *
      * @internal
      */
-    template<ResolvableToAddress T>
+    template<resolvable_to_address T>
     using resolved_address_t = decltype(std::to_address(std::declval<const T&>()));
 
     /**
@@ -178,17 +178,17 @@ namespace base::vocab::inline ptr {
      *
      * @internal
      */
-    template<ResolvableToAddress T>
+    template<resolvable_to_address T>
     using address_resolved_element_t = std::remove_pointer_t<resolved_address_t<T>>;
 
     /**
-     * @brief Determines whether a type is an external pointer compatible with a specified `VocabPtr`.
+     * @brief Determines whether a type is an external pointer compatible with a specified `vocab_ptr`.
      *
      * @tparam T The type being tested.
-     * @tparam TargetPtr The `VocabPtr` with which compatibility is being tested.
+     * @tparam TargetPtr The `vocab_ptr` with which compatibility is being tested.
      *
      * @details This concept is satisfied when the underlying type of `T` (after removing references and cv-qualifications)
-     * is a pointer other than a `VocabPtr` that is address-compatible with the concrete pointer specialization `TargetPtr`.
+     * is a pointer other than a `vocab_ptr` that is address-compatible with the concrete pointer specialization `TargetPtr`.
      * The concept constrains function templates within `ptr_core`, so the expectation is that `TargetPtr` will be the
      * `concrete_ptr_instance` from the specialization of `ptr_core` currently being instantiated.
      *
@@ -197,9 +197,9 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T, typename TargetPtr>
-    concept PointerCompatibleWith = !VocabPtr<std::remove_cvref_t<T>> && !std::is_array_v<std::remove_cvref_t<T>>
-                                 && VocabPtr<TargetPtr>
-                                 && ResolvableToAddressAs<std::remove_cvref_t<T>, typename TargetPtr::address_type>;
+    concept pointer_compatible_with = !vocab_ptr<std::remove_cvref_t<T>> && !std::is_array_v<std::remove_cvref_t<T>>
+                                   && vocab_ptr<TargetPtr>
+                                   && resolvable_to_address_as<std::remove_cvref_t<T>, typename TargetPtr::address_type>;
 
     /**
      * @brief Determines whether a pointer-like type has an exposed element type.
@@ -209,7 +209,7 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T>
-    concept PointerWithElementType = requires { typename std::pointer_traits<std::remove_cvref_t<T>>::element_type; };
+    concept pointer_with_element_type = requires { typename std::pointer_traits<std::remove_cvref_t<T>>::element_type; };
 
     /**
      * @brief Determines whether a type may be used as a vocabulary pointer pointee.
@@ -235,7 +235,7 @@ export namespace base::vocab::inline ptr {
      *
      * @tparam ConcretePtr The derived pointer class template (CRTP-like template-template pattern).
      * @tparam Pointee The type of the object being pointed to.
-     * @tparam PolicySet A `PtrPolicyList` type-list configuration selecting one policy from each of the `ptr_policies::traversal`, `ptr_policies::reference_binding`, `ptr_policies::pointer_binding`, and `ptr_policies::nullability` groups.
+     * @tparam PolicySet A `ptr_policy_list` type-list configuration selecting one policy from each of the `ptr_policies::traversal`, `ptr_policies::reference_binding`, `ptr_policies::pointer_binding`, and `ptr_policies::nullability` groups.
      *
      * @details `ptr_core` is a policy-configurable foundation for non-owning vocabulary pointer types. It centralizes
      * stored address management, pointer traits, and universal pointer operations while selectively enabling operations
@@ -251,10 +251,10 @@ export namespace base::vocab::inline ptr {
      * @remark This interface uses C++23 explicit object parameters (e.g., `this auto&& self`) to avoid cv/ref-qualified overload duplication while preserving correct value-category propagation.
      * @note Deleted overloads deliberately use forwarding explicit object parameters (`this Self&&`) so policy-driven diagnostics take precedence over value-category mismatches during overload resolution.
      */
-    template<template<typename> typename ConcretePtr, typename Pointee, ptr_policies::PtrPolicyList PolicySet>
+    template<template<typename> typename ConcretePtr, typename Pointee, ptr_policies::ptr_policy_list PolicySet>
         requires is_valid_pointee_v<Pointee>
     class ptr_core {
-        template<template<typename> typename, typename FriendPointee, ptr_policies::PtrPolicyList>
+        template<template<typename> typename, typename FriendPointee, ptr_policies::ptr_policy_list>
             requires is_valid_pointee_v<FriendPointee>
         friend class ptr_core;
 
@@ -422,17 +422,17 @@ export namespace base::vocab::inline ptr {
         //===== Pointer Binding (Allowed)  =====
 
         ///@brief Implicitly converts from a compatible, always-engaged vocabulary pointer type bypassing nullability policy checks. Explicit when `element_type` is void to avoid implicit conversion chaining.
-        template<VocabPtrSourceFor<ConcretePtr, address_type> Source>
-            requires AlwaysEngagedVocabPtr<std::remove_cvref_t<Source>>
+        template<vocab_ptr_source_for<ConcretePtr, address_type> Source>
+            requires always_engaged_vocab_ptr<std::remove_cvref_t<Source>>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept
             requires ptr_policies::allowed_pointer_binding_v<policy_set>
             : ptr_core{validated_address_tag{}, std::forward<Source>(source)}
         {}
 
         ///@brief Assigns from a compatible, always-engaged vocabulary pointer type bypassing nullability policy checks.
-        template<typename Self, VocabPtrSourceFor<ConcretePtr, address_type> Source>
+        template<typename Self, vocab_ptr_source_for<ConcretePtr, address_type> Source>
             requires (!std::is_const_v<Self>)
-                  && AlwaysEngagedVocabPtr<std::remove_cvref_t<Source>>
+                  && always_engaged_vocab_ptr<std::remove_cvref_t<Source>>
                      //NOLINTNEXTLINE(misc-unconventional-assign-operator, cppcoreguidelines-c-copy-assignment-signature): This assignment operator intentionally has the deduced derived type of its explicit object parameter rather than `ptr_core` as its return type.
                      constexpr Self& operator=(this Self& self, Source&& source) noexcept
                          requires ptr_policies::allowed_pointer_binding_v<policy_set>
@@ -442,8 +442,8 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Implicitly converts from a compatible, nullable vocabulary pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
-        template<VocabPtrSourceFor<ConcretePtr, address_type> Source>
-            requires NullableVocabPtr<std::remove_cvref_t<Source>>
+        template<vocab_ptr_source_for<ConcretePtr, address_type> Source>
+            requires nullable_vocab_ptr<std::remove_cvref_t<Source>>
         constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(
             noexcept(apply_nullability_policy(std::forward<Source>(source)))
         )
@@ -452,9 +452,9 @@ export namespace base::vocab::inline ptr {
         {}
 
         ///@brief Assigns from a compatible, nullable vocabulary pointer type.
-        template<typename Self, VocabPtrSourceFor<ConcretePtr, address_type> Source>
+        template<typename Self, vocab_ptr_source_for<ConcretePtr, address_type> Source>
             requires (!std::is_const_v<Self>)
-                  && NullableVocabPtr<std::remove_cvref_t<Source>>
+                  && nullable_vocab_ptr<std::remove_cvref_t<Source>>
                      //NOLINTNEXTLINE(misc-unconventional-assign-operator, cppcoreguidelines-c-copy-assignment-signature): This assignment operator intentionally has the deduced derived type of its explicit object parameter rather than `ptr_core` as its return type.
                      constexpr Self& operator=(this Self& self, Source&& source) noexcept(
                          noexcept(apply_nullability_policy(std::forward<Source>(source)))
@@ -466,7 +466,7 @@ export namespace base::vocab::inline ptr {
         }
 
         ///@brief Implicitly converts from an external compatible pointer type. Explicit when `element_type` is void to avoid implicit conversion chaining.
-        template<PointerCompatibleWith<concrete_ptr_instance> Source>
+        template<pointer_compatible_with<concrete_ptr_instance> Source>
             requires std::is_lvalue_reference_v<Source>
                   || std::is_pointer_v<std::remove_cvref_t<Source>>
                      constexpr explicit(std::is_void_v<element_type>) ptr_core(Source&& source) noexcept(
@@ -477,7 +477,7 @@ export namespace base::vocab::inline ptr {
         {}
 
         ///@brief Assigns from an external compatible pointer type.
-        template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
+        template<typename Self, pointer_compatible_with<concrete_ptr_instance> Source>
             requires (!std::is_const_v<Self>)
                   && (std::is_lvalue_reference_v<Source> || std::is_pointer_v<std::remove_cvref_t<Source>>)
                      //NOLINTNEXTLINE(misc-unconventional-assign-operator, cppcoreguidelines-c-copy-assignment-signature): This assignment operator intentionally has the deduced derived type of its explicit object parameter rather than `ptr_core` as its return type.
@@ -543,21 +543,21 @@ export namespace base::vocab::inline ptr {
         //===== Pointer Binding (Forbidden) =====
 
         ///@brief Deleted constructor from other vocabulary pointer types to structurally guarantee non-null initialization.
-        template<VocabPtrSourceFor<ConcretePtr, address_type> Source>
+        template<vocab_ptr_source_for<ConcretePtr, address_type> Source>
         ptr_core(Source&&)
             requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Constructor from other vocabulary pointer types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization by the reference-binding constructor. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
         ///@brief Deleted assignment from other vocabulary pointer types to structurally guarantee non-null rebinding.
-        template<typename Self, VocabPtrSourceFor<ConcretePtr, address_type> Source>
+        template<typename Self, vocab_ptr_source_for<ConcretePtr, address_type> Source>
         Self& operator=(this Self&&, Source&&)
             requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Assignment from raw pointers deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null assignment by the reference-binding assignment operator. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
             ;
 
         ///@brief Deleted constructor from compatible pointer types to structurally guarantee non-null initialization.
-        template<PointerCompatibleWith<concrete_ptr_instance> Source>
+        template<pointer_compatible_with<concrete_ptr_instance> Source>
         ptr_core(Source&&)
             requires ptr_policies::forbidden_pointer_binding_v<policy_set>
         = delete /*("Constructor from other vocabulary pointer types deleted by policy `pointer_binding::forbidden`. Dereference first to guarantee non-null initialization by the reference-binding constructor. Use `std::optional<ptr_type<T>>` for optional pointers.")*/
@@ -623,7 +623,7 @@ export namespace base::vocab::inline ptr {
         //===== Pointer Binding (Allowed) =====
 
         ///@brief Deleted constructor from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
-        template<PointerCompatibleWith<concrete_ptr_instance> Source>
+        template<pointer_compatible_with<concrete_ptr_instance> Source>
             requires (!std::is_lvalue_reference_v<Source>)
                   && (!std::is_pointer_v<std::remove_cvref_t<Source>>)
                      ptr_core(Source&&)
@@ -632,7 +632,7 @@ export namespace base::vocab::inline ptr {
             ;
 
         ///@brief Deleted assignment from pointer-like object rvalue to discourage dangling by rejecting direct binding to temporaries.
-        template<typename Self, PointerCompatibleWith<concrete_ptr_instance> Source>
+        template<typename Self, pointer_compatible_with<concrete_ptr_instance> Source>
             requires (!std::is_lvalue_reference_v<Source>)
                   && (!std::is_pointer_v<std::remove_cvref_t<Source>>)
                      Self& operator=(this Self&&, Source&&)
@@ -663,14 +663,14 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Provides member access to the pointee object.
         [[nodiscard]] constexpr address_type operator->(this auto&& self) noexcept
-            requires base::meta::concepts::CompleteClassType<element_type>
+            requires base::meta::concepts::complete_class_type<element_type>
         {
             return self.address_;
         }
 
         ///@brief Provides a reference to the pointee object.
         [[nodiscard]] constexpr auto& operator*(this auto&& self) noexcept
-            requires base::meta::concepts::CompletePointee<element_type>
+            requires base::meta::concepts::complete_pointee<element_type>
         {
             return *self.address_;
         }
@@ -826,7 +826,7 @@ export namespace base::vocab::inline ptr {
             "Subscript operator conflates pointers with arrays. Use `*(ptr + offset)` for explicit traversal or consider subscripting the container instead."
         )]]
         constexpr auto& operator[](this auto self, difference_type offset) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::complete_pointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return *(self + offset);
         }
@@ -834,7 +834,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Prefix increment: increments the stored address.
         template<typename Self>
         constexpr decltype(auto) operator++(this Self&& self) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::complete_pointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             ++self.address_;
             return std::forward<Self>(self);
@@ -843,7 +843,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Prefix decrement: decrements the stored address.
         template<typename Self>
         constexpr decltype(auto) operator--(this Self&& self) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::complete_pointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             --self.address_;
             return std::forward<Self>(self);
@@ -853,7 +853,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self>
         //NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward): Explicit object parameter `self` is incremented directly; forwarding is neither required nor intended.
         constexpr auto operator++(this Self&& self, int) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::complete_pointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             std::decay_t<Self> old{self};
             ++self;
@@ -864,7 +864,7 @@ export namespace base::vocab::inline ptr {
         template<typename Self>
         //NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward): Explicit object parameter `self` is decremented directly; forwarding is neither required nor intended.
         constexpr auto operator--(this Self&& self, int) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::complete_pointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             std::decay_t<Self> old{self};
             --self;
@@ -874,7 +874,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Addition assignment: increments the stored address by a given distance.
         template<typename Self>
         constexpr decltype(auto) operator+=(this Self&& self, difference_type offset) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::complete_pointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             self.address_ += offset;
             return std::forward<Self>(self);
@@ -883,7 +883,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Subtraction assignment: decrements the stored address by a given distance.
         template<typename Self>
         constexpr decltype(auto) operator-=(this Self&& self, difference_type offset) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::complete_pointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             self.address_ -= offset;
             return std::forward<Self>(self);
@@ -891,28 +891,28 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Pointer addition: gets a pointer to an address a given distance after the stored address.
         friend constexpr concrete_ptr_instance operator+(concrete_ptr_instance ptr, difference_type offset) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::complete_pointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return ptr += offset;
         }
 
         ///@brief Pointer addition (commutative): gets a pointer to an address a given distance after the stored address.
         friend constexpr concrete_ptr_instance operator+(difference_type offset, concrete_ptr_instance ptr) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::complete_pointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return ptr += offset;
         }
 
         ///@brief Pointer subtraction: gets a pointer to an address a given distance before the stored address.
         friend constexpr concrete_ptr_instance operator-(concrete_ptr_instance ptr, difference_type offset) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::complete_pointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return ptr -= offset;
         }
 
         ///@brief Pointer subtraction (difference): computes the distance between the addresses stored in two pointers.
         friend constexpr difference_type operator-(concrete_ptr_instance lhs, concrete_ptr_instance rhs) noexcept
-            requires base::meta::concepts::CompletePointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
+            requires base::meta::concepts::complete_pointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return lhs.get() - rhs.get();
         }
@@ -1396,7 +1396,7 @@ export namespace base::vocab::inline ptr {
      * @pre The stored address points to a valid object.
      *
      * @remark Provides pointee member access semantics.
-     * @note Available only when `element_type` satisfies `base::meta::concepts::CompletePointee` (i.e. is a complete object type).
+     * @note Available only when `element_type` satisfies `base::meta::concepts::complete_class_type` (i.e. is a complete object of "class type").
      */
     /**
      * @fn constexpr auto& operator*(this auto&& self) noexcept
@@ -1408,7 +1408,7 @@ export namespace base::vocab::inline ptr {
      * @pre If the selected policies include `nullability::nullable`, `self.get() != nullptr`.
      * @pre The stored address points to a valid object.
      *
-     * @note Available only when `element_type` satisfies `base::meta::concepts::CompletePointee` (i.e. is a complete object type).
+     * @note Available only when `element_type` satisfies `base::meta::concepts::complete_pointee` (i.e. is a complete object type).
      */
     /**
      * @fn constexpr pointer get(this auto&& self) noexcept

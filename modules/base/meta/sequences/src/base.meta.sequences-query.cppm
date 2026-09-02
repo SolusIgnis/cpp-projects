@@ -90,13 +90,13 @@ namespace base::meta::sequences {
 } //namespace base::meta::sequences
 
 namespace base::meta::sequences {
-    template<TypeSequence Seq, typename Query>
+    template<type_sequence Seq, typename Query>
     struct contains_type;
 
     template<typename... Values, typename Query>
     struct contains_type<type_list<Values...>, Query> : std::bool_constant<(std::same_as<Query, Values> || ...)> {};
 
-    template<ValueSequence Seq, auto Query>
+    template<value_sequence Seq, auto Query>
     struct contains_value;
 
     template<auto... Values, auto Query>
@@ -106,22 +106,22 @@ namespace base::meta::sequences {
     struct contains_value<uniform_value_list<T, Values...>, Query>
         : std::bool_constant<(uniform_equivalent_v<Query, Values> || ...)> {};
 
-    export template<TypeSequence Seq, typename Query>
+    export template<type_sequence Seq, typename Query>
     inline constexpr bool contains_type_v = contains_type<std::remove_cvref_t<Seq>, Query>::value;
 
-    export template<ValueSequence Seq, auto Query>
+    export template<value_sequence Seq, auto Query>
     inline constexpr bool contains_value_v = contains_value<std::remove_cvref_t<Seq>, Query>::value;
 } //namespace base::meta::sequences
 
 namespace base::meta::sequences {
-    template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    template<type_sequence Seq, template<typename> typename UnaryTypePredicate>
     struct count_type_if;
 
     template<typename... Elements, template<typename> typename UnaryTypePredicate>
     struct count_type_if<type_list<Elements...>, UnaryTypePredicate>
         : std::integral_constant<std::size_t, (0 + ... + (UnaryTypePredicate<Elements>::value ? 1 : 0))> {};
 
-    template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct count_value_if;
 
     template<auto... Elements, template<auto> typename UnaryValuePredicate>
@@ -132,28 +132,28 @@ namespace base::meta::sequences {
     struct count_value_if<uniform_value_list<T, Elements...>, UnaryValuePredicate>
         : std::integral_constant<std::size_t, (0 + ... + (UnaryValuePredicate<Elements>::value ? 1 : 0))> {};
 
-    export template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    export template<type_sequence Seq, template<typename> typename UnaryTypePredicate>
     inline constexpr std::size_t count_type_if_v = count_type_if<std::remove_cvref_t<Seq>, UnaryTypePredicate>::value;
 
-    export template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    export template<value_sequence Seq, template<auto> typename UnaryValuePredicate>
     inline constexpr std::size_t count_value_if_v = count_value_if<std::remove_cvref_t<Seq>, UnaryValuePredicate>::value;
 
-    export template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    export template<type_sequence Seq, template<typename> typename UnaryTypePredicate>
     inline constexpr bool exactly_one_type_if_v = (count_type_if_v<Seq, UnaryTypePredicate> == 1);
 
-    export template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    export template<value_sequence Seq, template<auto> typename UnaryValuePredicate>
     inline constexpr bool exactly_one_value_if_v = (count_value_if_v<Seq, UnaryValuePredicate> == 1);
 } //namespace base::meta::sequences
 
 namespace base::meta::sequences {
-    template<TypeSequence Seq, typename Query>
+    template<type_sequence Seq, typename Query>
     struct count_type;
 
     template<typename... Elements, typename Query>
     struct count_type<type_list<Elements...>, Query>
         : std::integral_constant<std::size_t, (0 + ... + (std::same_as<Query, Elements> ? 1 : 0))> {};
 
-    template<ValueSequence Seq, auto Query>
+    template<value_sequence Seq, auto Query>
     struct count_value;
 
     template<auto... Elements, auto Query>
@@ -164,28 +164,28 @@ namespace base::meta::sequences {
     struct count_value<uniform_value_list<T, Elements...>, Query>
         : std::integral_constant<std::size_t, (0 + ... + (uniform_equivalent_v<Query, Elements> ? 1 : 0))> {};
 
-    export template<TypeSequence Seq, typename Query>
+    export template<type_sequence Seq, typename Query>
     inline constexpr std::size_t count_type_v = count_type<std::remove_cvref_t<Seq>, Query>::value;
 
-    export template<ValueSequence Seq, auto Query>
+    export template<value_sequence Seq, auto Query>
     inline constexpr std::size_t count_value_v = count_value<std::remove_cvref_t<Seq>, Query>::value;
 
-    export template<TypeSequence Seq, typename Query>
+    export template<type_sequence Seq, typename Query>
     inline constexpr bool exactly_one_type_of_v = (count_type_v<Seq, Query> == 1);
 
-    export template<ValueSequence Seq, auto Query>
+    export template<value_sequence Seq, auto Query>
     inline constexpr bool exactly_one_value_of_v = (count_value_v<Seq, Query> == 1);
 } //namespace base::meta::sequences
 
 namespace base::meta::sequences {
-    template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    template<type_sequence Seq, template<typename> typename UnaryTypePredicate>
     struct any_of_type;
 
     template<typename... Elements, template<typename> typename UnaryTypePredicate>
     struct any_of_type<type_list<Elements...>, UnaryTypePredicate>
         : std::bool_constant<(false || ... || UnaryTypePredicate<Elements>::value)> {};
 
-    template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct any_of_value;
 
     template<auto... Elements, template<auto> typename UnaryValuePredicate>
@@ -196,14 +196,14 @@ namespace base::meta::sequences {
     struct any_of_value<uniform_value_list<T, Elements...>, UnaryValuePredicate>
         : std::bool_constant<(false || ... || UnaryValuePredicate<Elements>::value)> {};
 
-    template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    template<type_sequence Seq, template<typename> typename UnaryTypePredicate>
     struct all_of_type;
 
     template<typename... Elements, template<typename> typename UnaryTypePredicate>
     struct all_of_type<type_list<Elements...>, UnaryTypePredicate>
         : std::bool_constant<(true && ... && UnaryTypePredicate<Elements>::value)> {};
 
-    template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct all_of_value;
 
     template<auto... Elements, template<auto> typename UnaryValuePredicate>
@@ -214,21 +214,21 @@ namespace base::meta::sequences {
     struct all_of_value<uniform_value_list<T, Elements...>, UnaryValuePredicate>
         : std::bool_constant<(true && ... && UnaryValuePredicate<Elements>::value)> {};
 
-    export template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    export template<type_sequence Seq, template<typename> typename UnaryTypePredicate>
     inline constexpr bool any_of_type_v = any_of_type<std::remove_cvref_t<Seq>, UnaryTypePredicate>::value;
 
-    export template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    export template<value_sequence Seq, template<auto> typename UnaryValuePredicate>
     inline constexpr bool any_of_value_v = any_of_value<std::remove_cvref_t<Seq>, UnaryValuePredicate>::value;
 
-    export template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    export template<type_sequence Seq, template<typename> typename UnaryTypePredicate>
     inline constexpr bool all_of_type_v = all_of_type<std::remove_cvref_t<Seq>, UnaryTypePredicate>::value;
 
-    export template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    export template<value_sequence Seq, template<auto> typename UnaryValuePredicate>
     inline constexpr bool all_of_value_v = all_of_value<std::remove_cvref_t<Seq>, UnaryValuePredicate>::value;
 
-    export template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    export template<type_sequence Seq, template<typename> typename UnaryTypePredicate>
     inline constexpr bool none_of_type_v = !any_of_type_v<Seq, UnaryTypePredicate>;
 
-    export template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    export template<value_sequence Seq, template<auto> typename UnaryValuePredicate>
     inline constexpr bool none_of_value_v = !any_of_value_v<Seq, UnaryValuePredicate>;
 } //namespace base::meta::sequences

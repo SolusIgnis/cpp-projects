@@ -24,8 +24,8 @@
  * :access
  * ​ ├── size_v
  * ​ ├── empty_v
- * ​ ├── EmptySequence
- * ​ ├── NonEmptySequence
+ * ​ ├── empty_sequence
+ * ​ ├── non_empty_sequence
  * ​ ├── front_t
  * ​ ├── front_v
 ​​​ *  ├── find_type_if_t
@@ -44,7 +44,7 @@ import std;
 import :core;
 
 namespace base::meta::sequences {
-    template<Sequence Seq>
+    template<sequence Seq>
     struct sequence_size;
 
     template<typename... Types>
@@ -56,23 +56,23 @@ namespace base::meta::sequences {
     template<typename T, T... Values>
     struct sequence_size<uniform_value_list<T, Values...>> : std::integral_constant<std::size_t, sizeof...(Values)> {};
 
-    export template<Sequence Seq>
+    export template<sequence Seq>
     inline constexpr std::size_t size_v = sequence_size<std::remove_cvref_t<Seq>>::value;
 } //namespace base::meta::sequences
 
 export namespace base::meta::sequences {
-    template<Sequence Seq>
+    template<sequence Seq>
     inline constexpr bool empty_v = (size_v<Seq> == 0);
 
     template<typename T>
-    concept EmptySequence = Sequence<T> && empty_v<T>;
+    concept empty_sequence = sequence<T> && empty_v<T>;
 
     template<typename T>
-    concept NonEmptySequence = Sequence<T> && !EmptySequence<T>;
+    concept non_empty_sequence = sequence<T> && !empty_sequence<T>;
 } //namespace base::meta::sequences
 
 namespace base::meta::sequences {
-    template<NonEmptySequence Seq>
+    template<non_empty_sequence Seq>
     struct front;
 
     template<typename Front, typename... Rest>
@@ -90,12 +90,12 @@ namespace base::meta::sequences {
         static constexpr T value = Front;
     };
 
-    export template<TypeSequence Seq>
-        requires NonEmptySequence<Seq>
+    export template<type_sequence Seq>
+        requires non_empty_sequence<Seq>
     using front_t = front<std::remove_cvref_t<Seq>>::type;
 
-    export template<ValueSequence Seq>
-        requires NonEmptySequence<Seq>
+    export template<value_sequence Seq>
+        requires non_empty_sequence<Seq>
     inline constexpr auto front_v = front<std::remove_cvref_t<Seq>>::value;
 } //namespace base::meta::sequences
 
@@ -112,18 +112,18 @@ namespace base::meta::sequences {
      * @tparam Seq A type sequence.
      * @tparam UnaryTypePredicate A unary type predicate.
      */
-    template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    template<type_sequence Seq, template<typename> typename UnaryTypePredicate>
     struct find_type_if;
 
-    template<bool, typename T, TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    template<bool, typename T, type_sequence Seq, template<typename> typename UnaryTypePredicate>
     struct find_type_if_impl;
 
-    template<typename T, TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    template<typename T, type_sequence Seq, template<typename> typename UnaryTypePredicate>
     struct find_type_if_impl<true, T, Seq, UnaryTypePredicate> {
         using type = T;
     };
 
-    template<typename T, TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    template<typename T, type_sequence Seq, template<typename> typename UnaryTypePredicate>
     struct find_type_if_impl<false, T, Seq, UnaryTypePredicate> {
         using type = find_type_if<Seq, UnaryTypePredicate>::type;
     };
@@ -152,18 +152,18 @@ namespace base::meta::sequences {
      * @tparam Seq A value sequence.
      * @tparam UnaryValuePredicate A unary value predicate.
      */
-    template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct find_value_if;
 
-    template<bool, auto Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<bool, auto Element, value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct find_value_if_impl;
 
-    template<auto Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<auto Element, value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct find_value_if_impl<true, Element, Seq, UnaryValuePredicate> {
         static constexpr auto value = Element;
     };
 
-    template<auto Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<auto Element, value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct find_value_if_impl<false, Element, Seq, UnaryValuePredicate> {
         static constexpr auto value = find_value_if<Seq, UnaryValuePredicate>::value;
     };
@@ -210,14 +210,14 @@ namespace base::meta::sequences {
     /**
      * @brief Alias for the first type satisfying a predicate.
      */
-    export template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
-        requires NonEmptySequence<Seq>
+    export template<type_sequence Seq, template<typename> typename UnaryTypePredicate>
+        requires non_empty_sequence<Seq>
     using find_type_if_t = find_type_if<std::remove_cvref_t<Seq>, UnaryTypePredicate>::type;
 
     /**
      * @brief Alias for the first value satisfying a predicate.
      */
-    export template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
-        requires NonEmptySequence<Seq>
+    export template<value_sequence Seq, template<auto> typename UnaryValuePredicate>
+        requires non_empty_sequence<Seq>
     inline constexpr auto find_value_if_v = find_value_if<std::remove_cvref_t<Seq>, UnaryValuePredicate>::value;
 } // namespace base::meta::sequences

@@ -42,7 +42,7 @@
  *
  * Each policy exposes a `policy_group` alias identifying the
  * semantic/behavioral axis to which it belongs. A valid
- * `PtrPolicyList` selects exactly one policy from each group.
+ * `ptr_policy_list` selects exactly one policy from each group.
  * This partition also provides facilities for validating
  * policy lists, querying active policies, and mapping policy
  * groups to their selected policy states.
@@ -206,13 +206,13 @@ namespace base::vocab::inline ptr::ptr_policies {
     using type_list = base::meta::sequences::type_list<Elements...>;
 
     /**
-     * @brief Alias concept using the `TypeSequence` concept from `base.meta.sequences`.
+     * @brief Alias concept using the `type_sequence` concept from `base.meta.sequences`.
      * @tparam T The candidate type.
-     * @see `base::meta::sequences::TypeSequence`
+     * @see `base::meta::sequences::type_sequence`
      * @internal
      */
     template<typename T>
-    concept TypeSequence = base::meta::sequences::TypeSequence<T>;
+    concept type_sequence = base::meta::sequences::type_sequence<T>;
 
     /**
      * @brief The canonical list of policy group tags defined in namespaces within `ptr_policies`.
@@ -232,12 +232,12 @@ namespace base::vocab::inline ptr::ptr_policies {
      * @internal
      */
     template<typename T>
-    concept PtrPolicyGroup = base::meta::sequences::contains_type_v<policy_groups, T>;
+    concept ptr_policy_group = base::meta::sequences::contains_type_v<policy_groups, T>;
 
     /**
      * @brief Produces a unary type predicate testing membership in a specific policy group.
      *
-     * @tparam ExpectedPolicyGroup The `PtrPolicyGroup` bound to the `predicate`.
+     * @tparam ExpectedPolicyGroup The `ptr_policy_group` bound to the `predicate`.
      *
      * @details The nested `predicate` template evaluates to `true`
      * when its argument type exposes a `policy_group` alias equal
@@ -246,7 +246,7 @@ namespace base::vocab::inline ptr::ptr_policies {
      * @remark Primarily used with generic type-sequence algorithms such as `find_type_if_t` and `exactly_one_type_if_v`.
      * @internal
      */
-    template<PtrPolicyGroup ExpectedPolicyGroup>
+    template<ptr_policy_group ExpectedPolicyGroup>
     struct in_policy_group {
         template<typename T>
         struct predicate : std::false_type {};
@@ -263,10 +263,10 @@ namespace base::vocab::inline ptr::ptr_policies {
      * @tparam Group The policy group being validated within the policy list.
      * @tparam PolicyList The policy list being validated.
      *
-     * @see `base::meta::sequences::exactly_one_type_if_v`, `PtrPolicyGroup`, and `TypeSequence`.
+     * @see `base::meta::sequences::exactly_one_type_if_v`, `ptr_policy_group`, and `type_sequence`.
      * @internal
      */
-    template<PtrPolicyGroup Group, TypeSequence PolicyList>
+    template<ptr_policy_group Group, type_sequence PolicyList>
     inline constexpr bool exactly_one_policy_v =
         base::meta::sequences::exactly_one_type_if_v<PolicyList, in_policy_group<Group>::template predicate>;
 
@@ -274,14 +274,14 @@ namespace base::vocab::inline ptr::ptr_policies {
      * @brief Validates that a policy list contains exactly one policy from every policy group.
      * @internal
      */
-    template<TypeSequence GroupList, TypeSequence PolicyList>
+    template<type_sequence GroupList, type_sequence PolicyList>
     struct valid_policy_list;
 
     /**
      * @brief Implementation of `valid_policy_list` decomposing a concrete group sequence.
      * @internal
      */
-    template<typename... Groups, TypeSequence PolicyList>
+    template<typename... Groups, type_sequence PolicyList>
     struct valid_policy_list<type_list<Groups...>, PolicyList>
         : std::bool_constant<(... && exactly_one_policy_v<Groups, PolicyList>)> {};
 
@@ -290,17 +290,17 @@ namespace base::vocab::inline ptr::ptr_policies {
      *
      * @tparam T The candidate policy list.
      *
-     * @details A valid pointer policy list is a `TypeSequence`
+     * @details A valid pointer policy list is a `type_sequence`
      * containing exactly one policy from each policy group.
      * This guarantees that every behavioral axis has a single
      * compile-time selection and prevents conflicting policy
      * combinations.
      *
-     * @see `policy_groups` for the canonical group list, `TypeSequence`, and `valid_policy_list`.
+     * @see `policy_groups` for the canonical group list, `type_sequence`, and `valid_policy_list`.
      * @internal
      */
     template<typename T>
-    concept PtrPolicyList = TypeSequence<T> && valid_policy_list<policy_groups, T>::value;
+    concept ptr_policy_list = type_sequence<T> && valid_policy_list<policy_groups, T>::value;
 
     /**
      * @brief Retrieves the selected policy for a given policy group.
@@ -311,17 +311,17 @@ namespace base::vocab::inline ptr::ptr_policies {
      * @details Resolves the unique policy belonging to `Group`
      * from the supplied policy configuration.
      *
-     * @see `base::meta::sequences::find_type_if_t`, `PtrPolicyGroup`, and `PtrPolicyList`.
+     * @see `base::meta::sequences::find_type_if_t`, `ptr_policy_group`, and `ptr_policy_list`.
      * @internal
      */
-    template<PtrPolicyList Policies, PtrPolicyGroup Group>
+    template<ptr_policy_list Policies, ptr_policy_group Group>
     using group_policy_t = base::meta::sequences::find_type_if_t<Policies, in_policy_group<Group>::template predicate>;
 
     /**
      * @brief True when the selected `traversal` policy is `arithmetic`.
      * @internal
      */
-    template<PtrPolicyList Policies>
+    template<ptr_policy_list Policies>
     inline constexpr bool arithmetic_traversal_v =
         std::same_as<ptr_policies::group_policy_t<Policies, traversal::group>, traversal::arithmetic>;
 
@@ -329,7 +329,7 @@ namespace base::vocab::inline ptr::ptr_policies {
      * @brief True when the selected `traversal` policy is `rebinding`.
      * @internal
      */
-    template<PtrPolicyList Policies>
+    template<ptr_policy_list Policies>
     inline constexpr bool rebinding_traversal_v =
         std::same_as<ptr_policies::group_policy_t<Policies, traversal::group>, traversal::rebinding>;
 
@@ -337,7 +337,7 @@ namespace base::vocab::inline ptr::ptr_policies {
      * @brief True when the selected `reference_binding` policy is `allowed`.
      * @internal
      */
-    template<PtrPolicyList Policies>
+    template<ptr_policy_list Policies>
     inline constexpr bool allowed_reference_binding_v =
         std::same_as<ptr_policies::group_policy_t<Policies, reference_binding::group>, reference_binding::allowed>;
 
@@ -345,7 +345,7 @@ namespace base::vocab::inline ptr::ptr_policies {
      * @brief True when the selected `reference_binding` policy is `forbidden`.
      * @internal
      */
-    template<PtrPolicyList Policies>
+    template<ptr_policy_list Policies>
     inline constexpr bool forbidden_reference_binding_v =
         std::same_as<ptr_policies::group_policy_t<Policies, reference_binding::group>, reference_binding::forbidden>;
 
@@ -353,7 +353,7 @@ namespace base::vocab::inline ptr::ptr_policies {
      * @brief True when the selected `pointer_binding` policy is `allowed`.
      * @internal
      */
-    template<PtrPolicyList Policies>
+    template<ptr_policy_list Policies>
     inline constexpr bool allowed_pointer_binding_v =
         std::same_as<ptr_policies::group_policy_t<Policies, pointer_binding::group>, pointer_binding::allowed>;
 
@@ -361,7 +361,7 @@ namespace base::vocab::inline ptr::ptr_policies {
      * @brief True when the selected `pointer_binding` policy is `forbidden`.
      * @internal
      */
-    template<PtrPolicyList Policies>
+    template<ptr_policy_list Policies>
     inline constexpr bool forbidden_pointer_binding_v =
         std::same_as<ptr_policies::group_policy_t<Policies, pointer_binding::group>, pointer_binding::forbidden>;
 
@@ -369,7 +369,7 @@ namespace base::vocab::inline ptr::ptr_policies {
      * @brief True when the selected `nullability` policy is `nullable`.
      * @internal
      */
-    template<PtrPolicyList Policies>
+    template<ptr_policy_list Policies>
     inline constexpr bool nullable_nullability_v =
         std::same_as<ptr_policies::group_policy_t<Policies, nullability::group>, nullability::nullable>;
 
@@ -377,7 +377,7 @@ namespace base::vocab::inline ptr::ptr_policies {
      * @brief True when the selected `nullability` policy is `always_engaged`.
      * @internal
      */
-    template<PtrPolicyList Policies>
+    template<ptr_policy_list Policies>
     inline constexpr bool always_engaged_nullability_v =
         std::same_as<ptr_policies::group_policy_t<Policies, nullability::group>, nullability::always_engaged>;
 } //namespace base::vocab::inline ptr::ptr_policies
