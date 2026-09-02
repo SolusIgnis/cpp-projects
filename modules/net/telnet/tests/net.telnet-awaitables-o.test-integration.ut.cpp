@@ -246,13 +246,13 @@ namespace {
 
             auto middle = make_middle();
 
-            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
-            auto top = [&] mutable -> asio::awaitable<int> {
-                const std::int32_t res = co_await std::move(middle).get();
+            //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Its closure object therefore outlives the coroutine execution.
+            auto top = [&mult](auto&& mid) mutable -> asio::awaitable<int> {
+                const std::int32_t res = co_await std::move(mid).get();
                 co_return res* mult;
             };
 
-            auto fut = asio::co_spawn(ctx, top(), asio::use_future);
+            auto fut = asio::co_spawn(ctx, top(std::move(middle)), asio::use_future);
 
             ctx.run();
 
