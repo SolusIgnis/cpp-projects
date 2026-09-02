@@ -50,41 +50,41 @@ export namespace net::telnet::concepts {
      * @concept mutable_buffer_sequence
      * @brief Alias for a type modeling Boost.Asio's "MutableBufferSequence" requirement.
      * @tparam T The type to check.
-     * @remark Delegates to `asio_concepts::AsioMutableBufferSequence`.
-     * @see `asio::mutable_buffer`, `asio::is_mutable_buffer_sequence`, `asio_concepts::AsioMutableBufferSequence`
+     * @remark Delegates to `asio_concepts::asio_mutable_buffer_sequence`.
+     * @see `asio::mutable_buffer`, `asio::is_mutable_buffer_sequence`, `asio_concepts::asio_mutable_buffer_sequence`
      */
     template<typename T>
-    concept mutable_buffer_sequence = asio_concepts::AsioMutableBufferSequence<T>;
+    concept mutable_buffer_sequence = asio_concepts::asio_mutable_buffer_sequence<T>;
 
     /**
      * @concept const_buffer_sequence
      * @brief Alias for a type modeling Boost.Asio's "ConstBufferSequence" requirement.
      * @tparam T The type to check.
-     * @remark Delegates to `asio_concepts::AsioConstBufferSequence`.
-     * @see `asio::const_buffer`, `asio::is_const_buffer_sequence`, `asio_concepts::AsioConstBufferSequence`
+     * @remark Delegates to `asio_concepts::asio_const_buffer_sequence`.
+     * @see `asio::const_buffer`, `asio::is_const_buffer_sequence`, `asio_concepts::asio_const_buffer_sequence`
      */
     template<typename T>
-    concept const_buffer_sequence = asio_concepts::AsioConstBufferSequence<T>;
+    concept const_buffer_sequence = asio_concepts::asio_const_buffer_sequence<T>;
 
     /**
      * @concept read_token
      * @brief Alias for a completion token usable with asynchronous read operations.
      * @tparam T The type to check.
-     * @remark Delegates to `asio_concepts::AsioReadToken`.
-     * @see `asio::use_awaitable`, `asio::completion_token_for`, `asio_concepts::AsioReadToken`
+     * @remark Delegates to `asio_concepts::asio_read_token`.
+     * @see `asio::use_awaitable`, `asio::completion_token_for`, `asio_concepts::asio_read_token`
      */
     template<typename T>
-    concept read_token = asio_concepts::AsioReadToken<T>;
+    concept read_token = asio_concepts::asio_read_token<T>;
 
     /**
      * @concept write_token
      * @brief Alias for a completion token usable with asynchronous write operations.
      * @tparam T The type to check.
-     * @remark Delegates to `asio_concepts::AsioWriteToken`.
-     * @see `asio::use_awaitable`, `asio::completion_token_for`, `asio_concepts::AsioWriteToken`
+     * @remark Delegates to `asio_concepts::asio_write_token`.
+     * @see `asio::use_awaitable`, `asio::completion_token_for`, `asio_concepts::asio_write_token`
      */
     template<typename T>
-    concept write_token = asio_concepts::AsioWriteToken<T>;
+    concept write_token = asio_concepts::asio_write_token<T>;
 
     /**
      * @concept layerable_socket_stream
@@ -95,7 +95,7 @@ export namespace net::telnet::concepts {
      * @see RFC 854 for Telnet protocol, `boost::asio::ip::tcp::socket`, `:stream` for `telnet::stream`
      */
     template<typename T>
-    concept layerable_socket_stream = asio_concepts::AsioLayerableStreamSocket<T>;
+    concept layerable_socket_stream = asio_concepts::asio_layerable_stream_socket<T>;
 
     /**
      * @concept protocol_fsm_config
