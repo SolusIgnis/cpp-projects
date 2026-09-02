@@ -71,34 +71,34 @@ namespace {
     }
 
     template<typename T>
-    concept HasAddition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
+    concept has_addition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
 
     template<typename T>
-    concept HasSubtraction = requires(T t) { t - 1; };
+    concept has_subtraction = requires(T t) { t - 1; };
 
     template<typename T>
-    concept HasDifference = requires(T t) { t - t; };
+    concept has_difference = requires(T t) { t - t; };
 
     template<typename T>
-    concept HasPreIncrement = requires(T t) { ++t; };
+    concept has_pre_increment = requires(T t) { ++t; };
 
     template<typename T>
-    concept HasPostIncrement = requires(T t) { t++; };
+    concept has_post_increment = requires(T t) { t++; };
 
     template<typename T>
-    concept HasPreDecrement = requires(T t) { --t; };
+    concept has_pre_decrement = requires(T t) { --t; };
 
     template<typename T>
-    concept HasPostDecrement = requires(T t) { t--; };
+    concept has_post_decrement = requires(T t) { t--; };
 
     template<typename T>
-    concept Dereferenceable = requires(T t) { *t; };
+    concept dereferenceable = requires(T t) { *t; };
 
     template<typename T>
-    concept ArrowAccessible = requires(T t) { t.operator->(); };
+    concept arrow_accessible = requires(T t) { t.operator->(); };
 
     template<typename T>
-    concept HasPointerTo = requires(T::element_type obj) { T::pointer_to(obj); };
+    concept has_pointer_to = requires(T::element_type obj) { T::pointer_to(obj); };
 
     //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct mixin_1 {
@@ -230,18 +230,18 @@ namespace {
 
         "type aliases are correct"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                using T      = ConcretePtr<const std::int32_t>;
-                using traits = std::pointer_traits<T>;
+                using t      = ConcretePtr<const std::int32_t>;
+                using traits = std::pointer_traits<t>;
 
-                constexpr bool t_pointer = std::same_as<typename traits::pointer, T>;
-                constexpr bool element   = std::same_as<typename T::element_type, const std::int32_t>;
-                constexpr bool t_element = std::same_as<typename traits::element_type, typename T::element_type>;
-                constexpr bool value     = std::same_as<typename T::value_type, std::int32_t>;
-                constexpr bool address   = std::same_as<typename T::address_type, const std::int32_t*>;
-                constexpr bool lref      = std::same_as<typename T::reference, const std::int32_t&>;
-                constexpr bool rref      = std::same_as<typename T::rvalue_reference, const std::int32_t&&>;
-                constexpr bool ptrdiff   = std::same_as<typename T::difference_type, std::ptrdiff_t>;
-                constexpr bool t_ptrdiff = std::same_as<typename traits::difference_type, typename T::difference_type>;
+                constexpr bool t_pointer = std::same_as<typename traits::pointer, t>;
+                constexpr bool element   = std::same_as<typename t::element_type, const std::int32_t>;
+                constexpr bool t_element = std::same_as<typename traits::element_type, typename t::element_type>;
+                constexpr bool value     = std::same_as<typename t::value_type, std::int32_t>;
+                constexpr bool address   = std::same_as<typename t::address_type, const std::int32_t*>;
+                constexpr bool lref      = std::same_as<typename t::reference, const std::int32_t&>;
+                constexpr bool rref      = std::same_as<typename t::rvalue_reference, const std::int32_t&&>;
+                constexpr bool ptrdiff   = std::same_as<typename t::difference_type, std::ptrdiff_t>;
+                constexpr bool t_ptrdiff = std::same_as<typename traits::difference_type, typename t::difference_type>;
 
                 expect(eq(t_pointer, true));
                 expect(eq(element, true));
@@ -1548,15 +1548,15 @@ namespace {
 
         "pointer arithmetic operations according to policy"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                using T = ConcretePtr<std::int32_t>;
+                using t = ConcretePtr<std::int32_t>;
 
-                expect(eq(HasAddition<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(HasSubtraction<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(HasDifference<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(HasPreIncrement<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(HasPostIncrement<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(HasPreDecrement<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
-                expect(eq(HasPostDecrement<T>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasAddition<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasSubtraction<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasDifference<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasPreIncrement<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasPostIncrement<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasPreDecrement<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
+                expect(eq(HasPostDecrement<t>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
             });
         };
 
@@ -1746,17 +1746,17 @@ namespace {
 
         "`address_type` nested type preserves top-level const"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                using T = ConcretePtr<const std::int32_t>;
+                using t = ConcretePtr<const std::int32_t>;
 
-                expect(eq(std::same_as<typename T::address_type, const std::int32_t*>, true));
+                expect(eq(std::same_as<typename t::address_type, const std::int32_t*>, true));
             });
         };
 
         "`reference` nested type preserves const"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-                using T = ConcretePtr<const std::int32_t>;
+                using t = ConcretePtr<const std::int32_t>;
 
-                expect(eq(std::same_as<typename T::reference, const std::int32_t&>, true));
+                expect(eq(std::same_as<typename t::reference, const std::int32_t&>, true));
             });
         };
 
@@ -1935,12 +1935,12 @@ namespace {
         "type aliases are correct for `void`"_test = [] mutable {
             test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
                 if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-                    using T = ConcretePtr<void>;
+                    using t = ConcretePtr<void>;
 
-                    constexpr bool element = std::same_as<typename T::element_type, void>;
-                    constexpr bool value   = std::same_as<typename T::value_type, void>;
-                    constexpr bool pointer = std::same_as<typename T::address_type, void*>;
-                    constexpr bool ptrdiff = std::same_as<typename T::difference_type, std::ptrdiff_t>;
+                    constexpr bool element = std::same_as<typename t::element_type, void>;
+                    constexpr bool value   = std::same_as<typename t::value_type, void>;
+                    constexpr bool pointer = std::same_as<typename t::address_type, void*>;
+                    constexpr bool ptrdiff = std::same_as<typename t::difference_type, std::ptrdiff_t>;
 
                     expect(eq(element, true));
                     expect(eq(value, true));

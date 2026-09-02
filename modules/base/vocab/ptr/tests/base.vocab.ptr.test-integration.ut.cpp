@@ -62,18 +62,18 @@ namespace {
 
     private:
         //NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays): This fixture needs raw storage to test the vocabulary pointers. It is essentially implementing an analogue to `std::array`.
-        element_type storage[N]{};
+        element_type storage_[N]{};
 
     public:
         [[nodiscard]] constexpr size_type size() const noexcept { return N; }
 
         [[nodiscard]] constexpr bool empty() const noexcept { return N == 0; }
 
-        [[nodiscard]] constexpr iterator begin() noexcept { return iterator_ptr{std::addressof(storage[0])}; }
+        [[nodiscard]] constexpr iterator begin() noexcept { return iterator_ptr{std::addressof(storage_[0])}; }
 
         [[nodiscard]] constexpr iterator end() noexcept { return begin() + N; }
 
-        [[nodiscard]] constexpr const_iterator begin() const noexcept { return iterator_ptr{std::addressof(storage[0])}; }
+        [[nodiscard]] constexpr const_iterator begin() const noexcept { return iterator_ptr{std::addressof(storage_[0])}; }
 
         [[nodiscard]] constexpr const_iterator end() const noexcept { return begin() + N; }
 
@@ -81,9 +81,9 @@ namespace {
 
         [[nodiscard]] constexpr const_iterator cend() const noexcept { return end(); }
 
-        constexpr pointer data() noexcept { return cursor_ptr{storage[0]}; }
+        constexpr pointer data() noexcept { return cursor_ptr{storage_[0]}; }
 
-        [[nodiscard]] constexpr const_pointer data() const noexcept { return cursor_ptr{storage[0]}; }
+        [[nodiscard]] constexpr const_pointer data() const noexcept { return cursor_ptr{storage_[0]}; }
 
         [[nodiscard]] constexpr const_pointer cdata() const noexcept { return data(); }
     };

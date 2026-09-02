@@ -154,10 +154,10 @@ namespace {
 
             constexpr int expected = 42;
 
-            auto taskA = as_task<int>(echo_ready_awaiter{expected});
-            auto taskB = as_task<int>(as_task<int>(std::move(taskA)));
+            auto task_a = as_task<int>(echo_ready_awaiter{expected});
+            auto task_b = as_task<int>(as_task<int>(std::move(task_a)));
 
-            const auto result = run(taskB);
+            const auto result = run(task_b);
             expect(eq(result, expected));
         };
     };

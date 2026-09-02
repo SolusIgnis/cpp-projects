@@ -469,87 +469,87 @@ namespace {
             constexpr std::int32_t subtrahend = 1;
             constexpr std::int32_t expected   = (dividend / divisor) - subtrahend;
 
-            coroutine_probe probeA;
-            coroutine_probe probeB;
-            coroutine_probe probeC;
-            coroutine_probe probeD;
-            coroutine_probe probeE;
+            coroutine_probe probe_a;
+            coroutine_probe probe_b;
+            coroutine_probe probe_c;
+            coroutine_probe probe_d;
+            coroutine_probe probe_e;
 
             // Lvalue task
-            auto taskA = echo(dividend);
-            taskA.set_probe(&probeA);
+            auto task_a = echo(dividend);
+            task_a.set_probe(&probe_a);
 
             // Temporary moved into taskB after probe is set
-            auto taskB = echo(divisor).set_probe(&probeB);
+            auto task_b = echo(divisor).set_probe(&probe_b);
 
             // Factory for rvalue task
-            const auto make_taskC = [] -> test_task<std::int32_t> { co_return co_await echo(subtrahend); };
+            const auto make_task_c = [] -> test_task<std::int32_t> { co_return co_await echo(subtrahend); };
 
             //NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
             // This coroutine lambda is invoked and completed synchronously by the test harness.
             // Its closure object therefore outlives the coroutine execution.
-            const auto make_taskE = [&] -> test_task<std::int32_t> {
+            const auto make_task_e = [&] -> test_task<std::int32_t> {
                 std::int32_t quotient = 0; //42 / 7 == 6
                 co_await [&] -> test_task<void> {
-                    quotient = (co_await taskA) / (co_await taskB);
+                    quotient = (co_await task_a) / (co_await task_b);
                     co_return;
                 }()
-                                    .set_probe(&probeD);
+                                    .set_probe(&probe_d);
 
-                const auto difference = quotient - co_await make_taskC().set_probe(&probeC); //6 - 1 == 5
+                const auto difference = quotient - co_await make_task_c().set_probe(&probe_c); //6 - 1 == 5
                 co_return difference;                                                        //5
             };
-            auto taskE = make_taskE();
-            taskE.set_probe(&probeE);
+            auto task_e = make_task_e();
+            task_e.set_probe(&probe_e);
             //NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
-            const std::int32_t result = run(taskE);
+            const std::int32_t result = run(task_e);
             expect(eq(result, expected));
 
             // Assertions for taskA (unmoved lvalue)
-            expect(eq(probeA.awaited, true));
-            expect(eq(probeA.suspended, false));
-            expect(eq(probeA.resumed, true));
-            expect(eq(probeA.moved, false));
-            expect(eq(probeA.done, true));
-            expect(eq(probeA.destroyed, false));
-            expect(eq(static_cast<std::int32_t>(probeA.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
+            expect(eq(probe_a.awaited, true));
+            expect(eq(probe_a.suspended, false));
+            expect(eq(probe_a.resumed, true));
+            expect(eq(probe_a.moved, false));
+            expect(eq(probe_a.done, true));
+            expect(eq(probe_a.destroyed, false));
+            expect(eq(static_cast<std::int32_t>(probe_a.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
 
             // Assertions for taskB (moved lvalue)
-            expect(eq(probeB.awaited, true));
-            expect(eq(probeB.suspended, false));
-            expect(eq(probeB.resumed, true));
-            expect(eq(probeB.moved, true));
-            expect(eq(probeB.done, true));
-            expect(eq(probeB.destroyed, false));
-            expect(eq(static_cast<std::int32_t>(probeB.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
+            expect(eq(probe_b.awaited, true));
+            expect(eq(probe_b.suspended, false));
+            expect(eq(probe_b.resumed, true));
+            expect(eq(probe_b.moved, true));
+            expect(eq(probe_b.done, true));
+            expect(eq(probe_b.destroyed, false));
+            expect(eq(static_cast<std::int32_t>(probe_b.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
 
             // Assertions for taskC (rvalue)
-            expect(eq(probeC.awaited, true));
-            expect(eq(probeC.suspended, true));
-            expect(eq(probeC.resumed, true));
-            expect(eq(probeC.moved, false)); // rvalue temporary is never moved after probe is attached
-            expect(eq(probeC.done, true));
-            expect(eq(probeC.destroyed, true));
-            expect(eq(static_cast<std::int32_t>(probeC.await_path), static_cast<std::int32_t>(coroutine_probe::path::rvalue)));
+            expect(eq(probe_c.awaited, true));
+            expect(eq(probe_c.suspended, true));
+            expect(eq(probe_c.resumed, true));
+            expect(eq(probe_c.moved, false)); // rvalue temporary is never moved after probe is attached
+            expect(eq(probe_c.done, true));
+            expect(eq(probe_c.destroyed, true));
+            expect(eq(static_cast<std::int32_t>(probe_c.await_path), static_cast<std::int32_t>(coroutine_probe::path::rvalue)));
 
             // Assertions for taskD (unmaterialized rvalue)
-            expect(eq(probeD.awaited, true));
-            expect(eq(probeD.suspended, true));
-            expect(eq(probeD.resumed, true));
-            expect(eq(probeD.moved, false));
-            expect(eq(probeD.done, true));
-            expect(eq(probeD.destroyed, true));
-            expect(eq(static_cast<std::int32_t>(probeD.await_path), static_cast<std::int32_t>(coroutine_probe::path::rvalue)));
+            expect(eq(probe_d.awaited, true));
+            expect(eq(probe_d.suspended, true));
+            expect(eq(probe_d.resumed, true));
+            expect(eq(probe_d.moved, false));
+            expect(eq(probe_d.done, true));
+            expect(eq(probe_d.destroyed, true));
+            expect(eq(static_cast<std::int32_t>(probe_d.await_path), static_cast<std::int32_t>(coroutine_probe::path::rvalue)));
 
             // Assertions for taskE (lvalue)
-            expect(eq(probeE.awaited, true));
-            expect(eq(probeE.suspended, true));
-            expect(eq(probeE.resumed, true));
-            expect(eq(probeE.moved, false)); // rvalue returned by lambda used in-place
-            expect(eq(probeE.done, true));
-            expect(eq(probeE.destroyed, false));
-            expect(eq(static_cast<std::int32_t>(probeE.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
+            expect(eq(probe_e.awaited, true));
+            expect(eq(probe_e.suspended, true));
+            expect(eq(probe_e.resumed, true));
+            expect(eq(probe_e.moved, false)); // rvalue returned by lambda used in-place
+            expect(eq(probe_e.done, true));
+            expect(eq(probe_e.destroyed, false));
+            expect(eq(static_cast<std::int32_t>(probe_e.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
         };
 
         "continuation chaining preserves strict resume order"_test = [] mutable {
