@@ -22,6 +22,11 @@ on:
         required: false
         type: boolean
         default: false
+      tidy_skip_tests:
+        description: "Skip test files when running clang-tidy?"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   ci-build_and_test:
@@ -53,6 +58,8 @@ jobs:
       image: ghcr.io/solusignis/ci-env-llvm:latest
     if: >-
       ${{ github.event.inputs.notooling != 'true' }}
+    env:
+      TIDY_TESTS: ${{ inputs.tidy_skip_tests && 'OFF' || 'ON' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -62,7 +69,7 @@ jobs:
       - name: Configure
         run: |
           cmake --preset=clang-debug \
-            -DBUILD_TESTING=ON \
+            -DBUILD_TESTING=$TIDY_TESTS \
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_STDLIB_MODULES_JSON=/usr/lib/llvm-23/lib/libc++.modules.json
 
