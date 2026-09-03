@@ -183,8 +183,8 @@ namespace {
                 expect(eq(std::invocable<decltype(overloaded), std::string>, true));
                 expect(eq(std::invoke(overloaded, "std::string"s), "fobj2 string"s));
 
-                // unambiguous: 1) non-const f1 beats const lambda [better implicit object parameter binding],
-                // 2) and f1(const char*) beats f2(std::string) [conversion is a worse match]
+                // unambiguous: 1) non-const fobj1 beats const lambda [better implicit object parameter binding],
+                // 2) and fobj1(const char*) beats fobj2(std::string) [conversion is a worse match]
                 expect(eq(std::invocable<decltype(overloaded), const char*>, true));
                 expect(eq(std::invoke(overloaded, "c-string"), "fobj1 const char*"s));
                 //NOLINTEND(bugprone-argument-comment)
