@@ -55,13 +55,22 @@ export namespace net::telnet {
         enum class id_num : byte_t;
 
         /**
+         * @typedef enable_predicate_type
+         * @brief Function type for predicates determining local or remote option support.
+         *
+         * @param id The `option::id_num` to evaluate.
+         * @return True if the option is supported, false otherwise.
+         */
+        using enable_predicate_type = std::function<bool(id_num /*id*/)>;
+
+        /**
          * @typedef local_predicate_type
          * @brief Function type for predicates determining local option support.
          *
          * @param id The `option::id_num` to evaluate.
          * @return True if the option is supported, false otherwise.
          */
-        using local_predicate_type = std::function<bool(id_num /*id*/)>;
+        using local_predicate_type = enable_predicate_type;
         
         /**
          * @typedef remote_predicate_type
@@ -70,7 +79,7 @@ export namespace net::telnet {
          * @param id The `option::id_num` to evaluate.
          * @return True if the option is supported, false otherwise.
          */
-        using remote_predicate_type = std::function<bool(id_num /*id*/)>;
+        using remote_predicate_type = enable_predicate_type;
 
     private:
         static constexpr std::size_t max_subnegotiation_buffer_size = 1024;
@@ -78,8 +87,8 @@ export namespace net::telnet {
         id_num id_;
         std::string name_;
 
-        local_predicate_type local_predicate_;
-        remote_predicate_type remote_predicate_;
+        enable_predicate_type local_predicate_;
+        enable_predicate_type remote_predicate_;
 
         bool supports_subnegotiation_;
 
@@ -114,8 +123,8 @@ export namespace net::telnet {
             std::size_t max_subneg_size = max_subnegotiation_buffer_size
         )
         {
-            local_predicate_type local_pred  = local_supported ? always_accept : always_reject;
-            remote_predicate_type remote_pred = remote_supported ? always_accept : always_reject;
+            local_predicate_type local_pred{local_supported ? always_accept : always_reject};
+            remote_predicate_type remote_pred{remote_supported ? always_accept : always_reject};
             return {id, std::move(name), std::move(local_pred), std::move(remote_pred), subneg_supported, max_subneg_size};
         }
 
