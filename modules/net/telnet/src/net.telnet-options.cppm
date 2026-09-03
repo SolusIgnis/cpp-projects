@@ -123,9 +123,7 @@ export namespace net::telnet {
             std::size_t max_subneg_size = max_subnegotiation_buffer_size
         )
         {
-            local_predicate_type local_pred{local_supported ? always_accept : always_reject};
-            remote_predicate_type remote_pred{remote_supported ? always_accept : always_reject};
-            return {id, std::move(name), std::move(local_pred), std::move(remote_pred), subneg_supported, max_subneg_size};
+            return {id, std::move(name), local_predicate_type{local_supported ? always_accept : always_reject}, remote_predicate_type{remote_supported ? always_accept : always_reject}, subneg_supported, max_subneg_size};
         }
 
         ///@brief Three-way comparison operator for ordering and equality.
