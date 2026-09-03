@@ -73,7 +73,7 @@ function(get_tidy_source_filter out_var)
 
   set(_tidy_source_files_regex "^(?!(${_tidy_excluded_paths_regex})).*$")
 
-  ninja_dollar_escape(_tidy_source_files_regex "${_tidy_source_files_regex}")
+#  ninja_dollar_escape(_tidy_source_files_regex "${_tidy_source_files_regex}")
 
   set(${out_var} "${_tidy_source_files_regex}" PARENT_SCOPE)
 endfunction()
