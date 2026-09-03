@@ -84,7 +84,7 @@ int main()
         expect(_b{true} == boolean_socket_option<broadcast>);
         expect(_b{true} == composite_socket_option<linger>);
         expect(_b{true} == integral_socket_option<recv_buf>);
-        expect(_b{true} == asio_addressible_socket_option<join_group>);
+        expect(_b{true} == asio_addressable_socket_option<join_group>);
 
         expect(_b{true} == socket_option<broadcast>);
         expect(_b{true} == socket_option<linger>);
