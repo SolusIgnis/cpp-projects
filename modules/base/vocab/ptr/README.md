@@ -514,7 +514,7 @@ namespace traversal {
 
 This allows generic code to reason about policies by category (e.g., `traversal::group`) rather than by concrete type and enables compile-time validation of policy lists.
 
-The canonical set of policy groups is exposed as `policy_groups`, and individual group markers satisfy `PtrPolicyGroup`.
+The canonical set of policy groups is exposed as `policy_groups`, and individual group markers satisfy `ptr_policy_group`.
 
 Together, these facilities provide the foundation for policy validation, lookup, and compile-time dispatch throughout the pointer vocabulary implementation.
 
@@ -526,14 +526,14 @@ To ensure that concrete pointer configurations are well-formed and logically sou
 
 This validation architecture is implemented through three nested compile-time primitives that compose to prevent compilation of invalid combinations:
 
-1. `in_policy_group`: An internal meta-programming predicate that determines whether a single given policy belongs to a targeted `PtrPolicyGroup` by checking its nested `policy_group` alias.
+1. `in_policy_group`: An internal meta-programming predicate that determines whether a single given policy belongs to a targeted `ptr_policy_group` by checking its nested `policy_group` alias.
 2. `exactly_one_policy_v`: A variable template that maps the `in_policy_group` predicate across a complete user-supplied type sequence (such as a `type_list`), computing whether the count of matching policies for that category is exactly equal to `1`.
 3. `valid_policy_list`: The top-level structural validator that takes the collection of all valid policy axes and folds over them using a binary right fold conjunction (`&&`). This guarantees that all canonical axes are satisfied simultaneously without any structural omissions or conflicting states (e.g., a type claiming to be both `nullable` and `always_engaged` or one that fails to select either).
 
-The `PtrPolicyList` `concept` employs `valid_policy_list` to validate this requirement over a given `type_list`:
+The `ptr_policy_list` `concept` employs `valid_policy_list` to validate this requirement over a given `type_list`:
 
 ```cpp
-template<PtrPolicyList Policies>
+template<ptr_policy_list Policies>
 ```
 
 Invalid configurations are rejected during template instantiation.
@@ -652,7 +652,7 @@ As a result, every vocabulary pointer shares a consistent operational foundation
 template<
     template<typename> typename ConcretePtr,
     typename Pointee,
-    PtrPolicyList PolicySet
+    ptr_policy_list PolicySet
 >
 class ptr_core;
 ```
@@ -761,7 +761,7 @@ All vocabulary pointer types automatically participate in standard pointer trait
 
 #### Pointer Traits
 
-`std::pointer_traits` is specialized for all `VocabPtr` types. This includes provision of pointer, element, and difference types as well as the `rebind` template, the `pointer_to` factory, and the `to_address` function.
+`std::pointer_traits` is specialized for all `vocab_ptr` types. This includes provision of pointer, element, and difference types as well as the `rebind` template, the `pointer_to` factory, and the `to_address` function.
 
 ```cpp
 template<typename P>
@@ -776,7 +776,7 @@ assert(std::to_address(ptr) == std::addressof(value));
 
 #### Hashing
 
-`std::hash` is specialized for all `VocabPtr` types:
+`std::hash` is specialized for all `vocab_ptr` types:
 
 ```cpp
 std::unordered_set<required_ptr<widget>> widgets;
@@ -788,7 +788,7 @@ This behavior aligns with the semantic model that vocabulary pointers compare an
 
 #### Formatting
 
-`std::formatter` is specialized for all `VocabPtr` types:
+`std::formatter` is specialized for all `vocab_ptr` types:
 
 ```cpp
 std::println("{}", ptr);
@@ -812,7 +812,7 @@ Together, these facilities allow vocabulary pointers to integrate naturally with
 
 #### Common Reference
 
-`std::basic_common_reference` is specialized for cross-type comparisons between different `VocabPtr` types yielding the raw address type as their common reference. Similarly, specializations produce the common raw address type as the common reference between a `VocabPtr` and a raw pointer.
+`std::basic_common_reference` is specialized for cross-type comparisons between different `vocab_ptr` types yielding the raw address type as their common reference. Similarly, specializations produce the common raw address type as the common reference between a `vocab_ptr` and a raw pointer.
 
 ---
 

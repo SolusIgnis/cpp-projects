@@ -36,20 +36,20 @@ namespace base::meta::sequences {
      * @tparam Seq A type sequence.
      * @tparam UnaryTypePredicate A unary type predicate.
      */
-    template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    template<type_sequence Seq, template<typename> typename UnaryTypePredicate>
     struct try_find_type_if;
 
-    template<bool, typename T, TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    template<bool, typename T, type_sequence Seq, template<typename> typename UnaryTypePredicate>
     struct try_find_type_if_impl;
 
-    template<typename T, TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    template<typename T, type_sequence Seq, template<typename> typename UnaryTypePredicate>
     struct try_find_type_if_impl<true, T, Seq, UnaryTypePredicate> {
         using type = type_list<T>;
     };
 
-    template<typename T, TypeSequence Seq, template<typename> typename UnaryTypePredicate>
+    template<typename T, type_sequence Seq, template<typename> typename UnaryTypePredicate>
     struct try_find_type_if_impl<false, T, Seq, UnaryTypePredicate> {
-        using type = typename try_find_type_if<Seq, UnaryTypePredicate>::type;
+        using type = try_find_type_if<Seq, UnaryTypePredicate>::type;
     };
 
     /**
@@ -73,20 +73,20 @@ namespace base::meta::sequences {
      * @tparam Seq A value sequence.
      * @tparam UnaryValuePredicate A unary value predicate.
      */
-    template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct try_find_value_if;
 
-    template<bool, auto Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<bool, auto Element, value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct try_find_value_if_impl;
 
-    template<auto Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<auto Element, value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct try_find_value_if_impl<true, Element, Seq, UnaryValuePredicate> {
         using type = value_list<Element>;
     };
 
-    template<auto Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<auto Element, value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct try_find_value_if_impl<false, Element, Seq, UnaryValuePredicate> {
-        using type = typename try_find_value_if<Seq, UnaryValuePredicate>::type;
+        using type = try_find_value_if<Seq, UnaryValuePredicate>::type;
     };
 
     /**
@@ -104,17 +104,17 @@ namespace base::meta::sequences {
     struct try_find_value_if<value_list<Element, Rest...>, UnaryValuePredicate>
         : try_find_value_if_impl<UnaryValuePredicate<Element>::value, Element, value_list<Rest...>, UnaryValuePredicate> {};
 
-    template<typename T, bool, T Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<typename T, bool, T Element, value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct try_find_uniform_value_if_impl;
 
-    template<typename T, T Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<typename T, T Element, value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct try_find_uniform_value_if_impl<T, true, Element, Seq, UnaryValuePredicate> {
         using type = uniform_value_list<T, Element>;
     };
 
-    template<typename T, T Element, ValueSequence Seq, template<auto> typename UnaryValuePredicate>
+    template<typename T, T Element, value_sequence Seq, template<auto> typename UnaryValuePredicate>
     struct try_find_uniform_value_if_impl<T, false, Element, Seq, UnaryValuePredicate> {
-        using type = typename try_find_value_if<Seq, UnaryValuePredicate>::type;
+        using type = try_find_value_if<Seq, UnaryValuePredicate>::type;
     };
 
     /**
@@ -141,12 +141,12 @@ namespace base::meta::sequences {
     /**
      * @brief Alias for the first type satisfying a predicate.
      */
-    export template<TypeSequence Seq, template<typename> typename UnaryTypePredicate>
-    using try_find_type_if_t = typename try_find_type_if<std::remove_cvref_t<Seq>, UnaryTypePredicate>::type;
+    export template<type_sequence Seq, template<typename> typename UnaryTypePredicate>
+    using try_find_type_if_t = try_find_type_if<std::remove_cvref_t<Seq>, UnaryTypePredicate>::type;
 
     /**
      * @brief Alias for the first value satisfying a predicate.
      */
-    export template<ValueSequence Seq, template<auto> typename UnaryValuePredicate>
-    using try_find_value_if_t = typename try_find_value_if<std::remove_cvref_t<Seq>, UnaryValuePredicate>::type;
+    export template<value_sequence Seq, template<auto> typename UnaryValuePredicate>
+    using try_find_value_if_t = try_find_value_if<std::remove_cvref_t<Seq>, UnaryValuePredicate>::type;
 } // namespace base::meta::sequences

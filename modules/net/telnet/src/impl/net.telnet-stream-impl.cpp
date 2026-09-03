@@ -35,7 +35,7 @@ import std; //NOLINT For std::promise, std::future, std::jthread, std::exception
 
 import :types;        ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
 import :errors;       ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-import :concepts;     ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
+import :concepts;     ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::layerable_socket_stream`
 import :options;      ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
 import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for `ProtocolFSM`
 import :awaitables;   ///< @see "net.telnet-awaitables.cppm" for awaitable types
@@ -49,7 +49,7 @@ namespace net::telnet {
      * @internal
      * Moves the provided `next_layer_stream` into `next_layer_`, default-constructs `fsm_`, and enables SO_OOBINLINE.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     stream<NLS, PC>::stream(next_layer_type&& next_layer_stream) : next_layer_(std::move(next_layer_stream)), fsm_()
     {
         std::error_code ec;
@@ -66,11 +66,11 @@ namespace net::telnet {
      * @remark Deduces `result_type` with `asio::awaitable_traits` to handle `void` and non-`void` return types.
      * @remark Uses a lambda to set the promise’s value or exception, handling multiple return values via `std::make_tuple`.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     template<typename Awaitable>
     auto stream<NLS, PC>::sync_await(Awaitable&& awaitable)
     {
-        using result_type = typename Awaitable::value_type;
+        using result_type = Awaitable::value_type;
         asio::io_context temp_ctx;
         std::promise<result_type> promise;
         std::future<result_type> future = promise.get_future();
@@ -100,8 +100,8 @@ namespace net::telnet {
      * @remark Catches `std::bad_alloc` to clear `escaped_data` and return `std::errc::not_enough_memory`.
      * @remark Catches other exceptions to clear `escaped_data` and return `telnet::error::internal_error`.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<ConstBufferSequence CBufSeq>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<const_buffer_sequence CBufSeq>
     std::tuple<std::error_code, std::vector<byte_t>&>
         stream<NLS, PC>::escape_telnet_output(std::vector<byte_t>& escaped_data, const CBufSeq& data) const noexcept
     {
@@ -137,8 +137,8 @@ namespace net::telnet {
      * @remark Catches `std::bad_alloc` to return `std::errc::not_enough_memory` with an empty vector.
      * @remark Catches other exceptions to return `telnet::error::internal_error` with an empty vector.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<ConstBufferSequence CBufSeq>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<const_buffer_sequence CBufSeq>
     std::tuple<std::error_code, std::vector<byte_t>> stream<NLS, PC>::escape_telnet_output(const CBufSeq& data) const noexcept
     {
         std::vector<byte_t> escaped_data;
@@ -158,7 +158,7 @@ namespace net::telnet {
      * Launches an asynchronous wait (via 0-byte async_receive) for notification of urgent (i.e. "out-of-band") data.
      * @remark Only launches the async_receive if another one is not already in progress and there is not already urgent data in the byte stream.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     void stream<NLS, PC>::launch_wait_for_urgent_data()
     {
         if (!context_.waiting_for_urgent_data.exchange(true, std::memory_order_relaxed) && !context_.urgent_data_state) {
@@ -189,7 +189,7 @@ namespace net::telnet {
      * If `state_` was `unexpected_data_mark`, it resets to `no_urgent_data`.
      * It can't already be `has_urgent_data` without a major bug.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     void stream<NLS, PC>::context_type::urgent_data_tracker::saw_urgent()
     {
         urgent_data_state expected_state{};
@@ -237,7 +237,7 @@ namespace net::telnet {
      * If `state_` was `no_urgent_data`, it becomes `unexpected_data_mark`.
      * If `state_` was `has_urgent_data`, it resets to `no_urgent_data`.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     void stream<NLS, PC>::context_type::urgent_data_tracker::saw_data_mark()
     {
         urgent_data_state expected_state{};
@@ -279,8 +279,8 @@ namespace net::telnet {
      * @internal
      * Initializes member variables `parent_stream_`, `fsm_`, `buffers_`, and sets `state_` to `initializing`.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBS>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBS>
     stream<NLS, PC>::input_processor<MBS>::input_processor(
         stream& parent_stream,
         stream::fsm_type& fsm,
@@ -297,8 +297,8 @@ namespace net::telnet {
      * @remark Uses `[[unlikely]]` for `done` state and default case, and `[[fallthrough]]` for `reading` to `processing`.
      * @remark Checks `done` state early to prevent reentrancy.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBS>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBS>
     template<typename Self>
     void stream<NLS, PC>::input_processor<MBS>::operator()(Self& self, std::error_code ec_in, std::size_t bytes_transferred)
     {
@@ -325,8 +325,8 @@ namespace net::telnet {
      * In `initializing`, calls `next_layer_.async_read_some` with `buffers_` unless `context_.input_side_buffer` already has data. Transitions to `reading`.
      * @remark Directly calls `handle_processor_state_reading` if there is data in the buffer already waiting to be processed.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBS>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBS>
     template<typename Self>
     void stream<NLS, PC>::input_processor<MBS>::handle_processor_state_initializing(Self& self)
     {
@@ -354,8 +354,8 @@ namespace net::telnet {
      * In `reading`, sets up iterators (`user_buf_begin_`, `user_buf_end_`, `write_it_`) and transitions to `processing`.
      * @remark Directly calls `handle_processor_state_processing` to immediately begin processing.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBS>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBS>
     template<typename Self>
     void stream<NLS, PC>::input_processor<MBS>::handle_processor_state_reading(
         Self& self,
@@ -395,8 +395,8 @@ namespace net::telnet {
      * @remark Handles AO by clearing `context_.output_side_buffer` but propagates the signal to the caller for higher-level notification.
      * @note Unhandled `processing_signal`s and other `error_code`s propagate to the caller for higher-level notification.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBS>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBS>
     template<typename Self>
     void stream<NLS, PC>::input_processor<MBS>::handle_processor_state_processing(Self& self, std::error_code ec_in)
     {
@@ -485,8 +485,8 @@ namespace net::telnet {
      * @internal
      * Sets `state_` to `done` and calls `self.complete` with `ec` and `bytes_transferred`.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBS>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBS>
     template<typename Self>
     void stream<NLS, PC>::input_processor<MBS>::complete(Self& self, const std::error_code& ec, std::size_t bytes_transferred)
     {
@@ -498,8 +498,8 @@ namespace net::telnet {
      * @internal
      * Defers write errors for later reporting and logs multi-error pile-ups.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBS>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBS>
     void stream<NLS, PC>::input_processor<MBS>::process_write_error(std::error_code ec)
     {
         if (context_.deferred_transport_error) {
@@ -521,8 +521,8 @@ namespace net::telnet {
      * Handles `processing_signal`s returned from `process_byte`.
      * @remark Handles EC and EL internally if there is buffered output to edit; otherwise, signals caller.
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBS>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBS>
     void stream<NLS, PC>::input_processor<MBS>::process_fsm_signals(std::error_code& signal_ec)
     {
         //Handle `processing_signal`s that modify the buffer directly.
@@ -552,13 +552,10 @@ namespace net::telnet {
      * Initiates an asynchronous write of a `negotiation_response` using `async_write_negotiation`.
      * @see "net.telnet-stream.cppm" for interface, `:protocol_fsm` for `negotiation_response`, `:errors` for error codes, RFC 855 for negotiation
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBS>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBS>
     template<typename Self>
-    void stream<NLS, PC>::input_processor<MBS>::do_response(
-        typename stream::fsm_type::negotiation_response response,
-        Self&& self
-    )
+    void stream<NLS, PC>::input_processor<MBS>::do_response(stream::fsm_type::negotiation_response response, Self&& self)
     {
         parent_stream_.async_write_negotiation(response, std::forward<Self>(self));
     } //stream::input_processor::do_response(negotiation_response, Self&&)
@@ -569,8 +566,8 @@ namespace net::telnet {
      * @remark Wraps the `std::string` in a `std::shared_ptr<std::string>` for lifetime management and forwards it to `async_write_raw`.
      * @see "net.telnet-stream.cppm" for interface, `:errors` for error codes, RFC 854 for IAC escaping
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBS>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBS>
     template<typename Self>
     void stream<NLS, PC>::input_processor<MBS>::do_response(std::string response, Self&& self)
     {
@@ -584,22 +581,22 @@ namespace net::telnet {
      * @remark Uses `asio::co_spawn` to execute the awaitable, handling potential exceptions by throwing `std::system_error` with `telnet::error::internal_error` for non-system errors.
      * @see "net.telnet-stream.cppm" for interface, `:awaitables` for `subnegotiation_awaitable`, `:errors` for error codes, RFC 855 for subnegotiation
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBS>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBS>
     template<typename Self>
     void stream<NLS, PC>::input_processor<MBS>::do_response(awaitables::subnegotiation_awaitable awaitable, Self&& self)
     {
         asio::co_spawn(
             parent_stream_.get_executor(),
             //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): Lambda closure lifetime is ensured by Asio. `this` lifetime is bound to parent operation which will not continue until the coroutine returns.
-            [this, handler_awaitable = std::move(awaitable)]() mutable -> asio::awaitable<std::size_t> {
+            [this, handler_awaitable = std::move(awaitable)] mutable -> asio::awaitable<std::size_t> {
                 try {
                     auto [opt, subneg_buffer] = co_await handler_awaitable;
                     if (!subneg_buffer.empty()) {
                         co_return co_await parent_stream_.async_write_subnegotiation(opt, subneg_buffer, asio::use_awaitable);
                     }
                     co_return std::size_t{0};
-                } catch (const std::system_error& se) {
+                } catch (const std::system_error& e) {
                     throw;
                 } catch (...) {
                     throw std::system_error(error::internal_error);
@@ -615,8 +612,8 @@ namespace net::telnet {
      * @remark Uses `asio::co_spawn` to execute the awaitable, followed by an optional negotiation write, handling exceptions by throwing `std::system_error` with `telnet::error::internal_error` for non-system errors.
      * @see "net.telnet-stream.cppm" for interface, `framework.coroutines.tagged_awaitable` for `tagged_awaitable`, `:protocol_fsm` for `negotiation_response`, `:errors` for error codes, RFC 855 for negotiation
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBS>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBS>
     template<typename Self, typename Tag, typename Awaitable>
     void stream<NLS, PC>::input_processor<MBS>::do_response(
         std::tuple<
@@ -632,7 +629,7 @@ namespace net::telnet {
             //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): Lambda closure lifetime is ensured by Asio. `this` lifetime is bound to parent operation which will not continue until the coroutine returns.
             [this,
              awaitable   = std::move(awaitable),
-             negotiation = std::move(negotiation)]() mutable -> asio::awaitable<std::size_t> {
+             negotiation = std::move(negotiation)] mutable -> asio::awaitable<std::size_t> {
                 try {
                     std::size_t bytes_transferred = 0;
                     if (negotiation) {
@@ -640,7 +637,7 @@ namespace net::telnet {
                     }
                     co_await awaitable;
                     co_return bytes_transferred;
-                } catch (const std::system_error& se) {
+                } catch (const std::system_error& e) {
                     throw;
                 } catch (...) {
                     throw std::system_error(error::internal_error);

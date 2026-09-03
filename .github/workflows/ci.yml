@@ -21,7 +21,12 @@ on:
         description: "Skip clang-format and clang-tidy?"
         required: false
         type: boolean
-        default: true
+        default: false
+      tidy_skip_tests:
+        description: "Skip test files when running clang-tidy?"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   ci-build_and_test:
@@ -52,15 +57,18 @@ jobs:
     container:
       image: ghcr.io/solusignis/ci-env-llvm:latest
     if: >-
-      ${{ 
-        (
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'push' && github.ref_name == 'main') ||
-          github.event_name == 'workflow_dispatch'
-        )
-        && 
-        (github.event.inputs.notooling != 'true')
-      }}
+      ${{ github.event.inputs.notooling != 'true' }}
+    env:
+      TIDY_TESTS: >-
+        ${{ (
+          (
+            github.event_name == 'pull_request' ||
+            (github.event_name == 'push' && github.ref_name == 'main') ||
+            github.event_name == 'workflow_dispatch'
+          ) &&
+          !inputs.tidy_skip_tests
+        ) && 'ON' || 'OFF' }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -70,7 +78,7 @@ jobs:
       - name: Configure
         run: |
           cmake --preset=clang-debug \
-            -DBUILD_TESTING=OFF \
+            -DBUILD_TESTING=$TIDY_TESTS \
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_STDLIB_MODULES_JSON=/usr/lib/llvm-23/lib/libc++.modules.json
 
@@ -79,6 +87,6 @@ jobs:
 
       - name: Build
         run: cmake --build --preset=clang-debug
-        
+
       - name: clang-tidy checks
-        run: cmake --build --preset=clang-debug --target=tidy-check-fast
+        run: cmake --build --preset=clang-debug --target=tidy-check

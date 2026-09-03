@@ -19,15 +19,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. @endparblock
  *
- * @brief Default configuration implementation for `ProtocolFSM`.
+ * @brief Default configuration implementation for `protocol_fsm`.
  * @remark Provides thread-safe, static configuration with option registry and handlers.
  * @example
- *   telnet::ProtocolFSM<> fsm;
+ *   telnet::protocol_fsm<> fsm;
  *   telnet::default_protocol_fsm_config::set_error_logger([](const std::error_code& ec, std::string msg) {
  *       std::cerr << "Error: " << ec.message() << " - " << msg << std::endl;
  *   });
  *
- * @see `:protocol_fsm` for `ProtocolFSM`, `:concepts` for `ProtocolFSMConfig`, `:options` for `option`
+ * @see `:protocol_fsm` for `protocol_fsm`, `:concepts` for `protocol_fsm_config`, `:options` for `option`
  */
 
 //Module partition interface unit
@@ -37,12 +37,12 @@ import std; //NOLINT For std::shared_mutex, std::lock_guard, std::shared_lock, s
 
 export import :types;    ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
 export import :errors;   ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-export import :concepts; ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::ProtocolFSMConfig`
+export import :concepts; ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::protocol_fsm_config`
 export import :options;  ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
 
 export namespace net::telnet {
     /**
-     * @brief Default configuration class for `ProtocolFSM`, encapsulating options and handlers.
+     * @brief Default configuration class for `protocol_fsm`, encapsulating options and handlers.
      * @remark Provides thread-safe access to static members via `mutex`.
      * @see RFC 854 for Telnet protocol, RFC 855 for option negotiation, :options for `option` and `option::id_num`, :errors for error codes, :internal for implementation classes
      */
@@ -113,7 +113,8 @@ export namespace net::telnet {
 
     private:
         ///@brief Initializes the option registry with default options.
-        static option_registry initialize_option_registry()
+        //NOLINTNEXTLINE(bugprone-exception-escape): Failure to construct the initial option registry is intrinsically unrecoverable and thus should unconditionally and immediately terminate.
+        static option_registry initialize_option_registry() noexcept
         {
             return {
                 option{option::id_num::binary, "Binary Transmission", option::always_accept, option::always_accept},
@@ -123,7 +124,7 @@ export namespace net::telnet {
                        "Status", option::always_accept,
                        option::always_reject,
                        /*subneg_supported=*/true
-                }
+                },
             };
         } //initialize_option_registry()
 
@@ -146,8 +147,10 @@ export namespace net::telnet {
 
         static inline unknown_option_handler_type unknown_option_handler;
         static inline error_logger_type error_logger;
+        //NOLINTNEXTLINE(bugprone-throwing-static-initialization): Initialization failure is intrinsically unrecoverable.
         static inline std::string ayt_response = "Telnet system is active."; ///Default AYT response
-        static inline std::shared_mutex mutex;                               ///Mutex to protect shared static members
+        //NOLINTNEXTLINE(bugprone-throwing-static-initialization): Initialization failure is intrinsically unrecoverable.
+        static inline std::shared_mutex mutex;            ///Mutex to protect shared static members
         static inline std::once_flag initialization_flag; ///Ensures initialize() is idempotent; only invokes init() once
     }; //class default_protocol_fsm_config
 
@@ -210,6 +213,7 @@ export namespace net::telnet {
      *
      * @remark Initializes options for `BINARY`, `SUPPRESS_GO_AHEAD`, and `STATUS` to support default implementations.
      * @note `STATUS` is supported locally but not remotely by default as the core implementation can send a status report but will not request one and cannot understand receipt of one.
+     * @note Declared `noexcept` because failure to construct the initial option registry is intrinsically unrecoverable and thus should unconditionally and immediately terminate.
      */
     /**
      * @fn void default_protocol_fsm_config::init()

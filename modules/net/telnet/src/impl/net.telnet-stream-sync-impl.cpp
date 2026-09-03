@@ -36,7 +36,7 @@ import std; //NOLINT For std::size_t, std::system_error
 
 import :types;        ///< @see "net.telnet-types.cppm" for `telnet::command`
 import :errors;       ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-import :concepts;     ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
+import :concepts;     ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::layerable_socket_stream`
 import :options;      ///< @see "net.telnet-options.cppm" for `option`
 import :protocol_fsm; ///< @see "net.telnet-protocol_fsm.cppm" for `ProtocolFSM`
 
@@ -54,7 +54,7 @@ namespace net::telnet {
      * Wraps awaitable `async_request_option` in `sync_await`, forwarding the option and direction.
      * @see `async_request_option` in "net.telnet-stream-async-impl.cpp".
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     std::size_t stream<NLS, PC>::request_option(option::id_num opt, negotiation_direction direction)
     {
         auto [ec, bytes] = sync_await(async_request_option(opt, direction, asio::use_awaitable));
@@ -69,7 +69,7 @@ namespace net::telnet {
      * Wraps awaitable `async_disable_option` in `sync_await`, forwarding the option and direction.
      * @see `async_disable_option` in "net.telnet-stream-async-impl.cpp".
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     std::size_t stream<NLS, PC>::disable_option(option::id_num opt, negotiation_direction direction)
     {
         auto [ec, bytes] = sync_await(async_disable_option(opt, direction, asio::use_awaitable));
@@ -84,8 +84,8 @@ namespace net::telnet {
      * Wraps awaitable `async_read_some` in `sync_await` with perfect forwarding of the buffer sequence.
      * @see `async_read_some` in "net.telnet-stream-async-impl.cpp".
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBufSeq>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBufSeq>
     std::size_t stream<NLS, PC>::read_some(MBufSeq&& buffers)
     {
         return sync_await(async_read_some(std::forward<MBufSeq>(buffers), asio::use_awaitable));
@@ -96,8 +96,8 @@ namespace net::telnet {
      * Wraps awaitable `async_write_some` in `sync_await`, forwarding the buffer sequence.
      * @see `async_write_some` in "net.telnet-stream-async-impl.cpp".
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<ConstBufferSequence CBufSeq>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<const_buffer_sequence CBufSeq>
     std::size_t stream<NLS, PC>::write_some(const CBufSeq& data)
     {
         return sync_await(async_write_some(data, asio::use_awaitable));
@@ -108,8 +108,8 @@ namespace net::telnet {
      * Wraps awaitable `async_write_raw` in `sync_await`, forwarding the buffer sequence.
      * @see `async_write_raw` in "net.telnet-stream-async-impl.cpp".
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<ConstBufferSequence CBufSeq>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<const_buffer_sequence CBufSeq>
     std::size_t stream<NLS, PC>::write_raw(const CBufSeq& data)
     {
         return sync_await(async_write_raw(data, asio::use_awaitable));
@@ -120,7 +120,7 @@ namespace net::telnet {
      * Wraps awaitable `async_write_command` in `sync_await`, forwarding the command.
      * @see `async_write_command` in "net.telnet-stream-async-impl.cpp".
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     std::size_t stream<NLS, PC>::write_command(telnet::command cmd)
     {
         return sync_await(async_write_command(cmd, asio::use_awaitable));
@@ -131,7 +131,7 @@ namespace net::telnet {
      * Wraps awaitable `async_write_subnegotiation` in `sync_await`, forwarding the option and buffer.
      * @see `async_write_subnegotiation` in "net.telnet-stream-async-impl.cpp".
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     std::size_t stream<NLS, PC>::write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer)
     {
         return sync_await(async_write_subnegotiation(opt, subnegotiation_buffer, asio::use_awaitable));
@@ -142,7 +142,7 @@ namespace net::telnet {
      * Wraps awaitable `async_send_synch` in `sync_await`, forwarding the command and option.
      * @see `async_send_synch` in "net.telnet-stream-async-impl.cpp".
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     std::size_t stream<NLS, PC>::send_synch()
     {
         return sync_await(async_send_synch(asio::use_awaitable));
@@ -157,7 +157,7 @@ namespace net::telnet {
      * Calls the throwing `request_option`, catching exceptions to set `ec` to `std::system_error`’s code or `telnet::error::internal_error`.
      * @see `request_option` for throwing version, `async_request_option` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     std::size_t
         stream<NLS, PC>::request_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept
     {
@@ -177,7 +177,7 @@ namespace net::telnet {
      * Calls the throwing `disable_option`, catching exceptions to set `ec` to `std::system_error`’s code or `telnet::error::internal_error`.
      * @see `disable_option` for throwing version, `async_disable_option` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     std::size_t
         stream<NLS, PC>::disable_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept
     {
@@ -197,8 +197,8 @@ namespace net::telnet {
      * Calls the throwing `read_some`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
      * @see `read_some` for throwing version, `async_read_some` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<MutableBufferSequence MBufSeq>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<mutable_buffer_sequence MBufSeq>
     std::size_t stream<NLS, PC>::read_some(MBufSeq&& buffers, std::error_code& ec) noexcept
     {
         try {
@@ -220,8 +220,8 @@ namespace net::telnet {
      * Calls the throwing `write_some`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
      * @see `write_some` for throwing version, `async_write_some` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<ConstBufferSequence CBufSeq>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<const_buffer_sequence CBufSeq>
     std::size_t stream<NLS, PC>::write_some(const CBufSeq& data, std::error_code& ec) noexcept
     {
         try {
@@ -243,8 +243,8 @@ namespace net::telnet {
      * Calls the throwing `write_raw`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
      * @see `write_raw` for throwing version, `async_write_raw` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
-    template<ConstBufferSequence CBufSeq>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
+    template<const_buffer_sequence CBufSeq>
     std::size_t stream<NLS, PC>::write_raw(const CBufSeq& data, std::error_code& ec) noexcept
     {
         try {
@@ -266,7 +266,7 @@ namespace net::telnet {
      * Calls the throwing `write_command`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
      * @see `write_command` for throwing version, `async_write_command` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     std::size_t stream<NLS, PC>::write_command(telnet::command cmd, std::error_code& ec) noexcept
     {
         try {
@@ -288,7 +288,7 @@ namespace net::telnet {
      * Calls the throwing `write_subnegotiation`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
      * @see `write_subnegotiation` for throwing version, `async_write_subnegotiation` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     std::size_t stream<NLS, PC>::write_subnegotiation(
         option opt,
         const std::vector<byte_t>& subnegotiation_buffer,
@@ -314,7 +314,7 @@ namespace net::telnet {
      * Calls the throwing `send_synch`, catching exceptions to set `ec` to `std::system_error`’s code, `std::errc::not_enough_memory`, or `telnet::error::internal_error`.
      * @see `send_synch` for throwing version, `async_send_synch` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
-    template<LayerableSocketStream NLS, ProtocolFSMConfig PC>
+    template<layerable_socket_stream NLS, protocol_fsm_config PC>
     std::size_t stream<NLS, PC>::send_synch(std::error_code& ec) noexcept
     {
         try {

@@ -22,563 +22,576 @@ import std;
 using namespace ut;
 using namespace tools::test::coroutine_harness;
 
-test_task<int> echo(int value)
-{
-    co_return value;
-}
+namespace {
+    test_task<std::int32_t> echo(std::int32_t value)
+    {
+        co_return value;
+    }
 
-test_task<test_task<int>> make_echo(int value, base::vocab::alias_ptr<coroutine_probe> probe = nullptr)
-{
-    co_return echo(value).set_probe(probe);
-}
+    test_task<test_task<std::int32_t>> make_echo(std::int32_t value, base::vocab::alias_ptr<coroutine_probe> probe = nullptr)
+    {
+        co_return echo(value).set_probe(probe);
+    }
 
-suite coroutine_harness_tests = [] mutable {
-    "probe initialization"_test = [] mutable {
-        coroutine_probe probe;
+    //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables, readability-function-cognitive-complexity): Test framework.
+    suite coroutine_harness_tests = [] mutable {
+        "probe initialization"_test = [] mutable {
+            const coroutine_probe probe;
 
-        expect(eq(probe.done, false));
-        expect(eq(probe.destroyed, false));
-        expect(eq(probe.awaited, false));
-        expect(eq(probe.suspended, false));
-        expect(eq(probe.resumed, false));
-        expect(eq(probe.moved, false));
-        expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::none)));
-    };
+            expect(eq(probe.done, false));
+            expect(eq(probe.destroyed, false));
+            expect(eq(probe.awaited, false));
+            expect(eq(probe.suspended, false));
+            expect(eq(probe.resumed, false));
+            expect(eq(probe.moved, false));
+            expect(eq(static_cast<std::int32_t>(probe.await_path), static_cast<std::int32_t>(coroutine_probe::path::none)));
+        };
 
-    "test_task default-constructs empty"_test = [] mutable {
-        test_task<int> task1;
-        test_task<void> task2;
-        test_task<std::array<int, 1024>> task3;
+        "test_task default-constructs empty"_test = [] mutable {
+            constexpr auto kiloword{1024};
+            const test_task<std::int32_t> task1;
+            const test_task<void> task2;
+            const test_task<std::array<std::int32_t, kiloword>> task3;
 
-        expect(eq(static_cast<bool>(task1), false));
-        expect(eq(static_cast<bool>(task2), false));
-        expect(eq(static_cast<bool>(task3), false));
-    };
+            expect(eq(static_cast<bool>(task1), false));
+            expect(eq(static_cast<bool>(task2), false));
+            expect(eq(static_cast<bool>(task3), false));
+        };
 
-    "run returns value"_test = [] mutable {
-        constexpr int expected = 42;
-        auto task              = echo(expected);
+        "run returns value"_test = [] mutable {
+            constexpr std::int32_t expected = 42;
 
-        const auto result = run(task);
+            auto task = echo(expected);
 
-        expect(eq(result, expected));
-    };
+            const auto result = run(task);
 
-    "run returns void"_test = [] mutable {
-        coroutine_probe probe;
+            expect(eq(result, expected));
+        };
 
-        auto task = []() -> test_task<void> { co_return; }();
+        "run returns void"_test = [] mutable {
+            coroutine_probe probe;
 
-        task.set_probe(&probe);
-
-        run(task);
-
-        expect(eq(probe.awaited, true));
-        expect(eq(probe.done, true));
-    };
-
-    "run throws on empty test_task"_test = [] mutable {
-        test_task<void> task;
-
-        bool threw = false;
-        try {
-            run(task);
-        } catch (const std::logic_error&) {
-            threw = true;
-        }
-        expect(eq(threw, true));
-    };
-
-    "operator co_await throws from empty test_task"_test = [] mutable {
-        test_task<void> empty_task;
-
-        bool threw = false;
-        try {
-            [[maybe_unused]] const auto awaiter = empty_task.operator co_await();
-        } catch (const std::logic_error&) {
-            threw = true;
-        }
-        expect(eq(threw, true));
-    };
-
-    "probe lifecycle"_test = [] mutable {
-        coroutine_probe probe;
-
-        {
-            auto task = echo({});
+            auto task = [] -> test_task<void> { co_return; }();
 
             task.set_probe(&probe);
 
-            [[maybe_unused]] const auto result = run(task);
+            run(task);
 
             expect(eq(probe.awaited, true));
-            expect(eq(probe.suspended, false));
+            expect(eq(probe.done, true));
+        };
+
+        "run throws on empty test_task"_test = [] mutable {
+            test_task<void> task;
+
+            bool threw = false;
+            try {
+                run(task);
+            } catch (const std::logic_error&) {
+                threw = true;
+            }
+            expect(eq(threw, true));
+        };
+
+        "operator co_await throws from empty test_task"_test = [] mutable {
+            test_task<void> empty_task;
+
+            bool threw = false;
+            try {
+                [[maybe_unused]] const auto awaiter = empty_task.operator co_await();
+            } catch (const std::logic_error&) {
+                threw = true;
+            }
+            expect(eq(threw, true));
+        };
+
+        "probe lifecycle"_test = [] mutable {
+            coroutine_probe probe;
+
+            {
+                auto task = echo({});
+
+                task.set_probe(&probe);
+
+                [[maybe_unused]] const auto result = run(task);
+
+                expect(eq(probe.awaited, true));
+                expect(eq(probe.suspended, false));
+                expect(eq(probe.resumed, true));
+                expect(eq(probe.done, true));
+                expect(eq(probe.destroyed, false));
+                expect(eq(probe.moved, false));
+                expect(
+                    eq(static_cast<std::int32_t>(probe.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue))
+                );
+            }
+
+            expect(eq(probe.destroyed, true));
+        };
+
+        "rvalue await path"_test = [] mutable {
+            coroutine_probe probe;
+
+            auto task = echo({});
+            task.set_probe(&probe);
+
+            [[maybe_unused]] const auto result = run(std::move(task));
+
+            expect(eq(probe.awaited, true));
             expect(eq(probe.resumed, true));
             expect(eq(probe.done, true));
-            expect(eq(probe.destroyed, false));
-            expect(eq(probe.moved, false));
-            expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
-        }
+            expect(eq(probe.moved, false)); //rvalue used in-place
+            expect(eq(static_cast<std::int32_t>(probe.await_path), static_cast<std::int32_t>(coroutine_probe::path::rvalue)));
+        };
 
-        expect(eq(probe.destroyed, true));
-    };
+        "premature destruction"_test = [] mutable {
+            coroutine_probe probe;
 
-    "rvalue await path"_test = [] mutable {
-        coroutine_probe probe;
+            echo({}).set_probe(&probe); //temporary object destroyed at the ;
 
-        auto task = echo({});
-        task.set_probe(&probe);
+            expect(eq(probe.awaited, false));
+            expect(eq(probe.done, false));
+            expect(eq(probe.destroyed, true));
+        };
 
-        [[maybe_unused]] const auto result = run(std::move(task));
+        "premature destruction throws without probe"_test = [] mutable {
+            bool threw = false;
+            try {
+                const auto unawaited_task = echo({});
+            } catch (const std::logic_error&) {
+                threw = true;
+            }
+            expect(eq(threw, true));
+        };
 
-        expect(eq(probe.awaited, true));
-        expect(eq(probe.resumed, true));
-        expect(eq(probe.done, true));
-        expect(eq(probe.moved, false)); //rvalue used in-place
-        expect(eq(static_cast<int>(probe.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
-    };
+        "swap exchanges tasks and preserves invariants"_test = [] mutable {
+            constexpr std::int32_t expected1 = 1; //A
+            constexpr std::int32_t expected2 = 2; //B
 
-    "premature destruction"_test = [] mutable {
-        coroutine_probe probe;
+            coroutine_probe probe1{};
+            coroutine_probe probe2{};
+            {
+                auto task1 = echo(expected1); //A
+                auto task2 = echo(expected2); //B
 
-        echo({}).set_probe(&probe); //temporary object destroyed at the ;
+                task1.set_probe(&probe1); //A
+                task2.set_probe(&probe2); //B
 
-        expect(eq(probe.awaited, false));
-        expect(eq(probe.done, false));
-        expect(eq(probe.destroyed, true));
-    };
+                // Perform swap
+                using std::swap;
+                swap(task1, task2); //swap A and B
 
-    "premature destruction throws without probe"_test = [] mutable {
-        bool threw = false;
-        try {
-            auto unawaited_task = echo({});
-        } catch (const std::logic_error&) {
-            threw = true;
-        }
-        expect(eq(threw, true));
-    };
+                // After swap, no lifecycle events should have happened yet
+                expect(eq(probe1.destroyed, false));
+                expect(eq(probe2.destroyed, false));
+                expect(eq(probe1.awaited, false));
+                expect(eq(probe2.awaited, false));
+                expect(eq(probe1.moved, false));
+                expect(eq(probe2.moved, false));
 
-    "swap exchanges tasks and preserves invariants"_test = [] mutable {
-        constexpr int expected1 = 1; //A
-        constexpr int expected2 = 2; //B
+                const auto result1 = run(task1); // Run B
 
-        coroutine_probe probe1{};
-        coroutine_probe probe2{};
-        {
+                // Probe behavior must follow the coroutine, not the wrapper
+                expect(eq(probe1.awaited, false)); //A
+                expect(eq(probe2.awaited, true));  //B
+
+                const auto result2 = run(task2); // Run A
+
+                // Probe behavior must follow the coroutine, not the wrapper
+                expect(eq(probe1.awaited, true)); //A
+
+                // Values must be swapped
+                expect(eq(result1, expected2)); //B
+                expect(eq(result2, expected1)); //A
+
+                // Neither should be destroyed yet (still in scope)
+                expect(eq(probe1.destroyed, false));
+                expect(eq(probe2.destroyed, false));
+            } // Destruction happens here
+            expect(eq(probe1.destroyed, true));
+            expect(eq(probe2.destroyed, true));
+        };
+
+        "swap is its own inverse operation (involution)"_test = [] mutable {
+            constexpr std::int32_t expected1 = 1; //A
+            constexpr std::int32_t expected2 = 2; //B
+
+            coroutine_probe probe1{};
+            coroutine_probe probe2{};
+
             auto task1 = echo(expected1); //A
             auto task2 = echo(expected2); //B
 
             task1.set_probe(&probe1); //A
             task2.set_probe(&probe2); //B
 
-            // Perform swap
+            // Perform double swap
             using std::swap;
             swap(task1, task2); //swap A and B
+            swap(task1, task2); //swap B and A back
 
-            // After swap, no lifecycle events should have happened yet
-            expect(eq(probe1.destroyed, false));
-            expect(eq(probe2.destroyed, false));
-            expect(eq(probe1.awaited, false));
-            expect(eq(probe2.awaited, false));
-            expect(eq(probe1.moved, false));
-            expect(eq(probe2.moved, false));
-
-            const auto result1 = run(task1); // Run B
+            const auto result1 = run(task1); // Run A
 
             // Probe behavior must follow the coroutine, not the wrapper
-            expect(eq(probe1.awaited, false)); //A
-            expect(eq(probe2.awaited, true));  //B
+            expect(eq(probe1.awaited, true));  //A
+            expect(eq(probe2.awaited, false)); //B
 
-            const auto result2 = run(task2); // Run A
+            const auto result2 = run(task2); // Run B
 
             // Probe behavior must follow the coroutine, not the wrapper
-            expect(eq(probe1.awaited, true)); //A
+            expect(eq(probe2.awaited, true)); //B
 
-            // Values must be swapped
-            expect(eq(result1, expected2)); //B
-            expect(eq(result2, expected1)); //A
+            // Values must NOT be swapped
+            expect(eq(result1, expected1)); //A
+            expect(eq(result2, expected2)); //B
+        };
 
-            // Neither should be destroyed yet (still in scope)
-            expect(eq(probe1.destroyed, false));
-            expect(eq(probe2.destroyed, false));
-        } // Destruction happens here
-        expect(eq(probe1.destroyed, true));
-        expect(eq(probe2.destroyed, true));
-    };
+        "self-swap is idempotent"_test = [] mutable {
+            constexpr std::int32_t expected = 42;
 
-    "swap is its own inverse operation (involution)"_test = [] mutable {
-        constexpr int expected1 = 1; //A
-        constexpr int expected2 = 2; //B
+            coroutine_probe probe{};
 
-        coroutine_probe probe1{};
-        coroutine_probe probe2{};
+            {
+                auto task = echo(expected);
+                task.set_probe(&probe);
 
-        auto task1 = echo(expected1); //A
-        auto task2 = echo(expected2); //B
+                // Perform self-swap
+                using std::swap;
+                swap(task, task);
 
-        task1.set_probe(&probe1); //A
-        task2.set_probe(&probe2); //B
+                // After swap, no lifecycle events should have happened yet
+                expect(eq(probe.destroyed, false));
+                expect(eq(probe.awaited, false));
+                expect(eq(probe.moved, false));
 
-        // Perform double swap
-        using std::swap;
-        swap(task1, task2); //swap A and B
-        swap(task1, task2); //swap B and A back
+                // Still behaves normally
+                const auto result = run(task);
+                expect(eq(result, expected));
 
-        const auto result1 = run(task1); // Run A
+                expect(eq(probe.awaited, true));
 
-        // Probe behavior must follow the coroutine, not the wrapper
-        expect(eq(probe1.awaited, true));  //A
-        expect(eq(probe2.awaited, false)); //B
+                // Should not be destroyed yet (still in scope)
+                expect(eq(probe.destroyed, false));
+            } // Destruction happens here
+            expect(eq(probe.destroyed, true));
+        };
 
-        const auto result2 = run(task2); // Run B
+        "move assignment sets moved and destroys assigned-to"_test = [] mutable {
+            constexpr std::int32_t expected  = 5;
+            constexpr std::int32_t discarded = 10;
 
-        // Probe behavior must follow the coroutine, not the wrapper
-        expect(eq(probe2.awaited, true)); //B
+            coroutine_probe probe1;
+            coroutine_probe probe2;
 
-        // Values must NOT be swapped
-        expect(eq(result1, expected1)); //A
-        expect(eq(result2, expected2)); //B
-    };
+            auto task2 = echo(discarded);
+            task2.set_probe(&probe2);
+            {
+                auto task1 = echo(expected);
+                task1.set_probe(&probe1);
 
-    "self-swap is idempotent"_test = [] mutable {
-        constexpr int expected = 42;
+                task2 = std::move(task1); // move assignment
+                expect(eq(probe1.moved, true));
+                expect(eq(probe2.destroyed, false));
+            } //destruction of discarded task occurs here when task1 destructor runs
+            const auto result = run(task2);
 
-        coroutine_probe probe{};
-
-        {
-            auto task = echo(expected);
-            task.set_probe(&probe);
-
-            // Perform self-swap
-            using std::swap;
-            swap(task, task);
-
-            // After swap, no lifecycle events should have happened yet
-            expect(eq(probe.destroyed, false));
-            expect(eq(probe.awaited, false));
-            expect(eq(probe.moved, false));
-
-            // Still behaves normally
-            const auto result = run(task);
             expect(eq(result, expected));
-
-            expect(eq(probe.awaited, true));
-
-            // Should not be destroyed yet (still in scope)
-            expect(eq(probe.destroyed, false));
-        } // Destruction happens here
-        expect(eq(probe.destroyed, true));
-    };
-
-    "move assignment sets moved and destroys assigned-to"_test = [] mutable {
-        constexpr int expected  = 5;
-        constexpr int discarded = 10;
-
-        coroutine_probe probe1;
-        coroutine_probe probe2;
-
-        auto task2 = echo(discarded);
-        task2.set_probe(&probe2);
-        {
-            auto task1 = echo(expected);
-            task1.set_probe(&probe1);
-
-            task2 = std::move(task1); // move assignment
             expect(eq(probe1.moved, true));
-            expect(eq(probe2.destroyed, false));
-        } //destruction of discarded task occurs here when task1 destructor runs
-        const auto result = run(task2);
-
-        expect(eq(result, expected));
-        expect(eq(probe1.moved, true));
-        expect(eq(probe1.awaited, true));
-        expect(eq(probe1.destroyed, false));
-        expect(eq(probe2.moved, false));
-        expect(eq(probe2.awaited, false));
-        expect(eq(probe2.destroyed, true));
-    };
+            expect(eq(probe1.awaited, true));
+            expect(eq(probe1.destroyed, false));
+            expect(eq(probe2.moved, false));
+            expect(eq(probe2.awaited, false));
+            expect(eq(probe2.destroyed, true));
+        };
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wself-assign"
 #pragma GCC diagnostic ignored "-Wself-move"
-    "self assignment is safe"_test = [] mutable {
-        constexpr int expected = 42;
-        coroutine_probe probe;
+        "self assignment is safe"_test = [] mutable {
+            constexpr std::int32_t expected = 42;
+            coroutine_probe probe;
 
-        auto task = echo(expected);
-        task.set_probe(&probe);
-        task = std::move(task);         // NOLINT(clang-diagnostic-self-move): testing safety of self-assignment
-        expect(eq(probe.moved, false)); //self-assignment doesn't actually move
-        expect(eq(run(task), expected));
-    };
+            auto task = echo(expected);
+            task.set_probe(&probe);
+            task = std::move(task);         // NOLINT(clang-diagnostic-self-move): testing safety of self-assignment
+            expect(eq(probe.moved, false)); //self-assignment doesn't actually move
+            expect(eq(run(task), expected));
+        };
 #pragma GCC diagnostic pop
 
-    "task factory"_test = [] mutable {
-        constexpr int expected = 42;
+        "task factory"_test = [] mutable {
+            constexpr std::int32_t expected = 42;
 
-        coroutine_probe factory_probe;
-        coroutine_probe task_probe;
+            coroutine_probe factory_probe;
+            coroutine_probe task_probe;
 
-        test_task<int> task;
+            test_task<std::int32_t> task;
 
-        { //make sure factory is destroyed before we run the result task
-            auto factory = make_echo(expected, &task_probe);
-            factory.set_probe(&factory_probe);
-            task = run(factory);
+            { //make sure factory is destroyed before we run the result task
+                auto factory = make_echo(expected, &task_probe);
+                factory.set_probe(&factory_probe);
+                task = run(factory);
 
-            expect(eq(factory_probe.done, true));
-        }
-        expect(eq(factory_probe.destroyed, true));
+                expect(eq(factory_probe.done, true));
+            }
+            expect(eq(factory_probe.destroyed, true));
 
-        expect(eq(task_probe.moved, true));
-        expect(eq(task_probe.awaited, false));
-        expect(eq(task_probe.destroyed, false));
+            expect(eq(task_probe.moved, true));
+            expect(eq(task_probe.awaited, false));
+            expect(eq(task_probe.destroyed, false));
 
-        const auto result = run(task);
+            const auto result = run(task);
 
-        expect(eq(result, expected));
-        expect(eq(task_probe.awaited, true));
-        expect(eq(task_probe.done, true));
-    };
+            expect(eq(result, expected));
+            expect(eq(task_probe.awaited, true));
+            expect(eq(task_probe.done, true));
+        };
 
-    "double await throws"_test = [] mutable {
-        auto task = echo({});
+        "double await throws"_test = [] mutable {
+            auto task = echo({});
 
-        [[maybe_unused]] const auto result1 = run(task);
+            [[maybe_unused]] const auto result1 = run(task);
 
-        bool threw = false;
-        try {
-            [[maybe_unused]] const auto result2 = run(task);
-        } catch (const std::logic_error&) {
-            threw = true;
-        }
-        expect(eq(threw, true));
-    };
-
-    "double await across swap throws"_test = [] mutable {
-        auto task1 = echo({}); //A
-        auto task2 = echo({}); //B
-
-        [[maybe_unused]] const auto result1 = run(task1); //run A as task1
-
-        using std::swap;
-        swap(task1, task2); //swap A and B
-
-        {
             bool threw = false;
             try {
-                [[maybe_unused]] const auto result2 = run(task2); //run A as task2
+                [[maybe_unused]] const auto result2 = run(task);
             } catch (const std::logic_error&) {
                 threw = true;
             }
             expect(eq(threw, true));
-        }
-        {
+        };
+
+        "double await across swap throws"_test = [] mutable {
+            auto task1 = echo({}); //A
+            auto task2 = echo({}); //B
+
+            [[maybe_unused]] const auto result1 = run(task1); //run A as task1
+
+            using std::swap;
+            swap(task1, task2); //swap A and B
+
+            {
+                bool threw = false;
+                try {
+                    [[maybe_unused]] const auto result2 = run(task2); //run A as task2
+                } catch (const std::logic_error&) {
+                    threw = true;
+                }
+                expect(eq(threw, true));
+            }
+            {
+                bool threw = false;
+                try {
+                    [[maybe_unused]] const auto result3 = run(task1); //run B as task1
+                } catch (const std::logic_error&) {
+                    threw = true;
+                }
+                expect(eq(threw, false));
+            }
+        };
+
+        "double await across move construction throws"_test = [] mutable {
+            auto task1 = echo({});
+
+            [[maybe_unused]] const auto result1 = run(task1);
+
+            auto task2 = std::move(task1); //move construction
+
+            expect(eq(static_cast<bool>(task1), false)); //NOLINT(bugprone-use-after-move): Testing moved-from state.
+
             bool threw = false;
             try {
-                [[maybe_unused]] const auto result3 = run(task1); //run B as task1
+                [[maybe_unused]] const auto result2 = run(task2);
             } catch (const std::logic_error&) {
                 threw = true;
             }
-            expect(eq(threw, false));
-        }
-    };
+            expect(eq(threw, true));
+        };
 
-    "double await across move construction throws"_test = [] mutable {
-        auto task1 = echo({});
+        "double await across move assignment throws"_test = [] mutable {
+            auto task1 = echo({});
+            decltype(echo({})) task2;
 
-        [[maybe_unused]] const auto result1 = run(task1);
+            [[maybe_unused]] const auto result1 = run(task1);
 
-        auto task2 = std::move(task1); //move construction
+            task2 = std::move(task1); //move assignment
 
-        expect(eq(static_cast<bool>(task1), false));
+            expect(eq(static_cast<bool>(task1), false)); //NOLINT(bugprone-use-after-move): Testing moved-from state.
 
-        bool threw = false;
-        try {
-            [[maybe_unused]] const auto result2 = run(task2);
-        } catch (const std::logic_error&) {
-            threw = true;
-        }
-        expect(eq(threw, true));
-    };
-
-    "double await across move assignment throws"_test = [] mutable {
-        auto task1 = echo({});
-        decltype(echo({})) task2;
-
-        [[maybe_unused]] const auto result1 = run(task1);
-
-        task2 = std::move(task1); //move assignment
-
-        expect(eq(static_cast<bool>(task1), false));
-
-        bool threw = false;
-        try {
-            [[maybe_unused]] const auto result2 = run(task2);
-        } catch (const std::logic_error&) {
-            threw = true;
-        }
-        expect(eq(threw, true));
-    };
-
-    "exception propagates"_test = [] mutable {
-        auto task = []() -> test_task<int> {
-            throw std::runtime_error("boom");
-            co_return {};
-        }();
-
-        bool threw = false;
-        try {
-            [[maybe_unused]] auto result = run(task);
-        } catch (const std::runtime_error&) {
-            threw = true;
-        }
-        expect(eq(threw, true));
-    };
-
-    "stalled coroutine detected"_test = [] mutable {
-        coroutine_probe probe;
-
-        auto make_task = [&]() -> test_task<void> { co_await std::suspend_always{}; };
-
-        auto task = make_task();
-
-        task.set_probe(&probe);
-
-        bool threw = false;
-        try {
-            run(task);
-        } catch (const std::system_error& e) {
-            if (e.code() == std::errc::resource_unavailable_try_again) {
+            bool threw = false;
+            try {
+                [[maybe_unused]] const auto result2 = run(task2);
+            } catch (const std::logic_error&) {
                 threw = true;
             }
-        }
-        expect(eq(threw, true));
-        expect(eq(probe.awaited, true));
-    };
+            expect(eq(threw, true));
+        };
 
-    "nested coroutine await"_test = [] mutable {
-        constexpr int dividend   = 42;
-        constexpr int divisor    = 7;
-        constexpr int subtrahend = 1;
-        constexpr int expected   = (dividend / divisor) - subtrahend;
+        "exception propagates"_test = [] mutable {
+            auto task = [] -> test_task<std::int32_t> {
+                throw std::runtime_error("boom");
+                co_return {};
+            }();
 
-        coroutine_probe probeA;
-        coroutine_probe probeB;
-        coroutine_probe probeC;
-        coroutine_probe probeD;
-        coroutine_probe probeE;
+            bool threw = false;
+            try {
+                [[maybe_unused]] const auto result = run(task);
+            } catch (const std::runtime_error&) {
+                threw = true;
+            }
+            expect(eq(threw, true));
+        };
 
-        // Lvalue task
-        auto taskA = echo(dividend);
-        taskA.set_probe(&probeA);
+        "stalled coroutine detected"_test = [] mutable {
+            coroutine_probe probe;
 
-        // Temporary moved into taskB after probe is set
-        auto taskB = echo(divisor).set_probe(&probeB);
+            const auto make_task = [&] -> test_task<void> { co_await std::suspend_always{}; };
 
-        // Factory for rvalue task
-        auto make_taskC = []() -> test_task<int> { co_return co_await echo(subtrahend); };
+            auto task = make_task();
 
-        auto make_taskE = [&]() -> test_task<int> {
-            int quotient; //42 / 7 == 6
-            co_await (
-                [&]() -> test_task<void> {
-                    quotient = (co_await taskA) / (co_await taskB);
+            task.set_probe(&probe);
+
+            bool threw = false;
+            try {
+                run(task);
+            } catch (const std::system_error& e) {
+                if (e.code() == std::errc::resource_unavailable_try_again) {
+                    threw = true;
+                }
+            }
+            expect(eq(threw, true));
+            expect(eq(probe.awaited, true));
+        };
+
+        "nested coroutine await"_test = [] mutable {
+            constexpr std::int32_t dividend   = 42;
+            constexpr std::int32_t divisor    = 7;
+            constexpr std::int32_t subtrahend = 1;
+            constexpr std::int32_t expected   = (dividend / divisor) - subtrahend;
+
+            coroutine_probe probe_a;
+            coroutine_probe probe_b;
+            coroutine_probe probe_c;
+            coroutine_probe probe_d;
+            coroutine_probe probe_e;
+
+            // Lvalue task
+            auto task_a = echo(dividend);
+            task_a.set_probe(&probe_a);
+
+            // Temporary moved into taskB after probe is set
+            auto task_b = echo(divisor).set_probe(&probe_b);
+
+            // Factory for rvalue task
+            const auto make_task_c = [] -> test_task<std::int32_t> { co_return co_await echo(subtrahend); };
+
+            //NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+            // This coroutine lambda is invoked and completed synchronously by the test harness.
+            // Its closure object therefore outlives the coroutine execution.
+            const auto make_task_e = [&] -> test_task<std::int32_t> {
+                std::int32_t quotient = 0; //42 / 7 == 6
+                co_await [&] -> test_task<void> {
+                    quotient = (co_await task_a) / (co_await task_b);
                     co_return;
                 }()
-                             .set_probe(&probeD)
-            );
+                                    .set_probe(&probe_d);
 
-            const auto difference = quotient - co_await make_taskC().set_probe(&probeC); //6 - 1 == 5
-            co_return difference;                                                        //5
-        };
-        auto taskE = make_taskE();
-        taskE.set_probe(&probeE);
+                const auto difference = quotient - co_await make_task_c().set_probe(&probe_c); //6 - 1 == 5
+                co_return difference;                                                          //5
+            };
+            auto task_e = make_task_e();
+            task_e.set_probe(&probe_e);
+            //NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
 
-        const int result = run(taskE);
-        expect(eq(result, expected));
+            const std::int32_t result = run(task_e);
+            expect(eq(result, expected));
 
-        // Assertions for taskA (unmoved lvalue)
-        expect(eq(probeA.awaited, true));
-        expect(eq(probeA.suspended, false));
-        expect(eq(probeA.resumed, true));
-        expect(eq(probeA.moved, false));
-        expect(eq(probeA.done, true));
-        expect(eq(probeA.destroyed, false));
-        expect(eq(static_cast<int>(probeA.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
+            // Assertions for taskA (unmoved lvalue)
+            expect(eq(probe_a.awaited, true));
+            expect(eq(probe_a.suspended, false));
+            expect(eq(probe_a.resumed, true));
+            expect(eq(probe_a.moved, false));
+            expect(eq(probe_a.done, true));
+            expect(eq(probe_a.destroyed, false));
+            expect(eq(static_cast<std::int32_t>(probe_a.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
 
-        // Assertions for taskB (moved lvalue)
-        expect(eq(probeB.awaited, true));
-        expect(eq(probeB.suspended, false));
-        expect(eq(probeB.resumed, true));
-        expect(eq(probeB.moved, true));
-        expect(eq(probeB.done, true));
-        expect(eq(probeB.destroyed, false));
-        expect(eq(static_cast<int>(probeB.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
+            // Assertions for taskB (moved lvalue)
+            expect(eq(probe_b.awaited, true));
+            expect(eq(probe_b.suspended, false));
+            expect(eq(probe_b.resumed, true));
+            expect(eq(probe_b.moved, true));
+            expect(eq(probe_b.done, true));
+            expect(eq(probe_b.destroyed, false));
+            expect(eq(static_cast<std::int32_t>(probe_b.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
 
-        // Assertions for taskC (rvalue)
-        expect(eq(probeC.awaited, true));
-        expect(eq(probeC.suspended, true));
-        expect(eq(probeC.resumed, true));
-        expect(eq(probeC.moved, false)); // rvalue temporary is never moved after probe is attached
-        expect(eq(probeC.done, true));
-        expect(eq(probeC.destroyed, true));
-        expect(eq(static_cast<int>(probeC.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
+            // Assertions for taskC (rvalue)
+            expect(eq(probe_c.awaited, true));
+            expect(eq(probe_c.suspended, true));
+            expect(eq(probe_c.resumed, true));
+            expect(eq(probe_c.moved, false)); // rvalue temporary is never moved after probe is attached
+            expect(eq(probe_c.done, true));
+            expect(eq(probe_c.destroyed, true));
+            expect(eq(static_cast<std::int32_t>(probe_c.await_path), static_cast<std::int32_t>(coroutine_probe::path::rvalue)));
 
-        // Assertions for taskD (unmaterialized rvalue)
-        expect(eq(probeD.awaited, true));
-        expect(eq(probeD.suspended, true));
-        expect(eq(probeD.resumed, true));
-        expect(eq(probeD.moved, false));
-        expect(eq(probeD.done, true));
-        expect(eq(probeD.destroyed, true));
-        expect(eq(static_cast<int>(probeD.await_path), static_cast<int>(coroutine_probe::path::rvalue)));
+            // Assertions for taskD (unmaterialized rvalue)
+            expect(eq(probe_d.awaited, true));
+            expect(eq(probe_d.suspended, true));
+            expect(eq(probe_d.resumed, true));
+            expect(eq(probe_d.moved, false));
+            expect(eq(probe_d.done, true));
+            expect(eq(probe_d.destroyed, true));
+            expect(eq(static_cast<std::int32_t>(probe_d.await_path), static_cast<std::int32_t>(coroutine_probe::path::rvalue)));
 
-        // Assertions for taskE (lvalue)
-        expect(eq(probeE.awaited, true));
-        expect(eq(probeE.suspended, true));
-        expect(eq(probeE.resumed, true));
-        expect(eq(probeE.moved, false)); // rvalue returned by lambda used in-place
-        expect(eq(probeE.done, true));
-        expect(eq(probeE.destroyed, false));
-        expect(eq(static_cast<int>(probeE.await_path), static_cast<int>(coroutine_probe::path::lvalue)));
-    };
-
-    "continuation chaining preserves strict resume order"_test = [] mutable {
-        std::vector<int> trace;
-        constexpr int first  = 1;
-        constexpr int second = 2;
-        constexpr int third  = 3;
-        constexpr int fourth = 4;
-        constexpr int fifth  = 5;
-        std::vector<int> expected{first, second, third, fourth, fifth};
-
-        auto leaf = [&]() -> test_task<void> {
-            trace.push_back(third);
-            co_return;
+            // Assertions for taskE (lvalue)
+            expect(eq(probe_e.awaited, true));
+            expect(eq(probe_e.suspended, true));
+            expect(eq(probe_e.resumed, true));
+            expect(eq(probe_e.moved, false)); // rvalue returned by lambda used in-place
+            expect(eq(probe_e.done, true));
+            expect(eq(probe_e.destroyed, false));
+            expect(eq(static_cast<std::int32_t>(probe_e.await_path), static_cast<std::int32_t>(coroutine_probe::path::lvalue)));
         };
 
-        auto mid = [&]() -> test_task<void> {
-            trace.push_back(second);
-            co_await leaf();
-            trace.push_back(fourth);
-        };
+        "continuation chaining preserves strict resume order"_test = [] mutable {
+            std::vector<std::int32_t> trace;
+            constexpr std::int32_t first  = 1;
+            constexpr std::int32_t second = 2;
+            constexpr std::int32_t third  = 3;
+            constexpr std::int32_t fourth = 4;
+            constexpr std::int32_t fifth  = 5;
+            std::vector<std::int32_t> expected{first, second, third, fourth, fifth};
 
-        auto root = [&]() -> test_task<void> {
-            trace.push_back(first);
-            co_await mid();
-            trace.push_back(fifth);
-        };
+            //NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+            // This coroutine lambda is invoked and completed synchronously by the test harness.
+            // Its closure object therefore outlives the coroutine execution.
+            const auto leaf = [&] -> test_task<void> {
+                trace.push_back(third);
+                co_return;
+            };
 
-        run(root());
+            const auto mid = [&] -> test_task<void> {
+                trace.push_back(second);
+                co_await leaf();
+                trace.push_back(fourth);
+            };
 
-        expect(eq(trace.size(), expected.size()));
-        if (trace.size() == expected.size()) {
-            for (std::size_t i = 0, size = trace.size(); i < size; ++i) {
-                expect(eq(trace.at(i), expected.at(i)));
+            const auto root = [&] -> test_task<void> {
+                trace.push_back(first);
+                co_await mid();
+                trace.push_back(fifth);
+            };
+            //NOLINTEND(cppcoreguidelines-avoid-capturing-lambda-coroutines)
+
+            run(root());
+
+            expect(eq(trace.size(), expected.size()));
+            if (trace.size() == expected.size()) {
+                for (std::size_t i = 0, size = trace.size(); i < size; ++i) {
+                    expect(eq(trace.at(i), expected.at(i)));
+                }
             }
-        }
+        };
     };
-};
+} //namespace
 
 int main() {}

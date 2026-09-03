@@ -118,7 +118,7 @@ export namespace tools::test::coroutine_harness {
     public:
         test_task() = default;
 
-        test_task(std::coroutine_handle<promise_type> h) : handle_(h) {}
+        test_task(std::coroutine_handle<promise_type> handle) : handle_(handle) {}
 
         ~test_task() = default;
 
@@ -128,8 +128,9 @@ export namespace tools::test::coroutine_harness {
         test_task(test_task&& other) noexcept
             : handle_(std::exchange(other.handle_, {})), awaited_(std::exchange(other.awaited_, {}))
         {
-            if (handle_ && handle_.promise().probe)
+            if (handle_ && handle_.promise().probe) {
                 handle_.promise().probe->moved = true;
+            }
         }
 
         test_task& operator=(test_task&& other) noexcept(std::is_nothrow_swappable_v<test_task>)
@@ -137,8 +138,9 @@ export namespace tools::test::coroutine_harness {
             if (this != &other) {
                 swap(*this, other);
 
-                if (handle_ && handle_.promise().probe)
+                if (handle_ && handle_.promise().probe) {
                     handle_.promise().probe->moved = true;
+                }
             }
             return *this;
         }
@@ -179,8 +181,9 @@ export namespace tools::test::coroutine_harness {
     private:
         void do_set_probe(probe_ptr new_probe)
         {
-            if (handle_)
+            if (handle_) {
                 handle_.promise().probe = new_probe;
+            }
         }
 
         void prepare_co_await(coroutine_probe::path await_path)
@@ -242,9 +245,9 @@ export namespace tools::test::coroutine_harness {
     /// @brief Promise for non-void coroutine results.
     template<typename T>
     struct test_promise : test_promise_base<T> {
-        void return_value(T v) noexcept
+        void return_value(T new_value) noexcept
         try {
-            this->value.emplace(std::move(v));
+            this->value.emplace(std::move(new_value));
         } catch (...) {
             this->unhandled_exception();
         }

@@ -71,7 +71,7 @@ export namespace tools::test::coroutine_harness {
         auto awaiter{std::forward<Task>(entry_point).operator co_await()};
 
         if (!awaiter.await_ready()) {
-            (awaiter.await_suspend(std::noop_coroutine())).resume();
+            awaiter.await_suspend(std::noop_coroutine()).resume();
         }
 
         if (awaiter.my_handle.done()) {

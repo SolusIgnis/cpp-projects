@@ -41,7 +41,7 @@ import std; //NOLINT For std::error_code, std::size_t, std::vector, std::same_as
 
 export import :types;           ///< @see "net.telnet-types.cppm" for `byte_t` and `telnet::command`
 export import :errors;          ///< @see "net.telnet-errors.cppm" for `telnet::error` and `telnet::processing_signal` codes
-export import :concepts;        ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::LayerableSocketStream`
+export import :concepts;        ///< @see "net.telnet-concepts.cppm" for `telnet::concepts::layerable_socket_stream`
 export import :options;         ///< @see "net.telnet-options.cppm" for `option` and `option::id_num`
 export import :protocol_config; ///< @see "net.telnet-protocol_config.cppm" for `default_protocol_fsm_config`
 export import :protocol_fsm;    ///< @see "net.telnet-protocol_fsm.cppm" for `protocol_fsm`
@@ -52,12 +52,12 @@ import framework.coroutines.tagged_awaitable; ///< @see `framework.coroutines.ta
 
 namespace net::telnet {
     //Non-exported using declarations to simplify template constraints below.
-    using concepts::LayerableSocketStream;
-    using concepts::MutableBufferSequence;
-    using concepts::ConstBufferSequence;
-    using concepts::ReadToken;
-    using concepts::WriteToken;
-    using concepts::ProtocolFSMConfig;
+    using concepts::layerable_socket_stream;
+    using concepts::mutable_buffer_sequence;
+    using concepts::const_buffer_sequence;
+    using concepts::read_token;
+    using concepts::write_token;
+    using concepts::protocol_fsm_config;
 } //namespace net::telnet
 
 export namespace net::telnet {
@@ -66,7 +66,7 @@ export namespace net::telnet {
      * @remark Implements a stream interface (read/write) over a layered stream/socket.
      * @see `:protocol_fsm` for `protocol_fsm`, `:types` for `telnet::command`, `:options` for `option` and `option::id_num`, `:errors` for error codes
      */
-    template<LayerableSocketStream NextLayerT, ProtocolFSMConfig ProtocolConfigT = default_protocol_fsm_config>
+    template<layerable_socket_stream NextLayerT, protocol_fsm_config ProtocolConfigT = default_protocol_fsm_config>
     class stream {
     private:
         /**
@@ -86,7 +86,7 @@ export namespace net::telnet {
         /**
          * @typedef next_layer_type
          * @brief Type of the next-layer stream.
-         * @remark Represents the wrapped stream type satisfying `LayerableSocketStream`.
+         * @remark Represents the wrapped stream type satisfying `layerable_socket_stream`.
          */
         using next_layer_type = NextLayerT;
 
@@ -95,14 +95,14 @@ export namespace net::telnet {
          * @brief Executor type for the stream.
          * @remark Matches the executor type of the next-layer stream.
          */
-        using executor_type = typename next_layer_type::executor_type;
+        using executor_type = next_layer_type::executor_type;
 
         /**
          * @typedef lowest_layer_type
          * @brief Type of the lowest layer stream.
          * @remark Provides access to the lowest layer of the stream stack.
          */
-        using lowest_layer_type = typename next_layer_type::lowest_layer_type;
+        using lowest_layer_type = next_layer_type::lowest_layer_type;
 
         /**
          * @typedef fsm_type
@@ -160,43 +160,43 @@ export namespace net::telnet {
         std::size_t disable_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously reads some data with Telnet processing.
-        template<MutableBufferSequence MBufSeq, ReadToken CompletionToken>
+        template<mutable_buffer_sequence MBufSeq, read_token CompletionToken>
         auto async_read_some(const MBufSeq& buffers, CompletionToken&& token);
 
         ///@brief Synchronously reads some data with Telnet processing.
-        template<MutableBufferSequence MBufSeq>
+        template<mutable_buffer_sequence MBufSeq>
         std::size_t read_some(MBufSeq&& buffers);
 
         ///@brief Synchronously reads some data with Telnet processing.
-        template<MutableBufferSequence MBufSeq>
+        template<mutable_buffer_sequence MBufSeq>
         std::size_t read_some(MBufSeq&& buffers, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously writes some data with Telnet-specific IAC escaping.
-        template<ConstBufferSequence CBufSeq, WriteToken CompletionToken>
+        template<const_buffer_sequence CBufSeq, write_token CompletionToken>
         auto async_write_some(const CBufSeq& data, CompletionToken&& token);
 
         ///@brief Synchronously writes some data with Telnet-specific IAC escaping.
-        template<ConstBufferSequence CBufSeq>
+        template<const_buffer_sequence CBufSeq>
         std::size_t write_some(const CBufSeq& data);
 
         ///@brief Synchronously writes some data with Telnet-specific IAC escaping.
-        template<ConstBufferSequence CBufSeq>
+        template<const_buffer_sequence CBufSeq>
         std::size_t write_some(const CBufSeq& data, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously writes a pre-escaped buffer containing data and raw Telnet commands.
-        template<ConstBufferSequence CBufSeq, WriteToken CompletionToken>
+        template<const_buffer_sequence CBufSeq, write_token CompletionToken>
         auto async_write_raw(const CBufSeq& data, CompletionToken&& token);
 
         ///@brief Synchronously writes a pre-escaped buffer containing data and raw Telnet commands.
-        template<ConstBufferSequence CBufSeq>
+        template<const_buffer_sequence CBufSeq>
         std::size_t write_raw(const CBufSeq& data);
 
         ///@brief Synchronously writes a pre-escaped buffer containing data and raw Telnet commands.
-        template<ConstBufferSequence CBufSeq>
+        template<const_buffer_sequence CBufSeq>
         std::size_t write_raw(const CBufSeq& data, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously writes a Telnet command.
-        template<WriteToken CompletionToken>
+        template<write_token CompletionToken>
         auto async_write_command(telnet::command cmd, CompletionToken&& token);
 
         ///@brief Synchronously writes a Telnet command.
@@ -207,17 +207,17 @@ export namespace net::telnet {
 
         ///@todo Future Development: make this private
         ///@brief Asynchronously writes a Telnet negotiation command with an option.
-        template<WriteToken CompletionToken>
-        auto async_write_negotiation(typename fsm_type::negotiation_response response, CompletionToken&& token);
+        template<write_token CompletionToken>
+        auto async_write_negotiation(fsm_type::negotiation_response response, CompletionToken&& token);
 
         ///@brief Synchronously writes a Telnet negotiation command with an option.
-        std::size_t write_negotiation(typename fsm_type::negotiation_response response);
+        std::size_t write_negotiation(fsm_type::negotiation_response response);
 
         ///@brief Synchronously writes a Telnet negotiation command with an option.
-        std::size_t write_negotiation(typename fsm_type::negotiation_response response, std::error_code& ec) noexcept;
+        std::size_t write_negotiation(fsm_type::negotiation_response response, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously writes a Telnet subnegotiation command.
-        template<WriteToken CompletionToken>
+        template<write_token CompletionToken>
         auto async_write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, CompletionToken&& token);
 
         ///@brief Synchronously writes a Telnet subnegotiation command.
@@ -228,7 +228,7 @@ export namespace net::telnet {
             write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously sends Telnet Synch sequence (NUL bytes and IAC DM).
-        template<WriteToken CompletionToken>
+        template<write_token CompletionToken>
         auto async_send_synch(CompletionToken&& token);
 
         ///@brief Synchronously sends Telnet Synch sequence (NUL bytes and IAC DM).
@@ -257,7 +257,7 @@ export namespace net::telnet {
                 enum class urgent_data_state : byte_t {
                     no_urgent_data,
                     has_urgent_data,
-                    unexpected_data_mark
+                    unexpected_data_mark,
                 };
                 std::atomic<urgent_data_state> state_{urgent_data_state::no_urgent_data};
 
@@ -291,7 +291,7 @@ export namespace net::telnet {
          * @remark Manages the stateful processing of Telnet input, handling reads and negotiation writes using `async_compose`.
          * @see :protocol_fsm for `protocol_fsm`, :errors for error codes
          */
-        template<MutableBufferSequence MBufSeq>
+        template<mutable_buffer_sequence MBufSeq>
         class input_processor {
         public:
             ///@brief Constructs an `input_processor` with the parent stream, FSM, and buffers.
@@ -326,7 +326,7 @@ export namespace net::telnet {
 
             ///@brief Handle a `negotiation_response` by initiating an async write of the negotiation.
             template<typename Self>
-            void do_response(typename stream::fsm_type::negotiation_response response, Self&& self);
+            void do_response(stream::fsm_type::negotiation_response response, Self&& self);
 
             ///@brief Handle a `std::string` by initiating an async write of raw data.
             template<typename Self>
@@ -364,12 +364,12 @@ export namespace net::telnet {
                 initializing,
                 reading,
                 processing,
-                done
+                done,
             } state_;
         }; //class input_processor
 
         ///@brief Asynchronously sends a single NUL byte, optionally as OOB.
-        template<WriteToken CompletionToken>
+        template<write_token CompletionToken>
         auto async_send_nul(bool urgent, CompletionToken&& token);
 
         ///@brief Synchronously awaits the completion of an awaitable operation.
@@ -377,20 +377,20 @@ export namespace net::telnet {
         static auto sync_await(Awaitable&& awaitable);
 
         ///@brief Escapes Telnet output data by duplicating 0xFF (IAC) bytes into a provided vector.
-        template<ConstBufferSequence CBufSeq>
+        template<const_buffer_sequence CBufSeq>
         std::tuple<std::error_code, std::vector<byte_t>&>
             escape_telnet_output(std::vector<byte_t>& escaped_data, const CBufSeq& data) const noexcept;
 
         ///@brief Escapes Telnet output data by duplicating 0xFF (IAC) bytes.
-        template<ConstBufferSequence CBufSeq>
+        template<const_buffer_sequence CBufSeq>
         std::tuple<std::error_code, std::vector<byte_t>> escape_telnet_output(const CBufSeq& data) const noexcept;
 
         ///@brief Asynchronously writes a temporary buffer to the next layer.
-        template<WriteToken CompletionToken>
+        template<write_token CompletionToken>
         auto async_write_temp_buffer(std::vector<byte_t>&& temp_buffer, CompletionToken&& token);
 
         ///@brief Asynchronously reports an error via the completion token.
-        template<WriteToken CompletionToken>
+        template<write_token CompletionToken>
         auto async_report_error(std::error_code ec, CompletionToken&& token);
 
         next_layer_type next_layer_;
@@ -402,19 +402,19 @@ export namespace net::telnet {
      * @fn explicit stream::stream(next_layer_type&& next_layer_stream)
      * @param next_layer_stream The next-layer stream to wrap.
      * @remark Initializes the `next_layer_` member with the provided stream and constructs the `fsm_` member.
-     * @see `LayerableSocketStream` for stream requirements, :protocol_fsm for `fsm_type`, "net.telnet-stream-impl.cpp" for implementation
+     * @see `layerable_socket_stream` for stream requirements, :protocol_fsm for `fsm_type`, "net.telnet-stream-impl.cpp" for implementation
      */
     /**
      * @fn executor_type stream::get_executor() noexcept
      * @return The executor of the next-layer stream.
      * @remark Delegates to `next_layer_.get_executor()` to retrieve the associated executor.
-     * @see `LayerableSocketStream` for executor requirements
+     * @see `layerable_socket_stream` for executor requirements
      */
     /**
      * @fn lowest_layer_type& stream::lowest_layer() noexcept
      * @return Reference to the lowest layer stream.
      * @remark Delegates to `next_layer_.lowest_layer()` to access the lowest layer of the stream stack.
-     * @see `LayerableSocketStream` for `lowest_layer` requirements
+     * @see `layerable_socket_stream` for `lowest_layer` requirements
      */
     /**
      * @fn next_layer_type& stream::next_layer() noexcept
@@ -692,7 +692,7 @@ export namespace net::telnet {
      * @see `async_send_synch` for async implementation, `sync_await` for synchronous operation, :types for `telnet::command`, :errors for error codes, RFC 854 for Synch procedure, "net.telnet-stream-sync-impl.cpp" for implementation
      */
     /**
-     * @fn stream::input_processor::input_processor(stream& parent_stream, stream::fsm_type& fsm, context_type& context, MutableBufferSequence buffers)
+     * @fn stream::input_processor::input_processor(stream& parent_stream, stream::fsm_type& fsm, context_type& context, mutable_buffer_sequence buffers)
      * @param parent_stream Reference to the parent `stream` managing the connection.
      * @param fsm Reference to the `protocol_fsm` for Telnet state management.
      * @param context Reference to the context containing input/output buffers and processing state.

@@ -42,8 +42,7 @@ import :task; ///< @see "tools.test.coroutine_harness-task.cppm"
 export namespace tools::test::coroutine_harness::dummies {
     ///@brief Base class for trivial awaiters handling storage and value return from resume.
     template<typename T>
-    struct trivial_awaiter_base {
-    protected:
+    class trivial_awaiter_base {
         // Only store value if T is not void
         using storage_t = std::conditional_t<std::is_void_v<T>, std::monostate, T>;
         storage_t storage_{};
@@ -97,7 +96,7 @@ export namespace tools::test::coroutine_harness::dummies {
 
         [[nodiscard]] constexpr bool await_ready() const noexcept { return true; }
 
-        [[noreturn]] std::coroutine_handle<> await_suspend(std::coroutine_handle<>) const
+        [[noreturn]] std::coroutine_handle<> await_suspend(std::coroutine_handle<> /*unused*/) const
         {
             throw std::logic_error("ready_awaiter had await_suspend called: contract violation");
         }
@@ -118,8 +117,9 @@ export namespace tools::test::coroutine_harness::dummies {
         [[nodiscard]] auto await_suspend(std::coroutine_handle<test_promise<U>> caller) noexcept
             -> std::coroutine_handle<test_promise<U>>
         {
-            if (typename test_promise<U>::probe_ptr probe{caller.promise().probe}; probe)
+            if (typename test_promise<U>::probe_ptr probe{caller.promise().probe}; probe) {
                 probe->suspended = true;
+            }
             return caller; // symmetric transfer → resume caller right away
         }
 

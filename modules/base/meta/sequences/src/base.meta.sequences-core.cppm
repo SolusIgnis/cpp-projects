@@ -30,9 +30,9 @@
  * ​ ├── is_uniform_value_list_v
  * ​ ├── type_constant
 ​ *  ├── value_constant
- *  ├── Sequence
- *  ├── TypeSequence
- *  └── ValueSequence
+ *  ├── sequence
+ *  ├── type_sequence
+ *  └── value_sequence
  */
 
 //Module partition interface unit
@@ -106,11 +106,11 @@ namespace base::meta::sequences {
 
 export namespace base::meta::sequences {
     template<typename T>
-    concept TypeSequence = is_type_list_v<T>;
+    concept type_sequence = is_type_list_v<T>;
 
     template<typename T>
-    concept ValueSequence = is_value_list_v<T>;
+    concept value_sequence = is_value_list_v<T>;
 
     template<typename T>
-    concept Sequence = TypeSequence<T> || ValueSequence<T>;
+    concept sequence = type_sequence<T> || value_sequence<T>;
 } //namespace base::meta::sequences

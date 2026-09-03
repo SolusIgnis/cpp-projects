@@ -91,7 +91,9 @@ export namespace net::telnet {
         )
         {
             handlers_[opt] = option_handler_record{
-                std::move(enablement_handler), std::move(disablement_handler), std::move(subnegotiation_handler)
+                std::move(enablement_handler),
+                std::move(disablement_handler),
+                std::move(subnegotiation_handler),
             };
         } //register_handlers(option::id_num, std::optional<OptionEnablementHandler>, std::optional<OptionDisablementHandler>, std::optional<SubnegotiationHandler>)
 
@@ -204,7 +206,7 @@ export namespace net::telnet {
             no       = 0,
             yes      = 1,
             want_no  = 2,
-            want_yes = 3
+            want_yes = 3,
         };
 
         //Local state queries (us)
@@ -689,6 +691,7 @@ export namespace net::telnet {
 
     /**
      * @brief Collection of `option_status_record` objects for tracking Telnet option statuses.
+     * @note The `operator[]` implementation is well-defined for all inputs as the bounds of the underlying array are defined to hold all values of the underlying type of its parameter.
      * @remark Provides array-based access to option statuses by `option::id_num`.
      * @remark Used by `:protocol_fsm` to manage the state of Telnet options.
      * @remark Instantiated per-`ProtocolFSM` and used in a single thread/strand.
@@ -699,14 +702,14 @@ export namespace net::telnet {
         ///@brief Accesses or creates an `option_status_record` for a Telnet option.
         option_status_record& operator[](option::id_num opt)
         {
-            //NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index): Safe by construction as the array bounds are defined to hold all values of the underlying type.
+            //NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access): Safe by construction as the array bounds are defined to hold all values of the underlying type.
             return status_records_[std::to_underlying(opt)];
         } //operator[](option::id_num)
 
         ///@brief Retrieves an `option_status_record` for a Telnet option.
         const option_status_record& operator[](option::id_num opt) const
         {
-            //NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index): Safe by construction as the array bounds are defined to hold all values of the underlying type.
+            //NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access): Safe by construction as the array bounds are defined to hold all values of the underlying type.
             return status_records_[std::to_underlying(opt)];
         } //operator[](option::id_num) const
 
@@ -718,7 +721,7 @@ export namespace net::telnet {
 
         ///@brief The number of possible `option::id_num` values. (@note Assuming no changes to the Telnet specification, this should be 256 in perpetuity, but never assume when you can assert/compute.)
         static constexpr size_t max_option_count{
-            std::numeric_limits<std::underlying_type_t<option::id_num>>::max() + std::size_t{1}
+            std::numeric_limits<std::underlying_type_t<option::id_num>>::max() + std::size_t{1},
         };
 
     private:

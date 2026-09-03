@@ -11,33 +11,38 @@ using namespace ut;
 using namespace base::vocab::ptr;
 
 namespace {
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct mixin_1 {
-        virtual ~mixin_1()         = default;
+        virtual ~mixin_1()         = default; //NOLINT(cppcoreguidelines-special-member-functions): Trivial fixture.
         virtual std::int32_t bar() = 0;
     };
 
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct mixin_2 {
-        virtual ~mixin_2() = default;
+        virtual ~mixin_2() = default; //NOLINT(cppcoreguidelines-special-member-functions): Trivial fixture.
 
-        std::size_t foo(this auto&& self) { return sizeof(self); }
+        [[nodiscard]] std::size_t foo(this auto&& self) { return sizeof(self); }
     };
 
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct base_type : mixin_1,
                        mixin_2 {
-        virtual ~base_type() = default;
+        ~base_type() override = default;
 
-        std::int32_t value{0};
+        static constexpr std::int32_t default_value{0};
+        std::int32_t value{default_value};
 
-        std::int32_t bar() override { return value; }
+        [[nodiscard]] std::int32_t bar() override { return value; }
     };
 
     struct derived_type : base_type {
-        std::int32_t extra{42};
+        static constexpr std::int32_t default_extra{42};
+        std::int32_t extra{default_extra};
         std::array<std::byte, sizeof(base_type) + alignof(base_type)> make_derived_bigger_than_base_even_with_tail_padding{};
 
-        std::int32_t bar() override { return extra; }
+        [[nodiscard]] std::int32_t bar() override { return extra; }
 
-        std::size_t baz() { return make_derived_bigger_than_base_even_with_tail_padding.size(); }
+        [[nodiscard]] std::size_t baz() const { return make_derived_bigger_than_base_even_with_tail_padding.size(); }
     };
 
     template<typename T, std::size_t N>
@@ -50,36 +55,38 @@ namespace {
         using const_pointer  = cursor_ptr<const T>;
         using iterator       = iterator_ptr<T>;
         using const_iterator = iterator_ptr<const T>;
-        using element_type   = typename pointer::element_type;
-        using value_type     = typename pointer::value_type;
+        using element_type   = pointer::element_type;
+        using value_type     = pointer::value_type;
 
     private:
-        element_type storage[N]{};
+        //NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays): This fixture needs raw storage to test the vocabulary pointers. It is essentially implementing an analogue to `std::array`.
+        element_type storage_[N]{};
 
     public:
-        constexpr size_type size() const noexcept { return N; }
+        [[nodiscard]] constexpr size_type size() const noexcept { return N; }
 
-        constexpr bool empty() const noexcept { return N == 0; }
+        [[nodiscard]] constexpr bool empty() const noexcept { return N == 0; }
 
-        constexpr iterator begin() noexcept { return iterator_ptr{std::addressof(storage[0])}; }
+        [[nodiscard]] constexpr iterator begin() noexcept { return iterator_ptr{std::addressof(storage_[0])}; }
 
-        constexpr iterator end() noexcept { return begin() + N; }
+        [[nodiscard]] constexpr iterator end() noexcept { return begin() + N; }
 
-        constexpr const_iterator begin() const noexcept { return iterator_ptr{std::addressof(storage[0])}; }
+        [[nodiscard]] constexpr const_iterator begin() const noexcept { return iterator_ptr{std::addressof(storage_[0])}; }
 
-        constexpr const_iterator end() const noexcept { return begin() + N; }
+        [[nodiscard]] constexpr const_iterator end() const noexcept { return begin() + N; }
 
-        constexpr const_iterator cbegin() const noexcept { return begin(); }
+        [[nodiscard]] constexpr const_iterator cbegin() const noexcept { return begin(); }
 
-        constexpr const_iterator cend() const noexcept { return end(); }
+        [[nodiscard]] constexpr const_iterator cend() const noexcept { return end(); }
 
-        constexpr pointer data() noexcept { return cursor_ptr{storage[0]}; }
+        constexpr pointer data() noexcept { return cursor_ptr{storage_[0]}; }
 
-        constexpr const_pointer data() const noexcept { return cursor_ptr{storage[0]}; }
+        [[nodiscard]] constexpr const_pointer data() const noexcept { return cursor_ptr{storage_[0]}; }
 
-        constexpr const_pointer cdata() const noexcept { return data(); }
+        [[nodiscard]] constexpr const_pointer cdata() const noexcept { return data(); }
     };
 
+    //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
     suite vocabulary_pointer_integration_tests = [] mutable {
         "vocabulary pointers interoperate to model object relationships"_test = [] mutable {
             struct dummy_type {
@@ -101,17 +108,17 @@ namespace {
             expect(eq(dummy_ptr->counter == nullptr, true));
             dummy_ptr->counter = std::addressof(count);
 
-            expect(eq(*dummy_ptr->counter, 0ZU));
+            expect(eq(*dummy_ptr->counter, /*rhs=*/0ZU));
 
             required_ptr local_counter = dummy_ptr->counter;
             (*local_counter)++;
 
-            expect(eq(*dummy_ptr->counter, 1ZU));
+            expect(eq(*dummy_ptr->counter, /*rhs=*/1ZU));
 
             (*dummy_obj.counter)++;
 
-            expect(eq(*dummy_ptr->counter, 2ZU));
-            expect(eq(count, 2ZU));
+            expect(eq(*dummy_ptr->counter, /*rhs=*/2ZU));
+            expect(eq(count, /*rhs=*/2ZU));
 
             static_assert(
                 sizeof(derived_type) > sizeof(base_type),
@@ -121,6 +128,7 @@ namespace {
             expect(eq(dummy_ptr->service->bar(), expected_bar_val));
         };
 
+        //NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access): Testing subscripting and pointer arithmetic integration with the vocabulary pointers.
         "vocabulary pointers compose through conversion, container storage, and iteration"_test = [] mutable {
             base_type bt1;
             base_type bt2;
@@ -131,33 +139,40 @@ namespace {
 
             dependency_ptr<base_type> dpbt1{bt1};
 
-            vec.push_back(dpbt1);
-            vec.push_back(required_ptr{dt1});
-            vec.push_back(std::addressof(bt2));
-            vec.push_back(std::addressof(dt2));
+            vec.emplace_back(dpbt1);
+            vec.emplace_back(required_ptr{dt1});
+            vec.emplace_back(std::addressof(bt2));
+            vec.emplace_back(std::addressof(dt2));
 
             // converts argument from cursor_ptr<required_ptr<base_type>> to required_ptr<required_ptr<base_type>>
-            auto unwrap = [](required_ptr<required_ptr<base_type>> param) { return *param; };
+            const auto unwrap = [](required_ptr<required_ptr<base_type>> param) { return *param; };
 
             for (auto [cursor, i] = std::tuple{cursor_ptr{vec.data()}, 0ZU}; i < vec.size(); ++cursor, ++i) {
-                bool is_derived = (i == 1) || (i == 3); // 0 and 2 are base_type; 1 and 3 are derived_type
-                expect(eq(unwrap(cursor)->value, 0));
-                expect(eq(unwrap(cursor)->bar(), (is_derived ? 42 : 0)));
+                const bool is_derived = (i == 1) || (i == 3); // 0 and 2 are base_type; 1 and 3 are derived_type
+                expect(eq(unwrap(cursor)->value, base_type::default_value));
+                expect(eq(unwrap(cursor)->bar(), (is_derived ? derived_type::default_extra : base_type::default_value)));
             }
 
+            constexpr std::int32_t new_value{1};
             alias_ptr alias = vec[1];
-            alias->value    = 1;
-            expect(eq(dt1.value, 1));
-            expect(eq(alias->bar(), 42));
+            alias->value    = new_value;
+            expect(eq(dt1.value, new_value));
+            expect(eq(alias->bar(), derived_type::default_extra));
         };
+        //NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
 
+        //NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access): Testing subscripting and pointer arithmetic integration with the vocabulary pointers.
         "vocabulary pointers interoperate with unordered associative containers"_test = [] mutable {
             std::unordered_set<alias_ptr<const char>> test_set;
             //Note, we get an automatic null check when converting to `required_ptr` to access the map.
-            std::unordered_map<required_ptr<const char>, std::int32_t> test_map;
+            std::unordered_map<required_ptr<const char>, std::int64_t> test_map;
 
             constexpr auto data = "This is a test.";
             std::string_view sview{data};
+
+            const auto i_count = std::ranges::count(sview, 'i');
+            const auto s_count = std::ranges::count(sview, 's');
+            const auto t_count = std::ranges::count(sview, 't');
 
             for (cursor_ptr<const char> datum{data[0]}; *datum != '\0'; ++datum) {
                 //Convert the `cursor_ptr` to `required_ptr` to populate the map.
@@ -172,7 +187,7 @@ namespace {
                 bool threw_when_null = false;
                 bool wrong_exception = false;
                 try {
-                    [[maybe_unused]] std::int32_t unused = test_map[lookup];
+                    [[maybe_unused]] const auto unused = test_map[lookup];
                 } catch (const std::invalid_argument&) {
                     threw_when_null = true;
                 } catch (...) {
@@ -183,11 +198,13 @@ namespace {
                 expect(eq(wrong_exception, false));
             }
 
+            //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test string character offsets are hardcoded for readability.
             lookup = (data + 5);
 
-            expect(eq(test_map[lookup], 2));
-            expect(eq(test_map[required_ptr{data[6]}], 3));
-            expect(eq(test_map[cursor_ptr{data} + 10], 2));
+            expect(eq(test_map[lookup], i_count));
+            expect(eq(test_map[required_ptr{data[6]}], s_count));
+            expect(eq(test_map[cursor_ptr{data} + 10], t_count));
+            //NOLINTEND(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers)
 
             expect(eq(test_set.contains(lookup), true));
             expect(eq(test_set.size(), sview.size()));
@@ -201,6 +218,7 @@ namespace {
             expect(eq(test_set.contains(nullptr), true));
             expect(eq(test_set.size(), sview.size() + 1));
         };
+        //NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
 
         "`common_reference_t` with mixed vocabulary pointer types resolves correctly"_test = [] mutable {
             using simple_t = std::int32_t;
@@ -418,7 +436,7 @@ namespace {
                 bool threw           = false;
                 bool wrong_exception = false;
                 try {
-                    [[maybe_unused]] required_ptr dummy_ptr = empty_unique;
+                    [[maybe_unused]] const required_ptr dummy_ptr = empty_unique;
                 } catch (const std::invalid_argument&) {
                     threw = true;
                 } catch (...) {
@@ -433,7 +451,7 @@ namespace {
                 bool threw           = false;
                 bool wrong_exception = false;
                 try {
-                    alias_ptr ptr = alias_ptr{empty_unique};
+                    const alias_ptr ptr = alias_ptr{empty_unique};
                     expect(eq(ptr == nullptr, true));
                 } catch (const std::invalid_argument&) {
                     threw = true;
@@ -470,7 +488,7 @@ namespace {
 
             auto owner2 = std::move(owner);
 
-            expect(eq(owner.get() == nullptr, true));
+            expect(eq(owner == nullptr, true));
             expect(eq(std::to_address(owner2) == std::to_address(ptr1), true));
             expect(eq(owner2->bar(), ptr1->bar()));
             expect(eq(owner2->value, expected));
@@ -490,7 +508,10 @@ namespace {
         };
 
         "`cursor_ptr` and `iterator_ptr` interoperate with standard algorithms"_test = [] mutable {
-            constexpr std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
+            constexpr std::size_t buffer_size{8};
+            constexpr auto find_target{7};
+            constexpr auto lb_target{6};
+            constexpr std::array<std::int32_t, buffer_size> source{5, 2, 8, 1, 7, 4, 6, 3};
 
             auto expected_sorted = source;
             std::ranges::sort(expected_sorted);
@@ -498,32 +519,32 @@ namespace {
             auto expected_reversed = source;
             std::ranges::reverse(expected_reversed);
 
-            static_buffer<std::int32_t, 8> buffer;
+            static_buffer<std::int32_t, buffer_size> buffer;
 
             // Copy raw-pointer iterators -> `cursor_ptr` into underlying memory sequence
-            std::copy(source.begin(), source.end(), buffer.data());
+            std::ranges::copy(source, buffer.data());
 
             // Reverse with `iterator_ptr` iterators in and out
             static_assert(std::sentinel_for<decltype(buffer.end()), decltype(buffer.begin())>);
-            static_buffer<std::int32_t, 8> reverse_result;
+            static_buffer<std::int32_t, buffer_size> reverse_result;
             std::ranges::reverse_copy(buffer, reverse_result.begin());
             expect(eq(std::ranges::equal(reverse_result, expected_reversed), true));
 
             // Search using `iterator_ptr` iterators
-            auto fpos = std::ranges::find(buffer, 7);
+            auto fpos = std::ranges::find(buffer, find_target);
             expect(eq(fpos != buffer.end(), true));
             if (fpos != buffer.end()) {
-                expect(eq(*fpos, 7));
+                expect(eq(*fpos, find_target));
             }
 
             // Sort using `iterator_ptr` iterators
             std::ranges::sort(buffer);
 
             // Binary search using `iterator_ptr` iterators
-            auto lbpos = std::ranges::lower_bound(buffer, 6);
+            auto lbpos = std::ranges::lower_bound(buffer, lb_target);
             expect(eq(lbpos != buffer.end(), true));
             if (lbpos != buffer.end()) {
-                expect(eq(*lbpos, 6));
+                expect(eq(*lbpos, lb_target));
             }
 
             // Copy `iterator_ptr` iterator -> raw-pointer iterator
@@ -533,8 +554,8 @@ namespace {
             expect(eq(std::ranges::equal(sort_result, expected_sorted), true));
 
             // Partition the buffer by evenness: `iterator_ptr` iterators form a valid range
-            auto is_even   = [](int x) { return x % 2 == 0; };
-            auto remainder = std::ranges::partition(buffer, is_even);
+            const auto is_even   = [](int x) { return x % 2 == 0; };
+            const auto remainder = std::ranges::partition(buffer, is_even);
 
             // Expect everything before and nothing after the partition point to be even
             expect(eq(std::ranges::all_of(buffer.begin(), remainder.begin(), is_even), true));
@@ -542,30 +563,32 @@ namespace {
         };
 
         "`iterator_ptr` interoperates with `std::span`"_test = [] mutable {
-            constexpr std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
-            static_buffer<std::int32_t, 8> buffer;
+            constexpr std::size_t buffer_size{8};
+            constexpr std::array<std::int32_t, buffer_size> source{5, 2, 8, 1, 7, 4, 6, 3};
+            static_buffer<std::int32_t, buffer_size> buffer;
 
             std::ranges::copy(source, buffer.data());
 
-            std::span view(buffer);
+            const std::span view(buffer);
 
             expect(eq(view.front(), source.front()));
             expect(eq(view.back(), source.back()));
         };
 
         "`iterator_ptr` iterators interoperate with standard views"_test = [] mutable {
-            constexpr std::array<std::int32_t, 8> source{5, 2, 8, 1, 7, 4, 6, 3};
+            constexpr std::size_t buffer_size{8};
+            constexpr std::array<std::int32_t, buffer_size> source{5, 2, 8, 1, 7, 4, 6, 3};
 
-            auto is_even  = [](int x) { return x % 2 == 0; };
-            auto expected = source | std::views::filter(is_even) | std::ranges::to<std::vector>();
+            const auto is_even  = [](int x) { return x % 2 == 0; };
+            const auto expected = source | std::views::filter(is_even) | std::ranges::to<std::vector>();
 
-            static_buffer<std::int32_t, 8> buffer;
+            static_buffer<std::int32_t, buffer_size> buffer;
 
             // Fill the buffer.
             std::ranges::copy(source, buffer.begin());
 
             // Build a filtering view with the buffer's `iterator_ptr` iterators and materialize the range into a vector.
-            auto even_values = buffer | std::views::filter(is_even) | std::ranges::to<std::vector>();
+            const auto even_values = buffer | std::views::filter(is_even) | std::ranges::to<std::vector>();
 
             // The result when filtering with `iterator_ptr` iterators should be the same as when filtering with raw-pointer iterators.
             expect(eq(std::ranges::equal(even_values, expected), true));
@@ -576,8 +599,8 @@ namespace {
 
             const auto expected = std::as_bytes(std::span{std::addressof(object), 1});
 
-            const auto object_ptr = base::vocab::pointer_to<required_ptr>(object);
-            cursor_ptr byte_ptr   = reinterpret_pointer_cast<std::byte>(object_ptr);
+            const auto object_ptr     = base::vocab::pointer_to<required_ptr>(object);
+            const cursor_ptr byte_ptr = reinterpret_pointer_cast<std::byte>(object_ptr);
 
             static_buffer<std::byte, sizeof(derived_type)> buffer;
             std::copy(byte_ptr, byte_ptr + sizeof(derived_type), buffer.data());

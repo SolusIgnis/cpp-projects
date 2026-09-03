@@ -35,11 +35,35 @@ Checks:
   # Do-While loops are idiomatic for compare-exchange.
   - '-cppcoreguidelines-avoid-do-while'
 
+  # This is a redundant alias of 'bugprone-narrowing-conversions'
+  - '-cppcoreguidelines-narrowing-conversions'
+
+  # This is a redundant alias of 'readability-magic-numbers'
+  - '-cppcoreguidelines-avoid-magic-numbers'
+
+  # This is a redundant alias of 'modernize-avoid-c-arrays'
+  - '-cppcoreguidelines-avoid-c-arrays'
+
+  # This is a redundant alias of 'modernize-use-override'
+  - '-cppcoreguidelines-explicit-virtual-functions'
+
+  # This is a redundant alias of 'modernize-macro-to-enum'
+  - '-cppcoreguidelines-macro-to-enum'
+  
+  # This is a redundant alias of 'modernize-use-default-member-init'
+  - '-cppcoreguidelines-use-default-member-init'
+
+  # This is a redundant alias of 'misc-non-private-member-variables-in-classes'
+  - '-cppcoreguidelines-non-private-member-variables-in-classes'
+
   # This is a redundant alias of 'misc-explicit-constructor'.
   - '-cppcoreguidelines-explicit-constructor'
   
-  # Temporarily disabled while I review interaction with explicit object parameters.
-  - '-cppcoreguidelines-missing-std-forward'
+  # This is a redundant alias of 'misc-unconventional-assign-operator'
+  - '-cppcoreguidelines-c-copy-assignment-signature'
+
+  # These are redundant aliases of the performance family.
+  - '-cppcoreguidelines-noexcept-*'
   
   # ============================================================
   # Readability & maintainability (policy-driven)
@@ -56,7 +80,7 @@ Checks:
   - '-readability-else-after-return'
   
   # Pointers that act like iterators should hide being raw pointers
-  #- '-readability-qualified-auto'
+  - '-readability-qualified-auto'
   
   # Redundant continue and return sometimes enhance readability
   - '-readability-redundant-control-flow'
@@ -73,7 +97,6 @@ Checks:
   - 'boost-use-to-string'
 
   - 'google-build-explicit-make-pair'
-  - 'google-build-using-namespace'
   - 'google-default-arguments'
   - 'google-runtime-float'
   - 'google-runtime-int'
@@ -101,10 +124,13 @@ Checks:
   # Recursion is perfectly valid.
   - '-misc-no-recursion'
   
-  # Unfortunately, this doesn't work with import std yet.
+  # Module linkage is generally preferred for interface units.
+  - '-misc-use-internal-linkage'
+  
+  # Unfortunately, this doesn't work with `import std` yet.
   - '-misc-include-cleaner'
 
-  # This seems to have a bug surrounding explicit(false) warnings.
+  # This seems to have a bug surrounding `explicit(false)` warnings.
   - '-misc-explicit-constructor'
   
   - 'portability-*'
@@ -114,7 +140,7 @@ Checks:
 
   # This is noisy and doesn't play well with asio.
   - '-portability-template-virtual-member-function'
-  
+
 WarningsAsErrors: ''
 HeaderFileExtensions:
   - ''       # Catch-all for unnamed extensions, sometimes needed
@@ -130,19 +156,19 @@ ImplementationFileExtensions:
   - cpp      # Modern C++ source files
   - cxx      # Alternate modern C++ source files
   - ixx      # Alternate module interface units
-HeaderFilterRegex: '^(?!.*(usr/|lib/|v1/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|std\.cppm|std\.compat\.cppm|_deps/)).*$'
+HeaderFilterRegex: '^(?!.*(usr/|lib/|v1/|asio/|include/c\+\+|__|\.pcm$|\.bmi$|std\.cppm$|std\.compat\.cppm$|_deps/)).*$'
 #ExcludeHeaderFilterRegex: '/include/c\+\+/v1/'
 FormatStyle: file
 CheckOptions:
-  bugprone-argument-comment.CommentBoolLiterals:        '1'
-  bugprone-argument-comment.CommentCharacterLiterals:   '1'
-  bugprone-argument-comment.CommentFloatLiterals:       '1'
-  bugprone-argument-comment.CommentIntegerLiterals:     '1'
-  bugprone-argument-comment.CommentNullPtrs:            '1'
-  bugprone-argument-comment.CommentStringLiterals:      '1'
-  bugprone-argument-comment.CommentUserDefinedLiterals: '1'
-  bugprone-argument-comment.IgnoreSingleArgument:       '1'
-  bugprone-argument-comment.StrictMode:                 '1'
+  bugprone-argument-comment.CommentBoolLiterals:        'false'
+  bugprone-argument-comment.CommentCharacterLiterals:   'true'
+  bugprone-argument-comment.CommentFloatLiterals:       'true'
+  bugprone-argument-comment.CommentIntegerLiterals:     'true'
+  bugprone-argument-comment.CommentNullPtrs:            'true'
+  bugprone-argument-comment.CommentStringLiterals:      'true'
+  bugprone-argument-comment.CommentUserDefinedLiterals: 'true'
+  bugprone-argument-comment.IgnoreSingleArgument:       'true'
+  bugprone-argument-comment.StrictMode:                 'true'
   
   bugprone-assert-side-effect.CheckFunctionCalls: 'false'
   
@@ -213,6 +239,9 @@ CheckOptions:
   cppcoreguidelines-macro-usage.CheckCapsOnly:           'false'
   cppcoreguidelines-macro-usage.IgnoreCommandLineMacros: 'true'
 
+  cppcoreguidelines-pro-bounds-avoid-unchecked-container-access.ExcludeClasses: '::std::map;::std::unordered_map;::std::flat_map;::net::telnet::option_status_db'
+  cppcoreguidelines-pro-bounds-avoid-unchecked-container-access.FixMode:        'none'
+
   cppcoreguidelines-pro-type-const-cast.StrictMode: 'false'
   
   cppcoreguidelines-pro-type-member-init.IgnoreArrays:  'false'
@@ -222,7 +251,7 @@ CheckOptions:
   
   cppcoreguidelines-rvalue-reference-param-not-moved.AllowPartialMove:              'false'
   cppcoreguidelines-rvalue-reference-param-not-moved.IgnoreNonDeducedTemplateTypes: 'false'
-  cppcoreguidelines-rvalue-reference-param-not-moved.IgnoreUnnamedParams:           'false'
+  cppcoreguidelines-rvalue-reference-param-not-moved.IgnoreUnnamedParams:           'true'
   
   cppcoreguidelines-special-member-functions.AllowImplicitlyDeletedCopyOrMove:           'false'
   cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions:                  'false'
@@ -268,6 +297,11 @@ CheckOptions:
   
   misc-unused-parameters.IgnoreVirtual: 'false'
   misc-unused-parameters.StrictMode:    'true'
+  
+  misc-use-internal-linkage.FixMode:          'None'
+  misc-use-internal-linkage.AnalyzeFunctions: 'true'
+  misc-use-internal-linkage.AnalyzeVariables: 'true'
+  misc-use-internal-linkage.AnalyzeTypes:     'true'
   
   modernize-avoid-c-arrays.AllowStringArrays: 'false'
   
@@ -361,13 +395,18 @@ CheckOptions:
   readability-enum-initial-value.AllowExplicitSequentialInitialValues: 'true'
   readability-enum-initial-value.AllowExplicitZeroFirstInitialValue:   'true'
   
-  readability-identifier-length.IgnoredParameterNames:        '^[n]$|^ec$|^id$'
-  readability-identifier-length.IgnoredVariableNames:         '^ec$|^id$'
-  readability-identifier-length.MinimumExceptionNameLength:   '2'
-  readability-identifier-length.MinimumLoopCounterNameLength: '2'
-  readability-identifier-length.MinimumParameterNameLength:   '3'
-  readability-identifier-length.MinimumVariableNameLength:    '3'
-  
+  readability-identifier-length.MinimumVariableNameLength:     '3'
+  readability-identifier-length.IgnoredVariableNames:          '^([_ixyz]|ec|id)$'
+  readability-identifier-length.MinimumBindingNameLength:      '3'
+  readability-identifier-length.IgnoredBindingNames:           '^([_i]|ec|id)$'
+  readability-identifier-length.MinimumParameterNameLength:    '3'
+  readability-identifier-length.IgnoredParameterNames:         '^([ntx]|ec|id|t[0-9])$'
+  readability-identifier-length.MinimumLoopCounterNameLength:  '2'
+  readability-identifier-length.IgnoredLoopCounterNames:       '^[_i]$'
+  readability-identifier-length.MinimumExceptionNameLength:    '3'
+  readability-identifier-length.IgnoredExceptionVariableNames: '^([e]|ex|se)$'
+  readability-identifier-length.LineCountThreshold:            '0'
+
   readability-identifier-naming.AggressiveDependentMemberLookup: 'true'
   readability-identifier-naming.CheckAnonFieldInParent:          'false'
   readability-identifier-naming.GetConfigPerFile:                'true'
@@ -421,7 +460,7 @@ CheckOptions:
   readability-magic-numbers.IgnorePowersOf2IntegerValues: 'false'
   readability-magic-numbers.IgnoreTypeAliases:            'false'
   readability-magic-numbers.IgnoreUserDefinedLiterals:    'false'
-  readability-magic-numbers.IgnoredFloatingPointValues:   '1.0;100.0;'
+  readability-magic-numbers.IgnoredFloatingPointValues:   '0.0;1.0;100.0;'
   readability-magic-numbers.IgnoredIntegerValues:         '-1;0;1;2;3;4;'
   
   readability-named-parameter.InsertPlainNamesInForwardDecls: 'false'

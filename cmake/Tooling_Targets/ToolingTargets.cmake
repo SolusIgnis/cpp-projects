@@ -24,33 +24,25 @@ add_custom_target(format-check
 
 # Target to run clang-tidy if we're using clang as our compiler.
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  add_custom_target(tidy-check
-    COMMAND clang-tidy
-      --allow-no-checks --use-color -p ${CMAKE_BINARY_DIR} ${ALL_TOOLING_SOURCES}
-    COMMENT "Checking code with clang-tidy"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  )
-  
-  add_custom_target(tidy-fix
-    COMMAND clang-tidy
-      --allow-no-checks -fix --use-color -p ${CMAKE_BINARY_DIR} ${ALL_TOOLING_SOURCES}
-    COMMENT "Checking code with clang-tidy in \"fix\" mode"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  )
-  
   if(NOT DEFINED TIDY_JOBS)
     set(TIDY_JOBS 0) # 0 means use all available cores for run-clang-tidy
   endif()
   
-  add_custom_target(tidy-check-fast
-    COMMAND run-clang-tidy -use-color -p ${CMAKE_BINARY_DIR} -j${TIDY_JOBS} -allow-no-checks
+  if(NOT DEFINED TIDY_SOURCE_FILTER_REGEX)
+    get_tidy_source_filter(TIDY_SOURCE_FILTER_REGEX)
+  endif()  
+
+  add_custom_target(tidy-check
+    COMMAND run-clang-tidy -use-color -p ${CMAKE_BINARY_DIR} -j${TIDY_JOBS} -source-filter "${TIDY_SOURCE_FILTER_REGEX}" -allow-no-checks
     COMMENT "Checking code with clang-tidy (parallelized by run-clang-tidy script)"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    VERBATIM
   )
   
-  add_custom_target(tidy-fix-fast
-    COMMAND run-clang-tidy -fix -use-color -p ${CMAKE_BINARY_DIR} -j${TIDY_JOBS} -allow-no-checks
+  add_custom_target(tidy-fix
+    COMMAND run-clang-tidy -fix -use-color -p ${CMAKE_BINARY_DIR} -j${TIDY_JOBS} -source-filter "${TIDY_SOURCE_FILTER_REGEX}" -allow-no-checks
     COMMENT "Checking code with clang-tidy in \"fix\" mode (parallelized by run-clang-tidy script)"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    VERBATIM
   )
 endif()

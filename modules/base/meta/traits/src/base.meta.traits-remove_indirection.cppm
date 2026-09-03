@@ -102,11 +102,13 @@ namespace base::meta::traits::inline transformation {
 
     ///@internal Array Specializations
     template<typename T, std::size_t N>
+    //NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): This type trait removes array extents.
     struct remove_indirection<T[N]> {
         using type = T;
     };
 
     template<typename T>
+    //NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays): This type trait removes array extents.
     struct remove_indirection<T[]> {
         using type = T;
     };
@@ -115,5 +117,5 @@ namespace base::meta::traits::inline transformation {
 export namespace base::meta::traits::inline transformation {
     ///@brief Alias for `remove_indirection<T>::type`.
     template<typename T>
-    using remove_indirection_t = typename remove_indirection<T>::type;
+    using remove_indirection_t = remove_indirection<T>::type;
 } //namespace base::meta::traits::inline transformation

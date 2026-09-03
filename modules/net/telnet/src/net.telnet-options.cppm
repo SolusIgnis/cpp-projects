@@ -34,6 +34,8 @@ import std; //NOLINT For std::string, std::vector, std::function, std::optional,
 export import :types;  ///< @see "net.telnet-types.cppm" for `byte_t`
 export import :errors; ///< @see "net.telnet-errors.cppm" for `error` enum
 
+using namespace std::literals;
+
 export namespace net::telnet {
     /**
      * @brief Class to encapsulate Telnet option data and negotiation logic.
@@ -62,10 +64,10 @@ export namespace net::telnet {
         using enable_predicate_type = std::function<bool(id_num /*id*/)>;
 
         ///@brief Constructs an `option` with the given ID and optional parameters.
-        //NOLINTNEXTLINE(google-explicit-constructor)
-        option(
+        //NOLINTNEXTLINE(misc-explicit-constructor)
+        explicit(false) option(
             id_num id,
-            std::string name                  = "",
+            std::string name                  = ""s,
             enable_predicate_type local_pred  = always_reject,
             enable_predicate_type remote_pred = always_reject,
             bool subneg_supported             = false,
@@ -101,13 +103,14 @@ export namespace net::telnet {
         [[nodiscard]] constexpr auto operator<=>(option::id_num other_id) const noexcept { return id_ <=> other_id; }
 
         ///@brief Implicitly converts to `option::id_num`.
-        [[nodiscard]] operator id_num() const noexcept { return id_; } //NOLINT(google-explicit-constructor)
+        //NOLINTNEXTLINE(misc-explicit-constructor)
+        [[nodiscard]] constexpr explicit(false) operator id_num() const noexcept { return id_; }
 
         ///@brief Gets the Telnet `option::id_num`.
-        [[nodiscard]] id_num get_id() const noexcept { return id_; }
+        [[nodiscard]] constexpr id_num get_id() const noexcept { return id_; }
 
         ///@brief Gets the `option` name.
-        [[nodiscard]] const std::string& get_name() const noexcept { return name_; }
+        [[nodiscard]] constexpr const std::string& get_name() const noexcept { return name_; }
 
         ///@brief Evaluates the local predicate to determine if the `option` can be enabled locally.
         [[nodiscard]] bool supports_local() const { return local_predicate_(id_); }
@@ -122,16 +125,16 @@ export namespace net::telnet {
         }
 
         ///@brief Gets the maximum subnegotiation buffer size.
-        [[nodiscard]] std::size_t max_subnegotiation_size() const noexcept { return max_subneg_size_; }
+        [[nodiscard]] constexpr std::size_t max_subnegotiation_size() const noexcept { return max_subneg_size_; }
 
         ///@brief Checks if the `option` supports subnegotiation.
-        [[nodiscard]] bool supports_subnegotiation() const noexcept { return supports_subnegotiation_; }
+        [[nodiscard]] constexpr bool supports_subnegotiation() const noexcept { return supports_subnegotiation_; }
 
         ///@brief Predicate that always accepts the `option`.
-        [[nodiscard]] static bool always_accept(id_num /*unused*/) noexcept { return true; }
+        [[nodiscard]] static constexpr bool always_accept(id_num /*unused*/) noexcept { return true; }
 
         ///@brief Predicate that always rejects the `option`.
-        [[nodiscard]] static bool always_reject(id_num /*unused*/) noexcept { return false; }
+        [[nodiscard]] static constexpr bool always_reject(id_num /*unused*/) noexcept { return false; }
 
     private:
         static constexpr std::size_t max_subnegotiation_buffer_size = 1024;
@@ -327,7 +330,7 @@ export namespace net::telnet {
         atcp                               = 0xC8, ///< Achaea Telnet Communication Protocol
         gmcp                               = 0xC9, ///< Generic MUD Communication Protocol (aka ATCP2)
         /* Range 0xCA-0xFE Unused per IANA */        
-        extended_options_list              = 0xFF  ///< Extended-Options-List (@see RFC 861)
+        extended_options_list              = 0xFF,  ///< Extended-Options-List (@see RFC 861)
         // clang-format on
     }; //enum class option::id_num
 
@@ -372,8 +375,8 @@ export namespace net::telnet {
         std::optional<option> get(option::id_num opt_id) const noexcept
         {
             const std::shared_lock<std::shared_mutex> lock(mutex_);
-            auto iter = registry_.find(opt_id);
-            if (iter != registry_.end()) {
+
+            if (const auto iter = registry_.find(opt_id); iter != registry_.end()) {
                 return *iter;
             } else {
                 return std::nullopt;
@@ -384,19 +387,19 @@ export namespace net::telnet {
         [[nodiscard]] bool has(option::id_num opt_id) const noexcept
         {
             const std::shared_lock<std::shared_mutex> lock(mutex_);
-            return (registry_.find(opt_id) != registry_.end());
+            return registry_.contains(opt_id);
         } //has(option::id_num)
 
         ///@brief Inserts or updates an `option` in the registry.
         const option& upsert(const option& opt)
         {
             const std::lock_guard<std::shared_mutex> lock(mutex_);
-            auto [add_result, success] = registry_.insert(opt);
+            const auto [add_result, success] = registry_.insert(opt);
             if (success) {
                 return *add_result;
             } else {
                 //Use iterator from erase as hint to insert new option at same position, optimizing insertion to O(1)
-                auto replace_result = registry_.insert(registry_.erase(add_result), opt);
+                const auto replace_result = registry_.insert(registry_.erase(add_result), opt);
                 return *replace_result;
             }
         } //upsert(const option&)

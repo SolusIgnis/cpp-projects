@@ -65,7 +65,7 @@ namespace base::meta::traits::inline transformation {
     ///@internal Recursive worker: Peels one layer and continues if the type changed.
     template<typename T, typename Result = remove_indirection_t<T>>
     struct remove_all_indirections {
-        using type = typename remove_all_indirections<Result>::type;
+        using type = remove_all_indirections<Result>::type;
     };
 
     ///@internal Base case: The type did not change after a peel attempt.
@@ -93,5 +93,5 @@ export namespace base::meta::traits::inline transformation {
      * @endcode
      */
     template<typename T>
-    using remove_all_indirections_t = typename remove_all_indirections<T>::type;
+    using remove_all_indirections_t = remove_all_indirections<T>::type;
 } //namespace base::meta::traits::inline transformation

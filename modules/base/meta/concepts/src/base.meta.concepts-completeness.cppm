@@ -31,32 +31,32 @@ import base.meta.traits;
 
 export namespace base::meta::concepts {
     /**
-     * @brief `CompleteType`: Determines whether a type is complete.
+     * @brief `complete_type`: Determines whether a type is complete.
      *
      * @tparam T The type to check for completeness.
      *
      * @details This concept is satisfied if the expression `sizeof(T)` is well-formed.
      */
     template<typename T>
-    concept CompleteType = requires { sizeof(T); };
+    concept complete_type = requires { sizeof(T); };
 
     /**
-     * @brief `CompletePointee`: Determines whether a type is complete for the purpose of dereferencing a pointer to it.
+     * @brief `complete_pointee`: Determines whether a type is complete for the purpose of dereferencing a pointer to it.
      *
      * @tparam T The type to check.
      *
      * @details This concept is satisfied if the type is both an object and a complete type.
      */
     template<typename T>
-    concept CompletePointee = std::is_object_v<T> && CompleteType<T>;
+    concept complete_pointee = std::is_object_v<T> && complete_type<T>;
 
     /**
-     * @brief `CompleteClassType`: Determines whether a type is a complete C++ Standard class type.
+     * @brief `complete_class_type`: Determines whether a type is a complete C++ Standard class type.
      *
      * @tparam T The type to check.
      *
      * @details This concept is satisfied if the type is both a "class type" (i.e., `struct`/`class` or `union`) and a complete pointee.
      */
     template<typename T>
-    concept CompleteClassType = base::meta::traits::is_class_type_v<T> && CompletePointee<T>;
+    concept complete_class_type = base::meta::traits::is_class_type_v<T> && complete_pointee<T>;
 } //namespace base::meta::concepts

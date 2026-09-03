@@ -198,7 +198,7 @@ namespace net::telnet {
             return {
                 std::error_code{},
                 negotiation_response_type{direction, false, opt},
-                std::move(awaitable)
+                std::move(awaitable),
             };
         }
         protocol_config_type::log_error(
@@ -505,7 +505,8 @@ namespace net::telnet {
                             //WILL/DO in WANTYES with EMPTY queue bit: complete negotiation.
                             current_status.enable(direction);
                             response = std::tuple{
-                                option_handler_registry_.handle_enablement(*current_option_, direction), std::nullopt
+                                option_handler_registry_.handle_enablement(*current_option_, direction),
+                                std::nullopt,
                             };
                         }
                     } else if (current_status.pending_disable(direction)) {
@@ -515,7 +516,8 @@ namespace net::telnet {
                             current_status.dequeue(direction);
                             current_status.enable(direction);
                             response = std::tuple{
-                                option_handler_registry_.handle_enablement(*current_option_, direction), std::nullopt
+                                option_handler_registry_.handle_enablement(*current_option_, direction),
+                                std::nullopt,
                             };
                         } else {
                             //WANTNO with EMPTY queue bit. Invalid Negotiation.
@@ -534,7 +536,7 @@ namespace net::telnet {
                         current_status.enable(direction);
                         response = std::tuple{
                             option_handler_registry_.handle_enablement(*current_option_, direction),
-                            negotiation_response_type{direction, true, *current_option_}
+                            negotiation_response_type{direction, true, *current_option_},
                         };
                     } else {
                         //Unsupported option
@@ -567,7 +569,7 @@ namespace net::telnet {
                         current_status.disable(direction);
                         response = std::tuple{
                             option_handler_registry_.handle_disablement(*current_option_, direction),
-                            negotiation_response_type{direction, false, *current_option_}
+                            negotiation_response_type{direction, false, *current_option_},
                         };
                     }
                 }
@@ -629,7 +631,7 @@ namespace net::telnet {
                 telnet::command::sb,
                 *current_option_
             );
-        } else if (!current_option_->supports_subnegotiation() || !(option_status_[*current_option_].is_enabled())) {
+        } else if (!current_option_->supports_subnegotiation() || !option_status_[*current_option_].is_enabled()) {
             protocol_config_type::log_error(
                 make_error_code(error::invalid_subnegotiation),
                 "byte: 0x{:02x}, cmd: {}, opt: {}",
@@ -767,7 +769,7 @@ namespace net::telnet {
                 error::invalid_subnegotiation, "Invalid STATUS subnegotiation: no data between IAC SB STATUS and IAC SE"
             );
             co_return std::make_tuple(opt, std::vector<byte_t>{});
-        } else if (buffer[0] == subcommand_is) {
+        } else if (buffer.front() == subcommand_is) {
             if (option_status_[option::id_num::status].remote_enabled()) {
                 //Delegate processing of subcommand IS to user-provided handler.
                 co_return co_await option_handler_registry_.handle_subnegotiation(opt, std::move(buffer));
@@ -777,11 +779,11 @@ namespace net::telnet {
                 );
                 co_return std::make_tuple(opt, std::vector<byte_t>{});
             }
-        } else if (buffer[0] == subcommand_send) {
+        } else if (buffer.front() == subcommand_send) {
             if (option_status_[option::id_num::status].local_enabled()) {
                 std::vector<byte_t> payload = {subcommand_is}; //IS
                 for (std::size_t i = 0; i < option_status_db::max_option_count; ++i) {
-                    auto opt_id = static_cast<option::id_num>(i);
+                    const auto opt_id = static_cast<option::id_num>(i);
 
                     const auto& status = option_status_[opt_id];
                     if (status.local_enabled()) {
@@ -813,7 +815,7 @@ namespace net::telnet {
             protocol_config_type::log_error(
                 error::invalid_subnegotiation,
                 "Invalid STATUS subnegotiation: expected IS (0) or SEND (1); received {}",
-                buffer[0]
+                buffer.front()
             );
             co_return std::make_tuple(opt, std::vector<byte_t>{});
         }
