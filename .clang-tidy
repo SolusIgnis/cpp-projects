@@ -141,13 +141,6 @@ Checks:
   # This is noisy and doesn't play well with asio.
   - '-portability-template-virtual-member-function'
 
-  # Temporarily disabled while running -fix
-  #- '-readability-identifier-naming'
-  #- '-readability-convert-member-functions-to-static'
-  #- '-performance-unnecessary-value-param'
-  #- '-cppcoreguidelines-missing-std-forward'
-  #- '-misc-const-correctness'
-
 WarningsAsErrors: ''
 HeaderFileExtensions:
   - ''       # Catch-all for unnamed extensions, sometimes needed
