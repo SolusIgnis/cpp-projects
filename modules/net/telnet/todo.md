@@ -110,10 +110,12 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
   - **Estimated Effort**: 1 day
 
 09. [ ] **Implement Tagged Callables for telnet::option Local/Remote Enablement Predicates**:
-  - **Task**: Implement `tagged_callable` in `net.telnet:callables` partition with nested type aliases `telnet::option::local_predicate` and `telnet::option::remote_predicate`.
+  - **Task**: Implement `tagged` in `base.vocab.tagged` module with nested type aliases `telnet::option::local_predicate` and `telnet::option::remote_predicate`.
   - **Steps**:
-    - Define a class template `tagged_callable` to attach semantic tags to callables (functions, `std::function`s, etc.).
-    - Use tags for local and remote (declared in `telnet::callables::tags`) with `using` aliases (nested in `telnet::option`) to create distinct types for the local predicate and remote predicate.
+    - Define a class template `tagged` to attach semantic tags to arbitrary types.
+      - This is a general enough facility for a module under `base.vocab`.
+      - The `tagged` wrapper type should construct explicitly, destructively convert implicitly, and otherwise be non-copyable and non-movable. This creates a transient semantic boundary without requiring long-term storage of a value type.
+    - Use tags for local and remote (privately nested in `telnet::option`) with `using` aliases (publicly nested in `telnet::option`) to create distinct types for the local predicate and remote predicate.
     - Update constructor call sites to use the new types.
   - **Dependencies**: Affects `:options`, `:protocol_config`.
   - **Priority**: Medium (cleans up telnet::option constructor parameters)
