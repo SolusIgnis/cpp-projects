@@ -100,6 +100,15 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
   - **Priority**: Low (curiosity and minor redundancy reduction)
   - **Estimated Effort**: Completed in 15 minutes.
   
+- [✔️] **base.meta**:
+  - **Task**: Set up `base.meta.*`
+  - **Steps**:
+    - Move `remove_indirection_t` to `base::meta::traits::inline transformation`.
+    - Put `instantiatable_with` (from the `base.vocab.ptr:dependency_ptr` test suite) in `base.meta.concepts` (renamed `InstantiableWith`).
+  - **Dependencies**: None
+  - **Priority**: Medium (refactoring base components)
+  - **Estimated Effort**: 1 day
+
 09. [ ] **Implement Tagged Callables for telnet::option Local/Remote Enablement Predicates**:
   - **Task**: Implement `tagged_callable` in `net.telnet:callables` partition with nested type aliases `telnet::option::local_predicate` and `telnet::option::remote_predicate`.
   - **Steps**:
@@ -165,15 +174,6 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
   - **Estimated Effort**: 2–3 days (1 for evaluation, 1–1.5 for implementation, 0.5 for testing).
 
 ### Future Development Milestones
-- [✔️] **base.meta**:
-  - **Task**: Set up `base.meta.*`
-  - **Steps**:
-    - Move `remove_indirection_t` to `base::meta::traits::inline transformation`.
-    - Put `instantiatable_with` (from the `base.vocab.ptr:dependency_ptr` test suite) in `base.meta.concepts` (renamed `InstantiableWith`).
-  - **Dependencies**: None
-  - **Priority**: Medium (refactoring base components)
-  - **Estimated Effort**: 1 day
-
 - [ ] **Module Export Cleanup**:
   - **Task**: Ensure internal types (e.g., `OptionHandlerRegistry`, `ProtocolFSM`) are not exported.
   - **Steps**:
