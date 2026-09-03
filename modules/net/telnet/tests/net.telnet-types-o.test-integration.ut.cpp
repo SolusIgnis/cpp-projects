@@ -50,7 +50,7 @@ namespace {
         "unknown command formats as UNKNOWN in name mode"_test = [] mutable {
             constexpr auto invalid_command_num{0x0A};
             //NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
-            const auto unknown = static_cast<command>(invalid_command_num);
+            const auto unknown   = static_cast<command>(invalid_command_num);
             const auto formatted = std::format("{:n}", unknown);
             expect(eq(formatted, std::string{"UNKNOWN"}));
         };
