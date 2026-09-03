@@ -37,8 +37,8 @@
  * ├── :access
  * ​│    ├── size_v ✔️
  * ​│    ├── empty_v ✔️
- * ​│    ├── EmptySequence ✔️
- * ​│    ├── NonEmptySequence ✔️
+ * ​│    ├── empty_sequence ✔️
+ * ​│    ├── non_empty_sequence ✔️
  * ​│    ├── front_t ✔️
  * ​│    ├── front_v ✔️
 ​​ * │    ├── find_type_if_t ✔️

@@ -176,13 +176,13 @@ export namespace net::asio_concepts {
                };
 
         /**
-         * @concept asio_addressible_socket_option
+         * @concept asio_addressable_socket_option
          * @brief Concept for types modeling address-constructed socket options.
          * @tparam T The type to check.
          * @see `asio::ip::multicast::join_group`
          */
         template<typename T>
-        concept asio_addressible_socket_option = std::default_initializable<T> && std::constructible_from<T, asio::ip::address>;
+        concept asio_addressable_socket_option = std::default_initializable<T> && std::constructible_from<T, asio::ip::address>;
 
         /**
          * @concept socket_option
@@ -192,7 +192,7 @@ export namespace net::asio_concepts {
          */
         template<typename T>
         concept socket_option = boolean_socket_option<T> || integral_socket_option<T> || composite_socket_option<T>
-                             || asio_addressible_socket_option<T>;
+                             || asio_addressable_socket_option<T>;
 
         /**
          * @concept socket_option_provider

@@ -39,19 +39,19 @@ using namespace net::asio_concepts; //NOLINT(google-build-using-namespace)
 // Minimal dummy types for negative testing
 // ─────────────────────────────────────────────────────────────────────────────
 
-struct NotABufferSequence {};
+struct not_a_buffer_sequence {};
 
-struct NotACompletionToken {};
+struct not_a_completion_token {};
 
-struct Badsocket_option {
+struct bad_socket_option {
     int value() const { return 42; } // deliberately wrong for most option concepts
 };
 
-struct NoExecutorType {
+struct no_executor_type {
     // missing get_executor()
 };
 
-struct FakeWaitableNoWait {
+struct fake_waitable_no_wait {
     // missing wait() / async_wait()
 };
 
@@ -69,8 +69,8 @@ TEST_CASE("buffers", "[concepts][buffers]")
     CONCEPT_CHECK(asio_const_buffer_sequence<asio::const_buffer>);
     CONCEPT_CHECK(asio_const_buffer_sequence<std::span<const asio::const_buffer>>);
 
-    CHECK_FALSE(asio_mutable_buffer_sequence<NotABufferSequence>);
-    CHECK_FALSE(asio_const_buffer_sequence<NotABufferSequence>);
+    CHECK_FALSE(asio_mutable_buffer_sequence<not_a_buffer_sequence>);
+    CHECK_FALSE(asio_const_buffer_sequence<not_a_buffer_sequence>);
 }
 
 TEST_CASE("tokens", "[concepts][tokens]")
@@ -82,7 +82,7 @@ TEST_CASE("tokens", "[concepts][tokens]")
     CONCEPT_CHECK(asio_write_token<decltype(asio::use_awaitable)>);
     CONCEPT_CHECK(asio_connect_token<decltype(asio::detached)>);
 
-    CHECK_FALSE(asio_read_token<NotACompletionToken>);
+    CHECK_FALSE(asio_read_token<not_a_completion_token>);
 }
 
 TEST_CASE("socket_options", "[concepts][socket_options]")
@@ -106,7 +106,7 @@ TEST_CASE("socket_options", "[concepts][socket_options]")
     CONCEPT_CHECK(socket_option_getter<tcp_socket>);
     CONCEPT_CHECK(socket_option_setter<tcp_socket>);
 
-    CHECK_FALSE(boolean_socket_option<Badsocket_option>);
+    CHECK_FALSE(boolean_socket_option<bad_socket_option>);
 }
 
 TEST_CASE("io_flags_executor", "[concepts][io][flags][executor]")
@@ -118,7 +118,7 @@ TEST_CASE("io_flags_executor", "[concepts][io][flags][executor]")
     CONCEPT_CHECK(asio_executor_provider<tcp_socket>);
     CONCEPT_CHECK(asio_executor_associated<tcp_socket>);
 
-    CHECK_FALSE(asio_executor_associated<NoExecutorType>);
+    CHECK_FALSE(asio_executor_associated<no_executor_type>);
 }
 
 TEST_CASE("streams", "[concepts][streams]")
@@ -132,7 +132,7 @@ TEST_CASE("streams", "[concepts][streams]")
 
     CONCEPT_CHECK(asio_stream<tcp_socket>);
 
-    CHECK_FALSE(asio_async_read_stream<NoExecutorType>);
+    CHECK_FALSE(asio_async_read_stream<no_executor_type>);
 }
 
 TEST_CASE("waitables", "[concepts][waitables]")
@@ -146,7 +146,7 @@ TEST_CASE("waitables", "[concepts][waitables]")
     CONCEPT_CHECK(asio_async_activity_waitable<tcp_socket>);
     CONCEPT_CHECK(asio_sync_activity_waitable<tcp_socket>);
 
-    CHECK_FALSE(asio_async_timed_waitable<FakeWaitableNoWait>);
+    CHECK_FALSE(asio_async_timed_waitable<fake_waitable_no_wait>);
 }
 
 TEST_CASE("transmission", "[concepts][transmission]")
@@ -210,6 +210,6 @@ TEST_CASE("umbrella concepts", "[concepts][umbrella]")
     CONCEPT_CHECK(asio_layerable_stream_socket<ssl_stream>);
 #endif
 
-    CHECK_FALSE(asio_socket<NotABufferSequence>);
-    CHECK_FALSE(asio_stream_socket<Badsocket_option>);
+    CHECK_FALSE(asio_socket<not_a_buffer_sequence>);
+    CHECK_FALSE(asio_stream_socket<bad_socket_option>);
 }
