@@ -95,7 +95,7 @@ TEST_CASE("socket_options", "[concepts][socket_options]")
     CONCEPT_CHECK(boolean_socket_option<broadcast>);
     CONCEPT_CHECK(composite_socket_option<linger>);
     CONCEPT_CHECK(integral_socket_option<recv_buf>);
-    CONCEPT_CHECK(asio_addressible_socket_option<join_group>);
+    CONCEPT_CHECK(asio_addressable_socket_option<join_group>);
 
     CONCEPT_CHECK(socket_option<broadcast>);
     CONCEPT_CHECK(socket_option<linger>);
