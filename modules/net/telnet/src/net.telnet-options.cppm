@@ -55,21 +55,44 @@ export namespace net::telnet {
         enum class id_num : byte_t;
 
         /**
-         * @typedef enable_predicate_type
-         * @brief Function type for predicates determining local or remote option support.
+         * @typedef local_predicate_type
+         * @brief Function type for predicates determining local option support.
          *
          * @param id The `option::id_num` to evaluate.
          * @return True if the option is supported, false otherwise.
          */
-        using enable_predicate_type = std::function<bool(id_num /*id*/)>;
+        using local_predicate_type = std::function<bool(id_num /*id*/)>;
+        
+        /**
+         * @typedef remote_predicate_type
+         * @brief Function type for predicates determining remote option support.
+         *
+         * @param id The `option::id_num` to evaluate.
+         * @return True if the option is supported, false otherwise.
+         */
+        using remote_predicate_type = std::function<bool(id_num /*id*/)>;
 
+    private:
+        static constexpr std::size_t max_subnegotiation_buffer_size = 1024;
+
+        id_num id_;
+        std::string name_;
+
+        local_predicate_type local_predicate_;
+        remote_predicate_type remote_predicate_;
+
+        bool supports_subnegotiation_;
+
+        std::size_t max_subneg_size_;
+
+    public:
         ///@brief Constructs an `option` with the given ID and optional parameters.
         //NOLINTNEXTLINE(misc-explicit-constructor)
         explicit(false) option(
             id_num id,
             std::string name                  = ""s,
-            enable_predicate_type local_pred  = always_reject,
-            enable_predicate_type remote_pred = always_reject,
+            local_predicate_type local_pred   = always_reject,
+            remote_predicate_type remote_pred = always_reject,
             bool subneg_supported             = false,
             std::size_t max_subneg_size       = max_subnegotiation_buffer_size
         )
@@ -91,8 +114,8 @@ export namespace net::telnet {
             std::size_t max_subneg_size = max_subnegotiation_buffer_size
         )
         {
-            enable_predicate_type local_pred  = local_supported ? always_accept : always_reject;
-            enable_predicate_type remote_pred = remote_supported ? always_accept : always_reject;
+            local_predicate_type local_pred  = local_supported ? always_accept : always_reject;
+            remote_predicate_type remote_pred = remote_supported ? always_accept : always_reject;
             return {id, std::move(name), std::move(local_pred), std::move(remote_pred), subneg_supported, max_subneg_size};
         }
 
@@ -135,19 +158,6 @@ export namespace net::telnet {
 
         ///@brief Predicate that always rejects the `option`.
         [[nodiscard]] static constexpr bool always_reject(id_num /*unused*/) noexcept { return false; }
-
-    private:
-        static constexpr std::size_t max_subnegotiation_buffer_size = 1024;
-
-        id_num id_;
-        std::string name_;
-
-        enable_predicate_type local_predicate_;
-        enable_predicate_type remote_predicate_;
-
-        bool supports_subnegotiation_;
-
-        std::size_t max_subneg_size_;
     }; //class option
 
     /**
