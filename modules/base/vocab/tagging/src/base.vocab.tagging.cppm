@@ -36,17 +36,21 @@ export namespace base::vocab::inline tagging {
      * @tparam T The underlying value type being tagged. Must satisfy `std::move_constructible`.
      *
      * @details
-     * `tagged_boundary` is a single-use prvalue wrapper designed to enforce site-of-call
-     * type safety across function parameter boundaries without persisting wrapper overhead.
-     * It constructs an underlying value of type `T` in-place and converts destructively to
-     * `T` via rvalue conversion (`operator T() &&`).
+     * `tagged_boundary` is a single-use wrapper intended to be constructed as a prvalue at
+     * an interface boundary and immediately consumed by conversion to its underlying `T`.
+     * It provides a semantic discriminator between otherwise equivalent parameter types
+     * without requiring the distinction to persist after the boundary is crossed.
      *
      * ## Transient Semantics
      * `tagged_boundary` explicitly deletes all copy and move special member functions.
-     * It cannot be stored as a class member, held in a local variable for reuse, or
-     * passed around beyond its immediate call-site expression. Guaranteed copy elision
+     * It is not designed to be stored as a class member, held in a local variable for reuse,
+     * or passed around beyond its immediate call-site expression. Guaranteed copy elision
      * ensures that passing a prvalue `tagged_boundary` to a function parameter constructs
-     * the wrapper directly in the parameter's storage.
+     * the wrapper directly in the parameter's storage. The destructive rvalue conversion
+     * requirement (i.e. `operator T() &&`) ensures that the wrapper is consumed by the act
+     * of extracting the wrapped value.
+     *
+     * @note If `T` is a reference type, `tagged_boundary` conveys the reference rather than the referenced object across the boundary.
      *
      * @example @parblock
      * ## Example Usage
@@ -60,20 +64,20 @@ export namespace base::vocab::inline tagging {
      *     using remote_predicate = base::vocab::tagged_boundary<remote_tag, enable_predicate_type>;
      *
      * private:
-     *     local_predicate local_pred_;
-     *     remote_predicate remote_pred_;
+     *     enable_predicate_type local_pred_;
+     *     enable_predicate_type remote_pred_;
      *
      * public:
      *     explicit option_enablement_predicates(
-     *         local_predicate local_pred   = local_predicate{always_reject},
-     *         remote_predicate remote_pred = remote_predicate{always_reject}
+     *         local_predicate local_pred,
+     *         remote_predicate remote_pred
      *     ) : local_pred_(std::move(local_pred)),
      *         remote_pred_(std::move(remote_pred)) {}
      * };
      *
      * // Call site prevents accidental parameter swapping:
      * option_enablement_predicates predicates(
-     *     option_enablement_predicates::local_predicate{my_local_fn},
+     *     option_enablement_predicates::local_predicate{[]{ return false; }},
      *     option_enablement_predicates::remote_predicate{my_remote_fn}
      * );
      * @endcode @endparblock
