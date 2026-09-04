@@ -28,7 +28,7 @@ export module base.vocab.tagging;
 
 import std;
 
-export namespace base::vocab::inline tagging{
+export namespace base::vocab::inline tagging {
     /**
      * @brief Applies a transient semantic tag across an interface boundary.
      *
@@ -81,25 +81,31 @@ export namespace base::vocab::inline tagging{
     template<typename Tag, std::move_constructible T>
     class tagged_boundary {
         T value_;
+
     public:
         ///@brief Constructs the underlying value @p T in-place.
         template<typename... Args>
-            requires (sizeof...(Args) != 1 || (!std::same_as<std::remove_cvref_t<Args>, tagged_boundary> && ...)) && std::constructible_from<T, Args...>
+            requires (sizeof...(Args) != 1 || (!std::same_as<std::remove_cvref_t<Args>, tagged_boundary> && ...))
+                  && std::constructible_from<T, Args...>
         constexpr explicit tagged_boundary(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>)
-        : value_(std::forward<Args>(args)...) {}
+            : value_(std::forward<Args>(args)...)
+        {}
 
         ///@brief Default destructor.
         ~tagged_boundary() = default;
 
         ///@brief Destructively extracts the underlying `T` value.
         [[nodiscard]] constexpr explicit(false) operator T() && noexcept(std::is_nothrow_move_constructible_v<T>)
-        { return std::move(value_); }
+        {
+            return std::move(value_);
+        }
 
         tagged_boundary(const tagged_boundary&)            = delete;
         tagged_boundary& operator=(const tagged_boundary&) = delete;
         tagged_boundary(tagged_boundary&&)                 = delete;
         tagged_boundary& operator=(tagged_boundary&&)      = delete;
     }; //class tagged_boundary
+
     /**
      * @fn constexpr explicit tagged_boundary::tagged_boundary(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args...>)
      *
