@@ -16,6 +16,9 @@ trace_me()
 # Add the `base.vocab.ptr` module
 add_subdirectory("ptr")
 
+# Add the `base.vocab.tagged` module
+add_subdirectory("tagging")
+
 # ===========================================================================
 # Add generated metamodule from submodules registered above.
 # ===========================================================================
