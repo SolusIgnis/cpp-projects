@@ -47,6 +47,9 @@ export namespace net::telnet {
      * @todo Future Development: Use C++26 reflection to populate option names automatically.
      */
     class option {
+        struct local_tag;
+        struct remote_tag;
+
     public:
         /**
          * @details Nested enumeration of Telnet option IDs as defined in the IANA Telnet Option Registry and MUD-specific extensions.
@@ -168,7 +171,7 @@ export namespace net::telnet {
     }; //class option
 
     /**
-     * @fn explicit option::option(id_num id, std::string name, enable_predicate_type local_pred, enable_predicate_type remote_pred, bool subneg_supported, std::size_t max_subneg_size)
+     * @fn explicit option::option(id_num id, std::string name, local_predicate_type local_pred, remote_predicate_type remote_pred, bool subneg_supported, std::size_t max_subneg_size)
      *
      * @param id The Telnet `option::id_num`.
      * @param name The option name (default empty; populated in C++26? with reflection).
