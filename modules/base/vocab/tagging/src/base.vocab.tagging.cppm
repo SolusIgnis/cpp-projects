@@ -21,6 +21,50 @@
  * limitations under the License. @endparblock
  *
  * @brief Primary module interface for generic semantic tagging.
+ *
+ * @details The `base.vocab.tagging` module provides vocabulary types for applying
+ * compile-time semantic markers (type tags) to underlying C++ types.
+ *
+ * `tagged_boundary` provides a transient wrapper for enforcing type safety across
+ * function interface boundaries. It is typically instantiated by a type alias to
+ * distinguish parameters that share an underlying type. For instance, a function
+ * taking multiple `std::function` callables with identical signatures can wrap
+ * each parameter in a `tagged_boundary` specialized with different tags to improve
+ * the type safety of the interface. Since the type distinction is not required
+ * inside the function, it can employ the "pass by value and move" idiom to unwrap
+ * the underlying `std::function` automatically.
+ *
+ * @example @parblock
+ * ## Example Usage
+ * @code
+ * class option_enablement_predicates {
+ *     struct local_tag {};
+ *     struct remote_tag {};
+ *
+ * public:
+ *     using local_predicate  = base::vocab::tagged_boundary<local_tag, enable_predicate_type>;
+ *     using remote_predicate = base::vocab::tagged_boundary<remote_tag, enable_predicate_type>;
+ *
+ * private:
+ *     enable_predicate_type local_pred_;
+ *     enable_predicate_type remote_pred_;
+ *
+ * public:
+ *     explicit option_enablement_predicates(
+ *         local_predicate local_pred,
+ *         remote_predicate remote_pred
+ *     ) : local_pred_(std::move(local_pred)),
+ *         remote_pred_(std::move(remote_pred)) {}
+ * };
+ *
+ * // Call site prevents accidental parameter swapping:
+ * option_enablement_predicates predicates(
+ *     option_enablement_predicates::local_predicate{[]{ return false; }},
+ *     option_enablement_predicates::remote_predicate{my_remote_fn}
+ * );
+ * @endcode @endparblock
+ *
+ * @todo Future Development: Use `= delete("reason")` instead of the C-style comments once the C++26 feature becomes available.
  */
 
 //Primary module interface unit
@@ -35,11 +79,11 @@ export namespace base::vocab::inline tagging {
      * @tparam Tag The semantic tag type.
      * @tparam T The underlying value type being tagged. Must satisfy `std::move_constructible`.
      *
-     * @details
-     * `tagged_boundary` is a single-use wrapper intended to be constructed as a prvalue at
-     * an interface boundary and immediately consumed by conversion to its underlying `T`.
-     * It provides a semantic discriminator between otherwise equivalent parameter types
-     * without requiring the distinction to persist after the boundary is crossed.
+     * @details `tagged_boundary` is a single-use wrapper intended to be constructed as a
+     * prvalue at an interface boundary and immediately consumed by conversion to its
+     * underlying type. It provides a semantic discriminator between otherwise equivalent
+     * parameter types without requiring the distinction to persist after the boundary is
+     * crossed.
      *
      * ## Transient Semantics
      * `tagged_boundary` explicitly deletes all copy and move special member functions.
@@ -51,36 +95,6 @@ export namespace base::vocab::inline tagging {
      * of extracting the wrapped value.
      *
      * @note If `T` is a reference type, `tagged_boundary` conveys the reference rather than the referenced object across the boundary.
-     *
-     * @example @parblock
-     * ## Example Usage
-     * @code
-     * class option_enablement_predicates {
-     *     struct local_tag {};
-     *     struct remote_tag {};
-     *
-     * public:
-     *     using local_predicate  = base::vocab::tagged_boundary<local_tag, enable_predicate_type>;
-     *     using remote_predicate = base::vocab::tagged_boundary<remote_tag, enable_predicate_type>;
-     *
-     * private:
-     *     enable_predicate_type local_pred_;
-     *     enable_predicate_type remote_pred_;
-     *
-     * public:
-     *     explicit option_enablement_predicates(
-     *         local_predicate local_pred,
-     *         remote_predicate remote_pred
-     *     ) : local_pred_(std::move(local_pred)),
-     *         remote_pred_(std::move(remote_pred)) {}
-     * };
-     *
-     * // Call site prevents accidental parameter swapping:
-     * option_enablement_predicates predicates(
-     *     option_enablement_predicates::local_predicate{[]{ return false; }},
-     *     option_enablement_predicates::remote_predicate{my_remote_fn}
-     * );
-     * @endcode @endparblock
      */
     template<typename Tag, std::move_constructible T>
     class tagged_boundary {
@@ -104,10 +118,10 @@ export namespace base::vocab::inline tagging {
             return std::move(value_);
         }
 
-        tagged_boundary(const tagged_boundary&)            = delete;
-        tagged_boundary& operator=(const tagged_boundary&) = delete;
-        tagged_boundary(tagged_boundary&&)                 = delete;
-        tagged_boundary& operator=(tagged_boundary&&)      = delete;
+        tagged_boundary(const tagged_boundary&)            = delete/*("Copy construction deleted to ensure noncopyable transient objects.")*/;
+        tagged_boundary& operator=(const tagged_boundary&) = delete/*("Copy assignment deleted to ensure noncopyable transient objects.")*/;
+        tagged_boundary(tagged_boundary&&)                 = delete/*("Move construction deleted to ensure immovable transient objects.")*/;
+        tagged_boundary& operator=(tagged_boundary&&)      = delete/*("Move assignment deleted to ensure immovable transient objects.")*/;
     }; //class tagged_boundary
 
     /**
@@ -123,22 +137,22 @@ export namespace base::vocab::inline tagging {
     /**
      * @overload tagged_boundary::tagged_boundary(const tagged_boundary&) = delete
      *
-     * @brief Deleted copy constructor to ensure immovable objects.
+     * @brief Deleted copy constructor to ensure noncopyable transient objects.
      */
     /**
      * @overload tagged_boundary::tagged_boundary(tagged_boundary&&) = delete
      *
-     * @brief Deleted move constructor to ensure immovable objects.
+     * @brief Deleted move constructor to ensure immovable transient objects.
      */
     /**
      * @fn tagged_boundary& tagged_boundary::operator=(const tagged_boundary&) = delete
      *
-     * @brief Deleted copy assignment to ensure immovable objects.
+     * @brief Deleted copy assignment to ensure noncopyable transient objects.
      */
     /**
      * @overload tagged_boundary& tagged_boundary::operator=(tagged_boundary&&) = delete
      *
-     * @brief Deleted move assignment to ensure immovable objects.
+     * @brief Deleted move assignment to ensure immovable transient objects.
      */
     /**
      * @fn constexpr explicit(false) tagged_boundary::operator T() && noexcept(std::is_nothrow_move_constructible_v<T>)
@@ -147,5 +161,7 @@ export namespace base::vocab::inline tagging {
      *
      * @return The underlying value `T` moved out of the boundary wrapper.
      * @throw Anything thrown by `T`'s move constructor.
+     *
+     * @note If `T` is a reference type, the reference rather than the referenced value is returned.
      */
 } //namespace base::vocab::inline tagging
