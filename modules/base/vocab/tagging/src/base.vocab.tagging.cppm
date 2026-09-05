@@ -32,7 +32,7 @@
  * each parameter in a `tagged_boundary` specialized with different tags to improve
  * the type safety of the interface. Since the type distinction is not required
  * inside the function, it can employ the "pass by value and move" idiom to unwrap
- * the underlying `std::function` automatically.
+ * the underlying values automatically.
  *
  * @example @parblock
  * ## Example Usage
@@ -98,10 +98,10 @@ export namespace base::vocab::inline tagging {
      */
     template<typename Tag, std::move_constructible T>
     class tagged_boundary {
-        T value_;
+        T value_; ///< The wrapped value
 
     public:
-        ///@brief Constructs the underlying value @p T in-place.
+        ///@brief Constructs the underlying value T in-place.
         template<typename... Args>
             requires (sizeof...(Args) != 1 || (!std::same_as<std::remove_cvref_t<Args>, tagged_boundary> && ...))
                   && std::constructible_from<T, Args...>
@@ -118,13 +118,21 @@ export namespace base::vocab::inline tagging {
             return std::move(value_);
         }
 
-        tagged_boundary(const tagged_boundary&) =
-            delete /*("Copy construction deleted to ensure noncopyable transient objects.")*/;
-        tagged_boundary&
-            operator=(const tagged_boundary&) = delete /*("Copy assignment deleted to ensure noncopyable transient objects.")*/;
-        tagged_boundary(tagged_boundary&&)    = delete /*("Move construction deleted to ensure immovable transient objects.")*/;
-        tagged_boundary&
-            operator=(tagged_boundary&&) = delete /*("Move assignment deleted to ensure immovable transient objects.")*/;
+        ///@brief Deleted copy constructor to ensure noncopyable transient objects.
+        tagged_boundary(const tagged_boundary&)
+            = delete /*("Copy construction deleted to ensure noncopyable transient objects.")*/;
+
+        ///@brief Deleted copy assignment to ensure noncopyable transient objects.
+        tagged_boundary& operator=(const tagged_boundary&)
+            = delete /*("Copy assignment deleted to ensure noncopyable transient objects.")*/;
+
+        ///@brief Deleted move constructor to ensure immovable transient objects.
+        tagged_boundary(tagged_boundary&&)
+            = delete /*("Move construction deleted to ensure immovable transient objects.")*/;
+
+        ///@brief Deleted move assignment to ensure immovable transient objects.
+        tagged_boundary& operator=(tagged_boundary&&)
+            = delete /*("Move assignment deleted to ensure immovable transient objects.")*/;
     }; //class tagged_boundary
 
     /**
@@ -135,34 +143,14 @@ export namespace base::vocab::inline tagging {
      * @throw Anything thrown by `T`'s selected constructor.
      *
      * Forwards all arguments directly to the constructor of `T`.
-     * Constrained to prevent hijacking by copy/move operations or self-referential initialization.
-     */
-    /**
-     * @overload tagged_boundary::tagged_boundary(const tagged_boundary&) = delete
-     *
-     * @brief Deleted copy constructor to ensure noncopyable transient objects.
-     */
-    /**
-     * @overload tagged_boundary::tagged_boundary(tagged_boundary&&) = delete
-     *
-     * @brief Deleted move constructor to ensure immovable transient objects.
-     */
-    /**
-     * @fn tagged_boundary& tagged_boundary::operator=(const tagged_boundary&) = delete
-     *
-     * @brief Deleted copy assignment to ensure noncopyable transient objects.
-     */
-    /**
-     * @overload tagged_boundary& tagged_boundary::operator=(tagged_boundary&&) = delete
-     *
-     * @brief Deleted move assignment to ensure immovable transient objects.
+     * Constrained to prevent hijacking of copy/move operations or self-referential initialization.
      */
     /**
      * @fn constexpr explicit(false) tagged_boundary::operator T() && noexcept(std::is_nothrow_move_constructible_v<T>)
      *
-     * Implicitly converts an rvalue `tagged_boundary` into `T` via move construction.
+     * Implicitly converts an rvalue `tagged_boundary` into `T` via `std::move` of the underlying value.
      *
-     * @return The underlying value `T` moved out of the boundary wrapper.
+     * @return The underlying `T` value extracted from the boundary wrapper.
      * @throw Anything thrown by `T`'s move constructor.
      *
      * @note If `T` is a reference type, the reference rather than the referenced value is returned.
