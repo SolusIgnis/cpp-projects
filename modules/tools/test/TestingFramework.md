@@ -45,6 +45,9 @@ The framework does **not** allow passing a raw `bool` directly to the `expect` f
 
 ## 3. Common Testing Patterns
 
+### Runtime Expectation of Compile-time Properties
+`static_assert` should be reserved for establishing test/fixture invariants. A failed `static_assert` means a failed test build, so it should signal a problem **with the test**. To actually test a compile-time property, use a normal runtime `expect` so that a failure is reported in the normal testing flow and doesn't short-circuit subsequent tests which could produce helpful results.
+
 ### Scope-Based Lifecycle Testing
 Since `ut` tests are just lambdas, we use standard C++ block scopes `{ }` inside a test to trigger destructors. This is essential for verifying that coroutine frames are cleaned up correctly.
 
