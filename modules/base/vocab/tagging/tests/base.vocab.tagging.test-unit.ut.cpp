@@ -113,7 +113,7 @@ namespace {
             expect(eq(ptt.x, expected_x));
             expect(eq(ptt.y, expected_y));
         };
-    
+
         "noncopyability and immovability"_test = [] mutable {
             using bound_t = base::vocab::tagged_boundary<test_tag, std::int32_t>;
 
