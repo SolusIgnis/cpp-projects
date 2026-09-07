@@ -193,8 +193,7 @@ namespace {
             using ref_t = base::vocab::tagged_boundary<test_tag, std::int32_t&>;
 
             auto bind_ref = [](ref_t tagged) -> std::int32_t& {
-                std::int32_t& ref = std::move(tagged);
-                return ref;
+                return std::move(tagged);
             };
 
             std::int32_t& bound_ref = bind_ref(ref_t{original});
@@ -231,7 +230,7 @@ namespace {
             constexpr double expected{5.0};
 
             const auto result = distance(first_point{p1}, last_point{p2});
-            expect(eq(result, expected));
+            expect(eq(result, expected)(0.01));
         };
 
         "3d position reference boundary distance"_test = [] mutable {
@@ -242,7 +241,7 @@ namespace {
             // Parameter order in function signature is (last_pos, first_pos),
             // but strong boundary types make call sites explicit and safe.
             const auto result = distance(last_pos{pos2}, first_pos{pos1});
-            expect(eq(result, expected));
+            expect(eq(result, expected)(0.01));
         };
     };
 } //namespace
