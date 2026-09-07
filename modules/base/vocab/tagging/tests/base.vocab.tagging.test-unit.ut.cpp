@@ -136,9 +136,14 @@ namespace {
             using bound_a = base::vocab::tagged_boundary<tag_a, std::int32_t>;
             using bound_b = base::vocab::tagged_boundary<tag_b, std::int32_t>;
 
+            //Tags participate in the type, so the type is not the same.
             expect(eq(std::same_as<bound_a, bound_b>, false));
-            expect(eq(std::constructible_from<bound_a, bound_b>, false));
-            expect(eq(std::constructible_from<bound_b, bound_a>, false));
+
+            //`tagged_boundary` converts to its underlying type which can explicitly construct a `tagged_boundary` with a different tag.
+            expect(eq(std::constructible_from<bound_a, bound_b>, true));
+            expect(eq(std::constructible_from<bound_b, bound_a>, true));
+
+            //A `tagged_boundary` with one tag cannot implicitly convert to a `tagged_boundary` with a different tag.
             expect(eq(std::convertible_to<bound_a, bound_b>, false));
             expect(eq(std::convertible_to<bound_b, bound_a>, false));
         };
