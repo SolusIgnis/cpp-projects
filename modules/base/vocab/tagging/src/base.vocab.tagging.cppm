@@ -112,7 +112,7 @@ export namespace base::vocab::inline tagging {
         ///@brief Default destructor.
         ~tagged_boundary() = default;
 
-        ///@brief Destructively extracts the underlying `T` value.
+        ///@brief Extracts the underlying `T` value.
         [[nodiscard]] constexpr explicit(false) operator T() && noexcept(std::is_nothrow_move_constructible_v<T>)
         {
             if constexpr (std::is_lvalue_reference_v<T>) {
@@ -157,5 +157,6 @@ export namespace base::vocab::inline tagging {
      * @throw Anything thrown by `T`'s move constructor.
      *
      * @note If `T` is a reference type, the reference rather than the referenced value is returned.
+     * @warning The `tagged_boundary` and its value should be treated after this operation as being in a moved-from state whose further validity depends on the guarantees of the underlying `T` regarding moved-from objects.
      */
 } //namespace base::vocab::inline tagging
