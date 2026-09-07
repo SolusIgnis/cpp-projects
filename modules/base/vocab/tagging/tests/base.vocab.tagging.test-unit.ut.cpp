@@ -13,27 +13,28 @@ namespace {
         std::int32_t value{0};
 
         constexpr explicit move_only_t(std::int32_t v) : value(v) {}
-        
-        constexpr move_only_t(const move_only_t&) = delete;
+
+        constexpr move_only_t(const move_only_t&)            = delete;
         constexpr move_only_t& operator=(const move_only_t&) = delete;
-    
+
         constexpr move_only_t(move_only_t&& other) noexcept = default;
-    
+
         constexpr move_only_t& operator=(move_only_t&& other) noexcept = default;
     };
 
     struct point {
         std::int32_t x;
         std::int32_t y;
+
         constexpr point(std::int32_t x_val, std::int32_t y_val) : x(x_val), y(y_val) {}
     };
-    
+
     struct position {
     private:
         struct longitude_tag;
         struct elevation_tag;
         struct latitude_tag;
-        
+
         using coordinate_t = std::int64_t;
 
     public:
@@ -48,17 +49,15 @@ namespace {
         constexpr position() = default;
 
         //"Pass-by-value and move" idiom automatically unwraps the tagged int values
-        constexpr position(longitude_t x_val, elevation_t y_val, latitude_t z_val) 
-            : x(std::move(x_val))
-            , y(std::move(y_val))
-            , z(std::move(z_val))
+        constexpr position(longitude_t x_val, elevation_t y_val, latitude_t z_val)
+            : x(std::move(x_val)), y(std::move(y_val)), z(std::move(z_val))
         {}
     };
 
     struct test_tag;
     struct begin_tag;
     struct end_tag;
-    
+
     using first_point = base::vocab::tagged_boundary<begin_tag, point>;
     using last_point  = base::vocab::tagged_boundary<end_tag, point>;
     using first_pos   = base::vocab::tagged_boundary<begin_tag, const position&>;
@@ -68,22 +67,22 @@ namespace {
     {
         const point first = std::move(begin);
         const point last  = std::move(end);
-        
-        const auto x_dist = last.x-first.x;
-        const auto y_dist = last.y-first.y;
-  
+
+        const auto x_dist = last.x - first.x;
+        const auto y_dist = last.y - first.y;
+
         return std::hypot(x_dist, y_dist);
     }
-    
+
     constexpr auto distance(last_pos end, first_pos begin)
     {
         const position& first = std::move(begin);
         const position& last  = std::move(end);
-        
-        const auto x_dist = last.x-first.x;
-        const auto y_dist = last.y-first.y;
-        const auto z_dist = last.z-first.z;
-  
+
+        const auto x_dist = last.x - first.x;
+        const auto y_dist = last.y - first.y;
+        const auto z_dist = last.z - first.z;
+
         return std::hypot(x_dist, y_dist, z_dist);
     }
 
@@ -101,7 +100,7 @@ namespace {
 
             expect(eq(extracted.value, expected));
         };
-    
+
         "multi argument forwarding"_test = [] mutable {
             constexpr std::int32_t expected_x{10};
             constexpr std::int32_t expected_y{20};
@@ -120,7 +119,7 @@ namespace {
             expect(eq(std::is_move_constructible_v<bound_t>, false));
             expect(eq(std::is_move_assignable_v<bound_t>, false));
         };
-    
+
         "rvalue-only conversion (ref-qualification contract)"_test = [] mutable {
             using bound_t = base::vocab::tagged_boundary<test_tag, std::int32_t>;
 
@@ -163,7 +162,7 @@ namespace {
             expect(eq(std::constructible_from<bound_t, bound_t>, false));
             expect(eq(std::constructible_from<bound_t, bound_t&&>, false));
         };
-    
+
         "interface boundary type safety and unwrapping"_test = [] mutable {
             struct local_tag;
             struct remote_tag;
@@ -176,15 +175,10 @@ namespace {
                 std::function<bool()> remote_fn;
 
                 // Pass-by-value and move idiom implicitly unwraps prvalue tagged_boundary
-                target_class(local_pred local, remote_pred remote)
-                    : local_fn(std::move(local))
-                    , remote_fn(std::move(remote)) {}
+                target_class(local_pred local, remote_pred remote) : local_fn(std::move(local)), remote_fn(std::move(remote)) {}
             };
 
-            target_class obj(
-                target_class::local_pred{[]{ return true; }},
-                target_class::remote_pred{[]{ return false; }}
-            );
+            target_class obj(target_class::local_pred{[] { return true; }}, target_class::remote_pred{[] { return false; }});
 
             expect(eq(obj.local_fn(), true));
             expect(eq(obj.remote_fn(), false));
@@ -195,11 +189,9 @@ namespace {
             constexpr std::int32_t expected_changed{200};
 
             std::int32_t original = expected_original;
-            using ref_t = base::vocab::tagged_boundary<test_tag, std::int32_t&>;
+            using ref_t           = base::vocab::tagged_boundary<test_tag, std::int32_t&>;
 
-            auto bind_ref = [](ref_t tagged) -> std::int32_t& {
-                return std::move(tagged);
-            };
+            auto bind_ref = [](ref_t tagged) -> std::int32_t& { return std::move(tagged); };
 
             std::int32_t& bound_ref = bind_ref(ref_t{original});
 
