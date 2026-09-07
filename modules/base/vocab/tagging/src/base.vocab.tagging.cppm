@@ -151,7 +151,7 @@ export namespace base::vocab::inline tagging {
     /**
      * @fn constexpr explicit(false) tagged_boundary::operator T() && noexcept(std::is_nothrow_move_constructible_v<T>)
      *
-     * Implicitly converts an rvalue `tagged_boundary` into `T` via `std::move` of the underlying value.
+     * Implicitly converts an rvalue `tagged_boundary` into `T`. The underlying value is moved unless `T` is an lvalue reference.
      *
      * @return The underlying `T` value extracted from the boundary wrapper.
      * @throw Anything thrown by `T`'s move constructor.
