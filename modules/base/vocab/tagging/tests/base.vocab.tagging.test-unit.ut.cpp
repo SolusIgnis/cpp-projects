@@ -218,6 +218,8 @@ namespace {
             //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
             struct noexcept_move {
                 noexcept_move() = default;
+
+                //NOLINTNEXTLINE(bugprone-unsafe-to-allow-exceptions): Trivial fixture testing noexcept specification.
                 noexcept_move(noexcept_move&& /*unused*/) noexcept(true) {}
             };
 
