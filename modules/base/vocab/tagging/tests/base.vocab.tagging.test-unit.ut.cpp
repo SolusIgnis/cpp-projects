@@ -8,18 +8,21 @@ import std;
 using namespace ut;
 
 namespace {
+    constexpr double epsilon{0.001};
+
     //Move-only target type used to verify destructive extraction
     struct move_only_t {
         std::int32_t value{0};
 
-        constexpr explicit move_only_t(std::int32_t v) : value(v) {}
+        constexpr explicit move_only_t(std::int32_t val) : value(val) {}
+
+        ~move_only_t() = default;
+
+        constexpr move_only_t(move_only_t&& other) noexcept            = default;
+        constexpr move_only_t& operator=(move_only_t&& other) noexcept = default;
 
         constexpr move_only_t(const move_only_t&)            = delete;
         constexpr move_only_t& operator=(const move_only_t&) = delete;
-
-        constexpr move_only_t(move_only_t&& other) noexcept = default;
-
-        constexpr move_only_t& operator=(move_only_t&& other) noexcept = default;
     };
 
     struct point {
@@ -106,9 +109,9 @@ namespace {
             constexpr std::int32_t expected_y{20};
             using point_tagged = base::vocab::tagged_boundary<test_tag, point>;
 
-            const point p = point_tagged{expected_x, expected_y};
-            expect(eq(p.x, expected_x));
-            expect(eq(p.y, expected_y));
+            const point ptt = point_tagged{expected_x, expected_y};
+            expect(eq(ptt.x, expected_x));
+            expect(eq(ptt.y, expected_y));
         };
     
         "noncopyability and immovability"_test = [] mutable {
@@ -178,7 +181,7 @@ namespace {
                 target_class(local_pred local, remote_pred remote) : local_fn(std::move(local)), remote_fn(std::move(remote)) {}
             };
 
-            target_class obj(target_class::local_pred{[] { return true; }}, target_class::remote_pred{[] { return false; }});
+            const target_class obj(target_class::local_pred{[] { return true; }}, target_class::remote_pred{[] { return false; }});
 
             expect(eq(obj.local_fn(), true));
             expect(eq(obj.remote_fn(), false));
@@ -191,7 +194,7 @@ namespace {
             std::int32_t original = expected_original;
             using ref_t           = base::vocab::tagged_boundary<test_tag, std::int32_t&>;
 
-            auto bind_ref = [](ref_t tagged) -> std::int32_t& { return std::move(tagged); };
+            const auto bind_ref = [](ref_t tagged) -> std::int32_t& { return std::move(tagged); };
 
             std::int32_t& bound_ref = bind_ref(ref_t{original});
 
@@ -204,14 +207,16 @@ namespace {
         };
 
         "noexcept specification propagation"_test = [] mutable {
+            //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
             struct throw_on_move {
                 throw_on_move() = default;
-                throw_on_move(throw_on_move&&) noexcept(false) {}
+                throw_on_move(throw_on_move&& /*unused*/) noexcept(false) {}
             };
 
+            //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
             struct noexcept_move {
                 noexcept_move() = default;
-                noexcept_move(noexcept_move&&) noexcept(true) {}
+                noexcept_move(noexcept_move&& /*unused*/) noexcept(true) {}
             };
 
             using throwing_boundary = base::vocab::tagged_boundary<test_tag, throw_on_move>;
@@ -222,12 +227,12 @@ namespace {
         };
 
         "2d point value boundary distance"_test = [] mutable {
-            constexpr point p1{0, 0};
-            constexpr point p2{3, 4};
+            constexpr point pt1{0, 0}; //NOLINT(bugprone-argument-comment)
+            constexpr point pt2{3, 4}; //NOLINT(bugprone-argument-comment)
             constexpr double expected{5.0};
 
-            const auto result = distance(first_point{p1}, last_point{p2});
-            expect(eq(result, expected)(0.01));
+            const auto result = distance(first_point{pt1}, last_point{pt2});
+            expect(eq(result, expected)(epsilon));
         };
 
         "3d position reference boundary distance"_test = [] mutable {
@@ -238,7 +243,7 @@ namespace {
             // Parameter order in function signature is (last_pos, first_pos),
             // but strong boundary types make call sites explicit and safe.
             const auto result = distance(last_pos{pos2}, first_pos{pos1});
-            expect(eq(result, expected)(0.01));
+            expect(eq(result, expected)(epsilon));
         };
     };
 } //namespace
