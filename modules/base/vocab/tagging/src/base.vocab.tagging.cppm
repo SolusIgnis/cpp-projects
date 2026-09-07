@@ -115,7 +115,11 @@ export namespace base::vocab::inline tagging {
         ///@brief Destructively extracts the underlying `T` value.
         [[nodiscard]] constexpr explicit(false) operator T() && noexcept(std::is_nothrow_move_constructible_v<T>)
         {
-            return std::move(value_);
+            if constexpr (std::is_lvalue_reference_v<T>) {
+                return value_;
+            } else {
+                return std::move(value_);
+            }
         }
 
         ///@brief Deleted copy constructor to ensure noncopyable transient objects.
