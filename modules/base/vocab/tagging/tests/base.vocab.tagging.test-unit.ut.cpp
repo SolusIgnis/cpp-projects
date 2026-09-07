@@ -181,7 +181,9 @@ namespace {
                 target_class(local_pred local, remote_pred remote) : local_fn(std::move(local)), remote_fn(std::move(remote)) {}
             };
 
-            const target_class obj(target_class::local_pred{[] { return true; }}, target_class::remote_pred{[] { return false; }});
+            const target_class obj(target_class::local_pred{[] { return true; }}, target_class::remote_pred{[] {
+                                       return false;
+                                   }});
 
             expect(eq(obj.local_fn(), true));
             expect(eq(obj.remote_fn(), false));
