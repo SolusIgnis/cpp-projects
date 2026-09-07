@@ -212,14 +212,14 @@ namespace {
             //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
             struct throw_on_move {
                 throw_on_move() = default;
+
+                //NOLINTNEXTLINE(bugprone-unsafe-to-allow-exceptions): Trivial fixture testing noexcept specification.
                 throw_on_move(throw_on_move&& /*unused*/) noexcept(false) {}
             };
 
             //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
             struct noexcept_move {
                 noexcept_move() = default;
-
-                //NOLINTNEXTLINE(bugprone-unsafe-to-allow-exceptions): Trivial fixture testing noexcept specification.
                 noexcept_move(noexcept_move&& /*unused*/) noexcept(true) {}
             };
 
