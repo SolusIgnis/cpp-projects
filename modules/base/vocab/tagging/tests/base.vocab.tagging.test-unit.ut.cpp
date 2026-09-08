@@ -252,14 +252,20 @@ namespace {
 
         "moving and forwarding"_test = [] mutable {
             using tagged_t = base::vocab::tagged_boundary<test_tag, std::int32_t>;
-            constexpr auto consumer  = [](tagged_t arg) { std::int32_t val = std::move(arg); return val * val; };
-            constexpr auto mover     = [consumer](tagged_t arg) { return consumer(std::move(arg)); };
+
+            //Extract and use the value.
+            constexpr auto consumer = [](tagged_t arg) { std::int32_t val = std::move(arg); return val * val; };
+
+            //Move the wrapper holding the value.
+            constexpr auto mover = [consumer](tagged_t arg) { return consumer(std::move(arg)); };
+
+            //Forward the wrapper holding the value.
             constexpr auto forwarder = [mover]<typename Arg>(Arg&& arg) { return mover(std::forward<Arg>(arg)); };
 
             constexpr std::int32_t value{7};
             constexpr std::int32_t expected{49};
 
-            const auto result = forwarder(tagged_t{value});
+            constexpr auto result = forwarder(tagged_t{value});
             expect(eq(result, expected));
         };
 
