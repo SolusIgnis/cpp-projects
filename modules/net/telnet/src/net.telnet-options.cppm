@@ -69,7 +69,7 @@ export namespace net::telnet {
         using enable_predicate_type = std::function<bool(id_num /*id*/)>;
 
         /**
-         * @typedef local_predicate_type
+         * @typedef local_predicate
          * @brief Function type for predicates determining local option support.
          *
          * @param id The `option::id_num` to evaluate.
