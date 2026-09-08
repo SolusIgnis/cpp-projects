@@ -86,13 +86,14 @@ export namespace base::vocab::inline tagging {
      * crossed.
      *
      * ## Transient Semantics
-     * `tagged_boundary` explicitly deletes all copy and move special member functions.
-     * It is not designed to be stored as a class member, held in a local variable for reuse,
-     * or passed around beyond its immediate call-site expression. Guaranteed copy elision
-     * ensures that passing a prvalue `tagged_boundary` to a function parameter constructs
-     * the wrapper directly in the parameter's storage. The destructive rvalue conversion
-     * requirement (i.e. `operator T() &&`) ensures that the wrapper is consumed by the act
-     * of extracting the wrapped value.
+     * `tagged_boundary` explicitly deletes copy and assignment special member functions but permits
+     * move construction to allow transparent passage through perfect-forwarding interfaces. It is
+     * not designed to be stored as a class member or held in a local variable for reuse. The wrapper
+     * may pass through arbitrary forwarding layers before reaching the interface boundary at which
+     * its semantic distinction is consumed. Guaranteed copy elision ensures that passing a prvalue
+     * `tagged_boundary` directly to a function parameter constructs the wrapper directly in the
+     * parameter's storage. The destructive rvalue conversion requirement (i.e. `operator T() &&`)
+     * ensures that the wrapper is consumed by the act of extracting the wrapped value.
      *
      * @note If `T` is a reference type, `tagged_boundary` conveys the reference rather than the referenced object across the boundary.
      */
@@ -126,16 +127,16 @@ export namespace base::vocab::inline tagging {
         tagged_boundary(const tagged_boundary&) =
             delete /*("Copy construction deleted to ensure noncopyable transient objects.")*/;
 
-        ///@brief Deleted copy assignment to ensure noncopyable transient objects.
+        ///@brief Deleted copy assignment to ensure noncopyable/non-assignable transient objects.
         tagged_boundary&
-            operator=(const tagged_boundary&) = delete /*("Copy assignment deleted to ensure noncopyable transient objects.")*/;
+            operator=(const tagged_boundary&) = delete /*("Copy assignment deleted to ensure noncopyable/non-assignable transient objects.")*/;
 
-        ///@brief Deleted move constructor to ensure immovable transient objects.
+        ///@brief Default move constructor enables perfect forwarding.
         tagged_boundary(tagged_boundary&&) = default;
 
-        ///@brief Deleted move assignment to ensure immovable transient objects.
+        ///@brief Deleted move assignment to ensure non-assignable transient objects.
         tagged_boundary&
-            operator=(tagged_boundary&&) = delete /*("Move assignment deleted to ensure immovable transient objects.")*/;
+            operator=(tagged_boundary&&) = delete /*("Move assignment deleted to ensure non-assignable transient objects.")*/;
     }; //class tagged_boundary
 
     /**
