@@ -48,7 +48,13 @@ namespace {
             constexpr std::size_t buffer_size{512};
 
             const auto always_on = [](option::id_num) { return true; };
-            const option opt{option::id_num::terminal_type, opt_name, option::local_predicate{always_on}, option::remote_predicate{always_on}, true, buffer_size};
+            const option
+                opt{option::id_num::terminal_type,
+                    opt_name,
+                    option::local_predicate{always_on},
+                    option::remote_predicate{always_on},
+                    true,
+                    buffer_size};
 
             expect(eq(opt.supports_local(), true));
             expect(eq(opt.supports_remote(), true));
@@ -172,8 +178,14 @@ namespace {
             constexpr std::size_t buffer_size{128};
 
             option_registry reg{};
-            const auto& opt =
-                reg.upsert(option::id_num::charset, opt_name, option::local_predicate{option::always_accept}, option::remote_predicate{option::always_reject}, true, buffer_size);
+            const auto& opt = reg.upsert(
+                option::id_num::charset,
+                opt_name,
+                option::local_predicate{option::always_accept},
+                option::remote_predicate{option::always_reject},
+                true,
+                buffer_size
+            );
             expect(eq(opt.get_name(), opt_name));
             expect(eq(opt.supports_local(), true));
             expect(eq(opt.supports_remote(), false));

@@ -128,8 +128,8 @@ export namespace base::vocab::inline tagging {
             delete /*("Copy construction deleted to ensure noncopyable transient objects.")*/;
 
         ///@brief Deleted copy assignment to ensure noncopyable/non-assignable transient objects.
-        tagged_boundary&
-            operator=(const tagged_boundary&) = delete /*("Copy assignment deleted to ensure noncopyable/non-assignable transient objects.")*/;
+        tagged_boundary& operator=(const tagged_boundary&) =
+            delete /*("Copy assignment deleted to ensure noncopyable/non-assignable transient objects.")*/;
 
         ///@brief Default move constructor enables perfect forwarding.
         tagged_boundary(tagged_boundary&&) = default;

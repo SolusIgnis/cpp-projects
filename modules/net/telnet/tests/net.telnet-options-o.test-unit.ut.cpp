@@ -42,14 +42,22 @@ namespace {
         };
 
         "always_accept predicate works"_test = [] mutable {
-            const option opt{option::id_num::echo, "Echo", option::local_predicate{option::always_accept}, option::remote_predicate{option::always_accept}};
+            const option
+                opt{option::id_num::echo,
+                    "Echo",
+                    option::local_predicate{option::always_accept},
+                    option::remote_predicate{option::always_accept}};
 
             expect(eq(opt.supports_local(), true));
             expect(eq(opt.supports_remote(), true));
         };
 
         "supports(direction) dispatches correctly"_test = [] mutable {
-            const option opt{option::id_num::echo, "Echo", option::local_predicate{option::always_accept}, option::remote_predicate{option::always_reject}};
+            const option
+                opt{option::id_num::echo,
+                    "Echo",
+                    option::local_predicate{option::always_accept},
+                    option::remote_predicate{option::always_reject}};
 
             expect(eq(opt.supports(negotiation_direction::local), true));
             expect(eq(opt.supports(negotiation_direction::remote), false));

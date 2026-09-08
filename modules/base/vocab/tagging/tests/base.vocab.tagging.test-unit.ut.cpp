@@ -254,7 +254,10 @@ namespace {
             using tagged_t = base::vocab::tagged_boundary<test_tag, std::int32_t>;
 
             //Extract and use the value.
-            constexpr auto consumer = [](tagged_t arg) { std::int32_t val = std::move(arg); return val * val; };
+            constexpr auto consumer = [](tagged_t arg) {
+                std::int32_t val = std::move(arg);
+                return val * val;
+            };
 
             //Move the wrapper holding the value.
             constexpr auto mover = [consumer](tagged_t arg) { return consumer(std::move(arg)); };
@@ -270,7 +273,9 @@ namespace {
         };
 
         "perfect forwarding through variadic parameter pack"_test = [] mutable {
-            constexpr auto forwarding_test = []<typename... Args>(Args&&... args) { return distance(std::forward<Args>(args)...); };
+            constexpr auto forwarding_test = []<typename... Args>(Args&&... args) {
+                return distance(std::forward<Args>(args)...);
+            };
 
             constexpr position pos1{position::longitude_t{-2}, position::elevation_t{10}, position::latitude_t{5}};
             constexpr position pos2{position::longitude_t{-1}, position::elevation_t{14}, position::latitude_t{13}};
