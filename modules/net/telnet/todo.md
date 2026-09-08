@@ -1,8 +1,8 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 <!-- SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors -->
 # Telnet Project TODO
-## Version: 0.5.8
-## Date: August 19, 2026
+## Version: 0.5.9
+## Date: September 8, 2026
 ## Purpose: This document compiles all `@todo` tasks from the Telnet project files, organized by phase, to guide development in Phase 6 and beyond. The tasks focus on enhancing stream compatibility, TLS support, and interface cleanup, building on the modular structure defined in `telnet.cppm`.
 
 ## Development Plan
@@ -109,7 +109,7 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
   - **Priority**: Medium (refactoring base components)
   - **Estimated Effort**: 1 day
 
-09. [ ] **Implement Tagged Callables for telnet::option Local/Remote Enablement Predicates**:
+09. [✔️] **Implement Tagged Callables for telnet::option Local/Remote Enablement Predicates** (Completed September 8, 2026):
   - **Task**: Implement `tagged_boundary` in `base.vocab.tagging` module with nested type aliases `telnet::option::local_predicate` and `telnet::option::remote_predicate`.
   - **Steps**:
     - Define a class template `tagged_boundary` to attach semantic tags to arbitrary types.
@@ -119,7 +119,7 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
     - Update constructor call sites to use the new types.
   - **Dependencies**: Affects `:options`, `:protocol_config`.
   - **Priority**: Medium (cleans up telnet::option constructor parameters)
-  - **Estimated Effort**: 1 day.
+  - **Estimated Effort**: Completed in 2 days.
   
 10. [ ] **Use Flat Sets and Maps**:
   - **Task**: Change `std::set` and `std::map` usage to `std::flat_set` and `std::flat_map` respectively.
@@ -479,7 +479,7 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
   - **Estimated Effort**: Completed in 0.5 days.
 
 ### Notes
-- Version 0.5.8 reflects a major restructuring of the project including testing and GitHub CI.
+- Version 0.5.9 reflects tagged predicates for `telnet::option`'s constructor.
 - Log formats use default `{}` specifiers for `TelnetCommand` (`name (0xXX)`), `option` (`0xXX (name)`), and `NegotiationDirection` (`local` or `remote`), with `"N/A"_sv` for `std::nullopt` cases.
-- Next focus: Phase 6 Milestone 9, **Tagged Callables**
-*Last updated: August 19, 2026*
+- Next focus: Phase 6 Milestone 10, **Use Flat Sets and Maps**
+*Last updated: September 8, 2026*

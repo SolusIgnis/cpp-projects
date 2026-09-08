@@ -3,9 +3,15 @@
 # Changelog.md
 
 ## [Unreleased] - TBD
+
+## [0.5.9] - September 8, 2026
+### Added
+- Added module `base.vocab.tagging` with `tagged_boundary` to provide distinguishing tags for function parameters.
+
 ### Changed
 - Changed all `concept` names from `PascalCase` to `snake_case`.
 - Applied various fixes to issues uncovered by clang-tidy.
+- Updated `telnet::option`'s constructor to use `tagged_boundary` to distinguish its local and remote enablement predicate parameters.
 
 ## [0.5.8] - August 18, 2026
 ### Added
