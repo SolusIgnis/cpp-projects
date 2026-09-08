@@ -29,7 +29,9 @@
 //Module partition interface unit
 export module net.telnet:options;
 
-import std; //NOLINT For std::string, std::vector, std::function, std::optional, std::size_t
+import std;
+
+import base.vocab.tagging;
 
 export import :types;  ///< @see "net.telnet-types.cppm" for `byte_t`
 export import :errors; ///< @see "net.telnet-errors.cppm" for `error` enum
@@ -73,7 +75,7 @@ export namespace net::telnet {
          * @param id The `option::id_num` to evaluate.
          * @return True if the option is supported, false otherwise.
          */
-        using local_predicate_type = enable_predicate_type;
+        using local_predicate = base::vocab::tagged_boundary<local_tag, enable_predicate_type>;
 
         /**
          * @typedef remote_predicate_type
@@ -82,7 +84,7 @@ export namespace net::telnet {
          * @param id The `option::id_num` to evaluate.
          * @return True if the option is supported, false otherwise.
          */
-        using remote_predicate_type = enable_predicate_type;
+        using remote_predicate = base::vocab::tagged_boundary<remote_tag, enable_predicate_type>;
 
     private:
         static constexpr std::size_t max_subnegotiation_buffer_size = 1024;
@@ -102,11 +104,11 @@ export namespace net::telnet {
         //NOLINTNEXTLINE(misc-explicit-constructor)
         explicit(false) option(
             id_num id,
-            std::string name                  = ""s,
-            local_predicate_type local_pred   = always_reject,
-            remote_predicate_type remote_pred = always_reject,
-            bool subneg_supported             = false,
-            std::size_t max_subneg_size       = max_subnegotiation_buffer_size
+            std::string name             = ""s,
+            local_predicate local_pred   = local_predicate{always_reject},
+            remote_predicate remote_pred = remote_predicate{always_reject},
+            bool subneg_supported        = false,
+            std::size_t max_subneg_size  = max_subnegotiation_buffer_size
         )
             : id_(id),
               name_(std::move(name)),
@@ -129,8 +131,8 @@ export namespace net::telnet {
             return {
                 id,
                 std::move(name),
-                local_predicate_type{local_supported ? always_accept : always_reject},
-                remote_predicate_type{remote_supported ? always_accept : always_reject},
+                local_predicate{local_supported ? always_accept : always_reject},
+                remote_predicate{remote_supported ? always_accept : always_reject},
                 subneg_supported,
                 max_subneg_size
             };
@@ -178,7 +180,7 @@ export namespace net::telnet {
     }; //class option
 
     /**
-     * @fn explicit option::option(id_num id, std::string name, local_predicate_type local_pred, remote_predicate_type remote_pred, bool subneg_supported, std::size_t max_subneg_size)
+     * @fn explicit option::option(id_num id, std::string name, local_predicate local_pred, remote_predicate remote_pred, bool subneg_supported, std::size_t max_subneg_size)
      *
      * @param id The Telnet `option::id_num`.
      * @param name The option name (default empty; populated in C++26? with reflection).

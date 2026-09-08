@@ -117,12 +117,13 @@ export namespace net::telnet {
         static option_registry initialize_option_registry() noexcept
         {
             return {
-                option{option::id_num::binary, "Binary Transmission", option::always_accept, option::always_accept},
-                option{option::id_num::suppress_go_ahead, "Suppress Go-Ahead", option::always_accept, option::always_accept},
+                option{option::id_num::binary, "Binary Transmission", option::local_predicate{option::always_accept}, option::remote_predicate{option::always_accept}},
+                option{option::id_num::suppress_go_ahead, "Suppress Go-Ahead", option::local_predicate{option::always_accept}, option::remote_predicate{option::always_accept}},
                 option{
                        option::id_num::status,
-                       "Status", option::always_accept,
-                       option::always_reject,
+                       "Status",
+                       option::local_predicate{option::always_accept},
+                       option::remote_predicate{option::always_reject},
                        /*subneg_supported=*/true
                 },
             };
