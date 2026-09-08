@@ -235,7 +235,7 @@ namespace {
             constexpr point pt2{3, 4}; //NOLINT(bugprone-argument-comment)
             constexpr double expected{5.0};
 
-            constexpr auto result = distance(first_point{pt1}, last_point{pt2});
+            auto result = distance(first_point{pt1}, last_point{pt2});
             expect(eq(result, expected)(epsilon));
         };
 
@@ -246,7 +246,7 @@ namespace {
 
             // Parameter order in function signature is (last_pos, first_pos),
             // but strong boundary types make call sites explicit and safe.
-            constexpr auto result = distance(last_pos{pos2}, first_pos{pos1});
+            auto result = distance(last_pos{pos2}, first_pos{pos1});
             expect(eq(result, expected)(epsilon));
         };
 
