@@ -114,7 +114,7 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
   - **Steps**:
     - Define a class template `tagged_boundary` to attach semantic tags to arbitrary types.
       - This is a general enough facility for a module under `base.vocab`.
-      - The `tagged_boundary` wrapper type should construct explicitly, destructively convert implicitly, and otherwise be non-copyable and non-movable. This creates a transient semantic boundary without requiring long-term storage of a value type.
+      - The `tagged_boundary` wrapper type should construct explicitly, destructively convert implicitly, be non-copyable, and be move-constructible to support perfect forwarding. This creates a transient semantic boundary without requiring long-term storage of a value type.
     - Use tags for local and remote (privately nested in `telnet::option`) with `using` aliases (publicly nested in `telnet::option`) to create distinct types for the local predicate and remote predicate.
     - Update constructor call sites to use the new types.
   - **Dependencies**: Affects `:options`, `:protocol_config`.
