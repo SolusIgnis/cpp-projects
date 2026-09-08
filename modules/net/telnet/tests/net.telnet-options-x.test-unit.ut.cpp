@@ -173,7 +173,7 @@ namespace {
 
             option_registry reg{};
             const auto& opt =
-                reg.upsert(option::id_num::charset, opt_name, option::local_predicate{option::always_accept}, option::local_predicate{option::always_reject}, true, buffer_size);
+                reg.upsert(option::id_num::charset, opt_name, option::local_predicate{option::always_accept}, option::remote_predicate{option::always_reject}, true, buffer_size);
             expect(eq(opt.get_name(), opt_name));
             expect(eq(opt.supports_local(), true));
             expect(eq(opt.supports_remote(), false));
