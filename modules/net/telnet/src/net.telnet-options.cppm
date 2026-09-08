@@ -78,7 +78,7 @@ export namespace net::telnet {
         using local_predicate = base::vocab::tagged_boundary<local_tag, enable_predicate_type>;
 
         /**
-         * @typedef remote_predicate_type
+         * @typedef remote_predicate
          * @brief Function type for predicates determining remote option support.
          *
          * @param id The `option::id_num` to evaluate.
