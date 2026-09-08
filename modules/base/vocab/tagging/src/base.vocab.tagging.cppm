@@ -131,7 +131,7 @@ export namespace base::vocab::inline tagging {
             operator=(const tagged_boundary&) = delete /*("Copy assignment deleted to ensure noncopyable transient objects.")*/;
 
         ///@brief Deleted move constructor to ensure immovable transient objects.
-        tagged_boundary(tagged_boundary&&) = delete /*("Move construction deleted to ensure immovable transient objects.")*/;
+        tagged_boundary(tagged_boundary&&) = default;
 
         ///@brief Deleted move assignment to ensure immovable transient objects.
         tagged_boundary&
