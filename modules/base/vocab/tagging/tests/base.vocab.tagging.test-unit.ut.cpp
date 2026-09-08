@@ -273,9 +273,7 @@ namespace {
         };
 
         "perfect forwarding through variadic parameter pack"_test = [] mutable {
-            constexpr auto forwarding_test = [](auto&&... args) {
-                return distance(std::forward<decltype(args)>(args)...);
-            };
+            constexpr auto forwarding_test = [](auto&&... args) { return distance(std::forward<decltype(args)>(args)...); };
 
             constexpr position pos1{position::longitude_t{-2}, position::elevation_t{10}, position::latitude_t{5}};
             constexpr position pos2{position::longitude_t{-1}, position::elevation_t{14}, position::latitude_t{13}};
