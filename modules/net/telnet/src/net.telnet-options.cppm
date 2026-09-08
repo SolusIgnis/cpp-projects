@@ -74,7 +74,7 @@ export namespace net::telnet {
          * @return True if the option is supported, false otherwise.
          */
         using local_predicate_type = enable_predicate_type;
-        
+
         /**
          * @typedef remote_predicate_type
          * @brief Function type for predicates determining remote option support.
@@ -126,7 +126,14 @@ export namespace net::telnet {
             std::size_t max_subneg_size = max_subnegotiation_buffer_size
         )
         {
-            return {id, std::move(name), local_predicate_type{local_supported ? always_accept : always_reject}, remote_predicate_type{remote_supported ? always_accept : always_reject}, subneg_supported, max_subneg_size};
+            return {
+                id,
+                std::move(name),
+                local_predicate_type{local_supported ? always_accept : always_reject},
+                remote_predicate_type{remote_supported ? always_accept : always_reject},
+                subneg_supported,
+                max_subneg_size
+            };
         }
 
         ///@brief Three-way comparison operator for ordering and equality.
