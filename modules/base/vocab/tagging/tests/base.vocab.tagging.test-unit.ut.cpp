@@ -276,7 +276,7 @@ namespace {
             constexpr position pos2{position::longitude_t{-1}, position::elevation_t{14}, position::latitude_t{13}};
             constexpr double expected{9.0};
 
-            constexpr auto result = forwarding_test(last_pos{pos2}, first_pos{pos1});
+            auto result = forwarding_test(last_pos{pos2}, first_pos{pos1});
             expect(eq(result, expected)(epsilon));
         };
     };
