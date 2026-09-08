@@ -16,7 +16,7 @@ namespace {
 
         constexpr explicit move_only_t(std::int32_t val) : value(val) {}
 
-        ~move_only_t() = default;
+        constexpr ~move_only_t() = default;
 
         constexpr move_only_t(move_only_t&& other) noexcept            = default;
         constexpr move_only_t& operator=(move_only_t&& other) noexcept = default;
@@ -109,7 +109,7 @@ namespace {
             constexpr std::int32_t expected_y{20};
             using point_tagged = base::vocab::tagged_boundary<test_tag, point>;
 
-            const point ptt = point_tagged{expected_x, expected_y};
+            constexpr point ptt = point_tagged{expected_x, expected_y};
             expect(eq(ptt.x, expected_x));
             expect(eq(ptt.y, expected_y));
         };
@@ -235,7 +235,7 @@ namespace {
             constexpr point pt2{3, 4}; //NOLINT(bugprone-argument-comment)
             constexpr double expected{5.0};
 
-            const auto result = distance(first_point{pt1}, last_point{pt2});
+            constexpr auto result = distance(first_point{pt1}, last_point{pt2});
             expect(eq(result, expected)(epsilon));
         };
 
@@ -246,7 +246,7 @@ namespace {
 
             // Parameter order in function signature is (last_pos, first_pos),
             // but strong boundary types make call sites explicit and safe.
-            const auto result = distance(last_pos{pos2}, first_pos{pos1});
+            constexpr auto result = distance(last_pos{pos2}, first_pos{pos1});
             expect(eq(result, expected)(epsilon));
         };
 
@@ -276,7 +276,7 @@ namespace {
             constexpr position pos2{position::longitude_t{-1}, position::elevation_t{14}, position::latitude_t{13}};
             constexpr double expected{9.0};
 
-            const auto result = forwarding_test(last_pos{pos2}, first_pos{pos1});
+            constexpr auto result = forwarding_test(last_pos{pos2}, first_pos{pos1});
             expect(eq(result, expected)(epsilon));
         };
     };
