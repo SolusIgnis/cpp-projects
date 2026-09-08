@@ -114,12 +114,12 @@ namespace {
             expect(eq(ptt.y, expected_y));
         };
 
-        "noncopyability and immovability"_test = [] mutable {
+        "move_constructible but noncopyable and non-assignable"_test = [] mutable {
             using bound_t = base::vocab::tagged_boundary<test_tag, std::int32_t>;
 
             expect(eq(std::is_copy_constructible_v<bound_t>, false));
             expect(eq(std::is_copy_assignable_v<bound_t>, false));
-            expect(eq(std::is_move_constructible_v<bound_t>, false));
+            expect(eq(std::is_move_constructible_v<bound_t>, true));
             expect(eq(std::is_move_assignable_v<bound_t>, false));
         };
 
@@ -157,13 +157,13 @@ namespace {
             expect(eq(std::convertible_to<std::int32_t, bound_t>, false));
         };
 
-        "constructor forwarding constraints protect deletion of copy and move constructors"_test = [] mutable {
+        "constructor constraints and move construction"_test = [] mutable {
             using bound_t = base::vocab::tagged_boundary<test_tag, std::int32_t>;
 
             expect(eq(std::constructible_from<bound_t, bound_t&>, false));
             expect(eq(std::constructible_from<bound_t, const bound_t&>, false));
-            expect(eq(std::constructible_from<bound_t, bound_t>, false));
-            expect(eq(std::constructible_from<bound_t, bound_t&&>, false));
+            expect(eq(std::constructible_from<bound_t, bound_t>, true));
+            expect(eq(std::constructible_from<bound_t, bound_t&&>, true));
         };
 
         "interface boundary type safety and unwrapping"_test = [] mutable {
@@ -247,6 +247,30 @@ namespace {
             // Parameter order in function signature is (last_pos, first_pos),
             // but strong boundary types make call sites explicit and safe.
             const auto result = distance(last_pos{pos2}, first_pos{pos1});
+            expect(eq(result, expected)(epsilon));
+        };
+
+        "moving and forwarding"_test = [] mutable {
+            using tagged_t = base::vocab::tagged_boundary<test_tag, std::int32_t>;
+            constexpr auto consumer  = [](tagged_t arg) { std::int32_t val = std::move(arg); return val * val; }
+            constexpr auto mover     = []<typename T>(std::add_rvalue_reference_t<T> arg) { return consumer(std::move(arg)); };
+            constexpr auto forwarder = []<typename Arg>(Arg&& arg) { return mover(std::forward<Arg>(arg)); };
+
+            constexpr std::int32_t value{7};
+            constexpr std::int32_t expected{49};
+
+            const auto result = forwarder(tagged_t{value});
+            expect(eq(result, expected));
+        };
+
+        "perfect forwarding through variadic parameter pack"_test = [] mutable {
+            constexpr auto forwarding_test = []<typename... Args>(Args&&... args) { return distance(std::forward<Args>(args)...); };
+
+            constexpr position pos1{position::longitude_t{-2}, position::elevation_t{10}, position::latitude_t{5}};
+            constexpr position pos2{position::longitude_t{-1}, position::elevation_t{14}, position::latitude_t{13}};
+            constexpr double expected{9.0};
+
+            const auto result = forwarding_test(last_pos{pos2}, first_pos{pos1});
             expect(eq(result, expected)(epsilon));
         };
     };
