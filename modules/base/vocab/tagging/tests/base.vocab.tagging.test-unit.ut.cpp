@@ -235,7 +235,7 @@ namespace {
             constexpr point pt2{3, 4}; //NOLINT(bugprone-argument-comment)
             constexpr double expected{5.0};
 
-            auto result = distance(first_point{pt1}, last_point{pt2});
+            const auto result = distance(first_point{pt1}, last_point{pt2});
             expect(eq(result, expected)(epsilon));
         };
 
@@ -246,7 +246,7 @@ namespace {
 
             // Parameter order in function signature is (last_pos, first_pos),
             // but strong boundary types make call sites explicit and safe.
-            auto result = distance(last_pos{pos2}, first_pos{pos1});
+            const auto result = distance(last_pos{pos2}, first_pos{pos1});
             expect(eq(result, expected)(epsilon));
         };
 
@@ -263,7 +263,7 @@ namespace {
             constexpr auto mover = [consumer](tagged_t arg) { return consumer(std::move(arg)); };
 
             //Forward the wrapper holding the value.
-            constexpr auto forwarder = [mover]<typename Arg>(Arg&& arg) { return mover(std::forward<Arg>(arg)); };
+            constexpr auto forwarder = [mover](auto&& arg) { return mover(std::forward<decltype(arg)>(arg)); };
 
             constexpr std::int32_t value{7};
             constexpr std::int32_t expected{49};
@@ -281,7 +281,7 @@ namespace {
             constexpr position pos2{position::longitude_t{-1}, position::elevation_t{14}, position::latitude_t{13}};
             constexpr double expected{9.0};
 
-            auto result = forwarding_test(last_pos{pos2}, first_pos{pos1});
+            const auto result = forwarding_test(last_pos{pos2}, first_pos{pos1});
             expect(eq(result, expected)(epsilon));
         };
     };
