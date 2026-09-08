@@ -121,9 +121,7 @@ export namespace net::telnet {
 
             return {
                 option{
-                       option::id_num::binary,
-                       "Binary Transmission", local{option::always_accept},
-                       remote{option::always_accept}
+                       option::id_num::binary, "Binary Transmission", local{option::always_accept}, remote{option::always_accept}
                 },
                 option{
                        option::id_num::suppress_go_ahead,
