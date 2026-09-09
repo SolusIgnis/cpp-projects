@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 /**
  * @file net.telnet-protocol_config.cppm
- * @version 0.5.8
+ * @version 0.5.9
  * @date October 30, 2025
  *
  * @copyright © 2025-2026 Jeremy Murphy and any Contributors
@@ -116,13 +116,22 @@ export namespace net::telnet {
         //NOLINTNEXTLINE(bugprone-exception-escape): Failure to construct the initial option registry is intrinsically unrecoverable and thus should unconditionally and immediately terminate.
         static option_registry initialize_option_registry() noexcept
         {
+            using local  = option::local_predicate;
+            using remote = option::remote_predicate;
+
             return {
-                option{option::id_num::binary, "Binary Transmission", option::always_accept, option::always_accept},
-                option{option::id_num::suppress_go_ahead, "Suppress Go-Ahead", option::always_accept, option::always_accept},
+                option{
+                       option::id_num::binary, "Binary Transmission", local{option::always_accept}, remote{option::always_accept}
+                },
+                option{
+                       option::id_num::suppress_go_ahead,
+                       "Suppress Go-Ahead", local{option::always_accept},
+                       remote{option::always_accept}
+                },
                 option{
                        option::id_num::status,
-                       "Status", option::always_accept,
-                       option::always_reject,
+                       "Status", local{option::always_accept},
+                       remote{option::always_reject},
                        /*subneg_supported=*/true
                 },
             };

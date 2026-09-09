@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 /**
  * @file net.telnet-protocol_fsm.cppm
- * @version 0.5.8
+ * @version 0.5.9
  * @date October 30, 2025
  *
  * @copyright © 2025-2026 Jeremy Murphy and any Contributors
@@ -24,7 +24,7 @@
  * @example
  *   telnet::protocol_fsm<> fsm; //Uses `default_protocol_fsm_config` from `:protocol_config`
  *   telnet::protocol_fsm<>::protocol_config_type::set_unknown_command_handler([](telnet::command cmd) { std::cout << "Custom: " << std::to_underlying(cmd) << "\n"; });
- *   telnet::protocol_fsm<>::protocol_config_type::registered_options.upsert(telnet::option::id_num::negotiate_about_window_size, "NAWS", telnet::option::always_accept, telnet::option::always_accept, true, 4);
+ *   telnet::protocol_fsm<>::protocol_config_type::registered_options.upsert(telnet::option::id_num::negotiate_about_window_size, "NAWS", telnet::option::local_predicate{telnet::option::always_accept}, telnet::option::remote_predicate{telnet::option::always_accept}, true, 4);
  *   telnet::protocol_fsm<>::protocol_config_type::set_error_logger([](const std::error_code& ec, std::string msg) { std::cout << "Error: " << ec.message() << " - " << msg << std::endl; });
  *
  * @see RFC 854 for Telnet protocol, RFC 855 and RFC 1143 for option negotiation, `:types` for `telnet::command` and `negotiation_direction`, `:options` for `option` and `option::id_num`, `:errors` for error codes, `:stream` for FSM usage, `:internal` for implementation classes, , `:protocol_config` for `default_protocol_fsm_config`, and `:concepts` for `protocol_fsm_config`

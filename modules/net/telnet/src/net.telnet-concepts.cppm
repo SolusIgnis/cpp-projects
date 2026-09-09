@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 /**
  * @file net.telnet-concepts.cppm
- * @version 0.5.8
+ * @version 0.5.9
  * @date October 30, 2025
  *
  * @copyright © 2025-2026 Jeremy Murphy and any Contributors
