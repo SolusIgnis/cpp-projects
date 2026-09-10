@@ -624,7 +624,7 @@ namespace net::telnet {
         if (!current_option_) {
             //Memoize a defaulted option object (automatic rejection) to avoid lookup failures on repeated bad requests.
             current_option_ = option{static_cast<option::id_num>(byte)};
-            registry.upsert(current_option_);
+            registry.upsert(*current_option_);
             protocol_config_type::log_error(
                 make_error_code(error::invalid_subnegotiation),
                 "byte: 0x{:02x}, cmd: {}, opt: {}",
