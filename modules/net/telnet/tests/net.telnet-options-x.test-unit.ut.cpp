@@ -187,7 +187,7 @@ namespace {
             );
             
             const auto opt = reg.get(option::id_num::charset);
-            expect(eq(opt.has_value()));
+            expect(eq(opt.has_value(), true));
             if (opt) {
                 expect(eq(opt->get_name(), opt_name));
                 expect(eq(opt->supports_local(), true));
