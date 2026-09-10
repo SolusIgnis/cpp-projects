@@ -61,7 +61,6 @@ export namespace net::telnet {
         typename SubnegotiationHandler
     >
     class option_handler_registry {
-    private:
         /**
          * @brief Record for handlers registered to a single Telnet option.
          * @details Stores an optional enablement handler, an optional disablement handler, and an optional subnegotiation handler for processing option-specific data.
@@ -72,6 +71,8 @@ export namespace net::telnet {
             std::optional<OptionDisablementHandler> disablement_handler;
             std::optional<SubnegotiationHandler> subnegotiation_handler;
         }; //struct option_handler_record
+
+        std::map<option::id_num, option_handler_record> handlers_;
 
     public:
         /**
@@ -145,8 +146,6 @@ export namespace net::telnet {
             ProtocolConfig::log_error(make_error_code(error::user_handler_not_found), "cmd: {}, option: {}", command::se, opt);
             co_return {opt, {}};
         } //undefined_subnegotiation_handler(option::id_num opt, std::vector<byte_t>)
-
-        std::map<option::id_num, option_handler_record> handlers_;
     }; //class option_handler_registry
 
     /**
