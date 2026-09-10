@@ -418,16 +418,16 @@ export namespace net::telnet {
         } //has(option::id_num)
 
         ///@brief Inserts or updates an `option` in the registry.
-        constexpr option& upsert(const option& opt)
+        constexpr void upsert(const option& opt)
         {
             const std::lock_guard<std::shared_mutex> lock(mutex_);
             const auto [add_result, success] = registry_.insert(opt);
             if (success) {
-                return *add_result;
+                return;
             } else {
                 //Use iterator from erase as hint to insert new option at same position, optimizing insertion to O(1)
                 const auto replace_result = registry_.insert(registry_.erase(add_result), opt);
-                return *replace_result;
+                return;
             }
         } //upsert(const option&)
 
@@ -447,9 +447,9 @@ export namespace net::telnet {
 
         ///@brief Inserts or updates an `option` constructed from arguments.
         template<typename... Args>
-        constexpr option& upsert(option::id_num opt_id, Args&&... args)
+        constexpr void upsert(option::id_num opt_id, Args&&... args)
         {
-            return upsert(option{opt_id, std::forward<Args>(args)...});
+            upsert(option{opt_id, std::forward<Args>(args)...});
         } //upsert(option::id_num, Args...)
     }; //class option_registry
 
@@ -494,7 +494,6 @@ export namespace net::telnet {
      * @fn const option& option_registry::upsert(const option& opt)
      *
      * @param opt The `option` to insert or update.
-     * @return Reference to the inserted or updated `option` in the registry.
      *
      * @remark Thread-safe via `std::shared_mutex` (exclusive lock).
      * @remark Performs O(log n) insertion or replacement, using `erase` result iterator as a hint to optimize `insert` performance during replacement.
@@ -515,7 +514,6 @@ export namespace net::telnet {
      * @tparam Args Types for `args` forwarded to `option` constructor.
      * @param opt_id The `option::id_num` for the `option`.
      * @param args Arguments to construct an `option` (forwarded to `option` constructor).
-     * @return Reference to the inserted or updated `option`.
      *
      * @remark Simplifies runtime `option` creation by forwarding arguments to the `option` constructor.
      */

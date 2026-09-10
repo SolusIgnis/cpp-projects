@@ -30,9 +30,8 @@ namespace {
         "upsert inserts new option"_test = [] mutable {
             option_registry registry{};
 
-            const auto& inserted = registry.upsert(option{option::id_num::binary, "Binary"});
+            registry.upsert(option{option::id_num::binary, "Binary"});
 
-            expect(eq((inserted.get_id() == option::id_num::binary), true));
             expect(eq(registry.has(option::id_num::binary), true));
         };
 
