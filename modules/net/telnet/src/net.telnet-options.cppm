@@ -396,7 +396,9 @@ export namespace net::telnet {
         constexpr explicit option_registry(std::flat_set<option, std::less<>> init) : registry_{std::move(init)} {}
 
         ///@brief Constructs a registry from a pre-constructed `std::set` of `option` instances.
-        constexpr explicit option_registry(const std::set<option, std::less<>>& init) : registry_(std::sorted_unique, init.begin(), init.end()) {}
+        constexpr explicit option_registry(const std::set<option, std::less<>>& init)
+            : registry_(std::sorted_unique, init.begin(), init.end())
+        {}
 
         ///@brief Retrieves an `option` by its ID.
         constexpr std::optional<option> get(option::id_num opt_id) const noexcept
