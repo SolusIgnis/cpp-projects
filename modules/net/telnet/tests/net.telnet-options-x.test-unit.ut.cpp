@@ -185,7 +185,7 @@ namespace {
                 true,
                 buffer_size
             );
-            
+
             const auto opt = reg.get(option::id_num::charset);
             expect(eq(opt.has_value(), true));
             if (opt) {
