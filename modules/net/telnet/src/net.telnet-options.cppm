@@ -389,6 +389,12 @@ export namespace net::telnet {
         mutable std::shared_mutex mutex_;
 
     public:
+        ///
+        enum class ensure_status : std::uint8_t {
+            found,
+            inserted,
+        };
+
         ///@brief Constructs a registry from an initializer list of `option` instances.
         constexpr explicit(false) option_registry(std::initializer_list<option> init) : registry_(std::from_range, init) {}
 
@@ -427,8 +433,8 @@ export namespace net::telnet {
             if (success) {
                 return;
             } else {
-                //Use iterator from erase as hint to insert new option at same position, optimizing insertion to O(1)
-                const auto replace_result = registry_.insert(registry_.erase(add_result), opt);
+                //Use iterator from erase as hint to insert new option at same position, avoiding a redundant find.
+                (void)registry_.insert(registry_.erase(add_result), opt);
                 return;
             }
         } //upsert(const option&)
@@ -453,6 +459,15 @@ export namespace net::telnet {
         {
             upsert(option{opt_id, std::forward<Args>(args)...});
         } //upsert(option::id_num, Args...)
+
+        ///@brief Retrieves an `option` by its ID, or inserts a defaulted `option` if absent.
+        std::tuple<option, ensure_status> ensure(option::id_num opt_id)
+        {
+            const std::lock_guard<std::shared_mutex> lock(mutex_);
+
+            const auto [iter, inserted] = registry_.emplace(opt_id);
+            return {*iter, inserted ? ensure_status::inserted : ensure_status::found};
+        } //ensure(option::id_num opt_id)
     }; //class option_registry
 
     /**
@@ -518,6 +533,14 @@ export namespace net::telnet {
      * @param args Arguments to construct an `option` (forwarded to `option` constructor).
      *
      * @remark Simplifies runtime `option` creation by forwarding arguments to the `option` constructor.
+     */
+    /**
+     * @fn void option_registry::ensure(option::id_num opt_id)
+     *
+     * @param opt_id The `option::id_num` to query.
+     * @return `std::tuple` containing the `option` and an `ensure_status` indicating whether the option was found or inserted.
+     *
+     * @remark Thread-safe via `std::shared_mutex` (exclusive lock).
      */
 } //namespace net::telnet
 
