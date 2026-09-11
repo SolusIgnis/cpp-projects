@@ -130,9 +130,9 @@ export namespace net::telnet::concepts {
             { T::log_error(ec, msg) } -> std::same_as<void>;
             { T::registered_options.get(opt) } -> std::convertible_to<std::optional<option>>;
             { T::registered_options.has(opt) } -> std::same_as<bool>;
-            { T::registered_options.upsert(opt) } -> std::convertible_to<const option&>;
+            { T::registered_options.upsert(opt) } -> std::same_as<void>;
             { T::registered_options.upsert(full_opt, ec_out) } -> std::same_as<void>;
-            { T::registered_options.upsert(full_opt) } -> std::convertible_to<const option&>;
+            { T::registered_options.upsert(full_opt) } -> std::same_as<void>;
             { T::get_ayt_response() } -> std::same_as<std::string_view>;
             { T::set_ayt_response(msg) } -> std::same_as<void>;
         }; //concept protocol_fsm_config
