@@ -95,12 +95,18 @@ export namespace net::telnet {
         {
             if (enablement_handler) {
                 enablement_handlers_[opt] = std::move(*enablement_handler);
+            } else {
+                (void)enablement_handlers_.erase(opt);
             }
             if (disablement_handler) {
                 disablement_handlers_[opt] = std::move(*disablement_handler);
+            } else {
+                (void)disablement_handlers_.erase(opt);
             }
             if (subnegotiation_handler) {
                 subnegotiation_handlers_[opt] = std::move(*subnegotiation_handler);
+            } else {
+                (void)subnegotiation_handlers_.erase(opt);
             }
         } //register_handlers(option::id_num, std::optional<OptionEnablementHandler>, std::optional<OptionDisablementHandler>, std::optional<SubnegotiationHandler>)
 
