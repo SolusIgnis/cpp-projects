@@ -110,7 +110,8 @@ export namespace net::telnet {
          * @remark Removes the handler record from the registry.
          * @see `:options` for `option::id_num`
          */
-        void unregister_handlers(option::id_num opt) {
+        void unregister_handlers(option::id_num opt)
+        {
             (void)enablement_handlers_.erase(opt);
             (void)disablement_handlers_.erase(opt);
             (void)subnegotiation_handlers_.erase(opt);
@@ -159,7 +160,9 @@ export namespace net::telnet {
         ///@brief Default handler for undefined subnegotiation.
         awaitables::subnegotiation_awaitable undefined_subnegotiation_handler(option opt, std::vector<byte_t> data)
         {
-            ProtocolConfig::log_error(make_error_code(error::user_handler_not_found), "cmd: {}, option: {}, payload: {}", command::se, opt, data);
+            ProtocolConfig::log_error(
+                make_error_code(error::user_handler_not_found), "cmd: {}, option: {}, payload: {}", command::se, opt, data
+            );
             co_return {opt, {}};
         } //undefined_subnegotiation_handler(option::id_num opt, std::vector<byte_t>)
     }; //class option_handler_registry
