@@ -30,6 +30,8 @@ namespace {
         "upsert inserts new option"_test = [] mutable {
             option_registry registry{};
 
+            expect(eq(registry.has(option::id_num::binary), false));
+
             registry.upsert(option{option::id_num::binary, "Binary"});
 
             expect(eq(registry.has(option::id_num::binary), true));
@@ -56,6 +58,44 @@ namespace {
             registry.upsert(option{option::id_num::binary, "Binary"}, ec);
 
             expect(eq(ec.value(), no_error));
+        };
+
+        "ensure inserts new option"_test = [] mutable {
+            constexpr auto id_num = option::id_num::binary;
+
+            option_registry registry{};
+
+            expect(eq(registry.has(id_num), false));
+
+            const auto opt = registry.ensure(id_num);
+
+            expect(eq(opt.get_id(), id_num));
+            expect(eq(registry.has(id_num), true));
+        };
+
+        "ensure does not change existing option"_test = [] mutable {
+            constexpr auto id_num      = option::id_num::binary;
+            constexpr std::string name = "Binary";
+
+            option_registry registry{
+                option{id_num, name, option::local_predicate{option::always_accept}, option::remote_predicate{option::always_accept},},
+            };
+
+            expect(eq(registry.has(id_num), true));
+
+            const auto opt = registry.ensure(id_num);
+
+            expect(eq(opt.get_id(), id_num));
+            expect(eq(opt.get_name(), name));
+            expect(eq(opt.supports_local(), true));
+            expect(eq(opt.supports_remote(), true));
+
+            const auto registered = registry.get(id_num);
+
+            expect(eq(registered.has_value(), true));
+            expect(eq(registered->get_name(), name));
+            expect(eq(registered->supports_local(), true));
+            expect(eq(registered->supports_remote(), true));
         };
     };
 
