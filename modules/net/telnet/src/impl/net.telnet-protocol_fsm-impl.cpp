@@ -608,9 +608,9 @@ namespace net::telnet {
 
     /**
      * @internal
-     * Sets `current_option_` by querying `protocol_config_type::registered_options` with the option ID.
-     * For unknown options, memoizes a default `option` via `registry.upsert` and logs `error::invalid_subnegotiation`.
-     * Logs `error::invalid_subnegotiation` for options that don’t support subnegotiation or aren’t enabled in `option_status_`.
+     * Ensures an `option` for the requested ID exists in `protocol_config_type::registered_options` and sets `current_option_` to a snapshot of it.
+     * This memoizes a default `option` in the event of a subnegotiation request for an unknown option in order to prevent repeated failed lookups.
+     * Logs `error::invalid_subnegotiation` for options without subnegotiation support and options not enabled in `option_status_` (including unknown options).
      * Reserves `subnegotiation_buffer_` based on `current_option_->max_subnegotiation_size()`.
      * Transitions to `protocol_state::subnegotiation` and discards the option byte (returns `false` for forward flag).
      */
@@ -619,20 +619,9 @@ namespace net::telnet {
         protocol_fsm<PC>::handle_state_subnegotiation_option(byte_t byte)
     {
         option_registry& registry = protocol_config_type::registered_options;
-        current_option_           = registry.get(static_cast<option::id_num>(byte));
+        current_option_           = registry.ensure(static_cast<option::id_num>(byte));
 
-        if (!current_option_) {
-            //Memoize a defaulted option object (automatic rejection) to avoid lookup failures on repeated bad requests.
-            current_option_ = option{static_cast<option::id_num>(byte)};
-            registry.upsert(*current_option_);
-            protocol_config_type::log_error(
-                make_error_code(error::invalid_subnegotiation),
-                "byte: 0x{:02x}, cmd: {}, opt: {}",
-                byte,
-                telnet::command::sb,
-                *current_option_
-            );
-        } else if (!current_option_->supports_subnegotiation() || !option_status_[*current_option_].is_enabled()) {
+        if (!current_option_->supports_subnegotiation() || !option_status_[*current_option_].is_enabled()) {
             protocol_config_type::log_error(
                 make_error_code(error::invalid_subnegotiation),
                 "byte: 0x{:02x}, cmd: {}, opt: {}",
