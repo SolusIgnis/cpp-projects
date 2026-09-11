@@ -121,7 +121,7 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
   - **Priority**: Medium (cleans up telnet::option constructor parameters)
   - **Estimated Effort**: Completed in 2 days.
   
-10. [✔️] **Use Flat Sets and Maps**:
+10. [✔️] **Use Flat Sets and Maps** (Completed September 11, 2026):
   - **Task**: Change `std::set` and `std::map` usage to `std::flat_set` and `std::flat_map` respectively.
   - **Steps**:
     - Change `option_registry` from using a `std::set<option>` to a `std::flat_set<option>`.
@@ -129,7 +129,7 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
     - Change `option_handler_registry` from using a `std::map<option::id_num, option_handler_record>` (AoS form) to `std::flat_map<option::id_num, OptionEnablementHandler>`, `std::flat_map<option::id_num, OptionDisablementHandler>`, and `std::flat_map<option::id_num, SubnegotiationHandler>` (SoA form).
   - **Dependencies**: Affects `:options` and `:internal`.
   - **Priority**: Medium (significant performance improvement)
-  - **Estimated Effort**: 1 day.
+  - **Estimated Effort**: Completed in 2 days.
 
 ### Phase 7 Milestones
 01. [ ] **Implement a strand in `telnet::stream`**:
