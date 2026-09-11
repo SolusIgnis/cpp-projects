@@ -78,7 +78,11 @@ namespace {
             constexpr std::string name = "Binary";
 
             option_registry registry{
-                option{id_num, name, option::local_predicate{option::always_accept}, option::remote_predicate{option::always_accept},},
+                option{
+                       id_num, name,
+                       option::local_predicate{option::always_accept},
+                       option::remote_predicate{option::always_accept},
+                       },
             };
 
             expect(eq(registry.has(id_num), true));
