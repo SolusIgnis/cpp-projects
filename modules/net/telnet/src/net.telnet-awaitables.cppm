@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 /**
  * @file net.telnet-awaitables.cppm
- * @version 0.5.10
+ * @version 0.6.0
  * @date April 17, 2026
  *
  * @copyright © 2025-2026 Jeremy Murphy and any Contributors
