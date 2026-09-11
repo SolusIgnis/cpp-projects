@@ -389,12 +389,6 @@ export namespace net::telnet {
         mutable std::shared_mutex mutex_;
 
     public:
-        ///
-        enum class ensure_status : std::uint8_t {
-            found,
-            inserted,
-        };
-
         ///@brief Constructs a registry from an initializer list of `option` instances.
         constexpr explicit(false) option_registry(std::initializer_list<option> init) : registry_(std::from_range, init) {}
 
@@ -535,7 +529,7 @@ export namespace net::telnet {
      * @remark Simplifies runtime `option` creation by forwarding arguments to the `option` constructor.
      */
     /**
-     * @fn void option_registry::ensure(option::id_num opt_id)
+     * @fn option option_registry::ensure(option::id_num opt_id)
      *
      * @param opt_id The `option::id_num` to query.
      * @return The `option` found or inserted.
