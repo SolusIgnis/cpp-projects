@@ -461,12 +461,12 @@ export namespace net::telnet {
         } //upsert(option::id_num, Args...)
 
         ///@brief Retrieves an `option` by its ID, or inserts a defaulted `option` if absent.
-        std::tuple<option, ensure_status> ensure(option::id_num opt_id)
+        option ensure(option::id_num opt_id)
         {
             const std::lock_guard<std::shared_mutex> lock(mutex_);
 
-            const auto [iter, inserted] = registry_.emplace(opt_id);
-            return {*iter, inserted ? ensure_status::inserted : ensure_status::found};
+            const auto [iter, _] = registry_.emplace(opt_id);
+            return *iter;
         } //ensure(option::id_num opt_id)
     }; //class option_registry
 
@@ -538,7 +538,7 @@ export namespace net::telnet {
      * @fn void option_registry::ensure(option::id_num opt_id)
      *
      * @param opt_id The `option::id_num` to query.
-     * @return `std::tuple` containing the `option` and an `ensure_status` indicating whether the option was found or inserted.
+     * @return The `option` found or inserted.
      *
      * @remark Thread-safe via `std::shared_mutex` (exclusive lock).
      */
