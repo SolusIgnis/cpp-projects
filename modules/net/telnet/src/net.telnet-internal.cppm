@@ -155,7 +155,7 @@ export namespace net::telnet {
         static constexpr auto ignore_enablement = [] -> awaitables::option_enablement_awaitable { co_return; };
 
         ///@brief Default empty handler for disablement.
-        static constexpr auto ignore_disablement = [] -> awaitables::option_enablement_awaitable { co_return; };
+        static constexpr auto ignore_disablement = [] -> awaitables::option_disablement_awaitable { co_return; };
 
         ///@brief Default handler for undefined subnegotiation.
         awaitables::subnegotiation_awaitable undefined_subnegotiation_handler(option opt, std::vector<byte_t> data)
