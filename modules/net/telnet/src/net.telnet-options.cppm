@@ -493,7 +493,7 @@ export namespace net::telnet {
      * @remark Performs O(log n) lookup.
      */
     /**
-     * @fn const option& option_registry::upsert(const option& opt)
+     * @fn void option_registry::upsert(const option& opt)
      *
      * @param opt The `option` to insert or update.
      *
@@ -502,7 +502,7 @@ export namespace net::telnet {
      */
     /**
      * @overload void option_registry::upsert(const option& opt, std::error_code& ec) noexcept
-     * @copydoc const option& option_registry::upsert(const option& opt)
+     * @copydoc void option_registry::upsert(const option& opt)
      *
      * @param opt The `option` to insert or update.
      * @param[out] ec Error code set on failure (e.g., `std::errc::not_enough_memory`).
@@ -510,8 +510,8 @@ export namespace net::telnet {
      * @note Catches exceptions and sets appropriate error codes for robust runtime use.
      */
     /**
-     * @overload const option& option_registry::upsert(option::id_num opt_id, Args&&... args)
-     * @copydoc const option& option_registry::upsert(const option& opt)
+     * @overload void option_registry::upsert(option::id_num opt_id, Args&&... args)
+     * @copydoc void option_registry::upsert(const option& opt)
      *
      * @tparam Args Types for `args` forwarded to `option` constructor.
      * @param opt_id The `option::id_num` for the `option`.
