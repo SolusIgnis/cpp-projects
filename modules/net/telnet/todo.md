@@ -1,8 +1,8 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 <!-- SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors -->
 # Telnet Project TODO
-## Version: 0.5.9
-## Date: September 8, 2026
+## Version: 0.5.10
+## Date: September 11, 2026
 ## Purpose: This document compiles all `@todo` tasks from the Telnet project files, organized by phase, to guide development in Phase 6 and beyond. The tasks focus on enhancing stream compatibility, TLS support, and interface cleanup, building on the modular structure defined in `telnet.cppm`.
 
 ## Development Plan
@@ -121,7 +121,7 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
   - **Priority**: Medium (cleans up telnet::option constructor parameters)
   - **Estimated Effort**: Completed in 2 days.
   
-10. [ ] **Use Flat Sets and Maps**:
+10. [✔️] **Use Flat Sets and Maps** (Completed September 11, 2026):
   - **Task**: Change `std::set` and `std::map` usage to `std::flat_set` and `std::flat_map` respectively.
   - **Steps**:
     - Change `option_registry` from using a `std::set<option>` to a `std::flat_set<option>`.
@@ -129,7 +129,7 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
     - Change `option_handler_registry` from using a `std::map<option::id_num, option_handler_record>` (AoS form) to `std::flat_map<option::id_num, OptionEnablementHandler>`, `std::flat_map<option::id_num, OptionDisablementHandler>`, and `std::flat_map<option::id_num, SubnegotiationHandler>` (SoA form).
   - **Dependencies**: Affects `:options` and `:internal`.
   - **Priority**: Medium (significant performance improvement)
-  - **Estimated Effort**: 1 day.
+  - **Estimated Effort**: Completed in 2 days.
 
 ### Phase 7 Milestones
 01. [ ] **Implement a strand in `telnet::stream`**:
@@ -479,7 +479,7 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
   - **Estimated Effort**: Completed in 0.5 days.
 
 ### Notes
-- Version 0.5.9 reflects tagged predicates for `telnet::option`'s constructor.
+- Version 0.5.10 reflects `std::flat_set` and `std::flat_map` integration.
 - Log formats use default `{}` specifiers for `TelnetCommand` (`name (0xXX)`), `option` (`0xXX (name)`), and `NegotiationDirection` (`local` or `remote`), with `"N/A"_sv` for `std::nullopt` cases.
-- Next focus: Phase 6 Milestone 10, **Use Flat Sets and Maps**
-*Last updated: September 8, 2026*
+- Next focus: Phase 6 Milestone [Completion], **Prepare Release of 0.6.0**
+*Last updated: September 11, 2026*

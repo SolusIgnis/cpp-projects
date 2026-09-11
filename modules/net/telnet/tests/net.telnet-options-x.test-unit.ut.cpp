@@ -147,8 +147,7 @@ namespace {
             option_registry reg{};
 
             // Insert new
-            const auto& inserted = reg.upsert(option::make_option(option::id_num::binary, name1, true, true));
-            expect(eq(inserted.get_name(), name1));
+            reg.upsert(option::make_option(option::id_num::binary, name1, true, true));
             expect(eq(reg.has(option::id_num::binary), true));
 
             // Update existing
@@ -178,7 +177,7 @@ namespace {
             constexpr std::size_t buffer_size{128};
 
             option_registry reg{};
-            const auto& opt = reg.upsert(
+            reg.upsert(
                 option::id_num::charset,
                 opt_name,
                 option::local_predicate{option::always_accept},
@@ -186,11 +185,16 @@ namespace {
                 true,
                 buffer_size
             );
-            expect(eq(opt.get_name(), opt_name));
-            expect(eq(opt.supports_local(), true));
-            expect(eq(opt.supports_remote(), false));
-            expect(eq(opt.supports_subnegotiation(), true));
-            expect(eq(opt.max_subnegotiation_size(), buffer_size));
+
+            const auto opt = reg.get(option::id_num::charset);
+            expect(eq(opt.has_value(), true));
+            if (opt) {
+                expect(eq(opt->get_name(), opt_name));
+                expect(eq(opt->supports_local(), true));
+                expect(eq(opt->supports_remote(), false));
+                expect(eq(opt->supports_subnegotiation(), true));
+                expect(eq(opt->max_subnegotiation_size(), buffer_size));
+            }
         };
 
         //NOLINTBEGIN(bugprone-argument-comment): Matcher lhs/rhs.

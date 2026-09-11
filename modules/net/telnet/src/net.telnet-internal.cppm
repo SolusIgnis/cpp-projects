@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 /**
  * @file net.telnet-internal.cppm
- * @version 0.5.9
+ * @version 0.5.10
  * @date October 30, 2025
  *
  * @copyright © 2025-2026 Jeremy Murphy and any Contributors
@@ -61,7 +61,6 @@ export namespace net::telnet {
         typename SubnegotiationHandler
     >
     class option_handler_registry {
-    private:
         /**
          * @brief Record for handlers registered to a single Telnet option.
          * @details Stores an optional enablement handler, an optional disablement handler, and an optional subnegotiation handler for processing option-specific data.
@@ -72,6 +71,10 @@ export namespace net::telnet {
             std::optional<OptionDisablementHandler> disablement_handler;
             std::optional<SubnegotiationHandler> subnegotiation_handler;
         }; //struct option_handler_record
+
+        std::flat_map<option::id_num, OptionEnablementHandler> enablement_handlers_;
+        std::flat_map<option::id_num, OptionDisablementHandler> disablement_handlers_;
+        std::flat_map<option::id_num, SubnegotiationHandler> subnegotiation_handlers_;
 
     public:
         /**
@@ -90,11 +93,21 @@ export namespace net::telnet {
             std::optional<SubnegotiationHandler> subnegotiation_handler = std::nullopt
         )
         {
-            handlers_[opt] = option_handler_record{
-                std::move(enablement_handler),
-                std::move(disablement_handler),
-                std::move(subnegotiation_handler),
-            };
+            if (enablement_handler) {
+                enablement_handlers_[opt] = std::move(*enablement_handler);
+            } else {
+                (void)enablement_handlers_.erase(opt);
+            }
+            if (disablement_handler) {
+                disablement_handlers_[opt] = std::move(*disablement_handler);
+            } else {
+                (void)disablement_handlers_.erase(opt);
+            }
+            if (subnegotiation_handler) {
+                subnegotiation_handlers_[opt] = std::move(*subnegotiation_handler);
+            } else {
+                (void)subnegotiation_handlers_.erase(opt);
+            }
         } //register_handlers(option::id_num, std::optional<OptionEnablementHandler>, std::optional<OptionDisablementHandler>, std::optional<SubnegotiationHandler>)
 
         /**
@@ -103,50 +116,61 @@ export namespace net::telnet {
          * @remark Removes the handler record from the registry.
          * @see `:options` for `option::id_num`
          */
-        void unregister_handlers(option::id_num opt) { handlers_.erase(opt); } //unregister_handlers(option::id_num)
+        void unregister_handlers(option::id_num opt)
+        {
+            (void)enablement_handlers_.erase(opt);
+            (void)disablement_handlers_.erase(opt);
+            (void)subnegotiation_handlers_.erase(opt);
+        } //unregister_handlers(option::id_num)
 
         ///@brief Handles enablement for a Telnet option.
         awaitables::option_enablement_awaitable handle_enablement(const option opt, negotiation_direction direction)
         {
-            auto iter = handlers_.find(opt);
-            if ((iter != handlers_.end()) && iter->second.enablement_handler) {
-                auto& handler = *(iter->second.enablement_handler);
+            if (auto iter = enablement_handlers_.find(opt); iter != enablement_handlers_.end()) {
+                auto& handler = iter->second;
                 return handler(opt, direction);
+            } else {
+                return ignore_enablement();
             }
-            return {};
         } //handle_enablement(const option&, negotiation_direction)
 
         ///@brief Handles disablement for a Telnet option.
         awaitables::option_disablement_awaitable handle_disablement(const option opt, negotiation_direction direction)
         {
-            auto iter = handlers_.find(opt);
-            if ((iter != handlers_.end()) && iter->second.disablement_handler) {
-                auto& handler = *(iter->second.disablement_handler);
+            if (auto iter = disablement_handlers_.find(opt); iter != disablement_handlers_.end()) {
+                auto& handler = iter->second;
                 return handler(opt, direction);
+            } else {
+                return ignore_disablement();
             }
-            return {};
         } //handle_disablement(const option&, negotiation_direction)
 
         ///@brief Handles subnegotiation for a Telnet option.
         awaitables::subnegotiation_awaitable handle_subnegotiation(const option opt, std::vector<byte_t> data)
         {
-            auto iter = handlers_.find(opt);
-            if ((iter != handlers_.end()) && iter->second.subnegotiation_handler) {
-                auto& handler = *(iter->second.subnegotiation_handler);
+            if (auto iter = subnegotiation_handlers_.find(opt); iter != subnegotiation_handlers_.end()) {
+                auto& handler = iter->second;
                 return handler(opt, std::move(data));
             } else {
                 return undefined_subnegotiation_handler<ProtocolConfig>(opt, std::move(data));
             }
         } //handle_subnegotiation(option::id_num, std::vector<byte_t>)
+
     private:
+        ///@brief Default empty handler for enablement.
+        static constexpr auto ignore_enablement = [] -> awaitables::option_enablement_awaitable { co_return; };
+
+        ///@brief Default empty handler for disablement.
+        static constexpr auto ignore_disablement = [] -> awaitables::option_disablement_awaitable { co_return; };
+
         ///@brief Default handler for undefined subnegotiation.
-        awaitables::subnegotiation_awaitable undefined_subnegotiation_handler(option opt, std::vector<byte_t> /*unused*/)
+        awaitables::subnegotiation_awaitable undefined_subnegotiation_handler(option opt, std::vector<byte_t> data)
         {
-            ProtocolConfig::log_error(make_error_code(error::user_handler_not_found), "cmd: {}, option: {}", command::se, opt);
+            ProtocolConfig::log_error(
+                make_error_code(error::user_handler_not_found), "cmd: {}, option: {}, payload: {}", command::se, opt, data
+            );
             co_return {opt, {}};
         } //undefined_subnegotiation_handler(option::id_num opt, std::vector<byte_t>)
-
-        std::map<option::id_num, option_handler_record> handlers_;
     }; //class option_handler_registry
 
     /**

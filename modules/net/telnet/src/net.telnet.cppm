@@ -3,7 +3,7 @@
 /**
  * @module net.telnet
  * @file net.telnet.cppm
- * @version 0.5.9
+ * @version 0.5.10
  * @date October 30, 2025
  *
  * @copyright © 2025-2026 Jeremy Murphy and any Contributors

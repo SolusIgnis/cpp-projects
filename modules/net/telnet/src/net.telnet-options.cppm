@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2025-2026 Jeremy Murphy and any Contributors
 /**
  * @file net.telnet-options.cppm
- * @version 0.5.9
+ * @version 0.5.10
  * @date October 30, 2025
  *
  * @copyright © 2025-2026 Jeremy Murphy and any Contributors
@@ -385,23 +385,23 @@ export namespace net::telnet {
      * @see RFC 855 for Telnet option negotiation, `:protocol_fsm` for `option` usage in the protocol state machine, `:stream` for negotiation operations, `:types` for `telnet::command`, `option` for option details.
      */
     class option_registry {
+        std::flat_set<option, std::less<>> registry_;
+        mutable std::shared_mutex mutex_;
+
     public:
-        ///@brief Constructs a registry from a sorted initializer list of `option` instances.
-        option_registry(std::initializer_list<option> init)
-        {
-            ///@todo Figure out if this can be done as a constant expression.
-            //static_assert(
-            // std::is_sorted(init.begin(), init.end(), std::less<>{}),
-            // "Initializer list must be sorted by option::id_num"
-            //);
-            registry_ = std::set<option, std::less<>>(init.begin(), init.end());
-        } //option_registry(std::initializer_list<option>)
+        ///@brief Constructs a registry from an initializer list of `option` instances.
+        constexpr explicit(false) option_registry(std::initializer_list<option> init) : registry_(std::from_range, init) {}
+
+        ///@brief Constructs a registry from a pre-constructed `std::flat_set` of `option` instances.
+        constexpr explicit option_registry(std::flat_set<option, std::less<>> init) : registry_{std::move(init)} {}
 
         ///@brief Constructs a registry from a pre-constructed `std::set` of `option` instances.
-        explicit option_registry(std::set<option, std::less<>>&& init) : registry_(std::move(init)) {}
+        constexpr explicit option_registry(const std::set<option, std::less<>>& init)
+            : registry_(std::sorted_unique, init.begin(), init.end())
+        {}
 
         ///@brief Retrieves an `option` by its ID.
-        std::optional<option> get(option::id_num opt_id) const noexcept
+        constexpr std::optional<option> get(option::id_num opt_id) const noexcept
         {
             const std::shared_lock<std::shared_mutex> lock(mutex_);
 
@@ -413,28 +413,28 @@ export namespace net::telnet {
         } //get(option::id_num)
 
         ///@brief Checks if an `option` is present in the registry.
-        [[nodiscard]] bool has(option::id_num opt_id) const noexcept
+        [[nodiscard]] constexpr bool has(option::id_num opt_id) const noexcept
         {
             const std::shared_lock<std::shared_mutex> lock(mutex_);
             return registry_.contains(opt_id);
         } //has(option::id_num)
 
         ///@brief Inserts or updates an `option` in the registry.
-        const option& upsert(const option& opt)
+        constexpr void upsert(const option& opt)
         {
             const std::lock_guard<std::shared_mutex> lock(mutex_);
             const auto [add_result, success] = registry_.insert(opt);
             if (success) {
-                return *add_result;
+                return;
             } else {
-                //Use iterator from erase as hint to insert new option at same position, optimizing insertion to O(1)
-                const auto replace_result = registry_.insert(registry_.erase(add_result), opt);
-                return *replace_result;
+                //Use iterator from erase as hint to insert new option at same position, avoiding a redundant find.
+                (void)registry_.insert(registry_.erase(add_result), opt);
+                return;
             }
         } //upsert(const option&)
 
         ///@brief Inserts or updates an `option` with error handling.
-        void upsert(const option& opt, std::error_code& ec) noexcept
+        constexpr void upsert(const option& opt, std::error_code& ec) noexcept
         {
             try {
                 upsert(opt); // the mutex is locked inside this call
@@ -449,29 +449,37 @@ export namespace net::telnet {
 
         ///@brief Inserts or updates an `option` constructed from arguments.
         template<typename... Args>
-        const option& upsert(option::id_num opt_id, Args&&... args)
+        constexpr void upsert(option::id_num opt_id, Args&&... args)
         {
-            return upsert(option{opt_id, std::forward<Args>(args)...});
+            upsert(option{opt_id, std::forward<Args>(args)...});
         } //upsert(option::id_num, Args...)
 
-    private:
-        std::set<option, std::less<>> registry_;
-        mutable std::shared_mutex mutex_;
+        ///@brief Retrieves an `option` by its ID, or inserts a defaulted `option` if absent.
+        option ensure(option::id_num opt_id)
+        {
+            const std::lock_guard<std::shared_mutex> lock(mutex_);
+
+            const auto [iter, _] = registry_.emplace(opt_id);
+            return *iter;
+        } //ensure(option::id_num opt_id)
     }; //class option_registry
 
     /**
      * @fn option_registry::option_registry(std::initializer_list<option> init)
      *
-     * @param init Initializer list of `option` instances, must be sorted by `option::id_num`.
-     *
-     * @pre `init` Initializer list MUST be sorted by `option::id_num` in ascending order (enforced at compile time by `static_assert`).
-     * @remark Ensures O(n) construction of the internal `std::set` by requiring sorted input.
-     * @remark Unsorted inputs cause compilation failure, guaranteeing performance for compile-time configurations.
+     * @param init Initializer list of `option` instances.
      */
     /**
-     * @fn option_registry::option_registry(std::set<option, std::less<>>&& init)
+     * @overload option_registry::option_registry(std::flat_set<option, std::less<>> init)
      *
-     * @param init A `std::set` of `option` instances, moved into the registry.
+     * @param init A `std::flat_set` of `option` instances.
+     *
+     * @remark Allows advanced use cases where options are pre-sorted or dynamically generated before registry creation.
+     */
+    /**
+     * @overload option_registry::option_registry(const std::set<option, std::less<>>& init)
+     *
+     * @param init A `std::set` of `option` instances to be copied into the registry.
      *
      * @remark Allows advanced use cases where options are pre-sorted or dynamically generated before registry creation.
      */
@@ -494,17 +502,16 @@ export namespace net::telnet {
      * @remark Performs O(log n) lookup.
      */
     /**
-     * @fn const option& option_registry::upsert(const option& opt)
+     * @fn void option_registry::upsert(const option& opt)
      *
      * @param opt The `option` to insert or update.
-     * @return Reference to the inserted or updated `option` in the registry.
      *
      * @remark Thread-safe via `std::shared_mutex` (exclusive lock).
      * @remark Performs O(log n) insertion or replacement, using `erase` result iterator as a hint to optimize `insert` performance during replacement.
      */
     /**
      * @overload void option_registry::upsert(const option& opt, std::error_code& ec) noexcept
-     * @copydoc const option& option_registry::upsert(const option& opt)
+     * @copydoc void option_registry::upsert(const option& opt)
      *
      * @param opt The `option` to insert or update.
      * @param[out] ec Error code set on failure (e.g., `std::errc::not_enough_memory`).
@@ -512,15 +519,22 @@ export namespace net::telnet {
      * @note Catches exceptions and sets appropriate error codes for robust runtime use.
      */
     /**
-     * @overload const option& option_registry::upsert(option::id_num opt_id, Args&&... args)
-     * @copydoc const option& option_registry::upsert(const option& opt)
+     * @overload void option_registry::upsert(option::id_num opt_id, Args&&... args)
+     * @copydoc void option_registry::upsert(const option& opt)
      *
      * @tparam Args Types for `args` forwarded to `option` constructor.
      * @param opt_id The `option::id_num` for the `option`.
      * @param args Arguments to construct an `option` (forwarded to `option` constructor).
-     * @return Reference to the inserted or updated `option`.
      *
      * @remark Simplifies runtime `option` creation by forwarding arguments to the `option` constructor.
+     */
+    /**
+     * @fn option option_registry::ensure(option::id_num opt_id)
+     *
+     * @param opt_id The `option::id_num` to query.
+     * @return The `option` found or inserted.
+     *
+     * @remark Thread-safe via `std::shared_mutex` (exclusive lock).
      */
 } //namespace net::telnet
 

@@ -4,6 +4,20 @@
 
 ## [Unreleased] - TBD
 
+## [0.5.10] - September 11, 2026
+### Added
+- Added `option_registry::ensure` to provide an atomic get-or-insert-default operation for unknown options during subnegotiation.
+
+### Changed
+- Switched `option_registry` storage from `std::set<option>` to `std::flat_set<option>`, eliminating sorting requirements on initializer-list construction.
+- Converted `option_handler_registry` from an Array-of-Structs (`std::map<option::id_num, option_handler_record>`) layout to a Struct-of-Arrays (SoA) layout using three `std::flat_map` containers for enablement, disablement, and subnegotiation handlers.
+- Updated `option_registry::upsert` to return `void` instead of a reference to the updated element due to non-stable references in flat containers.
+
+### Fixed
+- Fixed bug where missing option enablement or disablement handlers returned default-constructed awaitables; they now return no-op coroutines (`ignore_enablement` and `ignore_disablement`) to prevent undefined behavior when `co_await`ed.
+- Added payload bytes to subnegotiation error log messages.
+- Eliminated race in `handle_state_subnegotiation_option` caused by a stale option snapshot.
+
 ## [0.5.9] - September 8, 2026
 ### Added
 - Added module `base.vocab.tagging` with `tagged_boundary` to provide distinguishing tags for function parameters.
