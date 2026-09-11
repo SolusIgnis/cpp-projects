@@ -619,7 +619,11 @@ namespace net::telnet {
         protocol_fsm<PC>::handle_state_subnegotiation_option(byte_t byte)
     {
         option_registry& registry = protocol_config_type::registered_options;
-        current_option_           = registry.ensure(static_cast<option::id_num>(byte));
+
+        current_option_ = registry.get(static_cast<option::id_num>(byte));
+        if (!current_option_) {
+            current_option_ = registry.ensure(static_cast<option::id_num>(byte));
+        }
 
         if (!current_option_->supports_subnegotiation() || !option_status_[*current_option_].is_enabled()) {
             protocol_config_type::log_error(
