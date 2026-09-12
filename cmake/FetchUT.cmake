@@ -82,16 +82,16 @@ function(fetch_ut)
   endfunction()
 
   # Insert #include <iostream> after 'module;' and before '#include "ut"'
-  _patch("${UT_CPPM}"
-    "module;\n#include \"ut\"\n"
-    "module;\n#include <iostream>\n#include \"ut\"\n"
-  )
+  #_patch("${UT_CPPM}"
+  #  "module;\n#include \"ut\"\n"
+  #  "module;\n#include <iostream>\n#include \"ut\"\n"
+  #)
 
   # Patch out the ambiguous forward declarations in ut.cppm
-  _patch("${UT_HEADER}"
-    "namespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std"
-     "#if 0\nnamespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std\n#endif"
-  )
+  #_patch("${UT_HEADER}"
+  #  "namespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std"
+  #   "#if 0\nnamespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std\n#endif"
+  #)
 
   # Uncomment below to dump file contents to check patch results.
   #file(READ "${UT_CPPM}" UT_M_CONTENTS)
