@@ -7,17 +7,18 @@
 option(BOOST_UT_DISABLE_MODULE "Disable ut module" ON)
 
 if(NOT BOOST_UT_DISABLE_MODULE)
-cmake_minimum_required(VERSION 4.4.0)
+cmake_minimum_required(VERSION 4.0.0)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "a9e1cf81-9932-4810-974b-6eccaf14e457")
+set(CMAKE_CXX_MODULE_STD 1)
 else()
 cmake_minimum_required(VERSION 3.21...3.25)
 endif()
-message(STATUS "UT before project: ${CMAKE_EXPERIMENTAL_CXX_IMPORT_STD}")
 project(
   ut
   VERSION 2.3.1
   LANGUAGES CXX
 )
-message(STATUS "UT after project: ${CMAKE_EXPERIMENTAL_CXX_IMPORT_STD}")
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD
@@ -43,6 +44,9 @@ add_library(ut_module)
 endif()
 target_include_directories(ut INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>)
 target_compile_features(ut INTERFACE cxx_std_20)
+if(NOT BOOST_UT_DISABLE_MODULE)
+target_compile_features(ut_module INTERFACE cxx_std_23)
+endif()
 
 if(BOOST_UT_USE_WARNINGS_AS_ERORS)
   include(cmake/WarningsAsErrors.cmake)

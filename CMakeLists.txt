@@ -49,9 +49,9 @@ CPMFindPackage(
   NAME ut
   GITHUB_REPOSITORY boost-ext/ut
   VERSION 2.3.1
-  GIT_TAG f923e6f
+  GIT_TAG 59a9beba0763dbb45b3cc68e4cf484c659319a97
   OPTIONS "BOOST_UT_DISABLE_MODULE NO"
-  PATCHES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/patches/boost-ext.ut.cmake-4.4.patch"
+#  PATCHES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/patches/boost-ext.ut.cmake-4.4.patch"
 )
 
 # qlibs/ut
