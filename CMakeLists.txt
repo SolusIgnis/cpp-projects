@@ -51,6 +51,7 @@ CPMFindPackage(
   VERSION 2.3.1
   GIT_TAG f923e6f
   OPTIONS "BOOST_UT_DISABLE_MODULE NO"
+  PATCHES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/patches/boost-ext.ut.cmake-4.4.patch"
 )
 
 # qlibs/ut

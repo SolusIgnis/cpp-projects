@@ -130,5 +130,5 @@ function(fetch_ut)
   # ----------------------------------------------------------
   # Export status
   # ----------------------------------------------------------
-  message(STATUS "qlibs/ut fetched and ut::ut target created")
+  message(STATUS "qlibs/ut fetched and qlibs.ut::ut target created")
 endfunction()
