@@ -45,7 +45,11 @@ include(SanitizerSetup)
 # ===========================================================================
 include(FetchCPM)
 
-CPMFindPackage("gh:boost-ext/ut#f923e6f@2.3.1")
+CPMFindPackage(
+  URI "gh:boost-ext/ut#f923e6f@2.3.1"
+  OPTIONS
+    BOOST_UT_DISABLE_MODULE NO
+)
 
 # qlibs/ut
 find_package(ut QUIET)
