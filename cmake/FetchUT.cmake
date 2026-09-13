@@ -125,7 +125,7 @@ function(fetch_ut)
   # ----------------------------------------------------------
   # Create canonical alias
   # ----------------------------------------------------------
-  add_library(ut::ut ALIAS qlibs.ut)
+  add_library(qlibs::ut ALIAS qlibs.ut)
 
   # ----------------------------------------------------------
   # Export status

@@ -69,6 +69,7 @@ if(NOT DEFINED TEST_DIALECTS)
 
   set(TEST_FRAMEWORK.catch2 Catch2::Catch2WithMain)
   set(TEST_FRAMEWORK.gtest  GTest::gtest_main)
+#  set(TEST_FRAMEWORK.ut     qlibs::ut)
   set(TEST_FRAMEWORK.ut     ut::ut)
 
   set(TEST_DISCOVERY.catch2 Catch2)

@@ -44,38 +44,13 @@ include(SanitizerSetup)
 # Test Framework Dependencies
 # ===========================================================================
 include(FetchCPM)
-include(FetchContent)
 
-# Catch2
-#find_package(Catch2 3 QUIET)
-#
-#if(NOT TARGET Catch2::Catch2WithMain)
-#  message(STATUS "Fetching Catch2 via FetchContent")
-#  FetchContent_Declare(
-#    Catch2
-#    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-#    GIT_TAG v3.13.0
-#  )
-#  FetchContent_MakeAvailable(Catch2)
-#endif()
-
-# GTest
-#find_package(GTest QUIET)
-#
-#if(NOT TARGET GTest::gtest_main)
-#  message(STATUS "Fetching GoogleTest via FetchContent")
-#  FetchContent_Declare(
-#    googletest
-#    GIT_REPOSITORY https://github.com/google/googletest.git
-#    GIT_TAG v1.17.0
-#  )
-#  FetchContent_MakeAvailable(googletest)
-#endif()
+CPMFindPackage("gh:boost-ext/ut#f923e6f@2.3.1")
 
 # qlibs/ut
 find_package(ut QUIET)
 
-if(NOT TARGET ut::ut)
+if(NOT TARGET qlibs::ut)
   include(FetchUT)
   fetch_ut()
 endif()
