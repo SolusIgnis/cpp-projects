@@ -224,7 +224,7 @@ function(_create_test_from_file module_target test_file dependencies)
   target_link_libraries("${target}"
     PRIVATE
       "${module_target}"
-      "${TEST_FRAMEWORK.${TEST_DIALECT}}"
+      "${TEST_FRAMEWORK.${TEST_DIALECT}.LINK_TARGET}"
       ${dependencies}
   )
   

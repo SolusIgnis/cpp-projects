@@ -68,10 +68,10 @@ if(NOT DEFINED TEST_DIALECTS)
     boost-ut
   )
 
-  set(TEST_FRAMEWORK.catch2   Catch2::Catch2WithMain)
-  set(TEST_FRAMEWORK.gtest    GTest::gtest_main)
-  set(TEST_FRAMEWORK.ut       qlibs.ut::ut)
-  set(TEST_FRAMEWORK.boost-ut Boost::ut_module)
+  set(TEST_FRAMEWORK.catch2.LINK_TARGET   Catch2::Catch2WithMain)
+  set(TEST_FRAMEWORK.gtest.LINK_TARGET    GTest::gtest_main)
+  set(TEST_FRAMEWORK.ut.LINK_TARGET       qlibs.ut::ut)
+  set(TEST_FRAMEWORK.boost-ut.LINK_TARGET Boost::ut_module)
 
   set(TEST_DISCOVERY.catch2 Catch2)
   set(TEST_DISCOVERY.gtest  GTest)
