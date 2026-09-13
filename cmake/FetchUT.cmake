@@ -107,14 +107,14 @@ function(fetch_ut)
   target_sources(qlibs.ut.ut
     PUBLIC
       FILE_SET CXX_MODULES
-      BASE_DIRS ${ut_SOURCE_DIR}
+      BASE_DIRS ${qlibs.ut_SOURCE_DIR}
       FILES
-        ${ut_SOURCE_DIR}/ut.cppm
+        ${qlibs.ut_SOURCE_DIR}/ut.cppm
   )
   
   target_include_directories(qlibs.ut.ut
     PUBLIC
-      ${ut_SOURCE_DIR}/include
+      ${qlibs.ut_SOURCE_DIR}/include
   )
 
   target_compile_features(qlibs.ut.ut
