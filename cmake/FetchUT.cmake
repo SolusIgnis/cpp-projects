@@ -24,7 +24,7 @@ function(fetch_ut)
   # ----------------------------------------------------------
   # Fast exit if already available
   # ----------------------------------------------------------
-  if(TARGET ut::ut)
+  if(TARGET qlibs.ut::ut)
     return()
   endif()
 
