@@ -34,22 +34,22 @@ function(fetch_ut)
   # Declare dependency (pinned commit with module support)
   # ----------------------------------------------------------
   FetchContent_Declare(
-    ut
+    qlibs.ut
     GIT_REPOSITORY https://github.com/qlibs/ut.git
     GIT_TAG c6752919724ad5e33199751b0b224efb40647539
   )
 
-  FetchContent_MakeAvailable(ut)
+  FetchContent_MakeAvailable(qlibs.ut)
 
   # ----------------------------------------------------------
   # Verify module exists
   # ----------------------------------------------------------
-  if(NOT DEFINED ut_SOURCE_DIR)
-    message(FATAL_ERROR "FetchContent failed: ut_SOURCE_DIR undefined")
+  if(NOT DEFINED qlibs.ut_SOURCE_DIR)
+    message(FATAL_ERROR "FetchContent failed: qlibs.ut_SOURCE_DIR undefined")
   endif()
   
-  set(UT_CPPM "${ut_SOURCE_DIR}/ut.cppm")
-  set(UT_HEADER "${ut_SOURCE_DIR}/ut")
+  set(UT_CPPM "${qlibs.ut_SOURCE_DIR}/ut.cppm")
+  set(UT_HEADER "${qlibs.ut_SOURCE_DIR}/ut")
 
   if(NOT EXISTS "${UT_CPPM}")
     message(FATAL_ERROR
@@ -102,9 +102,9 @@ function(fetch_ut)
   # ----------------------------------------------------------
   # Create module target
   # ----------------------------------------------------------
-  add_library(qlibs.ut OBJECT)
+  add_library(qlibs.ut.ut OBJECT)
 
-  target_sources(qlibs.ut
+  target_sources(qlibs.ut.ut
     PUBLIC
       FILE_SET CXX_MODULES
       BASE_DIRS ${ut_SOURCE_DIR}
@@ -112,12 +112,12 @@ function(fetch_ut)
         ${ut_SOURCE_DIR}/ut.cppm
   )
   
-  target_include_directories(qlibs.ut
+  target_include_directories(qlibs.ut.ut
     PUBLIC
       ${ut_SOURCE_DIR}/include
   )
 
-  target_compile_features(qlibs.ut
+  target_compile_features(qlibs.ut.ut
     PUBLIC
       cxx_std_23
   )
@@ -125,7 +125,7 @@ function(fetch_ut)
   # ----------------------------------------------------------
   # Create canonical alias
   # ----------------------------------------------------------
-  add_library(qlibs::ut ALIAS qlibs.ut)
+  add_library(qlibs.ut::ut ALIAS qlibs.ut.ut)
 
   # ----------------------------------------------------------
   # Export status
