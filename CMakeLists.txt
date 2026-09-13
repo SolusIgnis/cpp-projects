@@ -47,6 +47,7 @@ include(FetchCPM)
 
 CPMFindPackage(
   NAME ut
+  GITHUB_REPOSITORY boost-ext/ut
   VERSION 2.3.1
   GIT_TAG f923e6f
   OPTIONS "BOOST_UT_DISABLE_MODULE NO"
