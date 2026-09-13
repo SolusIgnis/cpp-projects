@@ -5,7 +5,7 @@ import net.telnet;
 import boost.ut;
 import std;
 
-using namespace ut;
+using namespace boost::ext::ut;
 
 namespace {
     //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
