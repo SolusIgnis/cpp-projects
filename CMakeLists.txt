@@ -46,7 +46,9 @@ include(SanitizerSetup)
 include(FetchCPM)
 
 CPMFindPackage(
-  URI "gh:boost-ext/ut#f923e6f@2.3.1"
+  NAME ut
+  VERSION 2.3.1
+  GIT_TAG f923e6f
   OPTIONS "BOOST_UT_DISABLE_MODULE NO"
 )
 
