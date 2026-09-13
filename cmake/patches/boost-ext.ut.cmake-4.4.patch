@@ -4,3 +4,7 @@
 -cmake_minimum_required(VERSION 4.0.0)
 +cmake_minimum_required(VERSION 4.4.0)
 +set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "f35a9ac6-8463-4d38-8eec-5d6008153e7d")
+@@ -14,0 +14,1 @@
++message(STATUS "UT before project: ${CMAKE_EXPERIMENTAL_CXX_IMPORT_STD}")
+@@ -19,0 +19,1 @@
++message(STATUS "UT after project: ${CMAKE_EXPERIMENTAL_CXX_IMPORT_STD}")
