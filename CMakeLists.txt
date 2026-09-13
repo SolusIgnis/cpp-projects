@@ -43,6 +43,7 @@ include(SanitizerSetup)
 # ===========================================================================
 # Test Framework Dependencies
 # ===========================================================================
+include(FetchCPM)
 include(FetchContent)
 
 # Catch2
