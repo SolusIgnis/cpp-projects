@@ -51,16 +51,15 @@ CPMFindPackage(
   VERSION 2.3.1
   GIT_TAG 59a9beba0763dbb45b3cc68e4cf484c659319a97
   OPTIONS "BOOST_UT_DISABLE_MODULE NO"
-#  PATCHES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/patches/boost-ext.ut.cmake-4.4.patch"
 )
 
 # qlibs/ut
-#find_package(ut QUIET)
-#
-#if(NOT TARGET qlibs::ut)
-#  include(FetchUT)
-#  fetch_ut()
-#endif()
+find_package(ut QUIET)
+
+if(NOT TARGET qlibs::ut)
+  include(FetchUT)
+  fetch_ut()
+endif()
 
 # ===========================================================================
 # Test Discovery / Target Generation
