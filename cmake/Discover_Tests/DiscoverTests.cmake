@@ -74,7 +74,12 @@ if(NOT DEFINED TEST_DIALECTS)
   set(TEST_FRAMEWORK.catch2.GIT_TAG     "317ac1ed4c0bb6e6b91eafc817e05c488feffcb3")
   set(TEST_FRAMEWORK.catch2.LINK_TARGET "Catch2::Catch2WithMain")
 
-  set(TEST_FRAMEWORK.gtest.LINK_TARGET    GTest::gtest_main)
+  set(TEST_FRAMEWORK.gtest.CPM_NAME    "gtest")
+  set(TEST_FRAMEWORK.gtest.GH_REPO     "google/googletest")
+  set(TEST_FRAMEWORK.gtest.VERSION     "1.18.0")
+  set(TEST_FRAMEWORK.gtest.GIT_TAG     "063de7e9578f82b369302001269680b4b1553359")
+  set(TEST_FRAMEWORK.gtest.CPM_OPTIONS "INSTALL_GTEST OFF" "gtest_force_shared_crt ON")
+  set(TEST_FRAMEWORK.gtest.LINK_TARGET "GTest::gtest_main")
 
   set(TEST_FRAMEWORK.ut.LINK_TARGET       qlibs.ut::ut)
 
@@ -82,7 +87,7 @@ if(NOT DEFINED TEST_DIALECTS)
   set(TEST_FRAMEWORK.boost-ut.GH_REPO     "boost-ext/ut")
   set(TEST_FRAMEWORK.boost-ut.VERSION     "2.3.1")
   set(TEST_FRAMEWORK.boost-ut.GIT_TAG     "59a9beba0763dbb45b3cc68e4cf484c659319a97")
-  set(TEST_FRAMEWORK.boost-ut.OPTIONS     "BOOST_UT_DISABLE_MODULE NO")
+  set(TEST_FRAMEWORK.boost-ut.CPM_OPTIONS "BOOST_UT_DISABLE_MODULE NO")
   set(TEST_FRAMEWORK.boost-ut.LINK_TARGET "Boost::ut_module")
 
   set(TEST_DISCOVERY.catch2 Catch2)
@@ -105,7 +110,9 @@ foreach(dialect IN LISTS TEST_DIALECTS)
   if(NOT TARGET ${framework_target})
     string(REPLACE "::" ";" target_list "${framework_target}")
     list(GET target_list 0 framework_package)
-    find_package(${framework_package} QUIET)
+    if(NOT TARGET ${framework_target})
+      find_package(${framework_package} QUIET)
+    endif()
     if(NOT TARGET ${framework_target})
       message(WARNING
         "Framework for dialect '${dialect}' not found. "
