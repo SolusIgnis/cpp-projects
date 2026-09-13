@@ -68,15 +68,18 @@ if(NOT DEFINED TEST_DIALECTS)
     boost-ut
   )
 
+  set(TEST_FRAMEWORK.catch2.NAME          "catch2")
   set(TEST_FRAMEWORK.catch2.LINK_TARGET   Catch2::Catch2WithMain)
+
   set(TEST_FRAMEWORK.gtest.LINK_TARGET    GTest::gtest_main)
+
   set(TEST_FRAMEWORK.ut.LINK_TARGET       qlibs.ut::ut)
 
-  set(TEST_FRAMEWORK.boost-ut.NAME        "ut"
-  set(TEST_FRAMEWORK.boost-ut.REPOSITORY  "boost-ext/ut"
-  set(TEST_FRAMEWORK.boost-ut.VERSION     "2.3.1"
-  set(TEST_FRAMEWORK.boost-ut.GIT_TAG     "59a9beba0763dbb45b3cc68e4cf484c659319a97"
-  set(TEST_FRAMEWORK.boost-ut.OPTIONS     "BOOST_UT_DISABLE_MODULE NO"
+  set(TEST_FRAMEWORK.boost-ut.NAME        "ut")
+  set(TEST_FRAMEWORK.boost-ut.REPOSITORY  "boost-ext/ut")
+  set(TEST_FRAMEWORK.boost-ut.VERSION     "2.3.1")
+  set(TEST_FRAMEWORK.boost-ut.GIT_TAG     "59a9beba0763dbb45b3cc68e4cf484c659319a97")
+  set(TEST_FRAMEWORK.boost-ut.OPTIONS     "BOOST_UT_DISABLE_MODULE NO")
   set(TEST_FRAMEWORK.boost-ut.LINK_TARGET "Boost::ut_module")
 
   set(TEST_DISCOVERY.catch2 Catch2)
