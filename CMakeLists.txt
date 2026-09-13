@@ -55,12 +55,12 @@ CPMFindPackage(
 )
 
 # qlibs/ut
-find_package(ut QUIET)
-
-if(NOT TARGET qlibs::ut)
-  include(FetchUT)
-  fetch_ut()
-endif()
+#find_package(ut QUIET)
+#
+#if(NOT TARGET qlibs::ut)
+#  include(FetchUT)
+#  fetch_ut()
+#endif()
 
 # ===========================================================================
 # Test Discovery / Target Generation
