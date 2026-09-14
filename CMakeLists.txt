@@ -31,6 +31,11 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Discover_Tests"
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Tooling_Targets")
 
 # ===========================================================================
+# Ensure we have CMake Package Manager
+# ===========================================================================
+include(FetchCPM)
+
+# ===========================================================================
 # Check for adequate compilers supporting C++23 and "import std;".
 # ===========================================================================
 include(CompilerValidation)
@@ -39,28 +44,6 @@ include(CompilerValidation)
 # Enable any requested sanitizers.
 # ===========================================================================
 include(SanitizerSetup)
-
-# ===========================================================================
-# Test Framework Dependencies
-# ===========================================================================
-include(FetchCPM)
-
-#CPMFindPackage(
-#  NAME ut
-#  GITHUB_REPOSITORY boost-ext/ut
-#  VERSION 2.3.1
-#  GIT_TAG 59a9beba0763dbb45b3cc68e4cf484c659319a97
-#  OPTIONS "BOOST_UT_DISABLE_MODULE NO"
-#  SYSTEM YES
-#  EXCLUDE_FROM_ALL YES
-#)
-
-# qlibs/ut
-
-#if(NOT TARGET qlibs.ut::ut)
-#  include(FetchUT)
-#  fetch_ut()
-#endif()
 
 # ===========================================================================
 # Test Discovery / Target Generation
