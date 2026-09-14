@@ -103,9 +103,9 @@ function(fetch_ut)
   # ----------------------------------------------------------
   # Create module target
   # ----------------------------------------------------------
-  add_library(qlibs.ut.ut OBJECT)
+  add_library(qlibs.ut OBJECT)
 
-  target_sources(qlibs.ut.ut
+  target_sources(qlibs.ut
     PUBLIC
       FILE_SET CXX_MODULES
       BASE_DIRS ${qlibs.ut_SOURCE_DIR}
@@ -113,12 +113,12 @@ function(fetch_ut)
         ${qlibs.ut_SOURCE_DIR}/ut.cppm
   )
   
-  target_include_directories(qlibs.ut.ut
+  target_include_directories(qlibs.ut
     PUBLIC
       ${qlibs.ut_SOURCE_DIR}/include
   )
 
-  target_compile_features(qlibs.ut.ut
+  target_compile_features(qlibs.ut
     PUBLIC
       cxx_std_23
   )
@@ -126,7 +126,7 @@ function(fetch_ut)
   # ----------------------------------------------------------
   # Create canonical alias
   # ----------------------------------------------------------
-  add_library(qlibs.ut::ut ALIAS qlibs.ut.ut)
+  add_library(qlibs.ut::ut ALIAS qlibs.ut)
 
   # ----------------------------------------------------------
   # Export status
