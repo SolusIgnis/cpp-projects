@@ -1,0 +1,23 @@
+--- a/ut.cppm
++++ b/ut.cppm
+@@ -22,6 +22,7 @@
+// SOFTWARE.
+//
+module;
++#include <iostream>
+#include "ut"
+export module ut;
+--- a/ut
++++ b/ut
+831,11 +831,6 @@ struct runner {
+};
+} // namespace ut
+
+-namespace std { // iosfwd
+-template<class> struct char_traits;
+-template<class, class> class basic_ostream;
+-extern basic_ostream<char, char_traits<char>> clog; // only used if defined
+-} // namespace std
+
+namespace ut::inline v2_1_6 {
+namespace detail {

@@ -37,6 +37,7 @@ function(fetch_ut)
     qlibs.ut
     GIT_REPOSITORY https://github.com/qlibs/ut.git
     GIT_TAG 1a2d76bb0d22e9d9e02c9726f00f6f8e632c21da
+    PATCHES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/patches/qlibs-ut.iostreams.patch"
   )
 
   FetchContent_MakeAvailable(qlibs.ut)
@@ -82,16 +83,16 @@ function(fetch_ut)
   endfunction()
 
   # Insert #include <iostream> after 'module;' and before '#include "ut"'
-  _patch("${UT_CPPM}"
-    "module;\n#include \"ut\"\n"
-    "module;\n#include <iostream>\n#include \"ut\"\n"
-  )
+  #_patch("${UT_CPPM}"
+  #  "module;\n#include \"ut\"\n"
+  #  "module;\n#include <iostream>\n#include \"ut\"\n"
+  #)
 
   # Patch out the ambiguous forward declarations in ut.cppm
-  _patch("${UT_HEADER}"
-    "namespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std"
-     "#if 0\nnamespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std\n#endif"
-  )
+  #_patch("${UT_HEADER}"
+  #  "namespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std"
+  #   "#if 0\nnamespace std { // iosfwd\ntemplate<class> struct char_traits;\ntemplate<class, class> class basic_ostream;\nextern basic_ostream<char, char_traits<char>> clog; // only used if defined\n} // namespace std\n#endif"
+  #)
 
   # Uncomment below to dump file contents to check patch results.
   #file(READ "${UT_CPPM}" UT_M_CONTENTS)
