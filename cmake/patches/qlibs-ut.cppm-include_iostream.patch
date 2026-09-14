@@ -1,9 +1,9 @@
 --- a/ut.cppm
 +++ b/ut.cppm
 @@ -22,6 +22,7 @@
-// SOFTWARE.
-//
-module;
+ // SOFTWARE.
+ //
+ module;
 +#include <iostream>
-#include "ut"
-export module ut;
+ #include "ut"
+ export module ut;
