@@ -1,8 +1,6 @@
 --- a/ut.cppm
 +++ b/ut.cppm
-@@ -22,5 +22,6 @@
- // SOFTWARE.
- //
+@@ -24,3 +24,4 @@
  module;
 +#include <iostream>
  #include "ut"
@@ -10,7 +8,7 @@
 
 --- a/ut
 +++ b/ut
-@@ -831,11 +831,6 @@
+@@ -831,11 +831,4 @@
  };
  } // namespace ut
  
@@ -19,6 +17,6 @@
 -template<class, class> class basic_ostream;
 -extern basic_ostream<char, char_traits<char>> clog; // only used if defined
 -} // namespace std
- 
+-
  namespace ut::inline v2_1_6 {
  namespace detail {
