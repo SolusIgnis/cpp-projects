@@ -56,12 +56,13 @@ CPMFindPackage(
 )
 
 # qlibs/ut
-find_package(ut QUIET)
+#  PATCHES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/patches/qlibs-ut.iostreams.patch"
+#find_package(ut QUIET)
 
-if(NOT TARGET qlibs::ut)
-  include(FetchUT)
-  fetch_ut()
-endif()
+#if(NOT TARGET qlibs::ut)
+#  include(FetchUT)
+#  fetch_ut()
+#endif()
 
 # ===========================================================================
 # Test Discovery / Target Generation
