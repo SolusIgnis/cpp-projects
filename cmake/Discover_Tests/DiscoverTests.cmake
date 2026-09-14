@@ -108,16 +108,39 @@ endforeach()
 foreach(dialect IN LISTS TEST_DIALECTS)
   set(framework_target ${TEST_FRAMEWORK.${dialect}.LINK_TARGET})
   if(NOT TARGET ${framework_target})
-    string(REPLACE "::" ";" target_list "${framework_target}")
-    list(GET target_list 0 framework_package)
-    if(NOT TARGET ${framework_target})
-      find_package(${framework_package} QUIET)
+    set(cpm_args "NAME" "${TEST_FRAMEWORK.${dialect}.CPM_NAME}")
+        
+    if(DEFINED TEST_FRAMEWORK.${dialect}.VERSION)
+      list(APPEND cpm_args "VERSION" "${TEST_FRAMEWORK.${dialect}.VERSION}")
     endif()
+        
+    if(DEFINED TEST_FRAMEWORK.${dialect}.GH_REPO)
+      list(APPEND cpm_args "GITHUB_REPOSITORY" "${TEST_FRAMEWORK.${dialect}.GH_REPO}")
+    endif()
+        
+    if(DEFINED TEST_FRAMEWORK.${dialect}.GIT_TAG)
+      list(APPEND cpm_args "GIT_TAG" "${TEST_FRAMEWORK.${dialect}.GIT_TAG}")
+    endif()
+        
+    if(DEFINED TEST_FRAMEWORK.${dialect}.CPM_OPTIONS)
+      list(APPEND cpm_args OPTIONS ${TEST_FRAMEWORK.${dialect}.CPM_OPTIONS})
+    endif()
+
+    if(DEFINED TEST_FRAMEWORK.${dialect}.PATCHES)
+      list(APPEND cpm_args PATCHES ${TEST_FRAMEWORK.${dialect}.PATCHES})
+    endif()
+
+    CPMFindPackage(
+      ${cpm_args}
+      SYSTEM YES
+      EXCLUDE_FROM_ALL YES
+    )
+
     if(NOT TARGET ${framework_target})
       message(WARNING
         "Framework for dialect '${dialect}' not found. "
         "Target '${framework_target}' is missing. "
-        "find_package(${framework_package}) failed to produce it. "
+        "CPMFindPackage failed to produce it. "
         "'${dialect}' tests are unavailable."
       )
       list(REMOVE_ITEM TEST_DIALECTS ${dialect})
