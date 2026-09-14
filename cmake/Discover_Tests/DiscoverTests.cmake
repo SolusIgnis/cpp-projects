@@ -69,9 +69,9 @@ if(NOT DEFINED TEST_DIALECTS)
   )
 
   set(TEST_FRAMEWORK.catch2.CPM_NAME    "Catch2")
-  set(TEST_FRAMEWORK.catch2.GH_REPO     "catchorg/Catch2")
-  set(TEST_FRAMEWORK.catch2.VERSION     "3.16.0")
-  set(TEST_FRAMEWORK.catch2.GIT_TAG     "317ac1ed4c0bb6e6b91eafc817e05c488feffcb3")
+  #set(TEST_FRAMEWORK.catch2.GH_REPO     "catchorg/Catch2")
+  #set(TEST_FRAMEWORK.catch2.VERSION     "3.16.0")
+  #set(TEST_FRAMEWORK.catch2.GIT_TAG     "317ac1ed4c0bb6e6b91eafc817e05c488feffcb3")
   set(TEST_FRAMEWORK.catch2.LINK_TARGET "Catch2::Catch2WithMain")
 
   set(TEST_FRAMEWORK.gtest.CPM_NAME    "gtest")
