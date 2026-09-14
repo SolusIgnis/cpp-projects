@@ -85,7 +85,7 @@ if(NOT DEFINED TEST_DIALECTS)
   set(TEST_FRAMEWORK.qlibs-ut.GH_REPO     "qlibs/ut")
   set(TEST_FRAMEWORK.qlibs-ut.VERSION     "2.1.6")
   set(TEST_FRAMEWORK.qlibs-ut.GIT_TAG     "1a2d76bb0d22e9d9e02c9726f00f6f8e632c21da")
-  set(TEST_FRAMEWORK.qlibs-ut.PATCHES     "${CMAKE_SOURCE_DIR}/cmake/patches/qlibs-ut.iostreams.patch")
+  set(TEST_FRAMEWORK.qlibs-ut.PATCHES     "${CMAKE_SOURCE_DIR}/cmake/patches/qlibs-ut.iostreams.patch" "${CMAKE_SOURCE_DIR}/cmake/patches/qlibs-ut.CML.patch")
   set(TEST_FRAMEWORK.qlibs-ut.LINK_TARGET "qlibs.ut::ut")
 
   set(TEST_FRAMEWORK.boost-ut.CPM_NAME    "ut")
