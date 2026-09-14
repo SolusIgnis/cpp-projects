@@ -10,8 +10,9 @@
 # Examples:
 #
 #   net.telnet-stream.test.catch2.cpp
-#   net.telnet-stream.test-unit.ut.cpp
-#   net.telnet-protocol_fsm.test-sequence.catch2.cpp
+#   net.telnet-stream.test-unit.boost-ut.cpp
+#   net.telnet-protocol_fsm.test-integration.qlibs-ut.cpp
+#   net.telnet-protocol_fsm.test-sequence.gtest.cpp
 #
 # Creates:
 #
@@ -134,7 +135,7 @@ foreach(dialect IN LISTS TEST_DIALECTS)
     if(DEFINED TEST_FRAMEWORK.${dialect}.PATCHES)
       list(APPEND cpm_args PATCHES ${TEST_FRAMEWORK.${dialect}.PATCHES})
     endif()
-
+    
     CPMFindPackage(
       ${cpm_args}
       SYSTEM YES

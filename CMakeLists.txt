@@ -43,7 +43,7 @@ include(SanitizerSetup)
 # ===========================================================================
 # Test Framework Dependencies
 # ===========================================================================
-#include(FetchCPM)
+include(FetchCPM)
 
 #CPMFindPackage(
 #  NAME ut
