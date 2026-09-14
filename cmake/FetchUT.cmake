@@ -33,6 +33,7 @@ function(fetch_ut)
   # ----------------------------------------------------------
   # Declare dependency (pinned commit with module support)
   # ----------------------------------------------------------
+  set(CMAKE_EP_GIT_CLONE_RETRY_COUNT 1)
   FetchContent_Declare(
     qlibs.ut
     GIT_REPOSITORY https://github.com/qlibs/ut.git
