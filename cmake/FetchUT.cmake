@@ -37,7 +37,7 @@ function(fetch_ut)
     qlibs.ut
     GIT_REPOSITORY https://github.com/qlibs/ut.git
     GIT_TAG "1a2d76bb0d22e9d9e02c9726f00f6f8e632c21da"
-#    PATCHES "${CMAKE_SOURCE_DIR}/cmake/patches/qlibs-ut.iostreams.patch"
+    PATCHES "${CMAKE_SOURCE_DIR}/cmake/patches/qlibs-ut.iostreams.patch"
   )
 
   FetchContent_MakeAvailable(qlibs.ut)
