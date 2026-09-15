@@ -3,9 +3,24 @@
 #
 # DiscoverTests.cmake
 #
-# Fully automatic repository-wide test discovery and target creation based on filename grammar:
+# Fully automatic repository-wide test discovery and target creation based on filename grammar.
+#
+# This file provides the public interface for the test discovery system.
+# Test frameworks are registered as dialects with `register_test_dialect()`,
+# and module tests are discovered with `add_tests_for_module()`.
+#
+# Test filenames have the following grammar:
 #
 #   [<group>.]<module>[-<partition>][-impl[-<impl-type>]].test[-<kind>].<dialect>.cpp
+#
+# The <group> and <module> components together identify the module target.
+# The module suffix identifies a partition, implementation, or implementation
+# specialization. The discovery system does not otherwise distinguish these
+# forms.
+#
+# <kind> is optional and defaults to "unit".
+#
+# <dialect> identifies a registered test-framework dialect.
 #
 # Examples:
 #
@@ -16,25 +31,31 @@
 #
 # Creates:
 #
-#   Executables:
+#   Test executables:
 #     <module fullname>[-<partition>][-impl[-<impl-type>]].test[-<kind>].<dialect>
 #
-#   Build targets:
-#     <module>.tests
-#     <module>.tests.<dialect>
-#     <module>.tests-<kind>
-#     <module>.tests-<kind>.<dialect>
+#   Module-scoped build targets:
+#     <module fullname>.tests
+#     <module fullname>.tests.<dialect>
+#     <module fullname>.tests-<kind>
+#     <module fullname>.tests-<kind>.<dialect>
+#
+#   Global build targets:
+#     tests
+#     tests.<dialect>
+#     tests-<kind>
+#     tests-<kind>.<dialect>
 #
 #   Run targets:
-#     <module>.tests.run
-#     <module>.tests.<dialect>.run
-#     <module>.tests-<kind>.run
-#     <module>.tests-<kind>.<dialect>.run
+#     Every build aggregation target above has a corresponding
+#     ".run" target that invokes CTest with the appropriate labels.
 #
-#   Global targets:
-#     tests
+#   Global run targets:
 #     tests.run
 #
+# Test executables are also registered with CTest. Frameworks
+# providing specialized discovery use their CTest discovery
+# mechanisms.
 # ============================================================
 
 include_guard(GLOBAL)
@@ -80,7 +101,60 @@ DiscoverTests__create_run_target(tests)
 # ============================================================
 # register_test_dialect(dialect_name)
 # ------------------------------------------------------------
-# 
+# Register a test-framework dialect for use by test filenames.
+#
+# Required arguments:
+#   dialect_name [positional parameter]
+#       Name accepted as <dialect> in the test filename grammar.
+#
+#   CPM_NAME
+#       Name passed to CPMFindPackage().
+#
+#   LINK_TARGET
+#       CMake target produced by the framework and linked into
+#       test executables.
+#
+# Optional framework acquisition arguments:
+#
+#   GH_REPO
+#       GitHub repository passed to CPMFindPackage().
+#
+#   VERSION
+#       Package version passed to CPMFindPackage().
+#
+#   GIT_TAG
+#       Git revision (branch/tag/commit hash) passed to CPMFindPackage().
+#
+#   CPM_OPTIONS
+#       Additional OPTIONS passed to CPMFindPackage().
+#
+#   PATCHES
+#       Patch files passed to CPMFindPackage().
+#
+# Optional test discovery argument:
+#
+#   DISCOVERY
+#       Selects framework-specific CTest discovery.
+#       Supported values are currently:
+#
+#         GTest
+#         Catch2
+#
+#       When omitted, the test executable itself is registered
+#       as a CTest test.
+#
+# A dialect name must be unique. Attempting to register a dialect
+# that has already been registered is a fatal error.
+#
+# Frameworks are acquired lazily: CPM is invoked only when a test
+# using the dialect is discovered and its LINK_TARGET does not
+# already exist.
+#
+# A registered dialect is eligible for discovery, but its framework
+# does not have to be available when the dialect is registered.
+# If framework acquisition fails while discovering a test, that
+# dialect is disabled for the remainder of the configuration and
+# subsequent tests using it are skipped.
 # ============================================================
 function(register_test_dialect dialect_name)
   set(_single_value_parameters
@@ -149,7 +223,42 @@ endfunction()
 # ============================================================
 # add_tests_for_module(module_target)
 # ------------------------------------------------------------
-# 
+# Discover and create tests belonging to a module.
+#
+# module_target
+#     Existing CMake target representing the module under test.
+#     This target must already exist.
+#
+# DEPENDENCIES
+#     Optional list of existing CMake targets to link privately
+#     into every test executable created for the module.
+#
+# Tests are discovered from:
+#
+#     ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.test*.cpp
+#
+# Only files matching the test filename pattern are considered
+# for discovery. Files with invalid filenames or unavailable
+# dialects are skipped with a warning.
+#
+# The function does nothing when BUILD_TESTING is disabled or
+# when the module has no tests directory.
+#
+# DEPENDENCIES are validated as existing CMake targets; this
+# function does not acquire them.
+#
+# Example:
+#
+#   add_tests_for_module(base.functional.overload)
+#
+# or:
+#
+#   add_tests_for_module(
+#     net.telnet
+#     DEPENDENCIES
+#       tools.test.coroutine_harness
+#       framework.coroutines.tagged_awaitable
+#   )
 # ============================================================
 function(add_tests_for_module module_target)
   if(NOT BUILD_TESTING)

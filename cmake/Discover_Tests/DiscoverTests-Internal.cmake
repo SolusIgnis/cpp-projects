@@ -16,17 +16,58 @@ include_guard(GLOBAL)
 include(ToolingInfrastructure)
 
 # ============================================================
-# 
+# DiscoverTests__parse_test_filename(out_prefix filename module_name)
 # ------------------------------------------------------------
-# Internal: Parse filename metadata
+# Internal: Parse test filename metadata
+#
+# Test filenames have the following grammar:
+#
+#   [<group>.]<module>[-<partition>][-impl[-<impl-type>]].test[-<kind>].<dialect>.cpp
+#
+# where:
+#
+#   The <group> and <module> components are supplied together as
+#   module_name by the caller. Consequently, module_name is treated
+#   as a literal prefix by this parser.
+#
+#   The module suffix may identify a partition, an implementation,
+#   or an implementation specialization. The parser intentionally
+#   does not distinguish these cases; it only validates the filename
+#   structure and extracts the resulting base name.
+#
+#   <kind>
+#       An identifier optionally followed by additional
+#       "-<identifier>" components.
+#
+#   <dialect>
+#       An identifier optionally followed by additional
+#       "-<identifier>" components.
+#
+# Examples:
+#
+#   net.telnet-stream.test.catch2.cpp
+#   net.telnet-stream.test-unit.boost-ut.cpp
+#   net.telnet-protocol_fsm.test-integration.qlibs-ut.cpp
+#   net.telnet-protocol_fsm.test-sequence.gtest.cpp
+#
+# The parser deliberately validates only the filename grammar.
+# Whether the extracted dialect is registered is checked separately.
 #
 # Outputs:
 #
 #   <out_prefix>_TEST_NAME
-#   <out_prefix>_TEST_BASE_NAME
-#   <out_prefix>_TEST_DIALECT
-#   <out_prefix>_TEST_KIND
+#       Complete test target name without the ".cpp" suffix.
 #
+#   <out_prefix>_TEST_BASE_NAME
+#       Module name plus any partition and implementation suffixes.
+#
+#   <out_prefix>_TEST_KIND
+#       Explicit test kind, or empty when the filename omits it.
+#
+#   <out_prefix>_TEST_DIALECT
+#       Test framework dialect encoded in the filename.
+#
+# On failure, <out_prefix>_TEST_NAME is unset and a warning is emitted.
 # ============================================================
 function(DiscoverTests__parse_test_filename out_prefix filename module_name)
   string(REPLACE "." "\\." module_name_esc "${module_name}")
@@ -153,7 +194,26 @@ endfunction()
 # ============================================================
 # DiscoverTests__verify_framework_availability(out_var dialect)
 # ------------------------------------------------------------
-# Internal: Verify framework availability
+# Internal: Verify the framework target for a dialect exists.
+#
+# If the configured LINK_TARGET already exists, the framework is
+# considered available and no package-manager operation occurs.
+#
+# Otherwise, the dialect's CPM metadata is passed to
+# CPMFindPackage(). The framework is considered successfully
+# acquired only if that operation produces the configured
+# LINK_TARGET.
+#
+# If acquisition fails:
+#
+#   - a warning is emitted;
+#   - the dialect is removed from the active dialect registry;
+#   - <out_var> is set to FALSE.
+#
+# Removing the dialect prevents every subsequent test file using
+# that dialect from retrying the same failed acquisition.
+#
+# On success, <out_var> is set to TRUE.
 # ============================================================
 function(DiscoverTests__verify_framework_availability out_var dialect)
   set(framework_target "${DiscoverTests__DIALECT.${dialect}.LINK_TARGET}")
@@ -228,7 +288,17 @@ endfunction()
 # ============================================================
 # DiscoverTests__validate_test_dependencies(out_var module_target)
 # ------------------------------------------------------------
-# Internal: Validate test dependencies as linkable targets
+# Internal: Validate test dependencies as linkable targets.
+#
+# DEPENDENCIES is an optional list of CMake targets that will be
+# linked privately into every test executable created for the
+# module.
+#
+# Every dependency must already exist as a CMake target. This
+# function intentionally does not create or acquire dependencies;
+# dependency acquisition belongs to the caller/project configuration.
+#
+# The validated dependency list is returned through <out_var>.
 # ============================================================
 function(DiscoverTests__validate_test_dependencies out_var module_target)
   cmake_parse_arguments(
@@ -259,7 +329,25 @@ endfunction()
 # ============================================================
 # DiscoverTests__create_run_target(build_target)
 # ------------------------------------------------------------
-# Internal: Create run target with labels if it doesn't exist
+# Internal: Create a run target associated with a build target.
+#
+# The generated target is named:
+#
+#   <build_target>.run
+#
+# It invokes CTest with:
+#
+#   --output-on-failure
+#   -V
+#
+# and, when LABELS are supplied, restricts execution to tests
+# matching each supplied CTest label.
+#
+# The run target depends on <build_target>, ensuring that the
+# corresponding tests are built before CTest is invoked.
+#
+# Run targets are created only once. Subsequent calls for the
+# same build target are therefore harmless.
 # ============================================================
 function(DiscoverTests__create_run_target build_target)
   set(target "${build_target}.run")
@@ -298,7 +386,26 @@ endfunction()
 # ============================================================
 # DiscoverTests__create_test_from_file(module_target test_file dependencies)
 # ------------------------------------------------------------
-# Internal: Create executable from test file
+# Internal: Create and register one test executable.
+#
+# The test file is processed through the following stages:
+#
+#   1. Parse the filename to extract test metadata.
+#   2. Validate that its dialect is registered and active.
+#   3. Lazily acquire the dialect's test framework if necessary.
+#   4. Apply the default test kind "unit" when none is specified.
+#   5. Create and link the test executable.
+#   6. Register the executable with the project's tooling.
+#   7. Assign CTest labels for module, dialect, test, and kind.
+#   8. Register individual tests using the dialect's discovery
+#      mechanism, or add the executable directly when no specialized
+#      discovery mechanism is configured.
+#   9. Bind the executable to the appropriate build aggregates.
+#  10. Create the corresponding filtered run targets.
+#
+# The executable target name is the parsed test name, which also
+# makes it the natural CTest name for frameworks using direct
+# executable registration.
 # ============================================================
 function(DiscoverTests__create_test_from_file module_target test_file dependencies)
   get_target_property(module_name "${module_target}" NAME)
@@ -419,6 +526,22 @@ function(DiscoverTests__create_test_from_file module_target test_file dependenci
 
   # ----------------------------------------------------------
   # Build aggregation targets
+  #
+  # Each test executable contributes to four global aggregates
+  # and four module-scoped aggregates:
+  #
+  #   tests
+  #   tests.<dialect>
+  #   tests-<kind>
+  #   tests-<kind>.<dialect>
+  #
+  #   <module>.tests
+  #   <module>.tests.<dialect>
+  #   <module>.tests-<kind>
+  #   <module>.tests-<kind>.<dialect>
+  #
+  # The same naming dimensions are used by the corresponding
+  # ".run" targets below.
   # ----------------------------------------------------------
 
   set(aggregates
