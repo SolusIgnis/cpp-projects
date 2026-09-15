@@ -45,9 +45,8 @@ struct not_a_buffer_sequence {};
 struct not_a_completion_token {};
 
 struct bad_socket_option {
-    auto value() const { return this->value_; } // deliberately wrong for most option concepts
-private:
-    const std::int32_t value_{42};
+    //NOLINTNEXTLINE: Trivial fixture.
+    std::int32_t value() const { return {}; } // deliberately wrong for most option concepts
 };
 
 struct no_executor_type {
@@ -90,14 +89,14 @@ TEST_CASE("tokens", "[concepts][tokens]")
 
 TEST_CASE("socket_options", "[concepts][socket_options]")
 {
-    using broadcast  = asio::socket_base::broadcast;
-    using linger     = asio::socket_base::linger;
-    using recv_buf   = asio::socket_base::receive_buffer_size;
-    using join_group = asio::ip::multicast::join_group;
+    using asio::socket_base::broadcast;
+    using asio::socket_base::linger;
+    using asio::socket_base::receive_buffer_size;
+    using asio::ip::multicast::join_group;
 
     CONCEPT_CHECK(boolean_socket_option<broadcast>);
     CONCEPT_CHECK(composite_socket_option<linger>);
-    CONCEPT_CHECK(integral_socket_option<recv_buf>);
+    CONCEPT_CHECK(integral_socket_option<receive_buffer_size>);
     CONCEPT_CHECK(asio_addressable_socket_option<join_group>);
 
     CONCEPT_CHECK(socket_option<broadcast>);
