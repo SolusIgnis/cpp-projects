@@ -16,6 +16,8 @@ include_guard(GLOBAL)
 include(ToolingInfrastructure)
 
 # ============================================================
+# 
+# ------------------------------------------------------------
 # Internal: Parse filename metadata
 #
 # Outputs:
@@ -72,17 +74,22 @@ function(DiscoverTests__parse_test_filename out_prefix filename module_name)
 endfunction()
 
 # ============================================================
+# 
+# ------------------------------------------------------------
 # Internal: Read the dialects registry.
 # ============================================================
 function(DiscoverTests__get_dialects out_var)
   get_property(
-    ${out_var}
+    registered_dialects
     GLOBAL PROPERTY
     DiscoverTests__DIALECTS
   )
+  set(${out_var} "${registered_dialects}" PARENT_SCOPE)
 endfunction()
 
 # ============================================================
+# 
+# ------------------------------------------------------------
 # Internal: Replace the dialects registry.
 # ============================================================
 function(DiscoverTests__set_dialects registered_dialects)
@@ -94,6 +101,8 @@ function(DiscoverTests__set_dialects registered_dialects)
 endfunction()
 
 # ============================================================
+# 
+# ------------------------------------------------------------
 # Internal: Add a dialect to the registry.
 # ============================================================
 function(DiscoverTests__add_dialect dialect_name)
@@ -109,6 +118,8 @@ function(DiscoverTests__add_dialect dialect_name)
 endfunction()
 
 # ============================================================
+# 
+# ------------------------------------------------------------
 # Internal: Remove a dialect from the registry.
 # ============================================================
 function(DiscoverTests__remove_dialect dialect_name)
@@ -121,6 +132,8 @@ function(DiscoverTests__remove_dialect dialect_name)
 endfunction()
 
 # ============================================================
+# 
+# ------------------------------------------------------------
 # Internal: Validate dialect
 # ============================================================
 function(DiscoverTests__validate_test_dialect out_var dialect filename)
@@ -138,6 +151,8 @@ function(DiscoverTests__validate_test_dialect out_var dialect filename)
 endfunction()
 
 # ============================================================
+# 
+# ------------------------------------------------------------
 # Internal: Verify framework availability
 # ============================================================
 function(DiscoverTests__verify_framework_availability out_var dialect)
@@ -190,6 +205,8 @@ function(DiscoverTests__verify_framework_availability out_var dialect)
 endfunction()
 
 # ============================================================
+# 
+# ------------------------------------------------------------
 # Internal: Ensure target exists
 # ============================================================
 function(DiscoverTests__ensure_target target)
@@ -199,6 +216,8 @@ function(DiscoverTests__ensure_target target)
 endfunction()
 
 # ============================================================
+# 
+# ------------------------------------------------------------
 # Internal: Bind a target as a dependency of an aggregate
 # ============================================================
 function(DiscoverTests__bind_aggregate_dependency aggregate target)
@@ -207,6 +226,8 @@ function(DiscoverTests__bind_aggregate_dependency aggregate target)
 endfunction()
 
 # ============================================================
+# 
+# ------------------------------------------------------------
 # Internal: Validate test dependencies as linkable targets
 # ============================================================
 function(DiscoverTests__validate_test_dependencies out_var module_target)
@@ -239,6 +260,8 @@ function(DiscoverTests__validate_test_dependencies out_var module_target)
 endfunction()
 
 # ============================================================
+# 
+# ------------------------------------------------------------
 # Internal: Create run target with labels if it doesn't exist
 # ============================================================
 function(DiscoverTests__create_run_target build_target)
@@ -268,6 +291,8 @@ function(DiscoverTests__create_run_target build_target)
 endfunction()
 
 # ============================================================
+# 
+# ------------------------------------------------------------
 # Internal: Create executable from test file
 # ============================================================
 function(DiscoverTests__create_test_from_file module_target test_file dependencies)
