@@ -191,19 +191,21 @@ endfunction()
 # is set to TRUE.
 # ============================================================
 function(DiscoverTests__validate_test_dialect out_var dialect filename)
+  set(link_target "${DiscoverTests__DIALECT.${dialect}.LINK_TARGET}")
+  set(cpm_name    "${DiscoverTests__DIALECT.${dialect}.CPM_NAME}")
+
   DiscoverTests__get_dialects(registered_dialects)
   list(FIND registered_dialects "${dialect}" dialect_index)
   if(dialect_index EQUAL -1)
     message(WARNING
-      "Unknown test dialect '${dialect}' in file: ${filename}\n"
+      "Unknown test dialect '${dialect}' in file: '${filename}'\n"
       "Registered dialects: ${registered_dialects}"
     )
     set(${out_var} FALSE PARENT_SCOPE)
-  elseif((NOT "${DiscoverTests__DIALECT.${dialect}.LINK_TARGET}")
-      OR (NOT "${DiscoverTests__DIALECT.${dialect}.CPM_NAME}"))
-    message(WARNING "Framework for dialect ${dialect} is not specified at the current directory scope. File: ${filename}"
-"Target: ${DiscoverTests__DIALECT.${dialect}.LINK_TARGET} "
-"Name: ${DiscoverTests__DIALECT.${dialect}.CPM_NAME}"
+  elseif(NOT link_target OR NOT cpm_name)
+    message(WARNING "Framework for dialect ${dialect} is not specified at the current directory scope. File: '${filename}'"
+"Target: '${link_target}' "
+"Name: '${cpm_name}'"
 )
     set(${out_var} FALSE PARENT_SCOPE)
   else()
