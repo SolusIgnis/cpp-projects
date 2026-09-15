@@ -45,7 +45,9 @@ struct not_a_buffer_sequence {};
 struct not_a_completion_token {};
 
 struct bad_socket_option {
-    int value() const { return 42; } // deliberately wrong for most option concepts
+    auto value() const { return this->value_; } // deliberately wrong for most option concepts
+private:
+    constexpr std::int32_t value_{42};
 };
 
 struct no_executor_type {
