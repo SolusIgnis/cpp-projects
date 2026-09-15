@@ -11,17 +11,8 @@ endif()
 include_guard(GLOBAL)
 
 # ============================================================
-# Ensure TEST_DIALECTS was defined before including this file.
+# Ensure we have our tooling registration function.
 # ============================================================
-
-if(NOT DEFINED TEST_DIALECTS)
-  message(FATAL_ERROR "TEST_DIALECTS must be configured before including DiscoverTests-Internal.cmake")
-endif()
-
-# ============================================================
-# Make sure we have our tooling registration function.
-# ============================================================
-
 include(ToolingInfrastructure)
 
 # ============================================================
@@ -29,18 +20,19 @@ include(ToolingInfrastructure)
 #
 # Outputs:
 #
-#   TEST_BASE_NAME
-#   TEST_DIALECT
-#   TEST_KIND
+#   <out_prefix>_TEST_NAME
+#   <out_prefix>_TEST_BASE_NAME
+#   <out_prefix>_TEST_DIALECT
+#   <out_prefix>_TEST_KIND
 #
 # ============================================================
-
-function(_parse_test_filename filename module_name)
+function(DiscoverTests__parse_test_filename out_prefix filename module_name)
+  string(REPLACE "." "\\." module_name_esc "${module_name}")
 
   set(identifier "[a-zA-Z0-9_]+")
   
   set(module_part_id "(-${identifier})")
-  set(base_name_id "(${module_name}${module_part_id}*)")
+  set(base_name_id "(${module_name_esc}${module_part_id}*)")
 
   set(kind_id "(${identifier}(-${identifier})*)")
   set(dialect_id "(${identifier}(-${identifier})*)")
@@ -58,7 +50,7 @@ function(_parse_test_filename filename module_name)
     message(WARNING
       "Skipping invalid test filename (does not match grammar): ${filename}"
     )
-    unset(TEST_NAME PARENT_SCOPE)
+    unset("${out_prefix}_TEST_NAME" PARENT_SCOPE)
     return()
   endif()
 
@@ -73,35 +65,134 @@ function(_parse_test_filename filename module_name)
   # 7 = dialect
   # 8 = (ignored but required by POSIX-ERE)
 
-  set(TEST_NAME      "${CMAKE_MATCH_1}" PARENT_SCOPE)
-  set(TEST_BASE_NAME "${CMAKE_MATCH_2}" PARENT_SCOPE)
-  set(TEST_KIND      "${CMAKE_MATCH_5}" PARENT_SCOPE)
-  set(TEST_DIALECT   "${CMAKE_MATCH_7}" PARENT_SCOPE)
+  set("${out_prefix}_TEST_NAME"      "${CMAKE_MATCH_1}" PARENT_SCOPE)
+  set("${out_prefix}_TEST_BASE_NAME" "${CMAKE_MATCH_2}" PARENT_SCOPE)
+  set("${out_prefix}_TEST_KIND"      "${CMAKE_MATCH_5}" PARENT_SCOPE)
+  set("${out_prefix}_TEST_DIALECT"   "${CMAKE_MATCH_7}" PARENT_SCOPE)
+endfunction()
 
+# ============================================================
+# Internal: Read the dialects registry.
+# ============================================================
+function(DiscoverTests__get_dialects out_var)
+  get_property(
+    ${out_var}
+    GLOBAL PROPERTY
+    DiscoverTests__DIALECTS
+  )
+endfunction()
+
+# ============================================================
+# Internal: Replace the dialects registry.
+# ============================================================
+function(DiscoverTests__set_dialects registered_dialects)
+  set_property(
+    GLOBAL PROPERTY
+    DiscoverTests__DIALECTS
+    "${registered_dialects}"
+  )
+endfunction()
+
+# ============================================================
+# Internal: Add a dialect to the registry.
+# ============================================================
+function(DiscoverTests__add_dialect dialect_name)
+  DiscoverTests__get_dialects(registered_dialects)
+  list(APPEND
+    registered_dialects
+    "${dialect_name}"
+  )
+  list(REMOVE_DUPLICATES
+    registered_dialects
+  )
+  DiscoverTests__set_dialects("${registered_dialects}")
+endfunction()
+
+# ============================================================
+# Internal: Remove a dialect from the registry.
+# ============================================================
+function(DiscoverTests__remove_dialect dialect_name)
+  DiscoverTests__get_dialects(registered_dialects)
+  list(REMOVE_ITEM
+    registered_dialects
+    "${dialect_name}"
+  )
+  DiscoverTests__set_dialects("${registered_dialects}")
 endfunction()
 
 # ============================================================
 # Internal: Validate dialect
 # ============================================================
-
-function(_validate_test_dialect dialect filename)
-  list(FIND TEST_DIALECTS ${dialect} dialect_index)
+function(DiscoverTests__validate_test_dialect out_var dialect filename)
+  DiscoverTests__get_dialects(registered_dialects)
+  list(FIND registered_dialects "${dialect}" dialect_index)
   if(dialect_index EQUAL -1)
     message(WARNING
       "Unknown test dialect '${dialect}' in file: ${filename}\n"
-      "Registered dialects: ${TEST_DIALECTS}"
+      "Registered dialects: ${registered_dialects}"
     )
-    set(TEST_DIALECT_VALID False PARENT_SCOPE)
+    set(${out_var}  False PARENT_SCOPE)
   else()
-    set(TEST_DIALECT_VALID True PARENT_SCOPE)
+    set(${out_var}  True PARENT_SCOPE)
   endif()
+endfunction()
+
+# ============================================================
+# Internal: Verify framework availability
+# ============================================================
+function(DiscoverTests__verify_framework_availability out_var dialect)
+  set(framework_target "${DiscoverTests__DIALECT.${dialect}.LINK_TARGET}")
+  if(NOT TARGET "${framework_target}")
+    set(cpm_args "NAME" "${DiscoverTests__DIALECT.${dialect}.CPM_NAME}")
+        
+    if(DEFINED "DiscoverTests__DIALECT.${dialect}.VERSION")
+      list(APPEND cpm_args "VERSION" "${DiscoverTests__DIALECT.${dialect}.VERSION}")
+    endif()
+        
+    if(DEFINED "DiscoverTests__DIALECT.${dialect}.GH_REPO")
+      list(APPEND cpm_args "GITHUB_REPOSITORY" "${DiscoverTests__DIALECT.${dialect}.GH_REPO}")
+    endif()
+        
+    if(DEFINED "DiscoverTests__DIALECT.${dialect}.GIT_TAG")
+      list(APPEND cpm_args "GIT_TAG" "${DiscoverTests__DIALECT.${dialect}.GIT_TAG}")
+    endif()
+        
+    if(DEFINED "DiscoverTests__DIALECT.${dialect}.CPM_OPTIONS")
+      list(APPEND cpm_args OPTIONS ${DiscoverTests__DIALECT.${dialect}.CPM_OPTIONS})
+    endif()
+
+    if(DEFINED "DiscoverTests__DIALECT.${dialect}.PATCHES")
+      list(APPEND cpm_args PATCHES ${DiscoverTests__DIALECT.${dialect}.PATCHES})
+    endif()
+    
+    CPMFindPackage(
+      ${cpm_args}
+      SYSTEM YES
+      EXCLUDE_FROM_ALL YES
+    )
+
+    if(NOT TARGET "${framework_target}")
+      message(WARNING
+        "Framework for dialect '${dialect}' not found. "
+        "Target '${framework_target}' is missing. "
+        "CPMFindPackage failed to produce it. "
+        "'${dialect}' tests are unavailable."
+      )
+
+      # A dialect whose framework cannot be acquired is removed from the active
+      # DIALECTS set so that subsequent test files do not repeatedly invoke CPM.
+      DiscoverTests__remove_dialect("${dialect}")
+      set(${out_var} FALSE PARENT_SCOPE)
+      return()
+    endif()
+  endif()
+  set(${out_var} TRUE PARENT_SCOPE)
 endfunction()
 
 # ============================================================
 # Internal: Ensure target exists
 # ============================================================
-
-function(_ensure_target target)
+function(DiscoverTests__ensure_target target)
   if(NOT TARGET "${target}")
     add_custom_target("${target}")
   endif()
@@ -110,60 +201,61 @@ endfunction()
 # ============================================================
 # Internal: Bind a target as a dependency of an aggregate
 # ============================================================
-
-function(_bind_aggregate_dependency aggregate target)
-  _ensure_target("${aggregate}")
+function(DiscoverTests__bind_aggregate_dependency aggregate target)
+  DiscoverTests__ensure_target("${aggregate}")
   add_dependencies("${aggregate}" "${target}")
 endfunction()
 
 # ============================================================
 # Internal: Validate test dependencies as linkable targets
 # ============================================================
-
-function(_validate_test_dependencies module_target)
-  set(multiValueArgs DEPENDENCIES)
-
+function(DiscoverTests__validate_test_dependencies out_var module_target)
   cmake_parse_arguments(
-    ARG
+    VTD_ARG
     ""
     ""
-    "${multiValueArgs}"
+    "DEPENDENCIES"
     ${ARGN}
   )
   
+  if (VTD_ARG_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "DiscoverTests__validate_test_dependencies: unrecognized arguments: ${VTD_ARG_UNPARSED_ARGUMENTS}")
+  endif()
+
+  if (VTD_ARG_KEYWORDS_MISSING_VALUES)
+    message(FATAL_ERROR "DiscoverTests__validate_test_dependencies: arguments missing values: ${VTD_ARG_KEYWORDS_MISSING_VALUES}")
+  endif()
+  
   set(dependencies_block "")
-  foreach(dependency IN LISTS ARG_DEPENDENCIES)
+  foreach(dependency IN LISTS VTD_ARG_DEPENDENCIES)
     if(NOT TARGET "${dependency}")
-      message(WARNING "Test dependency '${dependency}' of module '${module_target}' does not exist as a target. Unable to link test targets against it.")
-    else()
-      list(APPEND dependencies_block "${dependency}")
+      message(FATAL_ERROR "Test dependency '${dependency}' of module '${module_target}' does not exist as a target. Unable to link test targets against it.")
     endif()
+
+    list(APPEND dependencies_block "${dependency}")
   endforeach()
 
-  set(VALIDATED_DEPENDENCIES ${dependencies_block} PARENT_SCOPE)
+  set(${out_var} "${dependencies_block}" PARENT_SCOPE)
 endfunction()
 
 # ============================================================
 # Internal: Create run target with labels if it doesn't exist
 # ============================================================
-
-function(_create_run_target build_target)
+function(DiscoverTests__create_run_target build_target)
   set(target "${build_target}.run")
-  
-  set(multiValueArgs LABELS)
 
   cmake_parse_arguments(
-    ARG
+    CRT_ARG
     ""
     ""
-    "${multiValueArgs}"
+    "LABELS"
     ${ARGN}
   )
   
   if(NOT TARGET "${target}")
     set(ctest_args "--output-on-failure")
     list(APPEND ctest_args "-V")
-    foreach(label IN LISTS ARG_LABELS)
+    foreach(label IN LISTS CRT_ARG_LABELS)
       list(APPEND ctest_args "-L" "${label}")
     endforeach()
 
@@ -178,36 +270,40 @@ endfunction()
 # ============================================================
 # Internal: Create executable from test file
 # ============================================================
-
-function(_create_test_from_file module_target test_file dependencies)
+function(DiscoverTests__create_test_from_file module_target test_file dependencies)
   get_target_property(module_name "${module_target}" NAME)
 
   get_filename_component(filename "${test_file}" NAME)
 
-  _parse_test_filename("${filename}" "${module_name}")
-  if(NOT TEST_NAME)
+  DiscoverTests__parse_test_filename(PARSED "${filename}" "${module_name}")
+  if(NOT PARSED_TEST_NAME)
     return()
   endif()
   
-  _validate_test_dialect("${TEST_DIALECT}" "${filename}")
-  if(NOT TEST_DIALECT_VALID)
+  DiscoverTests__validate_test_dialect(test_dialect_valid "${PARSED_TEST_DIALECT}" "${filename}")
+  if(NOT test_dialect_valid)
     return()
   endif()
 
-  if(NOT TEST_KIND)
-    set(TEST_KIND unit)
+  DiscoverTests__verify_framework_availability(framework_available "${PARSED_TEST_DIALECT}")
+  if(NOT framework_available)
+    return()
   endif()
 
-  set(target "${TEST_NAME}")
+  if(NOT PARSED_TEST_KIND)
+    set(PARSED_TEST_KIND unit)
+  endif()
+
+  set(target "${PARSED_TEST_NAME}")
 
   if(DEFINED DEBUG_TEST_REGEX)
     message(STATUS "Module Name: ${module_name}")
     message(STATUS "Module Target: ${module_target}")
     message(STATUS "Test File: ${filename}")
-    message(STATUS "Test Name: ${TEST_NAME}")
-    message(STATUS "Test Base Name: ${TEST_BASE_NAME}")
-    message(STATUS "Test Kind: ${TEST_KIND}")
-    message(STATUS "Test Dialect: ${TEST_DIALECT}")
+    message(STATUS "Test Name: ${PARSED_TEST_NAME}")
+    message(STATUS "Test Base Name: ${PARSED_TEST_BASE_NAME}")
+    message(STATUS "Test Kind: ${PARSED_TEST_KIND}")
+    message(STATUS "Test Dialect: ${PARSED_TEST_DIALECT}")
   endif()
   
   # ----------------------------------------------------------
@@ -224,7 +320,7 @@ function(_create_test_from_file module_target test_file dependencies)
   target_link_libraries("${target}"
     PRIVATE
       "${module_target}"
-      "${TEST_FRAMEWORK.${TEST_DIALECT}.LINK_TARGET}"
+      "${DiscoverTests__DIALECT.${PARSED_TEST_DIALECT}.LINK_TARGET}"
       ${dependencies}
   )
   
@@ -255,22 +351,23 @@ function(_create_test_from_file module_target test_file dependencies)
 
   set(labels
     "${module_name}"
-    "${TEST_DIALECT}"
+    "${PARSED_TEST_DIALECT}"
     "test"
-    "${TEST_KIND}"
+    "${PARSED_TEST_KIND}"
   )
 
   # ----------------------------------------------------------
   # Register with CTest
   # ----------------------------------------------------------
 
-  if(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "GTest")
+  set(discovery_method "${DiscoverTests__DIALECT.${PARSED_TEST_DIALECT}.DISCOVERY}")
+  if(discovery_method STREQUAL "GTest")
     include(GoogleTest)
 
     gtest_discover_tests("${target}"
       PROPERTIES LABELS ${labels}
     )
-  elseif(TEST_DISCOVERY.${TEST_DIALECT} STREQUAL "Catch2")
+  elseif(discovery_method STREQUAL "Catch2")
     include(Catch)
 
     set(labels_block)
@@ -294,83 +391,70 @@ function(_create_test_from_file module_target test_file dependencies)
   # Build aggregation targets
   # ----------------------------------------------------------
 
-  _bind_aggregate_dependency(
-    tests
-    "${target}"
+  set(aggregates
+    "tests"
+    "tests.${PARSED_TEST_DIALECT}"
+    "tests-${PARSED_TEST_KIND}"
+    "tests-${PARSED_TEST_KIND}.${PARSED_TEST_DIALECT}"
+
+    "${module_name}.tests"
+    "${module_name}.tests.${PARSED_TEST_DIALECT}"
+    "${module_name}.tests-${PARSED_TEST_KIND}"
+    "${module_name}.tests-${PARSED_TEST_KIND}.${PARSED_TEST_DIALECT}"
   )
-  _bind_aggregate_dependency(
-    tests.${TEST_DIALECT}
-    "${target}"
-  )
-  _bind_aggregate_dependency(
-    tests-${TEST_KIND}
-    "${target}"
-  )
-  _bind_aggregate_dependency(
-    tests-${TEST_KIND}.${TEST_DIALECT}
-    "${target}"
-  )
-    
-  _bind_aggregate_dependency(
-    ${module_name}.tests
-    "${target}"
-  )
-  _bind_aggregate_dependency(
-    ${module_name}.tests.${TEST_DIALECT}
-    "${target}"
-  )
-  _bind_aggregate_dependency(
-    ${module_name}.tests-${TEST_KIND}
-    "${target}"
-  )
-  _bind_aggregate_dependency(
-    ${module_name}.tests-${TEST_KIND}.${TEST_DIALECT}
-    "${target}"
-  )
+  
+  foreach(aggregate IN LISTS aggregates)
+    DiscoverTests__bind_aggregate_dependency("${aggregate}" "${target}")
+  endforeach()
 
   # ----------------------------------------------------------
   # Run aggregation targets
   # ----------------------------------------------------------
 
-  _create_run_target(
-    tests-${TEST_KIND}
+  DiscoverTests__create_run_target(
+    "tests.${PARSED_TEST_DIALECT}"
     LABELS
-      "${TEST_KIND}"
+      "${PARSED_TEST_DIALECT}"
+  )
+
+  DiscoverTests__create_run_target(
+    "tests-${PARSED_TEST_KIND}"
+    LABELS
+      "${PARSED_TEST_KIND}"
   )
     
-  _create_run_target(
-    tests-${TEST_KIND}.${TEST_DIALECT}
+  DiscoverTests__create_run_target(
+    "tests-${PARSED_TEST_KIND}.${PARSED_TEST_DIALECT}"
     LABELS
-      "${TEST_KIND}"
-      "${TEST_DIALECT}"
+      "${PARSED_TEST_KIND}"
+      "${PARSED_TEST_DIALECT}"
   )
 
-  _create_run_target(
-    ${module_name}.tests
+  DiscoverTests__create_run_target(
+    "${module_name}.tests"
     LABELS
       "${module_name}"
   )
 
-  _create_run_target(
-    ${module_name}.tests.${TEST_DIALECT}
+  DiscoverTests__create_run_target(
+    "${module_name}.tests.${PARSED_TEST_DIALECT}"
     LABELS
       "${module_name}"
-      "${TEST_DIALECT}"
+      "${PARSED_TEST_DIALECT}"
   )
 
-  _create_run_target(
-    ${module_name}.tests-${TEST_KIND}
+  DiscoverTests__create_run_target(
+    "${module_name}.tests-${PARSED_TEST_KIND}"
     LABELS
       "${module_name}"
-      "${TEST_KIND}"
+      "${PARSED_TEST_KIND}"
   )
     
-  _create_run_target(
-    ${module_name}.tests-${TEST_KIND}.${TEST_DIALECT}
+  DiscoverTests__create_run_target(
+    "${module_name}.tests-${PARSED_TEST_KIND}.${PARSED_TEST_DIALECT}"
     LABELS
       "${module_name}"
-      "${TEST_KIND}"
-      "${TEST_DIALECT}"
+      "${PARSED_TEST_KIND}"
+      "${PARSED_TEST_DIALECT}"
   )
-
 endfunction()

@@ -49,6 +49,7 @@ include(SanitizerSetup)
 # Test Discovery / Target Generation
 # ===========================================================================
 include(DiscoverTests)
+include(TestDialects)
 
 # ===========================================================================
 # Tooling Infrastructure (Options, Cache Variables, Registries, and Helper Functions)
