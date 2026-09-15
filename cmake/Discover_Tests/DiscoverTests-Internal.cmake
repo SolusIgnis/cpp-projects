@@ -175,7 +175,20 @@ endfunction()
 # ============================================================
 # DiscoverTests__validate_test_dialect(out_var dialect filename)
 # ------------------------------------------------------------
-# Internal: Validate dialect
+# Internal: Validates whether a dialect is registered and
+# available in the current scope.
+#
+# Dialect registration is project-wide, but dialect configuration
+# is directory-scoped. A dialect registered in another directory
+# may therefore be known to the global registry without having
+# framework configuration available in the current scope.
+#
+# If no LINK_TARGET or CPM_NAME is configured in the current
+# scope, the dialect is unavailable here.
+#
+# If a dialect is unregistered or unavailable, a WARNING is
+# emitted, and <out_var> is set to FALSE. Otherwise, <out_var>
+# is set to TRUE.
 # ============================================================
 function(DiscoverTests__validate_test_dialect out_var dialect filename)
   DiscoverTests__get_dialects(registered_dialects)
@@ -185,9 +198,13 @@ function(DiscoverTests__validate_test_dialect out_var dialect filename)
       "Unknown test dialect '${dialect}' in file: ${filename}\n"
       "Registered dialects: ${registered_dialects}"
     )
-    set(${out_var}  False PARENT_SCOPE)
+    set(${out_var} FALSE PARENT_SCOPE)
+  elseif(NOT "${DiscoverTests__DIALECT.${dialect}.LINK_TARGET}"
+      OR NOT "${DiscoverTests__DIALECT.${dialect}.CPM_NAME}")
+    message(WARNING "Framework for dialect ${dialect} is not specified at the current directory scope. File: ${filename}")
+    set(${out_var} FALSE PARENT_SCOPE)
   else()
-    set(${out_var}  True PARENT_SCOPE)
+    set(${out_var} TRUE PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -195,15 +212,6 @@ endfunction()
 # DiscoverTests__verify_framework_availability(out_var dialect)
 # ------------------------------------------------------------
 # Internal: Verify the framework target for a dialect exists.
-#
-# Dialect registration is project-wide, but dialect configuration
-# is directory-scoped. A dialect registered in another directory
-# may therefore be known to the global registry without having
-# framework configuration available in the current scope.
-#
-# If no LINK_TARGET is configured in the current scope, the
-# dialect is unavailable here, a warning is emitted, and
-# <out_var> is set to FALSE.
 #
 # If the configured LINK_TARGET already exists, the framework is
 # considered available and no package-manager operation occurs.
@@ -226,11 +234,6 @@ endfunction()
 # ============================================================
 function(DiscoverTests__verify_framework_availability out_var dialect)
   set(framework_target "${DiscoverTests__DIALECT.${dialect}.LINK_TARGET}")
-  if(NOT framework_target)
-    message(WARNING "Framework LINK_TARGET for dialect ${dialect} not specified.")
-    set(${out_var} FALSE PARENT_SCOPE)
-    return()
-  endif()
   if(NOT TARGET "${framework_target}")
     set(cpm_args "NAME" "${DiscoverTests__DIALECT.${dialect}.CPM_NAME}")
         
