@@ -505,7 +505,7 @@ function(DiscoverTests__create_test_from_file module_target test_file dependenci
       PROPERTIES LABELS ${labels}
     )
   elseif(discovery_method STREQUAL "Catch2")
-    include(Catch)
+    include("${Catch2_SOURCE_DIR}/extras/Catch.cmake")
 
     set(labels_block)
     foreach(label IN LISTS labels)
