@@ -203,10 +203,7 @@ function(DiscoverTests__validate_test_dialect out_var dialect filename)
     )
     set(${out_var} FALSE PARENT_SCOPE)
   elseif(NOT link_target OR NOT cpm_name)
-    message(WARNING "Framework for dialect ${dialect} is not specified at the current directory scope. File: '${filename}'"
-"Target: '${link_target}' "
-"Name: '${cpm_name}'"
-)
+    message(WARNING "Framework for dialect '${dialect}' is not specified at the current directory scope. File: '${filename}'")
     set(${out_var} FALSE PARENT_SCOPE)
   else()
     set(${out_var} TRUE PARENT_SCOPE)
