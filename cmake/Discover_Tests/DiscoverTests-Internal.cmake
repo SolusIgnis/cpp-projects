@@ -74,7 +74,7 @@ function(DiscoverTests__parse_test_filename out_prefix filename module_name)
 endfunction()
 
 # ============================================================
-# 
+# DiscoverTests__get_dialects(out_var)
 # ------------------------------------------------------------
 # Internal: Read the dialects registry.
 # ============================================================
@@ -88,7 +88,7 @@ function(DiscoverTests__get_dialects out_var)
 endfunction()
 
 # ============================================================
-# 
+# DiscoverTests__set_dialects(registered_dialects)
 # ------------------------------------------------------------
 # Internal: Replace the dialects registry.
 # ============================================================
@@ -101,7 +101,7 @@ function(DiscoverTests__set_dialects registered_dialects)
 endfunction()
 
 # ============================================================
-# 
+# DiscoverTests__add_dialect(dialect_name)
 # ------------------------------------------------------------
 # Internal: Add a dialect to the registry.
 # ============================================================
@@ -118,7 +118,7 @@ function(DiscoverTests__add_dialect dialect_name)
 endfunction()
 
 # ============================================================
-# 
+# DiscoverTests__remove_dialect(dialect_name)
 # ------------------------------------------------------------
 # Internal: Remove a dialect from the registry.
 # ============================================================
@@ -132,7 +132,7 @@ function(DiscoverTests__remove_dialect dialect_name)
 endfunction()
 
 # ============================================================
-# 
+# DiscoverTests__validate_test_dialect(out_var dialect filename)
 # ------------------------------------------------------------
 # Internal: Validate dialect
 # ============================================================
@@ -151,7 +151,7 @@ function(DiscoverTests__validate_test_dialect out_var dialect filename)
 endfunction()
 
 # ============================================================
-# 
+# DiscoverTests__verify_framework_availability(out_var dialect)
 # ------------------------------------------------------------
 # Internal: Verify framework availability
 # ============================================================
@@ -205,7 +205,7 @@ function(DiscoverTests__verify_framework_availability out_var dialect)
 endfunction()
 
 # ============================================================
-# 
+# DiscoverTests__ensure_target(target)
 # ------------------------------------------------------------
 # Internal: Ensure target exists
 # ============================================================
@@ -216,7 +216,7 @@ function(DiscoverTests__ensure_target target)
 endfunction()
 
 # ============================================================
-# 
+# DiscoverTests__bind_aggregate_dependency(aggregate target)
 # ------------------------------------------------------------
 # Internal: Bind a target as a dependency of an aggregate
 # ============================================================
@@ -226,7 +226,7 @@ function(DiscoverTests__bind_aggregate_dependency aggregate target)
 endfunction()
 
 # ============================================================
-# 
+# DiscoverTests__validate_test_dependencies(out_var module_target)
 # ------------------------------------------------------------
 # Internal: Validate test dependencies as linkable targets
 # ============================================================
@@ -247,20 +247,17 @@ function(DiscoverTests__validate_test_dependencies out_var module_target)
     message(FATAL_ERROR "DiscoverTests__validate_test_dependencies: arguments missing values: ${VTD_ARG_KEYWORDS_MISSING_VALUES}")
   endif()
   
-  set(dependencies_block "")
   foreach(dependency IN LISTS VTD_ARG_DEPENDENCIES)
     if(NOT TARGET "${dependency}")
       message(FATAL_ERROR "Test dependency '${dependency}' of module '${module_target}' does not exist as a target. Unable to link test targets against it.")
     endif()
-
-    list(APPEND dependencies_block "${dependency}")
   endforeach()
 
-  set(${out_var} "${dependencies_block}" PARENT_SCOPE)
+  set(${out_var} "${VTD_ARG_DEPENDENCIES}" PARENT_SCOPE)
 endfunction()
 
 # ============================================================
-# 
+# DiscoverTests__create_run_target(build_target)
 # ------------------------------------------------------------
 # Internal: Create run target with labels if it doesn't exist
 # ============================================================
@@ -274,7 +271,15 @@ function(DiscoverTests__create_run_target build_target)
     "LABELS"
     ${ARGN}
   )
-  
+
+  if (CRT_ARG_UNPARSED_ARGUMENTS)
+    message(FATAL_ERROR "DiscoverTests__create_run_target: unrecognized arguments: ${CRT_ARG_UNPARSED_ARGUMENTS}")
+  endif()
+
+  if (CRT_ARG_KEYWORDS_MISSING_VALUES)
+    message(FATAL_ERROR "DiscoverTests__create_run_target: arguments missing values: ${CRT_ARG_KEYWORDS_MISSING_VALUES}")
+  endif()
+
   if(NOT TARGET "${target}")
     set(ctest_args "--output-on-failure")
     list(APPEND ctest_args "-V")
@@ -291,7 +296,7 @@ function(DiscoverTests__create_run_target build_target)
 endfunction()
 
 # ============================================================
-# 
+# DiscoverTests__create_test_from_file(module_target test_file dependencies)
 # ------------------------------------------------------------
 # Internal: Create executable from test file
 # ============================================================
