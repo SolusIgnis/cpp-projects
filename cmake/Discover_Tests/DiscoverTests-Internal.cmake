@@ -196,6 +196,15 @@ endfunction()
 # ------------------------------------------------------------
 # Internal: Verify the framework target for a dialect exists.
 #
+# Dialect registration is project-wide, but dialect configuration
+# is directory-scoped. A dialect registered in another directory
+# may therefore be known to the global registry without having
+# framework configuration available in the current scope.
+#
+# If no LINK_TARGET is configured in the current scope, the
+# dialect is unavailable here, a warning is emitted, and
+# <out_var> is set to FALSE.
+#
 # If the configured LINK_TARGET already exists, the framework is
 # considered available and no package-manager operation occurs.
 #
@@ -217,6 +226,11 @@ endfunction()
 # ============================================================
 function(DiscoverTests__verify_framework_availability out_var dialect)
   set(framework_target "${DiscoverTests__DIALECT.${dialect}.LINK_TARGET}")
+  if(NOT framework_target)
+    message(WARNING "Framework LINK_TARGET for dialect ${dialect} not specified.")
+    set(${out_var} FALSE PARENT_SCOPE)
+    return()
+  endif()
   if(NOT TARGET "${framework_target}")
     set(cpm_args "NAME" "${DiscoverTests__DIALECT.${dialect}.CPM_NAME}")
         
