@@ -87,6 +87,9 @@ Checks:
 
   # Redundant declarations are generally benign, and this check does not play well with `import std;` 
   - '-readability-redundant-declaration'
+
+  # The alias form can be more readable than the using declaration form, especially when the distinction between a type in a nested namespace and a nested type becomes a distraction.
+  - '-readability-redundant-qualified-alias'
  
   # This is extremely noisy with dependency headers, and the more verbose form is just as readable.
   - '-readability-use-concise-preprocessor-directives'
