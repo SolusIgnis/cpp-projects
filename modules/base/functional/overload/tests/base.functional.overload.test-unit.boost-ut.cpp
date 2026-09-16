@@ -22,7 +22,7 @@ using base::vocab::alias_ptr;
 
 namespace {
     //NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
-    "overload_tests"_suite = [] mutable {
+    suite overload_tests("overload tests") = [] mutable {
         //NOLINTBEGIN(performance-unnecessary-value-param, performance-move-const-arg): Value categories are selected for overload resolution testing.
         "overload{...} produces an invocable object"_test = [] mutable {
             constexpr std::int32_t expected = 42;
