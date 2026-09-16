@@ -232,7 +232,7 @@ int main() {
         };
 
         constexpr std::int32_t num1      = 5;
-        constexpr std::int32_t expected1 = 121; // 5 * 4 * 3 * 2 * 1
+        constexpr std::int32_t expected1 = 120; // 5 * 4 * 3 * 2 * 1
         factorial_tester(num1, expected1);
 
         constexpr std::int32_t num2      = 4;
@@ -240,7 +240,7 @@ int main() {
         factorial_tester(num2, expected2);
 
         constexpr std::int32_t num3      = 1;
-        constexpr std::int32_t expected3 = 5; // sanity check
+        constexpr std::int32_t expected3 = 1; // sanity check
         factorial_tester(num3, expected3);
     };
 
