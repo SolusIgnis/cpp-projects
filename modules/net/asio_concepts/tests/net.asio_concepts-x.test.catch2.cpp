@@ -29,6 +29,7 @@ import std;
 
 using namespace net::asio_concepts; //NOLINT(google-build-using-namespace)
 
+//NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define CONCEPT_CHECK(ConceptCheckAssertion)  \
     {                                         \
         static_assert(ConceptCheckAssertion); \
@@ -44,7 +45,8 @@ struct not_a_buffer_sequence {};
 struct not_a_completion_token {};
 
 struct bad_socket_option {
-    int value() const { return 42; } // deliberately wrong for most option concepts
+    //NOLINTNEXTLINE: Trivial fixture.
+    std::int32_t value() const { return {}; } // deliberately wrong for most option concepts
 };
 
 struct no_executor_type {

@@ -1,0 +1,47 @@
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,21 @@
++cmake_minimum_required(VERSION 4.4.0)
++
++project(qlibs_ut
++  LANGUAGES CXX
++)
++
++add_library(qlibs.ut OBJECT)
++add_library(qlibs.ut::ut ALIAS qlibs.ut)
++
++target_sources(qlibs.ut
++  PUBLIC
++    FILE_SET CXX_MODULES
++    BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
++    FILES
++      ${CMAKE_CURRENT_SOURCE_DIR}/ut.cppm
++)
++
++target_compile_features(qlibs.ut
++  PUBLIC
++    cxx_std_23
++)
+
+--- a/ut.cppm
++++ b/ut.cppm
+@@ -24,3 +24,4 @@
+ module;
++#include <iostream>
+ #include "ut"
+ export module ut;
+
+--- a/ut
++++ b/ut
+@@ -831,11 +831,5 @@
+ };
+ } // namespace ut
+ 
+-namespace std { // iosfwd
+-template<class> struct char_traits;
+-template<class, class> class basic_ostream;
+-extern basic_ostream<char, char_traits<char>> clog; // only used if defined
+-} // namespace std
+-
+ namespace ut::inline v2_1_6 {
+ namespace detail {

@@ -34,6 +34,7 @@ import net.asio_concepts; // Code under test.
 
 using namespace net::asio_concepts; //NOLINT(google-build-using-namespace)
 
+//NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
 #define CONCEPT_CHECK(ConceptCheckAssertion)  \
     {                                         \
         static_assert(ConceptCheckAssertion); \
