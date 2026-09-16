@@ -146,9 +146,7 @@ int main() {
     "overload{...} preserves ambiguity across identical signatures"_test = [] {
         const auto overloaded = overload{[](int /*unused*/) { return 1; }, [](int /*unused*/) { return 2; }};
 
-        expect(std::invocable<decltype(overloaded), int> == "overloaded invocable with int"_b);
-        expect(std::invocable<decltype(overloaded), int> == "std::invocable<decltype(overloaded), int>"_b);
-        expect(that % std::invocable<decltype(overloaded), int>) << "overloaded invocable with int";
+        expect(that % !std::invocable<decltype(overloaded), int>) << "overloaded is not invocable with an int";
     };
 
     "overload{...} preserves ambiguity and overload ranking across multiple composed and aggregated callables"_test =
@@ -173,19 +171,14 @@ int main() {
             };
 
             //NOLINTBEGIN(bugprone-argument-comment): Matcher lhs/rhs.
-            // ambiguous: fobj1(int) vs fobj2(int)
-            expect(that % !std::invocable<decltype(overloaded), std::int32_t>);
+            expect(that % !std::invocable<decltype(overloaded), std::int32_t>) << "ambiguous: fobj1(int) vs fobj2(int)";
 
-            // ambiguous: fobj1(double) vs lambda(double) [both non-const]
-            expect(that % !std::invocable<decltype(overloaded), double>);
+            expect(that % !std::invocable<decltype(overloaded), double>) << "ambiguous: fobj1(double) vs lambda(double) [both non-const]";
 
-            // unambiguous: only fobj2(std::string) [const char* is not a match]
-            expect(that % std::invocable<decltype(overloaded), std::string>);
+            expect(that % std::invocable<decltype(overloaded), std::string>) << "unambiguous: only fobj2(std::string) [const char* is not a match]";
             expect(eq(std::invoke(overloaded, "std::string"s), "fobj2 string"s));
 
-            // unambiguous: 1) non-const fobj1 beats const lambda [better implicit object parameter binding],
-            // 2) and fobj1(const char*) beats fobj2(std::string) [conversion is a worse match]
-            expect(that % std::invocable<decltype(overloaded), const char*>);
+            expect(that % std::invocable<decltype(overloaded), const char*>) << "unambiguous: 1) non-const fobj1 beats const lambda [better implicit object parameter binding], 2) and fobj1(const char*) beats fobj2(std::string) [conversion is a worse match]";
             expect(eq(std::invoke(overloaded, "c-string"), "fobj1 const char*"s));
             //NOLINTEND(bugprone-argument-comment)
         };
@@ -210,11 +203,8 @@ int main() {
         expect(eq(overloaded(0), "non-const"s));
         expect(eq(const_ov(0), "const"s));
 
-        // Explicit `std::string` parameter is a better match than template parameter
-        expect(eq(const_ov("foo"s), "foo"s));
-
-        // Template wins: better object parameter binding (non-`const` vs `const`) outweighs non-template preference
-        expect(eq(overloaded("foo"s), "non-const"s));
+        expect(eq(const_ov("foo"s), "foo"s)) << "Explicit `std::string` parameter is a better match than template parameter";
+        expect(eq(overloaded("foo"s), "non-const"s)) << "Template wins: better object parameter binding (non-`const` vs `const`) outweighs non-template preference";
         //NOLINTEND(bugprone-argument-comment)
     };
 
@@ -237,8 +227,8 @@ int main() {
                 },
             };
 
-            expect(eq(factorial(n), expected));
-            expect(eq(steps, n));
+            expect(eq(factorial(n), expected)) << "factorial(" + std::to_string(n) + ") result";
+            expect(eq(steps, n)) << "step count";
         };
 
         constexpr std::int32_t num1      = 5;
@@ -312,8 +302,8 @@ int main() {
         };
 
         // There should thus be `i` leaf nodes, and their sum the sum of the first `i` counting numbers.
-        expect(eq(tree_sum(tree), sum_to(i)));
-        expect(eq(tree_count(tree), i));
+        expect(eq(tree_sum(tree), sum_to(i))) << "sum";
+        expect(eq(tree_count(tree), i)) << "leaf node count";
     };
     //NOLINTEND(performance-unnecessary-value-param, performance-move-const-arg)
 }
