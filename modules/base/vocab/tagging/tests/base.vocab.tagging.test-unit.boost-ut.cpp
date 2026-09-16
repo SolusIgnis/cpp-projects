@@ -8,8 +8,6 @@ import std;
 using namespace boost::ext::ut;
 
 namespace {
-    constexpr double epsilon{0.001};
-
     //Move-only target type used to verify destructive extraction
     struct move_only_t {
         std::int32_t value{0};
@@ -236,7 +234,7 @@ int main() {
         constexpr double expected{5.0};
 
         const auto result = distance(first_point{pt1}, last_point{pt2});
-        expect(eq(result, expected)(epsilon));
+        expect(eq(result, expected));
     };
 
     "3d position reference boundary distance"_test = [] mutable {
@@ -247,7 +245,7 @@ int main() {
         // Parameter order in function signature is (last_pos, first_pos),
         // but strong boundary types make call sites explicit and safe.
         const auto result = distance(last_pos{pos2}, first_pos{pos1});
-        expect(eq(result, expected)(epsilon));
+        expect(eq(result, expected));
     };
 
     "moving and forwarding"_test = [] mutable {
@@ -280,6 +278,6 @@ int main() {
         constexpr double expected{9.0};
 
         const auto result = forwarding_test(last_pos{pos2}, first_pos{pos1});
-        expect(eq(result, expected)(epsilon));
+        expect(eq(result, expected));
     };
 }
