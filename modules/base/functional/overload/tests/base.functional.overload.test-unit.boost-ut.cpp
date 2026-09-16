@@ -146,7 +146,7 @@ int main() {
     "overload{...} preserves ambiguity across identical signatures"_test = [] {
         const auto overloaded = overload{[](int /*unused*/) { return 1; }, [](int /*unused*/) { return 2; }};
 
-        expect(that % !std::invocable<decltype(overloaded), int>);
+        expect(that % std::invocable<decltype(overloaded), int>);
     };
 
     "overload{...} preserves ambiguity and overload ranking across multiple composed and aggregated callables"_test =
