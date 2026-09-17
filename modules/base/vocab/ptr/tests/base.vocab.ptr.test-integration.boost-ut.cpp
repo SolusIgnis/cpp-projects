@@ -105,20 +105,20 @@ int main() {
         dummy_obj.service     = dependency_ptr{derived_service};
 
         auto dummy_ptr = base::vocab::pointer_to<required_ptr>(dummy_obj);
-        expect(eq(dummy_ptr->counter == nullptr, true));
+        expect(that % (dummy_ptr->counter == nullptr));
         dummy_ptr->counter = std::addressof(count);
 
-        expect(eq(*dummy_ptr->counter, /*rhs=*/0ZU));
+        expect(eq(*dummy_ptr->counter, 0ZU));
 
         required_ptr local_counter = dummy_ptr->counter;
         (*local_counter)++;
 
-        expect(eq(*dummy_ptr->counter, /*rhs=*/1ZU));
+        expect(that % *dummy_ptr->counter == 1ZU);
 
         (*dummy_obj.counter)++;
 
-        expect(eq(*dummy_ptr->counter, /*rhs=*/2ZU));
-        expect(eq(count, /*rhs=*/2ZU));
+        expect(that % *dummy_ptr->counter == 2ZU);
+        expect(that % count == 2ZU);
 
         static_assert(
             sizeof(derived_type) > sizeof(base_type),
@@ -183,20 +183,9 @@ int main() {
 
         alias_ptr<const char> lookup;
 
-        {
-            bool threw_when_null = false;
-            bool wrong_exception = false;
-            try {
+        expect(throws<std::invalid_argument>([&]{
                 [[maybe_unused]] const auto unused = test_map[lookup];
-            } catch (const std::invalid_argument&) {
-                threw_when_null = true;
-            } catch (...) {
-                wrong_exception = true;
-            }
-
-            expect(eq(threw_when_null, true));
-            expect(eq(wrong_exception, false));
-        }
+        }));
 
         //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Test string character offsets are hardcoded for readability.
         lookup = (data + 5);
@@ -291,11 +280,11 @@ int main() {
     "nullability policy is enforced from owning smart pointers"_test = [] mutable {
         std::unique_ptr<std::int32_t> empty_unique{};
 
-        expect(throws<std::invalid_argument>([&] {
+        expect(throws<std::invalid_argument>([&]{
             [[maybe_unused]] const required_ptr dummy_ptr = empty_unique;
         })) << "always-engaged pointer throws on assignment from null unique_ptr";
 
-        expect(nothrow([&] { //nullable pointer
+        expect(nothrow([&]{ //nullable pointer
             const alias_ptr ptr = alias_ptr{empty_unique};
             expect(that % ptr == nullptr) << "null assignment was successful";
         })) << "nullable pointer does not throw on assignment from null unique_ptr";
