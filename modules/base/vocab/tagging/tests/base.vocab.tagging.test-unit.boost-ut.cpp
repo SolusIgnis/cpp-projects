@@ -115,18 +115,19 @@ int main() {
     "move_constructible but noncopyable and non-assignable"_test = [] mutable {
         using bound_t = base::vocab::tagged_boundary<test_tag, std::int32_t>;
 
-        expect(eq(std::is_copy_constructible_v<bound_t>, false));
-        expect(eq(std::is_copy_assignable_v<bound_t>, false));
-        expect(eq(std::is_move_constructible_v<bound_t>, true));
-        expect(eq(std::is_move_assignable_v<bound_t>, false));
+        expect(that % !std::is_copy_constructible_v<bound_t>) << "non-copy-constructible";
+        expect(that % !std::is_copy_assignable_v<bound_t>) << "non-copy-assignable";
+        expect(that % std::is_move_constructible_v<bound_t>) << "move constructible";
+        expect(that % !std::is_move_assignable_v<bound_t>) << "non-move-assignable";
     };
 
     "rvalue-only conversion (ref-qualification contract)"_test = [] mutable {
         using bound_t = base::vocab::tagged_boundary<test_tag, std::int32_t>;
 
-        expect(eq(std::convertible_to<bound_t, std::int32_t>, true));
-        expect(eq(std::convertible_to<bound_t&, std::int32_t>, false));
-        expect(eq(std::convertible_to<const bound_t&, std::int32_t>, false));
+        expect(that % std::convertible_to<bound_t, std::int32_t>) << "prvalue convertible to underlying";
+        expect(that % std::convertible_to<bound_t&&, std::int32_t>) << "xvalue convertible to underlying";
+        expect(that % !std::convertible_to<bound_t&, std::int32_t>) << "mutable lvalue not convertible to underlying";
+        expect(that % !std::convertible_to<const bound_t&, std::int32_t>) << "const lvalue not convertible to underlying";
     };
 
     "distinct tags produce distinct types"_test = [] mutable {
@@ -137,31 +138,31 @@ int main() {
         using bound_b = base::vocab::tagged_boundary<tag_b, std::int32_t>;
 
         //Tags participate in the type, so the type is not the same.
-        expect(eq(std::same_as<bound_a, bound_b>, false));
+        expect(that % !std::same_as<bound_a, bound_b>);
 
         //`tagged_boundary` converts to its underlying type which can explicitly construct a `tagged_boundary` with a different tag.
-        expect(eq(std::constructible_from<bound_a, bound_b>, true));
-        expect(eq(std::constructible_from<bound_b, bound_a>, true));
+        expect(that % std::constructible_from<bound_a, bound_b>);
+        expect(that % std::constructible_from<bound_b, bound_a>);
 
         //A `tagged_boundary` with one tag cannot implicitly convert to a `tagged_boundary` with a different tag.
-        expect(eq(std::convertible_to<bound_a, bound_b>, false));
-        expect(eq(std::convertible_to<bound_b, bound_a>, false));
+        expect(that % !std::convertible_to<bound_a, bound_b>);
+        expect(that % !std::convertible_to<bound_b, bound_a>);
     };
 
     "explicit construction (no implicit wrapper creation)"_test = [] mutable {
         using bound_t = base::vocab::tagged_boundary<test_tag, std::int32_t>;
 
-        expect(eq(std::constructible_from<bound_t, std::int32_t>, true));
-        expect(eq(std::convertible_to<std::int32_t, bound_t>, false));
+        expect(that % std::constructible_from<bound_t, std::int32_t>) << "(explicitly) constructible from underlying";
+        expect(that % !std::convertible_to<std::int32_t, bound_t>) << "not (implicitly) convertible from underlying";
     };
 
     "constructor constraints and move construction"_test = [] mutable {
         using bound_t = base::vocab::tagged_boundary<test_tag, std::int32_t>;
 
-        expect(eq(std::constructible_from<bound_t, bound_t&>, false));
-        expect(eq(std::constructible_from<bound_t, const bound_t&>, false));
-        expect(eq(std::constructible_from<bound_t, bound_t>, true));
-        expect(eq(std::constructible_from<bound_t, bound_t&&>, true));
+        expect(that % !std::constructible_from<bound_t, bound_t&>) << "not copyable from mutable lvalue";
+        expect(that % !std::constructible_from<bound_t, const bound_t&>) << "not copyable from const lvalue";
+        expect(that % std::constructible_from<bound_t, bound_t>) << "movable from prvalue";
+        expect(that % std::constructible_from<bound_t, bound_t&&>) << "movable from xvalue";
     };
 
     "interface boundary type safety and unwrapping"_test = [] mutable {
@@ -183,8 +184,8 @@ int main() {
                                    return false;
                                }});
 
-        expect(eq(obj.local_fn(), true));
-        expect(eq(obj.remote_fn(), false));
+        expect(that % obj.local_fn());
+        expect(that % !obj.remote_fn());
     };
 
     "reference type support"_test = [] mutable {
@@ -203,7 +204,7 @@ int main() {
         bound_ref = expected_changed;
 
         expect(eq(original, expected_changed));
-        expect(eq(&bound_ref == &original, true));
+        expect(eq(&bound_ref, &original));
     };
 
     "noexcept specification propagation"_test = [] mutable {
@@ -224,8 +225,8 @@ int main() {
         using throwing_boundary = base::vocab::tagged_boundary<test_tag, throw_on_move>;
         using noexcept_boundary = base::vocab::tagged_boundary<test_tag, noexcept_move>;
 
-        expect(eq(noexcept(static_cast<throw_on_move>(std::declval<throwing_boundary>())), false));
-        expect(eq(noexcept(static_cast<noexcept_move>(std::declval<noexcept_boundary>())), true));
+        expect(that % !noexcept(static_cast<throw_on_move>(std::declval<throwing_boundary>())));
+        expect(that % noexcept(static_cast<noexcept_move>(std::declval<noexcept_boundary>())));
     };
 
     "2d point value boundary distance"_test = [] mutable {
