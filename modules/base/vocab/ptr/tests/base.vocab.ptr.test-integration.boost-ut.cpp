@@ -293,12 +293,12 @@ int main() {
 
         expect(throws<std::invalid_argument>([&] {
             [[maybe_unused]] const required_ptr dummy_ptr = empty_unique;
-        }) << "always-engaged pointer throws on assignment from null unique_ptr";
+        })) << "always-engaged pointer throws on assignment from null unique_ptr";
 
         expect(nothrow([&] { //nullable pointer
             const alias_ptr ptr = alias_ptr{empty_unique};
             expect(that % ptr == nullptr) << "null assignment was successful";
-        }) << "nullable pointer does not throw on assignment from null unique_ptr";
+        })) << "nullable pointer does not throw on assignment from null unique_ptr";
     };
 
     "vocabulary pointers observe but never participate in ownership"_test = [] mutable {
