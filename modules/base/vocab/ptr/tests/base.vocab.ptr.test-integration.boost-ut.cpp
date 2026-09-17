@@ -291,11 +291,11 @@ int main() {
     "nullability policy is enforced from owning smart pointers"_test = [] mutable {
         std::unique_ptr<std::int32_t> empty_unique{};
 
-        expect(throws<std::invalid_argument>([] mutable {
+        expect(throws<std::invalid_argument>([&] mutable {
             [[maybe_unused]] const required_ptr dummy_ptr = empty_unique;
         }) << "always-engaged pointer throws on assignment from null unique_ptr";
 
-        expect(throws<>([] mutable { //nullable pointer
+        expect(nothrow([&] mutable { //nullable pointer
             const alias_ptr ptr = alias_ptr{empty_unique};
             expect(that % ptr == nullptr) << "null assignment was successful";
         }) << "nullable pointer does not throw on assignment from null unique_ptr";
