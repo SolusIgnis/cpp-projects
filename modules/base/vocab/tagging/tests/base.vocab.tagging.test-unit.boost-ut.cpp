@@ -203,8 +203,8 @@ int main() {
 
         bound_ref = expected_changed;
 
-        expect(eq(original, expected_changed));
-        expect(eq(&bound_ref, &original));
+        expect(eq(original, expected_changed)) << "values match";
+        expect(eq(std::addressof(bound_ref), std::addressof(original))) << "addresses match";
     };
 
     "noexcept specification propagation"_test = [] mutable {
