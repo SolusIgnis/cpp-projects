@@ -325,7 +325,7 @@ int main() {
 
         auto owner2 = std::move(owner);
 
-        expect(that % owner == nullptr) << "owner is null after move";
+        expect(that % (owner == nullptr)) << "owner is null after move";
         expect(that % std::to_address(owner2) == std::to_address(ptr1)) << "owner2 and ptr1 point to the same address";
         expect(eq(owner2->bar(), ptr1->bar()));
         expect(eq(owner2->value, expected));
