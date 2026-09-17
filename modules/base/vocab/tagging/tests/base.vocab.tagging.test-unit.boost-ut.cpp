@@ -88,7 +88,8 @@ namespace {
     }
 } //namespace
 
-int main() {
+int main()
+{
     "in-place construction and destructive extraction"_test = [] mutable {
         static_assert(!std::copy_constructible<move_only_t>, "`move_only_t` must be move-only, or this test is invalid.");
         static_assert(std::move_constructible<move_only_t>, "`move_only_t` must be move-only, or this test is invalid.");
@@ -180,9 +181,7 @@ int main() {
             target_class(local_pred local, remote_pred remote) : local_fn(std::move(local)), remote_fn(std::move(remote)) {}
         };
 
-        const target_class obj(target_class::local_pred{[] { return true; }}, target_class::remote_pred{[] {
-                                   return false;
-                               }});
+        const target_class obj(target_class::local_pred{[] { return true; }}, target_class::remote_pred{[] { return false; }});
 
         expect(that % obj.local_fn());
         expect(that % !obj.remote_fn());

@@ -20,7 +20,8 @@ using namespace std::literals;
 using base::functional::overload;
 using base::vocab::alias_ptr;
 
-int main() {
+int main()
+{
     //NOLINTBEGIN(performance-unnecessary-value-param, performance-move-const-arg): Value categories are selected for overload resolution testing.
     "overload{...} produces an invocable object"_test = [] mutable {
         constexpr std::int32_t expected = 42;
@@ -149,39 +150,42 @@ int main() {
         expect(that % !std::invocable<decltype(overloaded), int>) << "overloaded is not invocable with an int";
     };
 
-    "overload{...} preserves ambiguity and overload ranking across multiple composed and aggregated callables"_test =
-        [] mutable {
-            struct fobj1 {
-                auto operator()(std::int32_t /*unused*/) { return "fobj1 int"s; }
-                auto operator()(double /*unused*/) { return "fobj1 double"s; }
-                auto operator()(const char* /*unused*/) { return "fobj1 const char*"s; }
-            };
-
-            //NOLINTNEXTLINE(misc-const-correctness): Non-const to test overload resolution.
-            auto fobj2 = overload{
-                [](int /*unused*/) mutable { return "fobj2 int"s; },            //mutable => non-const operator()
-                [](std::string /*unused*/) mutable { return "fobj2 string"s; }, //mutable => non-const operator()
-            };
-
-            auto overloaded = overload{
-                fobj1{},
-                fobj2,
-                [](double /*unused*/) mutable { return "lambda double"s; },   //mutable => non-const operator()
-                [](const char* /*unused*/) { return "lambda const char*"s; }, //const operator()
-            };
-
-            //NOLINTBEGIN(bugprone-argument-comment): Matcher lhs/rhs.
-            expect(that % !std::invocable<decltype(overloaded), std::int32_t>) << "ambiguous: fobj1(int) vs fobj2(int)";
-
-            expect(that % !std::invocable<decltype(overloaded), double>) << "ambiguous: fobj1(double) vs lambda(double) [both non-const]";
-
-            expect(that % std::invocable<decltype(overloaded), std::string>) << "unambiguous: only fobj2(std::string) [const char* is not a match]";
-            expect(eq(std::invoke(overloaded, "std::string"s), "fobj2 string"s));
-
-            expect(that % std::invocable<decltype(overloaded), const char*>) << "unambiguous: 1) non-const fobj1 beats const lambda [better implicit object parameter binding], 2) and fobj1(const char*) beats fobj2(std::string) [conversion is a worse match]";
-            expect(eq(std::invoke(overloaded, "c-string"), "fobj1 const char*"s));
-            //NOLINTEND(bugprone-argument-comment)
+    "overload{...} preserves ambiguity and overload ranking across multiple composed and aggregated callables"_test = [] mutable {
+        struct fobj1 {
+            auto operator()(std::int32_t /*unused*/) { return "fobj1 int"s; }
+            auto operator()(double /*unused*/) { return "fobj1 double"s; }
+            auto operator()(const char* /*unused*/) { return "fobj1 const char*"s; }
         };
+
+        //NOLINTNEXTLINE(misc-const-correctness): Non-const to test overload resolution.
+        auto fobj2 = overload{
+            [](int /*unused*/) mutable { return "fobj2 int"s; },            //mutable => non-const operator()
+            [](std::string /*unused*/) mutable { return "fobj2 string"s; }, //mutable => non-const operator()
+        };
+
+        auto overloaded = overload{
+            fobj1{},
+            fobj2,
+            [](double /*unused*/) mutable { return "lambda double"s; },   //mutable => non-const operator()
+            [](const char* /*unused*/) { return "lambda const char*"s; }, //const operator()
+        };
+
+        //NOLINTBEGIN(bugprone-argument-comment): Matcher lhs/rhs.
+        expect(that % !std::invocable<decltype(overloaded), std::int32_t>) << "ambiguous: fobj1(int) vs fobj2(int)";
+
+        expect(that % !std::invocable<decltype(overloaded), double>)
+            << "ambiguous: fobj1(double) vs lambda(double) [both non-const]";
+
+        expect(that % std::invocable<decltype(overloaded), std::string>)
+            << "unambiguous: only fobj2(std::string) [const char* is not a match]";
+        expect(eq(std::invoke(overloaded, "std::string"s), "fobj2 string"s));
+
+        expect(
+            that % std::invocable<decltype(overloaded), const char*>
+        ) << "unambiguous: 1) non-const fobj1 beats const lambda [better implicit object parameter binding], 2) and fobj1(const char*) beats fobj2(std::string) [conversion is a worse match]";
+        expect(eq(std::invoke(overloaded, "c-string"), "fobj1 const char*"s));
+        //NOLINTEND(bugprone-argument-comment)
+    };
 
     "overload{...} with deduced `this` lambda sees derived object identity"_test = [] mutable {
         //NOLINTNEXTLINE(misc-const-correctness)
@@ -204,7 +208,8 @@ int main() {
         expect(eq(const_ov(0), "const"s));
 
         expect(eq(const_ov("foo"s), "foo"s)) << "Explicit `std::string` parameter is a better match than template parameter";
-        expect(eq(overloaded("foo"s), "non-const"s)) << "Template wins: better object parameter binding (non-`const` vs `const`) outweighs non-template preference";
+        expect(eq(overloaded("foo"s), "non-const"s))
+            << "Template wins: better object parameter binding (non-`const` vs `const`) outweighs non-template preference";
         //NOLINTEND(bugprone-argument-comment)
     };
 
