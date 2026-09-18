@@ -120,14 +120,8 @@ export namespace net::telnet {
             using remote = option::remote_predicate;
 
             return {
-                option{
-                       option::id_num::binary, "Binary Transmission", local{option::always_accept}, remote{option::always_accept}
-                },
-                option{
-                       option::id_num::suppress_go_ahead,
-                       "Suppress Go-Ahead", local{option::always_accept},
-                       remote{option::always_accept}
-                },
+                option{option::id_num::binary, "Binary Transmission", local{option::always_accept}, remote{option::always_accept}},
+                option{option::id_num::suppress_go_ahead, "Suppress Go-Ahead", local{option::always_accept}, remote{option::always_accept}},
                 option{
                        option::id_num::status,
                        "Status", local{option::always_accept},

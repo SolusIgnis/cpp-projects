@@ -593,10 +593,7 @@ export namespace std {
                 return std::format_to(ctx.out(), "0x{:02x}", std::to_underlying(opt.get_id()));
             } else { // 'd' (default: 0xXX (name))
                 return std::format_to(
-                    ctx.out(),
-                    "0x{:02x} ({})",
-                    std::to_underlying(opt.get_id()),
-                    opt.get_name().empty() ? "unknown" : opt.get_name()
+                    ctx.out(), "0x{:02x} ({})", std::to_underlying(opt.get_id()), opt.get_name().empty() ? "unknown" : opt.get_name()
                 );
             }
         } //format(const ::net::telnet::option&, FormatContext&)

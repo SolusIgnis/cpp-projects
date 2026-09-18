@@ -137,12 +137,12 @@ export namespace net::asio_concepts {
          * @see `asio::socket_base::broadcast`, `reuse_address`
          */
         template<typename T>
-        concept boolean_socket_option = std::default_initializable<T> && requires(T temp) {
-                                                                             {
-                                                                                 std::as_const(temp).value()
-                                                                             } -> std::convertible_to<bool>;
-                                                                             requires std::constructible_from<T, bool>;
-                                                                         };
+        concept boolean_socket_option =
+            std::default_initializable<T>
+            && requires(T temp) {
+                   { std::as_const(temp).value() } -> std::convertible_to<bool>;
+                   requires std::constructible_from<T, bool>;
+               };
 
         /**
          * @concept integral_socket_option
@@ -151,13 +151,14 @@ export namespace net::asio_concepts {
          * @see `asio::socket_base::receive_buffer_size`
          */
         template<typename T>
-        concept integral_socket_option = std::default_initializable<T>
-                                      && requires(T temp) {
-                                             { std::as_const(temp).value() };
-                                             requires (!(std::same_as<decltype(std::as_const(temp).value()), bool>));
-                                             requires std::integral<decltype(std::as_const(temp).value())>;
-                                             requires std::constructible_from<T, decltype(std::as_const(temp).value())>;
-                                         };
+        concept integral_socket_option =
+            std::default_initializable<T>
+            && requires(T temp) {
+                   { std::as_const(temp).value() };
+                   requires (!(std::same_as<decltype(std::as_const(temp).value()), bool>));
+                   requires std::integral<decltype(std::as_const(temp).value())>;
+                   requires std::constructible_from<T, decltype(std::as_const(temp).value())>;
+               };
 
         /**
          * @concept composite_socket_option
@@ -191,8 +192,8 @@ export namespace net::asio_concepts {
          * @remark Allows any of the four basic option types.
          */
         template<typename T>
-        concept socket_option = boolean_socket_option<T> || integral_socket_option<T> || composite_socket_option<T>
-                             || asio_addressable_socket_option<T>;
+        concept socket_option =
+            boolean_socket_option<T> || integral_socket_option<T> || composite_socket_option<T> || asio_addressable_socket_option<T>;
 
         /**
          * @concept socket_option_provider
@@ -201,20 +202,21 @@ export namespace net::asio_concepts {
          * @remark Requires all standard `socket_base` option types to satisfy their respective concepts.
          */
         template<typename T>
-        concept socket_option_provider = requires {
-                                             requires boolean_socket_option<typename T::broadcast>;
-                                             requires boolean_socket_option<typename T::debug>;
-                                             requires boolean_socket_option<typename T::do_not_route>;
-                                             requires boolean_socket_option<typename T::enable_connection_aborted>;
-                                             requires boolean_socket_option<typename T::keep_alive>;
-                                             requires composite_socket_option<typename T::linger>;
-                                             requires boolean_socket_option<typename T::out_of_band_inline>;
-                                             requires integral_socket_option<typename T::receive_buffer_size>;
-                                             requires integral_socket_option<typename T::receive_low_watermark>;
-                                             requires boolean_socket_option<typename T::reuse_address>;
-                                             requires integral_socket_option<typename T::send_buffer_size>;
-                                             requires integral_socket_option<typename T::send_low_watermark>;
-                                         };
+        concept socket_option_provider =
+            requires {
+                requires boolean_socket_option<typename T::broadcast>;
+                requires boolean_socket_option<typename T::debug>;
+                requires boolean_socket_option<typename T::do_not_route>;
+                requires boolean_socket_option<typename T::enable_connection_aborted>;
+                requires boolean_socket_option<typename T::keep_alive>;
+                requires composite_socket_option<typename T::linger>;
+                requires boolean_socket_option<typename T::out_of_band_inline>;
+                requires integral_socket_option<typename T::receive_buffer_size>;
+                requires integral_socket_option<typename T::receive_low_watermark>;
+                requires boolean_socket_option<typename T::reuse_address>;
+                requires integral_socket_option<typename T::send_buffer_size>;
+                requires integral_socket_option<typename T::send_low_watermark>;
+            };
 
         /**
          * @concept has_gettable_socket_option
@@ -224,10 +226,11 @@ export namespace net::asio_concepts {
          * @remark Requires both error-code and non-throwing overloads.
          */
         template<typename T, typename Option>
-        concept has_gettable_socket_option = requires(T& temp, Option& opt, std::error_code& ec_out) {
-                                                 { temp.get_option(opt) } -> std::same_as<void>;
-                                                 { temp.get_option(opt, ec_out) };
-                                             };
+        concept has_gettable_socket_option =
+            requires(T& temp, Option& opt, std::error_code& ec_out) {
+                { temp.get_option(opt) } -> std::same_as<void>;
+                { temp.get_option(opt, ec_out) };
+            };
 
         /**
          * @concept socket_option_getter
@@ -235,18 +238,17 @@ export namespace net::asio_concepts {
          * @tparam T The type to check.
          */
         template<typename T>
-        concept socket_option_getter = has_gettable_socket_option<T, asio::socket_base::broadcast>
-                                    && has_gettable_socket_option<T, asio::socket_base::debug>
-                                    && has_gettable_socket_option<T, asio::socket_base::do_not_route>
-                                    && has_gettable_socket_option<T, asio::socket_base::enable_connection_aborted>
-                                    && has_gettable_socket_option<T, asio::socket_base::keep_alive>
-                                    && has_gettable_socket_option<T, asio::socket_base::linger>
-                                    && has_gettable_socket_option<T, asio::socket_base::out_of_band_inline>
-                                    && has_gettable_socket_option<T, asio::socket_base::receive_buffer_size>
-                                    && has_gettable_socket_option<T, asio::socket_base::receive_low_watermark>
-                                    && has_gettable_socket_option<T, asio::socket_base::reuse_address>
-                                    && has_gettable_socket_option<T, asio::socket_base::send_buffer_size>
-                                    && has_gettable_socket_option<T, asio::socket_base::send_low_watermark>;
+        concept socket_option_getter =
+            has_gettable_socket_option<T, asio::socket_base::broadcast> && has_gettable_socket_option<T, asio::socket_base::debug>
+            && has_gettable_socket_option<T, asio::socket_base::do_not_route>
+            && has_gettable_socket_option<T, asio::socket_base::enable_connection_aborted>
+            && has_gettable_socket_option<T, asio::socket_base::keep_alive> && has_gettable_socket_option<T, asio::socket_base::linger>
+            && has_gettable_socket_option<T, asio::socket_base::out_of_band_inline>
+            && has_gettable_socket_option<T, asio::socket_base::receive_buffer_size>
+            && has_gettable_socket_option<T, asio::socket_base::receive_low_watermark>
+            && has_gettable_socket_option<T, asio::socket_base::reuse_address>
+            && has_gettable_socket_option<T, asio::socket_base::send_buffer_size>
+            && has_gettable_socket_option<T, asio::socket_base::send_low_watermark>;
 
         /**
          * @concept has_unary_settable_socket_option
@@ -256,10 +258,11 @@ export namespace net::asio_concepts {
          * @tparam Arg The argument type.
          */
         template<typename T, typename Option, typename Arg>
-        concept has_unary_settable_socket_option = requires(T& temp, std::error_code& ec_out, Arg& arg) {
-                                                       { temp.set_option(Option(arg)) } -> std::same_as<void>;
-                                                       { temp.set_option(Option(arg), ec_out) };
-                                                   };
+        concept has_unary_settable_socket_option =
+            requires(T& temp, std::error_code& ec_out, Arg& arg) {
+                { temp.set_option(Option(arg)) } -> std::same_as<void>;
+                { temp.set_option(Option(arg), ec_out) };
+            };
 
         /**
          * @concept has_binary_settable_socket_option
@@ -269,10 +272,11 @@ export namespace net::asio_concepts {
          * @tparam Arg1, Arg2 Argument types.
          */
         template<typename T, typename Option, typename Arg1, typename Arg2>
-        concept has_binary_settable_socket_option = requires(T& temp, std::error_code& ec_out, Arg1 arg1, Arg2 arg2) {
-                                                        { temp.set_option(Option(arg1, arg2)) } -> std::same_as<void>;
-                                                        { temp.set_option(Option(arg1, arg2), ec_out) };
-                                                    };
+        concept has_binary_settable_socket_option =
+            requires(T& temp, std::error_code& ec_out, Arg1 arg1, Arg2 arg2) {
+                { temp.set_option(Option(arg1, arg2)) } -> std::same_as<void>;
+                { temp.set_option(Option(arg1, arg2), ec_out) };
+            };
 
         /**
          * @concept socket_option_setter
@@ -280,18 +284,19 @@ export namespace net::asio_concepts {
          * @tparam T The type to check.
          */
         template<typename T>
-        concept socket_option_setter = has_unary_settable_socket_option<T, asio::socket_base::broadcast, bool>
-                                    && has_unary_settable_socket_option<T, asio::socket_base::debug, bool>
-                                    && has_unary_settable_socket_option<T, asio::socket_base::do_not_route, bool>
-                                    && has_unary_settable_socket_option<T, asio::socket_base::enable_connection_aborted, bool>
-                                    && has_unary_settable_socket_option<T, asio::socket_base::keep_alive, bool>
-                                    && has_binary_settable_socket_option<T, asio::socket_base::linger, bool, int>
-                                    && has_unary_settable_socket_option<T, asio::socket_base::out_of_band_inline, bool>
-                                    && has_unary_settable_socket_option<T, asio::socket_base::receive_buffer_size, int>
-                                    && has_unary_settable_socket_option<T, asio::socket_base::receive_low_watermark, int>
-                                    && has_unary_settable_socket_option<T, asio::socket_base::reuse_address, bool>
-                                    && has_unary_settable_socket_option<T, asio::socket_base::send_buffer_size, int>
-                                    && has_unary_settable_socket_option<T, asio::socket_base::send_low_watermark, int>;
+        concept socket_option_setter =
+            has_unary_settable_socket_option<T, asio::socket_base::broadcast, bool>
+            && has_unary_settable_socket_option<T, asio::socket_base::debug, bool>
+            && has_unary_settable_socket_option<T, asio::socket_base::do_not_route, bool>
+            && has_unary_settable_socket_option<T, asio::socket_base::enable_connection_aborted, bool>
+            && has_unary_settable_socket_option<T, asio::socket_base::keep_alive, bool>
+            && has_binary_settable_socket_option<T, asio::socket_base::linger, bool, int>
+            && has_unary_settable_socket_option<T, asio::socket_base::out_of_band_inline, bool>
+            && has_unary_settable_socket_option<T, asio::socket_base::receive_buffer_size, int>
+            && has_unary_settable_socket_option<T, asio::socket_base::receive_low_watermark, int>
+            && has_unary_settable_socket_option<T, asio::socket_base::reuse_address, bool>
+            && has_unary_settable_socket_option<T, asio::socket_base::send_buffer_size, int>
+            && has_unary_settable_socket_option<T, asio::socket_base::send_low_watermark, int>;
     } //namespace socket_options
 
     /**
@@ -301,10 +306,11 @@ export namespace net::asio_concepts {
      * @tparam Command The command type.
      */
     template<typename T, typename Command>
-    concept has_io_control_command = requires(T& temp, Command& cmd, std::error_code& ec_out) {
-                                         { temp.io_control(cmd) } -> std::same_as<void>;
-                                         { temp.io_control(cmd, ec_out) };
-                                     };
+    concept has_io_control_command =
+        requires(T& temp, Command& cmd, std::error_code& ec_out) {
+            { temp.io_control(cmd) } -> std::same_as<void>;
+            { temp.io_control(cmd, ec_out) };
+        };
 
     /**
      * @concept io_controller
@@ -338,14 +344,15 @@ export namespace net::asio_concepts {
      * @tparam T The type to check.
      */
     template<typename T>
-    concept message_flag_provider = requires {
-                                        typename T::message_flags;
-                                        requires bitmask_type<typename T::message_flags>;
-                                        { T::message_do_not_route } -> std::convertible_to<typename T::message_flags>;
-                                        { T::message_end_of_record } -> std::convertible_to<typename T::message_flags>;
-                                        { T::message_out_of_band } -> std::convertible_to<typename T::message_flags>;
-                                        { T::message_peek } -> std::convertible_to<typename T::message_flags>;
-                                    };
+    concept message_flag_provider =
+        requires {
+            typename T::message_flags;
+            requires bitmask_type<typename T::message_flags>;
+            { T::message_do_not_route } -> std::convertible_to<typename T::message_flags>;
+            { T::message_end_of_record } -> std::convertible_to<typename T::message_flags>;
+            { T::message_out_of_band } -> std::convertible_to<typename T::message_flags>;
+            { T::message_peek } -> std::convertible_to<typename T::message_flags>;
+        };
 
     /**
      * @concept asio_executor_associated
@@ -354,9 +361,10 @@ export namespace net::asio_concepts {
      * @remark This models the minimal executor-related requirement for an Asio I/O object.
      */
     template<typename T>
-    concept asio_executor_associated = requires(T& temp) {
-                                           { temp.get_executor() } noexcept -> asio::execution::executor;
-                                       };
+    concept asio_executor_associated =
+        requires(T& temp) {
+            { temp.get_executor() } noexcept -> asio::execution::executor;
+        };
 
     /**
      * @concept asio_executor_provider
@@ -366,11 +374,12 @@ export namespace net::asio_concepts {
      * @see `boost::asio::ip::tcp::socket`
      */
     template<typename T>
-    concept asio_executor_provider = asio_executor_associated<T>
-                                  && requires(T& temp) {
-                                         requires asio::execution::executor<typename T::executor_type>;
-                                         { temp.get_executor() } noexcept -> std::convertible_to<typename T::executor_type>;
-                                     };
+    concept asio_executor_provider =
+        asio_executor_associated<T>
+        && requires(T& temp) {
+               requires asio::execution::executor<typename T::executor_type>;
+               { temp.get_executor() } noexcept -> std::convertible_to<typename T::executor_type>;
+           };
 
     inline namespace streams {
         /**
@@ -381,14 +390,15 @@ export namespace net::asio_concepts {
          * @see `boost::asio::ip::tcp::socket`
          */
         template<typename T>
-        concept asio_async_read_stream = asio_executor_associated<T>
-                                      && requires(T& temp, asio::mutable_buffer& buffer, asio_sample_completion_token& token) {
-                                             temp.async_read_some(buffer, std::forward<asio_sample_completion_token>(token));
-                                             temp.async_read_some(buffer, asio::deferred);
-                                             temp.async_read_some(buffer, asio::detached);
-                                             temp.async_read_some(buffer, asio::use_awaitable);
-                                             temp.async_read_some(buffer, asio::use_future);
-                                         };
+        concept asio_async_read_stream =
+            asio_executor_associated<T>
+            && requires(T& temp, asio::mutable_buffer& buffer, asio_sample_completion_token& token) {
+                   temp.async_read_some(buffer, std::forward<asio_sample_completion_token>(token));
+                   temp.async_read_some(buffer, asio::deferred);
+                   temp.async_read_some(buffer, asio::detached);
+                   temp.async_read_some(buffer, asio::use_awaitable);
+                   temp.async_read_some(buffer, asio::use_future);
+               };
 
         /**
          * @concept asio_sync_read_stream
@@ -398,10 +408,11 @@ export namespace net::asio_concepts {
          * @see `boost::asio::ip::tcp::socket`
          */
         template<typename T>
-        concept asio_sync_read_stream = requires(T& temp, asio::mutable_buffer& buffer, std::error_code& ec_out) {
-                                            { temp.read_some(buffer) } -> std::convertible_to<std::size_t>;
-                                            { temp.read_some(buffer, ec_out) } -> std::convertible_to<std::size_t>;
-                                        };
+        concept asio_sync_read_stream =
+            requires(T& temp, asio::mutable_buffer& buffer, std::error_code& ec_out) {
+                { temp.read_some(buffer) } -> std::convertible_to<std::size_t>;
+                { temp.read_some(buffer, ec_out) } -> std::convertible_to<std::size_t>;
+            };
 
         /**
          * @concept asio_async_write_stream
@@ -411,14 +422,15 @@ export namespace net::asio_concepts {
          * @see `boost::asio::ip::tcp::socket`
          */
         template<typename T>
-        concept asio_async_write_stream = asio_executor_associated<T>
-                                       && requires(T& temp, asio::const_buffer& buffer, asio_sample_completion_token&& token) {
-                                              temp.async_write_some(buffer, std::forward<asio_sample_completion_token>(token));
-                                              temp.async_write_some(buffer, asio::deferred);
-                                              temp.async_write_some(buffer, asio::detached);
-                                              temp.async_write_some(buffer, asio::use_awaitable);
-                                              temp.async_write_some(buffer, asio::use_future);
-                                          };
+        concept asio_async_write_stream =
+            asio_executor_associated<T>
+            && requires(T& temp, asio::const_buffer& buffer, asio_sample_completion_token&& token) {
+                   temp.async_write_some(buffer, std::forward<asio_sample_completion_token>(token));
+                   temp.async_write_some(buffer, asio::deferred);
+                   temp.async_write_some(buffer, asio::detached);
+                   temp.async_write_some(buffer, asio::use_awaitable);
+                   temp.async_write_some(buffer, asio::use_future);
+               };
 
         /**
          * @concept asio_sync_write_stream
@@ -428,10 +440,11 @@ export namespace net::asio_concepts {
          * @see `boost::asio::ip::tcp::socket`
          */
         template<typename T>
-        concept asio_sync_write_stream = requires(T& temp, asio::const_buffer& buffer, std::error_code& ec_out) {
-                                             { temp.write_some(buffer) } -> std::convertible_to<std::size_t>;
-                                             { temp.write_some(buffer, ec_out) } -> std::convertible_to<std::size_t>;
-                                         };
+        concept asio_sync_write_stream =
+            requires(T& temp, asio::const_buffer& buffer, std::error_code& ec_out) {
+                { temp.write_some(buffer) } -> std::convertible_to<std::size_t>;
+                { temp.write_some(buffer, ec_out) } -> std::convertible_to<std::size_t>;
+            };
     } //namespace streams
 
     inline namespace waitables {
@@ -442,14 +455,15 @@ export namespace net::asio_concepts {
          * @see `asio::steady_timer`
          */
         template<typename T>
-        concept asio_async_timed_waitable = asio_executor_associated<T>
-                                         && requires(T& temp, asio_sample_completion_token&& token) {
-                                                temp.async_wait(std::forward<asio_sample_completion_token>(token));
-                                                temp.async_wait(asio::deferred);
-                                                temp.async_wait(asio::detached);
-                                                temp.async_wait(asio::use_awaitable);
-                                                temp.async_wait(asio::use_future);
-                                            };
+        concept asio_async_timed_waitable =
+            asio_executor_associated<T>
+            && requires(T& temp, asio_sample_completion_token&& token) {
+                   temp.async_wait(std::forward<asio_sample_completion_token>(token));
+                   temp.async_wait(asio::deferred);
+                   temp.async_wait(asio::detached);
+                   temp.async_wait(asio::use_awaitable);
+                   temp.async_wait(asio::use_future);
+               };
 
         /**
          * @concept asio_sync_timed_waitable
@@ -457,10 +471,11 @@ export namespace net::asio_concepts {
          * @tparam T The type to check.
          */
         template<typename T>
-        concept asio_sync_timed_waitable = requires(T& temp, std::error_code& ec_out) {
-                                               { temp.wait() } -> std::same_as<void>;
-                                               { temp.wait(ec_out) };
-                                           };
+        concept asio_sync_timed_waitable =
+            requires(T& temp, std::error_code& ec_out) {
+                { temp.wait() } -> std::same_as<void>;
+                { temp.wait(ec_out) };
+            };
 
         /**
          * @concept has_activity_async_wait
@@ -469,13 +484,14 @@ export namespace net::asio_concepts {
          * @tparam WaitType The activity type (e.g., `wait_read`).
          */
         template<typename T, typename WaitType>
-        concept has_activity_async_wait = requires(T& temp, WaitType wait, asio_sample_completion_token&& token) {
-                                              temp.async_wait(wait, std::forward<asio_sample_completion_token>(token));
-                                              temp.async_wait(wait, asio::deferred);
-                                              temp.async_wait(wait, asio::detached);
-                                              temp.async_wait(wait, asio::use_awaitable);
-                                              temp.async_wait(wait, asio::use_future);
-                                          };
+        concept has_activity_async_wait =
+            requires(T& temp, WaitType wait, asio_sample_completion_token&& token) {
+                temp.async_wait(wait, std::forward<asio_sample_completion_token>(token));
+                temp.async_wait(wait, asio::deferred);
+                temp.async_wait(wait, asio::detached);
+                temp.async_wait(wait, asio::use_awaitable);
+                temp.async_wait(wait, asio::use_future);
+            };
 
         /**
          * @concept asio_async_activity_waitable
@@ -484,11 +500,12 @@ export namespace net::asio_concepts {
          * @remark `T::wait_type` enumerates the activities (e.g., `wait_read`, `wait_write`).
          */
         template<typename T>
-        concept asio_async_activity_waitable = asio_executor_associated<T>
-                                            && requires {
-                                                   typename T::wait_type;
-                                                   requires has_activity_async_wait<T, typename T::wait_type>;
-                                               };
+        concept asio_async_activity_waitable =
+            asio_executor_associated<T>
+            && requires {
+                   typename T::wait_type;
+                   requires has_activity_async_wait<T, typename T::wait_type>;
+               };
 
         /**
          * @concept has_activity_sync_wait
@@ -497,10 +514,11 @@ export namespace net::asio_concepts {
          * @tparam WaitType The activity type.
          */
         template<typename T, typename WaitType>
-        concept has_activity_sync_wait = requires(T& temp, WaitType wait, std::error_code& ec_out) {
-                                             { temp.wait(wait) } -> std::same_as<void>;
-                                             { temp.wait(wait, ec_out) };
-                                         };
+        concept has_activity_sync_wait =
+            requires(T& temp, WaitType wait, std::error_code& ec_out) {
+                { temp.wait(wait) } -> std::same_as<void>;
+                { temp.wait(wait, ec_out) };
+            };
 
         /**
          * @concept asio_sync_activity_waitable
@@ -509,10 +527,11 @@ export namespace net::asio_concepts {
          * @remark `T::wait_type` enumerates the activities.
          */
         template<typename T>
-        concept asio_sync_activity_waitable = requires {
-                                                  typename T::wait_type;
-                                                  requires has_activity_sync_wait<T, typename T::wait_type>;
-                                              };
+        concept asio_sync_activity_waitable =
+            requires {
+                typename T::wait_type;
+                requires has_activity_sync_wait<T, typename T::wait_type>;
+            };
     } //namespace waitables
 
     inline namespace socket_transmission {
@@ -544,10 +563,12 @@ export namespace net::asio_concepts {
          * @tparam T The type to check.
          */
         template<typename T>
-        concept asio_async_sender = asio_executor_associated<T> && requires {
-                                                                       typename T::message_flags;
-                                                                       requires has_async_send<T, typename T::message_flags>;
-                                                                   };
+        concept asio_async_sender =
+            asio_executor_associated<T>
+            && requires {
+                   typename T::message_flags;
+                   requires has_async_send<T, typename T::message_flags>;
+               };
 
         /**
          * @concept has_sync_send
@@ -556,11 +577,12 @@ export namespace net::asio_concepts {
          * @tparam MessageFlags The flag type.
          */
         template<typename T, typename MessageFlags>
-        concept has_sync_send = requires(T& temp, asio::const_buffer buffer, MessageFlags flags, std::error_code& ec_out) {
-                                    { temp.send(buffer) } -> std::convertible_to<std::size_t>;
-                                    { temp.send(buffer, flags) } -> std::convertible_to<std::size_t>;
-                                    { temp.send(buffer, flags, ec_out) } -> std::convertible_to<std::size_t>;
-                                };
+        concept has_sync_send =
+            requires(T& temp, asio::const_buffer buffer, MessageFlags flags, std::error_code& ec_out) {
+                { temp.send(buffer) } -> std::convertible_to<std::size_t>;
+                { temp.send(buffer, flags) } -> std::convertible_to<std::size_t>;
+                { temp.send(buffer, flags, ec_out) } -> std::convertible_to<std::size_t>;
+            };
 
         /**
          * @concept asio_sync_sender
@@ -568,10 +590,11 @@ export namespace net::asio_concepts {
          * @tparam T The type to check.
          */
         template<typename T>
-        concept asio_sync_sender = requires {
-                                       typename T::message_flags;
-                                       requires has_sync_send<T, typename T::message_flags>;
-                                   };
+        concept asio_sync_sender =
+            requires {
+                typename T::message_flags;
+                requires has_sync_send<T, typename T::message_flags>;
+            };
 
         /**
          * @concept has_at_mark
@@ -590,10 +613,11 @@ export namespace net::asio_concepts {
          * @tparam T The type to check.
          */
         template<typename T>
-        concept has_available = requires(T& temp, std::error_code& ec_out) {
-                                    { std::as_const(temp).available() } -> std::convertible_to<std::size_t>;
-                                    { std::as_const(temp).available(ec_out) } -> std::convertible_to<std::size_t>;
-                                };
+        concept has_available =
+            requires(T& temp, std::error_code& ec_out) {
+                { std::as_const(temp).available() } -> std::convertible_to<std::size_t>;
+                { std::as_const(temp).available(ec_out) } -> std::convertible_to<std::size_t>;
+            };
 
         /**
          * @concept has_async_receive
@@ -623,13 +647,14 @@ export namespace net::asio_concepts {
          * @tparam T The type to check.
          */
         template<typename T>
-        concept asio_async_receiver = asio_executor_associated<T>
-                                   && requires(T& temp, std::error_code& ec_out) {
-                                          typename T::message_flags;
-                                          requires has_async_receive<T, typename T::message_flags>;
-                                          requires has_at_mark<T>;
-                                          requires has_available<T>;
-                                      };
+        concept asio_async_receiver =
+            asio_executor_associated<T>
+            && requires(T& temp, std::error_code& ec_out) {
+                   typename T::message_flags;
+                   requires has_async_receive<T, typename T::message_flags>;
+                   requires has_at_mark<T>;
+                   requires has_available<T>;
+               };
 
         /**
          * @concept has_sync_receive
@@ -638,11 +663,12 @@ export namespace net::asio_concepts {
          * @tparam MessageFlags The flag type.
          */
         template<typename T, typename MessageFlags>
-        concept has_sync_receive = requires(T& temp, asio::mutable_buffer buffer, MessageFlags flags, std::error_code& ec_out) {
-                                       { temp.receive(buffer) } -> std::convertible_to<std::size_t>;
-                                       { temp.receive(buffer, flags) } -> std::convertible_to<std::size_t>;
-                                       { temp.receive(buffer, flags, ec_out) } -> std::convertible_to<std::size_t>;
-                                   };
+        concept has_sync_receive =
+            requires(T& temp, asio::mutable_buffer buffer, MessageFlags flags, std::error_code& ec_out) {
+                { temp.receive(buffer) } -> std::convertible_to<std::size_t>;
+                { temp.receive(buffer, flags) } -> std::convertible_to<std::size_t>;
+                { temp.receive(buffer, flags, ec_out) } -> std::convertible_to<std::size_t>;
+            };
 
         /**
          * @concept asio_sync_receiver
@@ -650,12 +676,13 @@ export namespace net::asio_concepts {
          * @tparam T The type to check.
          */
         template<typename T>
-        concept asio_sync_receiver = requires {
-                                         typename T::message_flags;
-                                         requires has_sync_receive<T, typename T::message_flags>;
-                                         requires has_at_mark<T>;
-                                         requires has_available<T>;
-                                     };
+        concept asio_sync_receiver =
+            requires {
+                typename T::message_flags;
+                requires has_sync_receive<T, typename T::message_flags>;
+                requires has_at_mark<T>;
+                requires has_available<T>;
+            };
     } //namespace socket_transmission
 
     /**
@@ -664,10 +691,11 @@ export namespace net::asio_concepts {
      * @tparam T The type to check.
      */
     template<typename T>
-    concept counted_cancellable_resource = requires(T& temp, std::error_code& ec_out) {
-                                               { temp.cancel() } -> std::convertible_to<std::size_t>;
-                                               { temp.cancel(ec_out) } -> std::convertible_to<std::size_t>;
-                                           };
+    concept counted_cancellable_resource =
+        requires(T& temp, std::error_code& ec_out) {
+            { temp.cancel() } -> std::convertible_to<std::size_t>;
+            { temp.cancel(ec_out) } -> std::convertible_to<std::size_t>;
+        };
 
     /**
      * @concept uncounted_cancellable_resource
@@ -675,10 +703,11 @@ export namespace net::asio_concepts {
      * @tparam T The type to check.
      */
     template<typename T>
-    concept uncounted_cancellable_resource = requires(T& temp, std::error_code& ec_out) {
-                                                 { temp.cancel() } -> std::same_as<void>;
-                                                 { temp.cancel(ec_out) };
-                                             };
+    concept uncounted_cancellable_resource =
+        requires(T& temp, std::error_code& ec_out) {
+            { temp.cancel() } -> std::same_as<void>;
+            { temp.cancel(ec_out) };
+        };
 
     /**
      * @concept cancellable_resource
@@ -694,11 +723,12 @@ export namespace net::asio_concepts {
      * @tparam T The type to check.
      */
     template<typename T>
-    concept closable_resource = requires(T& temp, std::error_code& ec_out) {
-                                    { std::as_const(temp).is_open() } -> std::convertible_to<bool>;
-                                    { temp.close() } -> std::same_as<void>;
-                                    { temp.close(ec_out) };
-                                };
+    concept closable_resource =
+        requires(T& temp, std::error_code& ec_out) {
+            { std::as_const(temp).is_open() } -> std::convertible_to<bool>;
+            { temp.close() } -> std::same_as<void>;
+            { temp.close(ec_out) };
+        };
 
     /**
      * @concept endpoint_provider
@@ -708,13 +738,14 @@ export namespace net::asio_concepts {
      * @see `boost::asio::ip::tcp::socket`
      */
     template<typename T>
-    concept endpoint_provider = requires(T& temp, std::error_code& ec_out) {
-                                    typename T::endpoint_type;
-                                    { temp.local_endpoint() } -> std::convertible_to<typename T::endpoint_type>;
-                                    { temp.local_endpoint(ec_out) } -> std::convertible_to<typename T::endpoint_type>;
-                                    { temp.remote_endpoint() } -> std::convertible_to<typename T::endpoint_type>;
-                                    { temp.remote_endpoint(ec_out) } -> std::convertible_to<typename T::endpoint_type>;
-                                };
+    concept endpoint_provider =
+        requires(T& temp, std::error_code& ec_out) {
+            typename T::endpoint_type;
+            { temp.local_endpoint() } -> std::convertible_to<typename T::endpoint_type>;
+            { temp.local_endpoint(ec_out) } -> std::convertible_to<typename T::endpoint_type>;
+            { temp.remote_endpoint() } -> std::convertible_to<typename T::endpoint_type>;
+            { temp.remote_endpoint(ec_out) } -> std::convertible_to<typename T::endpoint_type>;
+        };
 
     inline namespace socket_connection {
         /**
@@ -748,13 +779,14 @@ export namespace net::asio_concepts {
          * @tparam EndpointType The endpoint type.
          */
         template<typename T, typename EndpointType>
-        concept has_async_connect = requires(T& temp, EndpointType peer, asio_sample_completion_token&& token) {
-                                        temp.async_connect(peer, std::forward<asio_sample_completion_token>(token));
-                                        temp.async_connect(peer, asio::deferred);
-                                        temp.async_connect(peer, asio::detached);
-                                        temp.async_connect(peer, asio::use_awaitable);
-                                        temp.async_connect(peer, asio::use_future);
-                                    };
+        concept has_async_connect =
+            requires(T& temp, EndpointType peer, asio_sample_completion_token&& token) {
+                temp.async_connect(peer, std::forward<asio_sample_completion_token>(token));
+                temp.async_connect(peer, asio::deferred);
+                temp.async_connect(peer, asio::detached);
+                temp.async_connect(peer, asio::use_awaitable);
+                temp.async_connect(peer, asio::use_future);
+            };
 
         /**
          * @concept asio_async_connectable
@@ -762,13 +794,14 @@ export namespace net::asio_concepts {
          * @tparam T The type to check.
          */
         template<typename T>
-        concept asio_async_connectable = requires {
-                                             typename T::endpoint_type;
-                                             typename T::shutdown_type;
-                                             requires has_async_connect<T, typename T::endpoint_type>;
-                                             requires has_bind<T, typename T::endpoint_type>;
-                                             requires has_shutdown<T, typename T::shutdown_type>;
-                                         };
+        concept asio_async_connectable =
+            requires {
+                typename T::endpoint_type;
+                typename T::shutdown_type;
+                requires has_async_connect<T, typename T::endpoint_type>;
+                requires has_bind<T, typename T::endpoint_type>;
+                requires has_shutdown<T, typename T::shutdown_type>;
+            };
 
         /**
          * @concept has_sync_connect
@@ -777,10 +810,11 @@ export namespace net::asio_concepts {
          * @tparam EndpointType The endpoint type.
          */
         template<typename T, typename EndpointType>
-        concept has_sync_connect = requires(T& temp, const EndpointType& peer, std::error_code& ec_out) {
-                                       { temp.connect(peer) } -> std::same_as<void>;
-                                       { temp.connect(peer, ec_out) };
-                                   };
+        concept has_sync_connect =
+            requires(T& temp, const EndpointType& peer, std::error_code& ec_out) {
+                { temp.connect(peer) } -> std::same_as<void>;
+                { temp.connect(peer, ec_out) };
+            };
 
         /**
          * @concept asio_sync_connectable
@@ -788,13 +822,14 @@ export namespace net::asio_concepts {
          * @tparam T The type to check.
          */
         template<typename T>
-        concept asio_sync_connectable = requires {
-                                            typename T::endpoint_type;
-                                            typename T::shutdown_type;
-                                            requires has_sync_connect<T, typename T::endpoint_type>;
-                                            requires has_bind<T, typename T::endpoint_type>;
-                                            requires has_shutdown<T, typename T::shutdown_type>;
-                                        };
+        concept asio_sync_connectable =
+            requires {
+                typename T::endpoint_type;
+                typename T::shutdown_type;
+                requires has_sync_connect<T, typename T::endpoint_type>;
+                requires has_bind<T, typename T::endpoint_type>;
+                requires has_shutdown<T, typename T::shutdown_type>;
+            };
     } //namespace socket_connection
 
     /**
@@ -838,13 +873,12 @@ export namespace net::asio_concepts {
      * @see `boost::asio::ip::tcp::socket`, `boost::asio::ssl::stream`
      */
     template<typename T>
-    concept layerable_object = requires(T& temp) {
-                                   typename T::lowest_layer_type;
-                                   { temp.lowest_layer() } -> std::convertible_to<typename T::lowest_layer_type&>;
-                                   {
-                                       std::as_const(temp).lowest_layer()
-                                   } -> std::convertible_to<const typename T::lowest_layer_type&>;
-                               };
+    concept layerable_object =
+        requires(T& temp) {
+            typename T::lowest_layer_type;
+            { temp.lowest_layer() } -> std::convertible_to<typename T::lowest_layer_type&>;
+            { std::as_const(temp).lowest_layer() } -> std::convertible_to<const typename T::lowest_layer_type&>;
+        };
 
     /**
      * @concept layered_object
@@ -854,15 +888,14 @@ export namespace net::asio_concepts {
      * @see `boost::asio::ssl::stream`, `:stream` for `telnet::stream`
      */
     template<typename T>
-    concept layered_object = layerable_object<T> && requires(T& temp) {
-                                                        typename T::next_layer_type;
-                                                        {
-                                                            temp.next_layer()
-                                                        } -> std::convertible_to<typename T::next_layer_type&>;
-                                                        {
-                                                            std::as_const(temp).next_layer()
-                                                        } -> std::convertible_to<const typename T::next_layer_type&>;
-                                                    };
+    concept layered_object =
+        layerable_object<T> && requires(T& temp) {
+                                   typename T::next_layer_type;
+                                   { temp.next_layer() } -> std::convertible_to<typename T::next_layer_type&>;
+                                   {
+                                       std::as_const(temp).next_layer()
+                                   } -> std::convertible_to<const typename T::next_layer_type&>;
+                               };
 
     /**
      * @concept layerable_endpoint_provider
@@ -878,12 +911,12 @@ export namespace net::asio_concepts {
      * @tparam T The type to check.
      */
     template<typename T>
-    concept asio_socket = layerable_object<T> && asio_executor_provider<T> && native_socket_wrapper<T>
-                       && uncounted_cancellable_resource<T> && closable_resource<T> && asio_async_activity_waitable<T>
-                       && asio_sync_activity_waitable<T> && socket_option_provider<T> && socket_option_getter<T>
-                       && socket_option_setter<T> && message_flag_provider<T> && endpoint_provider<T>
-                       && asio_async_connectable<T> && asio_sync_connectable<T> && io_controller<T> && asio_async_sender<T>
-                       && asio_sync_sender<T> && asio_async_receiver<T> && asio_sync_receiver<T>;
+    concept asio_socket =
+        layerable_object<T> && asio_executor_provider<T> && native_socket_wrapper<T> && uncounted_cancellable_resource<T>
+        && closable_resource<T> && asio_async_activity_waitable<T> && asio_sync_activity_waitable<T>
+        && socket_option_provider<T> && socket_option_getter<T> && socket_option_setter<T> && message_flag_provider<T>
+        && endpoint_provider<T> && asio_async_connectable<T> && asio_sync_connectable<T> && io_controller<T>
+        && asio_async_sender<T> && asio_sync_sender<T> && asio_async_receiver<T> && asio_sync_receiver<T>;
 
     /**
      * @concept asio_stream
@@ -891,8 +924,8 @@ export namespace net::asio_concepts {
      * @tparam T The type to check.
      */
     template<typename T>
-    concept asio_stream = asio_async_read_stream<T> && asio_sync_read_stream<T> && asio_async_write_stream<T>
-                       && asio_sync_write_stream<T>;
+    concept asio_stream =
+        asio_async_read_stream<T> && asio_sync_read_stream<T> && asio_async_write_stream<T> && asio_sync_write_stream<T>;
 
     /**
      * @concept asio_stream_socket
@@ -916,6 +949,5 @@ export namespace net::asio_concepts {
      * @tparam T The type to check.
      */
     template<typename T>
-    concept asio_layerable_stream_socket = layerable_object<T> && asio_stream_socket<typename T::lowest_layer_type>
-                                        && asio_stream<T>;
+    concept asio_layerable_stream_socket = layerable_object<T> && asio_stream_socket<typename T::lowest_layer_type> && asio_stream<T>;
 } // namespace net::asio_concepts

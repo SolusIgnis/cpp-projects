@@ -57,9 +57,7 @@ export namespace framework::coroutines {
         tagged_awaitable() = default;
 
         ///@brief Constructs from an awaitable.
-        explicit(false) tagged_awaitable(
-            awaitable_type awaitable
-        ) noexcept(std::is_nothrow_move_constructible_v<awaitable_type>)
+        explicit(false) tagged_awaitable(awaitable_type awaitable) noexcept(std::is_nothrow_move_constructible_v<awaitable_type>)
             : awaitable_(std::move(awaitable))
         {}
 

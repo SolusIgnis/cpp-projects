@@ -261,24 +261,13 @@ namespace {
         // ============================================================
 
         "tagged_awaitable preserves underlying awaitable's promise type"_test = [] mutable {
-            static_assert(std::same_as<
-                          test_task<std::int32_t>::promise_type,
-                          std::coroutine_traits<tagged_awaitable<test_tag, test_task<std::int32_t>>>::promise_type
-            >);
-            expect(
-                eq(std::same_as<
-                       test_task<std::int32_t>::promise_type,
-                       std::coroutine_traits<tagged_awaitable<test_tag, test_task<std::int32_t>>>::promise_type
-                   >,
-                   true)
+            static_assert(
+                std::same_as<test_task<std::int32_t>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, test_task<std::int32_t>>>::promise_type>
             );
-            expect(
-                eq(std::same_as<
-                       test_task<void>::promise_type,
-                       std::coroutine_traits<tagged_awaitable<test_tag, test_task<void>>>::promise_type
-                   >,
-                   true)
-            );
+            expect(eq(
+                std::same_as<test_task<std::int32_t>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, test_task<std::int32_t>>>::promise_type>, true
+            ));
+            expect(eq(std::same_as<test_task<void>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, test_task<void>>>::promise_type>, true));
         };
 
         "tagged_awaitable usable as coroutine return type"_test = [] mutable {

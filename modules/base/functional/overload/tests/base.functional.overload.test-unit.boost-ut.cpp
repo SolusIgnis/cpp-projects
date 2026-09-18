@@ -173,16 +173,13 @@ int main()
         //NOLINTBEGIN(bugprone-argument-comment): Matcher lhs/rhs.
         expect(that % !std::invocable<decltype(overloaded), std::int32_t>) << "ambiguous: fobj1(int) vs fobj2(int)";
 
-        expect(that % !std::invocable<decltype(overloaded), double>)
-            << "ambiguous: fobj1(double) vs lambda(double) [both non-const]";
+        expect(that % !std::invocable<decltype(overloaded), double>) << "ambiguous: fobj1(double) vs lambda(double) [both non-const]";
 
-        expect(that % std::invocable<decltype(overloaded), std::string>)
-            << "unambiguous: only fobj2(std::string) [const char* is not a match]";
+        expect(that % std::invocable<decltype(overloaded), std::string>) << "unambiguous: only fobj2(std::string) [const char* is not a match]";
         expect(eq(std::invoke(overloaded, "std::string"s), "fobj2 string"s));
 
-        expect(
-            that % std::invocable<decltype(overloaded), const char*>
-        ) << "unambiguous: 1) non-const fobj1 beats const lambda [better implicit object parameter binding], 2) and fobj1(const char*) beats fobj2(std::string) [conversion is a worse match]";
+        expect(that % std::invocable<decltype(overloaded), const char*>)
+            << "unambiguous: 1) non-const fobj1 beats const lambda [better implicit object parameter binding], 2) and fobj1(const char*) beats fobj2(std::string) [conversion is a worse match]";
         expect(eq(std::invoke(overloaded, "c-string"), "fobj1 const char*"s));
         //NOLINTEND(bugprone-argument-comment)
     };

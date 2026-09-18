@@ -57,9 +57,7 @@ namespace {
 
         "unknown command formats as hex in hex mode"_test = [] mutable {
             constexpr auto invalid_command_num{0x0A};
-            const auto unknown = static_cast<command>(
-                invalid_command_num
-            ); //NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+            const auto unknown = static_cast<command>(invalid_command_num); //NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
             const auto formatted1 = std::format("{:x}", unknown);
             expect(eq(formatted1, std::string{"0x0a"}));
             const auto formatted2 = std::format("{:X}", unknown);

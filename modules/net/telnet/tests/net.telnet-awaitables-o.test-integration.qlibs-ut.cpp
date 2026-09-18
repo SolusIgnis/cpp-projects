@@ -177,8 +177,7 @@ namespace {
             auto fut = asio::co_spawn(
                 ctx,
                 //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): This coroutine lambda is invoked and completed synchronously by the test. Their closure object therefore outlives the coroutine execution.
-                [wrapped = std::move(wrapped)] mutable
-                    -> asio::awaitable<std::optional<std::tuple<option, std::vector<byte_t>>>> {
+                [wrapped = std::move(wrapped)] mutable -> asio::awaitable<std::optional<std::tuple<option, std::vector<byte_t>>>> {
                     co_return std::optional{co_await std::move(wrapped).get()};
                 },
                 asio::as_tuple(asio::use_future)

@@ -58,10 +58,8 @@ namespace {
                                         result = std::move(base).await_resume();
                                     };
             constexpr bool const_lvalue = const_lvalue_resumable<dummies::trivial_awaiter_base<std::int32_t>, std::int32_t>;
-            constexpr bool clvalue_move = const_lvalue_resumable<
-                dummies::trivial_awaiter_base<std::unique_ptr<std::int32_t>>,
-                std::unique_ptr<std::int32_t>
-            >;
+            constexpr bool clvalue_move =
+                const_lvalue_resumable<dummies::trivial_awaiter_base<std::unique_ptr<std::int32_t>>, std::unique_ptr<std::int32_t>>;
 
             expect(eq(const_lvalue, true));
             expect(eq(lvalue, true));

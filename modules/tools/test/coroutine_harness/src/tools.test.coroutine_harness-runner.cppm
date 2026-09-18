@@ -77,10 +77,7 @@ export namespace tools::test::coroutine_harness {
         if (awaiter.my_handle.done()) {
             return awaiter.await_resume();
         } else {
-            throw std::system_error(
-                std::make_error_code(std::errc::resource_unavailable_try_again),
-                "Coroutine failed to complete (stalled at suspension point)"
-            );
+            throw std::system_error(std::make_error_code(std::errc::resource_unavailable_try_again), "Coroutine failed to complete (stalled at suspension point)");
         }
     }
 } //namespace tools::test::coroutine_harness

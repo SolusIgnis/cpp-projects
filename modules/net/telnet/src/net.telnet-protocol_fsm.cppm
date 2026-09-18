@@ -147,8 +147,7 @@ export namespace net::telnet {
             std::optional<subnegotiation_handler_type> subneg_handler = std::nullopt
         )
         {
-            option_handler_registry_
-                .register_handlers(opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler));
+            option_handler_registry_.register_handlers(opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler));
         }
 
         ///@brief Unregisters handlers for an option.
@@ -167,15 +166,13 @@ export namespace net::telnet {
         static telnet::command make_negotiation_command(negotiation_direction direction, bool enable) noexcept;
 
         ///@brief Requests an option to be enabled (WILL/DO), synchronously updating option_status_db and returning a negotiation response.
-        std::tuple<std::error_code, std::optional<negotiation_response_type>>
-            request_option(option::id_num opt, negotiation_direction direction);
+        std::tuple<std::error_code, std::optional<negotiation_response_type>> request_option(option::id_num opt, negotiation_direction direction);
 
         ///@brief Disables an option (WONT/DONT), synchronously updating option_status_db and returning a negotiation response and optional disablement awaitable.
-        std::tuple<
-            std::error_code,
-            std::optional<negotiation_response_type>,
-            std::optional<awaitables::option_disablement_awaitable>
-        > disable_option(option::id_num opt, negotiation_direction direction);
+        std::tuple<std::error_code, std::optional<negotiation_response_type>, std::optional<awaitables::option_disablement_awaitable>> disable_option(
+            option::id_num opt,
+            negotiation_direction direction
+        );
 
     private:
         enum class protocol_state : std::uint8_t {
@@ -201,31 +198,22 @@ export namespace net::telnet {
         std::tuple<std::error_code, bool, std::optional<processing_return_variant>> handle_state_iac(byte_t byte);
 
         ///@brief Handles bytes in the `OptionNegotiation` state (option ID after WILL/WONT/DO/DONT).
-        std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_option_negotiation(byte_t byte);
+        std::tuple<std::error_code, bool, std::optional<processing_return_variant>> handle_state_option_negotiation(byte_t byte);
 
         ///@brief Handles bytes in the `SubnegotiationOption` state (option ID after IAC SB).
-        std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_subnegotiation_option(byte_t byte);
+        std::tuple<std::error_code, bool, std::optional<processing_return_variant>> handle_state_subnegotiation_option(byte_t byte);
 
         ///@brief Handles bytes in the `Subnegotiation` state (data after option ID).
         std::tuple<std::error_code, bool, std::optional<processing_return_variant>> handle_state_subnegotiation(byte_t byte);
 
         ///@brief Handles bytes in the `SubnegotiationIAC` state (IAC in subnegotiation data).
-        std::tuple<std::error_code, bool, std::optional<processing_return_variant>>
-            handle_state_subnegotiation_iac(byte_t byte);
+        std::tuple<std::error_code, bool, std::optional<processing_return_variant>> handle_state_subnegotiation_iac(byte_t byte);
 
         ///@brief Handles STATUS subnegotiation (RFC 859), returning an awaitable with the IS [list] payload or user-handled result.
         auto handle_status_subnegotiation(option opt, std::vector<byte_t> buffer) -> awaitables::subnegotiation_awaitable;
 
         //Data Members
-        option_handler_registry<
-            protocol_config_type,
-            option_enablement_handler_type,
-            option_disablement_handler_type,
-            subnegotiation_handler_type
-        >
-            option_handler_registry_;
+        option_handler_registry<protocol_config_type, option_enablement_handler_type, option_disablement_handler_type, subnegotiation_handler_type> option_handler_registry_;
         option_status_db option_status_;
 
         protocol_state current_state_ = protocol_state::normal;

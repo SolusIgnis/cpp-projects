@@ -103,8 +103,8 @@ namespace base::meta::sequences {
     struct contains_value<value_list<Values...>, Query> : std::bool_constant<(value_equivalent_v<Query, Values> || ...)> {};
 
     template<typename T, T... Values, T Query>
-    struct contains_value<uniform_value_list<T, Values...>, Query>
-        : std::bool_constant<(uniform_equivalent_v<Query, Values> || ...)> {};
+    struct contains_value<uniform_value_list<T, Values...>, Query> : std::bool_constant<(uniform_equivalent_v<Query, Values> || ...)> {
+    };
 
     export template<type_sequence Seq, typename Query>
     inline constexpr bool contains_type_v = contains_type<std::remove_cvref_t<Seq>, Query>::value;

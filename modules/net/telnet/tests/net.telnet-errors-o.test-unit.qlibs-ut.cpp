@@ -70,101 +70,59 @@ namespace {
 
             expect(eq(cat.message(static_cast<int>(error::internal_error)), std::string{"Unexpected internal Telnet error"}));
 
-            expect(
-                eq(cat.message(static_cast<int>(error::invalid_command)), std::string{"Unrecognized Telnet command after IAC"})
-            );
+            expect(eq(cat.message(static_cast<int>(error::invalid_command)), std::string{"Unrecognized Telnet command after IAC"}));
 
-            expect(
-                eq(cat.message(static_cast<int>(error::invalid_negotiation)), std::string{"Invalid Telnet negotiation command"})
-            );
+            expect(eq(cat.message(static_cast<int>(error::invalid_negotiation)), std::string{"Invalid Telnet negotiation command"}));
 
             expect(eq(cat.message(static_cast<int>(error::option_not_available)), std::string{"Telnet option not available"}));
 
-            expect(
-                eq(cat.message(static_cast<int>(error::invalid_subnegotiation)),
-                   std::string{"Invalid or incomplete Telnet subnegotiation"})
-            );
+            expect(eq(cat.message(static_cast<int>(error::invalid_subnegotiation)), std::string{"Invalid or incomplete Telnet subnegotiation"}));
 
-            expect(
-                eq(cat.message(static_cast<int>(error::subnegotiation_overflow)),
-                   std::string{"Telnet subnegotiation buffer overflow"})
-            );
+            expect(eq(cat.message(static_cast<int>(error::subnegotiation_overflow)), std::string{"Telnet subnegotiation buffer overflow"}));
 
-            expect(
-                eq(cat.message(static_cast<int>(error::ignored_go_ahead)),
-                   std::string{"Telnet Go-Ahead ignored due to SUPPRESS_GO_AHEAD"})
-            );
+            expect(eq(cat.message(static_cast<int>(error::ignored_go_ahead)), std::string{"Telnet Go-Ahead ignored due to SUPPRESS_GO_AHEAD"}));
 
-            expect(
-                eq(cat.message(static_cast<int>(error::user_handler_forbidden)),
-                   std::string{"Attempt to register handler for reserved option"})
-            );
+            expect(eq(cat.message(static_cast<int>(error::user_handler_forbidden)), std::string{"Attempt to register handler for reserved option"}));
 
-            expect(
-                eq(cat.message(static_cast<int>(error::user_handler_not_found)),
-                   std::string{"No handler registered for requested option"})
-            );
+            expect(eq(cat.message(static_cast<int>(error::user_handler_not_found)), std::string{"No handler registered for requested option"}));
 
             expect(
                 eq(cat.message(static_cast<int>(error::negotiation_queue_error)),
-                   std::string{
-                       "Telnet negotiation queue bit can only be set when the " "NegotiationState is WANTYES or WANTNO."
-                   })
+                   std::string{"Telnet negotiation queue bit can only be set when the " "NegotiationState is WANTYES or WANTNO."})
             );
         };
 
         "processing_signal message coverage"_test = [] mutable {
             const auto& cat = telnet_processing_signal_category::instance();
 
-            expect(
-                eq(cat.message(static_cast<int>(processing_signal::end_of_line)),
-                   std::string{"Telnet encountered End-of-Line in the byte stream"})
-            );
+            expect(eq(cat.message(static_cast<int>(processing_signal::end_of_line)), std::string{"Telnet encountered End-of-Line in the byte stream"}));
 
             expect(
                 eq(cat.message(static_cast<int>(processing_signal::carriage_return)),
                    std::string{"Telnet encountered Carriage-Return sequence in the byte stream requiring special handling"})
             );
 
-            expect(
-                eq(cat.message(static_cast<int>(processing_signal::end_of_record)),
-                   std::string{"Telnet encountered \"End-of-Record\" command in the byte stream"})
-            );
+            expect(eq(cat.message(static_cast<int>(processing_signal::end_of_record)), std::string{"Telnet encountered \"End-of-Record\" command in the byte stream"}));
 
-            expect(
-                eq(cat.message(static_cast<int>(processing_signal::go_ahead)),
-                   std::string{"Telnet encountered \"Go-Ahead\" command in the byte stream"})
-            );
+            expect(eq(cat.message(static_cast<int>(processing_signal::go_ahead)), std::string{"Telnet encountered \"Go-Ahead\" command in the byte stream"}));
 
             expect(
                 eq(cat.message(static_cast<int>(processing_signal::erase_character)),
                    std::string{"Telnet encountered \"Erase Character\" command in the byte stream"})
             );
 
-            expect(
-                eq(cat.message(static_cast<int>(processing_signal::erase_line)),
-                   std::string{"Telnet encountered \"Erase Line\" command in the byte stream"})
-            );
+            expect(eq(cat.message(static_cast<int>(processing_signal::erase_line)), std::string{"Telnet encountered \"Erase Line\" command in the byte stream"}));
 
-            expect(
-                eq(cat.message(static_cast<int>(processing_signal::abort_output)),
-                   std::string{"Telnet encountered \"Abort Output\" command in the byte stream"})
-            );
+            expect(eq(cat.message(static_cast<int>(processing_signal::abort_output)), std::string{"Telnet encountered \"Abort Output\" command in the byte stream"}));
 
             expect(
                 eq(cat.message(static_cast<int>(processing_signal::interrupt_process)),
                    std::string{"Telnet encountered \"Interrupt Process\" command in the byte stream"})
             );
 
-            expect(
-                eq(cat.message(static_cast<int>(processing_signal::telnet_break)),
-                   std::string{"Telnet encountered \"Break\" command in the byte stream"})
-            );
+            expect(eq(cat.message(static_cast<int>(processing_signal::telnet_break)), std::string{"Telnet encountered \"Break\" command in the byte stream"}));
 
-            expect(
-                eq(cat.message(static_cast<int>(processing_signal::data_mark)),
-                   std::string{"Telnet encountered \"Data Mark\" command in the byte stream"})
-            );
+            expect(eq(cat.message(static_cast<int>(processing_signal::data_mark)), std::string{"Telnet encountered \"Data Mark\" command in the byte stream"}));
         };
 
         // ============================================================

@@ -81,16 +81,8 @@ export namespace base::vocab::inline ptr {
      */
     template<typename Pointee>
         requires is_valid_pointee_v<Pointee>
-    class alias_ptr final : public ptr_core<
-                                alias_ptr,
-                                Pointee,
-                                ptr_policies::type_list<
-                                    ptr_policies::nullability::nullable,
-                                    ptr_policies::pointer_binding::allowed,
-                                    ptr_policies::reference_binding::allowed,
-                                    ptr_policies::traversal::rebinding
-                                >
-                            > {
+    class alias_ptr final
+        : public ptr_core<alias_ptr, Pointee, ptr_policies::type_list<ptr_policies::nullability::nullable, ptr_policies::pointer_binding::allowed, ptr_policies::reference_binding::allowed, ptr_policies::traversal::rebinding>> {
     private:
         using base_type = alias_ptr::core_type;
 

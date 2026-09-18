@@ -100,9 +100,7 @@ export namespace tools::test::coroutine_harness {
                 if (probe) {
                     probe->destroyed = true;
                 } else if (!done && (std::uncaught_exceptions() == 0)) {
-                    throw std::logic_error(
-                        "test_task coroutine frame destroyed before coroutine completion without probe attached"
-                    );
+                    throw std::logic_error("test_task coroutine frame destroyed before coroutine completion without probe attached");
                 }
             }
         }
@@ -112,8 +110,7 @@ export namespace tools::test::coroutine_harness {
 
         coroutine_handle_manager(coroutine_handle_manager&& other) noexcept : handle_(std::exchange(other.handle_, {})) {}
 
-        coroutine_handle_manager&
-            operator=(coroutine_handle_manager&& other) noexcept(std::is_nothrow_swappable_v<coroutine_handle_manager>)
+        coroutine_handle_manager& operator=(coroutine_handle_manager&& other) noexcept(std::is_nothrow_swappable_v<coroutine_handle_manager>)
         {
             swap(*this, other);
             return *this;
@@ -134,9 +131,7 @@ export namespace tools::test::coroutine_harness {
         /// @brief Access promise.
         [[nodiscard]] decltype(auto) promise(this auto&& self) { return self.handle_.promise(); }
 
-        friend void swap(coroutine_handle_manager& lhs, coroutine_handle_manager& rhs) noexcept(
-            std::is_nothrow_swappable_v<raw_handle_type>
-        )
+        friend void swap(coroutine_handle_manager& lhs, coroutine_handle_manager& rhs) noexcept(std::is_nothrow_swappable_v<raw_handle_type>)
         {
             using std::swap;
             swap(lhs.handle_, rhs.handle_);

@@ -128,9 +128,9 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T, template<typename...> typename TargetTemplate, typename TargetAddress>
-    concept vocab_ptr_source_for = vocab_ptr<std::remove_cvref_t<T>>
-                                && !base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<T>, TargetTemplate>
-                                && std::convertible_to<typename std::remove_cvref_t<T>::address_type, TargetAddress>;
+    concept vocab_ptr_source_for =
+        vocab_ptr<std::remove_cvref_t<T>> && !base::meta::traits::is_type_specialization_of_v<std::remove_cvref_t<T>, TargetTemplate>
+        && std::convertible_to<typename std::remove_cvref_t<T>::address_type, TargetAddress>;
 
     /**
      * @brief Determines whether a pointer type can be resolved to any raw address type by `std::to_address`.
@@ -142,9 +142,10 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T>
-    concept resolvable_to_address = requires(const T& ptr) {
-                                        { std::to_address(ptr) };
-                                    };
+    concept resolvable_to_address =
+        requires(const T& ptr) {
+            { std::to_address(ptr) };
+        };
 
     /**
      * @brief Determines whether a pointer type can be resolved to a given raw address type by `std::to_address`.
@@ -157,11 +158,10 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T, typename AddressType>
-    concept resolvable_to_address_as = resolvable_to_address<T> && requires(const T& ptr) {
-                                                                       {
-                                                                           std::to_address(ptr)
-                                                                       } -> std::convertible_to<AddressType>;
-                                                                   };
+    concept resolvable_to_address_as =
+        resolvable_to_address<T> && requires(const T& ptr) {
+                                        { std::to_address(ptr) } -> std::convertible_to<AddressType>;
+                                    };
 
     /**
      * @brief Determines the type of the address resolved by applying `std::to_address` to an object of a given type.
@@ -199,9 +199,9 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename T, typename TargetPtr>
-    concept pointer_compatible_with = !vocab_ptr<std::remove_cvref_t<T>> && !std::is_array_v<std::remove_cvref_t<T>>
-                                   && vocab_ptr<TargetPtr>
-                                   && resolvable_to_address_as<std::remove_cvref_t<T>, typename TargetPtr::address_type>;
+    concept pointer_compatible_with =
+        !vocab_ptr<std::remove_cvref_t<T>> && !std::is_array_v<std::remove_cvref_t<T>> && vocab_ptr<TargetPtr>
+        && resolvable_to_address_as<std::remove_cvref_t<T>, typename TargetPtr::address_type>;
 
     /**
      * @brief Determines whether a pointer-like type has an exposed element type.
@@ -227,8 +227,8 @@ namespace base::vocab::inline ptr {
      * @internal
      */
     template<typename Pointee>
-    inline constexpr bool is_valid_pointee_v = !std::is_reference_v<Pointee>
-                                            && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>;
+    inline constexpr bool is_valid_pointee_v =
+        !std::is_reference_v<Pointee> && !std::is_function_v<base::meta::traits::remove_all_indirections_t<Pointee>>;
 } //namespace base::vocab::inline ptr
 
 export namespace base::vocab::inline ptr {
@@ -316,11 +316,8 @@ export namespace base::vocab::inline ptr {
          * @brief The reference type (`element_type&`).
          * @remark When `element_type` is `void`, uses `void_reference&` because `void` as a function parameter is ill-formed.
          */
-        using reference = std::conditional_t<
-            std::is_void_v<element_type>,
-            std::add_lvalue_reference_t<void_reference>,
-            std::add_lvalue_reference_t<element_type>
-        >;
+        using reference =
+            std::conditional_t<std::is_void_v<element_type>, std::add_lvalue_reference_t<void_reference>, std::add_lvalue_reference_t<element_type>>;
 
         /**
          * @typedef rvalue_reference
@@ -329,11 +326,8 @@ export namespace base::vocab::inline ptr {
          * @remark When `element_type` is `void`, uses `void_reference&&` because `void` as a function parameter is ill-formed.
          * @note Used only for deletion of invalid overloads to prevent binding to temporaries.
          */
-        using rvalue_reference = std::conditional_t<
-            std::is_void_v<element_type>,
-            std::add_rvalue_reference_t<void_reference>,
-            std::add_rvalue_reference_t<element_type>
-        >;
+        using rvalue_reference =
+            std::conditional_t<std::is_void_v<element_type>, std::add_rvalue_reference_t<void_reference>, std::add_rvalue_reference_t<element_type>>;
 
         /**
          * @typedef difference_type
@@ -356,16 +350,14 @@ export namespace base::vocab::inline ptr {
          * @brief STL iterator compatibility type for contiguous iterators.
          * @remark Yields `void` for pointers with the rebinding traversal policy.
          */
-        using iterator_concept =
-            std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::contiguous_iterator_tag, void>;
+        using iterator_concept = std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::contiguous_iterator_tag, void>;
 
         /**
          * @typedef iterator_category
          * @brief STL iterator compatibility type for random-access iterators.
          * @remark Yields `void` for pointers with the rebinding traversal policy.
          */
-        using iterator_category =
-            std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::random_access_iterator_tag, void>;
+        using iterator_category = std::conditional_t<ptr_policies::arithmetic_traversal_v<policy_set>, std::random_access_iterator_tag, void>;
 
     private:
         address_type address_; ///<@brief The stored address used by all concrete pointer types.
@@ -382,8 +374,7 @@ export namespace base::vocab::inline ptr {
     public:
         ///@brief (Conversion) Implicitly converts from another `ConcretePtr` specialization according to nested `address_type` type conversions.
         template<typename OtherPointee>
-            requires (!std::same_as<OtherPointee, element_type>)
-                  && std::convertible_to<std::add_pointer_t<OtherPointee>, address_type>
+            requires (!std::same_as<OtherPointee, element_type>) && std::convertible_to<std::add_pointer_t<OtherPointee>, address_type>
         constexpr explicit(false) ptr_core(const ConcretePtr<OtherPointee>& source) noexcept
             : ptr_core{validated_address_tag{}, source.get()}
         {}
@@ -723,8 +714,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Converts the dynamic pointee type of a pointer along a class hierarchy using RTTI.
         template<typename Target>
             requires is_valid_pointee_v<Target>
-        [[nodiscard]] friend auto
-            dynamic_pointer_cast(concrete_ptr_instance source) noexcept(ptr_policies::nullable_nullability_v<policy_set>)
+        [[nodiscard]] friend auto dynamic_pointer_cast(concrete_ptr_instance source) noexcept(ptr_policies::nullable_nullability_v<policy_set>)
         {
             using destination = base::meta::traits::copy_cv_t<element_type, Target>;
             if constexpr (ptr_policies::nullable_nullability_v<policy_set>) {
@@ -747,11 +737,11 @@ export namespace base::vocab::inline ptr {
         [[nodiscard]] friend auto reinterpret_pointer_cast(concrete_ptr_instance source) noexcept
         {
             using destination = base::meta::traits::copy_cv_t<element_type, Target>;
-            return ConcretePtr<
-                destination
-            >(typename ConcretePtr<destination>::validated_address_tag{},
-              //NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): This operation provides a `reinterpret_cast` facility for vocabulary pointers, so it necessarily implements it in terms of one.
-              reinterpret_cast<ConcretePtr<destination>::address_type>(source.get()));
+            return ConcretePtr<destination>(
+                typename ConcretePtr<destination>::validated_address_tag{},
+                //NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): This operation provides a `reinterpret_cast` facility for vocabulary pointers, so it necessarily implements it in terms of one.
+                reinterpret_cast<ConcretePtr<destination>::address_type>(source.get())
+            );
         }
 
         //===== Nullability (Nullable) =====
@@ -824,9 +814,7 @@ export namespace base::vocab::inline ptr {
         //===== Traversal (Arithmetic) =====
 
         ///@brief Subscript operator provided solely to comply with random-access iterator requirements.
-        [[nodiscard]] [[deprecated(
-            "Subscript operator conflates pointers with arrays. Use `*(ptr + offset)` for explicit traversal or consider subscripting the container instead."
-        )]]
+        [[nodiscard]] [[deprecated("Subscript operator conflates pointers with arrays. Use `*(ptr + offset)` for explicit traversal or consider subscripting the container instead.")]]
         constexpr auto& operator[](this auto self, difference_type offset) noexcept
             requires base::meta::concepts::complete_pointee<element_type> && ptr_policies::arithmetic_traversal_v<policy_set>
         {
@@ -994,8 +982,7 @@ export namespace base::vocab::inline ptr {
         //===== Traversal (Arithmetic) =====
 
         ///@brief Compares in terms of pointer identity.
-        [[nodiscard]] friend constexpr auto
-            operator<=>(const concrete_ptr_instance& lhs, const concrete_ptr_instance& rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator<=>(const concrete_ptr_instance& lhs, const concrete_ptr_instance& rhs) noexcept
             requires ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return (lhs.get() <=> rhs.get());
@@ -1011,8 +998,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Covariantly compares in terms of pointer identity.
         template<std::derived_from<element_type> DerivedT>
             requires (!std::same_as<DerivedT, element_type>)
-        [[nodiscard]] friend constexpr auto
-            operator<=>(const concrete_ptr_instance& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator<=>(const concrete_ptr_instance& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
             requires ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return (lhs.get() <=> rhs.get());
@@ -1020,8 +1006,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Covariantly compares a `ConcretePtr`-to-base with a raw pointer-to-derived in terms of pointer identity.
         template<std::derived_from<element_type> DerivedT>
-        [[nodiscard]] friend constexpr auto
-            operator<=>(const concrete_ptr_instance& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator<=>(const concrete_ptr_instance& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
             requires ptr_policies::arithmetic_traversal_v<policy_set>
         {
             return (lhs.get() <=> rhs);
@@ -1045,8 +1030,7 @@ export namespace base::vocab::inline ptr {
         //===== Traversal (Rebinding) =====
 
         ///@brief Compares equality in terms of pointer identity.
-        [[nodiscard]] friend constexpr bool
-            operator==(const concrete_ptr_instance& lhs, const concrete_ptr_instance& rhs) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const concrete_ptr_instance& lhs, const concrete_ptr_instance& rhs) noexcept
             requires ptr_policies::rebinding_traversal_v<policy_set>
         {
             return (lhs.get() == rhs.get());
@@ -1055,8 +1039,7 @@ export namespace base::vocab::inline ptr {
         ///@brief Covariantly compares equality in terms of pointer identity.
         template<std::derived_from<element_type> DerivedT>
             requires (!std::same_as<DerivedT, element_type>)
-        [[nodiscard]] friend constexpr bool
-            operator==(const concrete_ptr_instance& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const concrete_ptr_instance& lhs, const ConcretePtr<DerivedT>& rhs) noexcept
             requires ptr_policies::rebinding_traversal_v<policy_set>
         {
             return (lhs.get() == rhs.get());
@@ -1064,8 +1047,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Covariantly compares equality of an `ConcretePtr`-to-base with a raw pointer-to-derived in terms of pointer identity.
         template<std::derived_from<element_type> DerivedT>
-        [[nodiscard]] friend constexpr bool
-            operator==(const concrete_ptr_instance& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
+        [[nodiscard]] friend constexpr bool operator==(const concrete_ptr_instance& lhs, const std::add_pointer_t<DerivedT> rhs) noexcept
             requires ptr_policies::rebinding_traversal_v<policy_set>
         {
             return (lhs.get() == rhs);
@@ -1098,8 +1080,7 @@ export namespace base::vocab::inline ptr {
 
         ///@brief Outputs a `ptr_core` address to a `std::basic_ostream`.
         template<typename CharT, typename Traits>
-        friend std::basic_ostream<CharT, Traits>&
-            operator<<(std::basic_ostream<CharT, Traits>& stream, const concrete_ptr_instance& ptr)
+        friend std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& stream, const concrete_ptr_instance& ptr)
         {
             // In order to support pointers to arbitrarily cv-qualified objects:
             // 1. `static_cast` to `const volatile void*` to preserve all qualifiers while converting the pointer to `void*`.
@@ -1111,14 +1092,13 @@ export namespace base::vocab::inline ptr {
 
     private:
         ///@brief Enforces the non-null invariant for `nullability::always_engaged` pointers by only passing the address through when it is not null but allows unchecked pass-through otherwise.
-        [[nodiscard]] static constexpr address_type
-            apply_nullability_policy(address_type source) noexcept(!ptr_policies::always_engaged_nullability_v<policy_set>)
+        [[nodiscard]] static constexpr address_type apply_nullability_policy(
+            address_type source
+        ) noexcept(!ptr_policies::always_engaged_nullability_v<policy_set>)
         {
             if constexpr (ptr_policies::always_engaged_nullability_v<policy_set>) {
                 if (source == nullptr) [[unlikely]] {
-                    throw std::invalid_argument(
-                        "`nullability::always_engaged` pointers cannot be constructed or assigned from a null pointer."
-                    );
+                    throw std::invalid_argument("`nullability::always_engaged` pointers cannot be constructed or assigned from a null pointer.");
                 }
             }
             return source;
@@ -1976,13 +1956,7 @@ struct std::formatter<T, CharT> : std::formatter<const void*, CharT> {
  *
  * @remark Determines the common reference pointee exactly like raw pointers do when finding their common reference.
  */
-template<
-    template<typename> typename ConcretePtr,
-    typename T,
-    typename U,
-    template<typename> typename TQual,
-    template<typename> typename UQual
->
+template<template<typename> typename ConcretePtr, typename T, typename U, template<typename> typename TQual, template<typename> typename UQual>
     requires (!std::same_as<T, U>) && base::vocab::ptr::vocab_ptr<ConcretePtr<T>> && base::vocab::ptr::vocab_ptr<ConcretePtr<U>>
           && std::common_reference_with<TQual<T*>, UQual<U*>>
 struct std::basic_common_reference<ConcretePtr<T>, ConcretePtr<U>, TQual, UQual> {
@@ -1990,8 +1964,7 @@ private:
     using raw_common_ref = std::common_reference_t<TQual<T*>, UQual<U*>>;
 
 public:
-    using type = base::meta::traits::
-        copy_cvref_t<raw_common_ref, ConcretePtr<std::remove_pointer_t<std::remove_cvref_t<raw_common_ref>>>>;
+    using type = base::meta::traits::copy_cvref_t<raw_common_ref, ConcretePtr<std::remove_pointer_t<std::remove_cvref_t<raw_common_ref>>>>;
 }; //struct std::basic_common_reference
 
 /**
@@ -2005,14 +1978,8 @@ public:
  * @tparam TQual An internal standard library alias template applying the cv/ref qualifiers of `T`.
  * @tparam UQual An internal standard library alias template applying the cv/ref qualifiers of `U`.
  */
-template<
-    base::vocab::ptr::vocab_ptr T,
-    base::vocab::ptr::vocab_ptr U,
-    template<typename> typename TQual,
-    template<typename> typename UQual
->
-    requires (!std::same_as<T, U>)
-          && std::common_reference_with<TQual<typename T::address_type>, UQual<typename U::address_type>>
+template<base::vocab::ptr::vocab_ptr T, base::vocab::ptr::vocab_ptr U, template<typename> typename TQual, template<typename> typename UQual>
+    requires (!std::same_as<T, U>) && std::common_reference_with<TQual<typename T::address_type>, UQual<typename U::address_type>>
 struct std::basic_common_reference<T, U, TQual, UQual> {
     using type = std::common_reference_t<TQual<typename T::address_type>, UQual<typename U::address_type>>;
 }; //struct std::basic_common_reference
@@ -2028,12 +1995,7 @@ struct std::basic_common_reference<T, U, TQual, UQual> {
  * @tparam TQual An internal standard library alias template applying the cv/ref qualifiers of `T`.
  * @tparam OtherQual An internal standard library alias template applying the cv/ref qualifiers of `OtherPointee*`.
  */
-template<
-    base::vocab::ptr::vocab_ptr T,
-    typename OtherPointee,
-    template<typename> typename TQual,
-    template<typename> typename OtherQual
->
+template<base::vocab::ptr::vocab_ptr T, typename OtherPointee, template<typename> typename TQual, template<typename> typename OtherQual>
     requires std::common_reference_with<TQual<typename T::address_type>, OtherQual<OtherPointee*>>
 struct std::basic_common_reference<T, OtherPointee*, TQual, OtherQual> {
     using type = std::common_reference_t<TQual<typename T::address_type>, OtherQual<OtherPointee*>>;
@@ -2050,12 +2012,7 @@ struct std::basic_common_reference<T, OtherPointee*, TQual, OtherQual> {
  * @tparam TQual An internal standard library alias template applying the cv/ref qualifiers of `T`.
  * @tparam OtherQual An internal standard library alias template applying the cv/ref qualifiers of `OtherPointee*`.
  */
-template<
-    base::vocab::ptr::vocab_ptr T,
-    typename OtherPointee,
-    template<typename> typename TQual,
-    template<typename> typename OtherQual
->
+template<base::vocab::ptr::vocab_ptr T, typename OtherPointee, template<typename> typename TQual, template<typename> typename OtherQual>
     requires std::common_reference_with<OtherQual<OtherPointee*>, TQual<typename T::address_type>>
 struct std::basic_common_reference<OtherPointee*, T, OtherQual, TQual> {
     using type = std::common_reference_t<OtherQual<OtherPointee*>, TQual<typename T::address_type>>;

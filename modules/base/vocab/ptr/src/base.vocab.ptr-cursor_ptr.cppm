@@ -82,16 +82,8 @@ export namespace base::vocab::inline ptr {
      */
     template<typename Pointee>
         requires is_valid_pointee_v<Pointee> && (!std::is_void_v<Pointee>)
-    class cursor_ptr final : public ptr_core<
-                                 cursor_ptr,
-                                 Pointee,
-                                 ptr_policies::type_list<
-                                     ptr_policies::nullability::always_engaged,
-                                     ptr_policies::pointer_binding::allowed,
-                                     ptr_policies::reference_binding::allowed,
-                                     ptr_policies::traversal::arithmetic
-                                 >
-                             > {
+    class cursor_ptr final
+        : public ptr_core<cursor_ptr, Pointee, ptr_policies::type_list<ptr_policies::nullability::always_engaged, ptr_policies::pointer_binding::allowed, ptr_policies::reference_binding::allowed, ptr_policies::traversal::arithmetic>> {
     private:
         using base_type = cursor_ptr::core_type;
 

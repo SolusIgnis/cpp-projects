@@ -133,10 +133,7 @@ namespace base::meta::sequences {
      */
     template<template<typename> typename UnaryTypePredicate>
     struct find_type_if<type_list<>, UnaryTypePredicate> {
-        static_assert(
-            dependently_false_v<type_list<>>,
-            "find_if failure: result not found; use try_find_if for optional results"
-        );
+        static_assert(dependently_false_v<type_list<>>, "find_if failure: result not found; use try_find_if for optional results");
     };
 
     /**
@@ -173,10 +170,7 @@ namespace base::meta::sequences {
      */
     template<template<auto> typename UnaryValuePredicate>
     struct find_value_if<value_list<>, UnaryValuePredicate> {
-        static_assert(
-            dependently_false_v<value_list<>>,
-            "find_if failure: result not found; use try_find_if for optional results"
-        );
+        static_assert(dependently_false_v<value_list<>>, "find_if failure: result not found; use try_find_if for optional results");
     };
 
     /**
@@ -191,21 +185,15 @@ namespace base::meta::sequences {
      */
     template<typename T, template<auto> typename UnaryValuePredicate>
     struct find_value_if<uniform_value_list<T>, UnaryValuePredicate> {
-        static_assert(
-            dependently_false_v<uniform_value_list<T>>,
-            "find_if failure: result not found; use try_find_if for optional results"
-        );
+        static_assert(dependently_false_v<uniform_value_list<T>>, "find_if failure: result not found; use try_find_if for optional results");
     };
 
     /**
      * @brief Recursive short-circuit search over uniform values.
      */
     template<typename T, T Element, T... Rest, template<auto> typename UnaryValuePredicate>
-    struct find_value_if<
-        uniform_value_list<T, Element, Rest...>,
-        UnaryValuePredicate
-    > : find_value_if_impl<UnaryValuePredicate<Element>::value, Element, uniform_value_list<T, Rest...>, UnaryValuePredicate> {
-    };
+    struct find_value_if<uniform_value_list<T, Element, Rest...>, UnaryValuePredicate>
+        : find_value_if_impl<UnaryValuePredicate<Element>::value, Element, uniform_value_list<T, Rest...>, UnaryValuePredicate> {};
 
     /**
      * @brief Alias for the first type satisfying a predicate.

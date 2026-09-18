@@ -158,8 +158,7 @@ namespace net::telnet {
      * @see `request_option` for throwing version, `async_request_option` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<layerable_socket_stream NLS, protocol_fsm_config PC>
-    std::size_t
-        stream<NLS, PC>::request_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept
+    std::size_t stream<NLS, PC>::request_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept
     {
         try {
             return request_option(opt, direction);
@@ -178,8 +177,7 @@ namespace net::telnet {
      * @see `disable_option` for throwing version, `async_disable_option` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<layerable_socket_stream NLS, protocol_fsm_config PC>
-    std::size_t
-        stream<NLS, PC>::disable_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept
+    std::size_t stream<NLS, PC>::disable_option(option::id_num opt, negotiation_direction direction, std::error_code& ec) noexcept
     {
         try {
             return disable_option(opt, direction);
@@ -289,11 +287,7 @@ namespace net::telnet {
      * @see `write_subnegotiation` for throwing version, `async_write_subnegotiation` in "net.telnet-stream-async-impl.cpp" for async implementation, "net.telnet-stream.cppm" for interface
      */
     template<layerable_socket_stream NLS, protocol_fsm_config PC>
-    std::size_t stream<NLS, PC>::write_subnegotiation(
-        option opt,
-        const std::vector<byte_t>& subnegotiation_buffer,
-        std::error_code& ec
-    ) noexcept
+    std::size_t stream<NLS, PC>::write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, std::error_code& ec) noexcept
     {
         try {
             return write_subnegotiation(opt, subnegotiation_buffer);

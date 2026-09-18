@@ -54,12 +54,7 @@ export namespace net::telnet {
      * @remark Instantiated per-`ProtocolFSM` and used in a single thread/strand.
      * @see `:protocol_fsm` for handler usage, `:options` for `option::id_num`, `:errors` for error codes
      */
-    template<
-        typename ProtocolConfig,
-        typename OptionEnablementHandler,
-        typename OptionDisablementHandler,
-        typename SubnegotiationHandler
-    >
+    template<typename ProtocolConfig, typename OptionEnablementHandler, typename OptionDisablementHandler, typename SubnegotiationHandler>
     class option_handler_registry {
         /**
          * @brief Record for handlers registered to a single Telnet option.
@@ -166,9 +161,7 @@ export namespace net::telnet {
         ///@brief Default handler for undefined subnegotiation.
         awaitables::subnegotiation_awaitable undefined_subnegotiation_handler(option opt, std::vector<byte_t> data)
         {
-            ProtocolConfig::log_error(
-                make_error_code(error::user_handler_not_found), "cmd: {}, option: {}, payload: {}", command::se, opt, data
-            );
+            ProtocolConfig::log_error(make_error_code(error::user_handler_not_found), "cmd: {}, option: {}, payload: {}", command::se, opt, data);
             co_return {opt, {}};
         } //undefined_subnegotiation_handler(option::id_num opt, std::vector<byte_t>)
     }; //class option_handler_registry

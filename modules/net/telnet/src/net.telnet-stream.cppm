@@ -131,9 +131,7 @@ export namespace net::telnet {
             std::optional<typename fsm_type::subnegotiation_handler_type> subneg_handler = std::nullopt
         )
         {
-            fsm_.register_option_handlers(
-                opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler)
-            );
+            fsm_.register_option_handlers(opt, std::move(enable_handler), std::move(disable_handler), std::move(subneg_handler));
         }
 
         ///@brief Unregisters handlers for an option.
@@ -224,8 +222,7 @@ export namespace net::telnet {
         std::size_t write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer);
 
         ///@brief Synchronously writes a Telnet subnegotiation command.
-        std::size_t
-            write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, std::error_code& ec) noexcept;
+        std::size_t write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, std::error_code& ec) noexcept;
 
         ///@brief Asynchronously sends Telnet Synch sequence (NUL bytes and IAC DM).
         template<write_token CompletionToken>
@@ -339,10 +336,7 @@ export namespace net::telnet {
             ///@brief Handle any `tagged_awaitable` with optional `negotiation_response`.
             template<typename Self, typename Tag, typename Awaitable>
             void do_response(
-                std::tuple<
-                    framework::coroutines::tagged_awaitable<Tag, Awaitable>,
-                    std::optional<typename stream::fsm_type::negotiation_response>
-                > response,
+                std::tuple<framework::coroutines::tagged_awaitable<Tag, Awaitable>, std::optional<typename stream::fsm_type::negotiation_response>> response,
                 Self&& self
             );
 
@@ -378,8 +372,7 @@ export namespace net::telnet {
 
         ///@brief Escapes Telnet output data by duplicating 0xFF (IAC) bytes into a provided vector.
         template<const_buffer_sequence CBufSeq>
-        std::tuple<std::error_code, std::vector<byte_t>&>
-            escape_telnet_output(std::vector<byte_t>& escaped_data, const CBufSeq& data) const noexcept;
+        std::tuple<std::error_code, std::vector<byte_t>&> escape_telnet_output(std::vector<byte_t>& escaped_data, const CBufSeq& data) const noexcept;
 
         ///@brief Escapes Telnet output data by duplicating 0xFF (IAC) bytes.
         template<const_buffer_sequence CBufSeq>

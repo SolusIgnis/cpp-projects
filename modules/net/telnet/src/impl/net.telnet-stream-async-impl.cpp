@@ -86,9 +86,7 @@ namespace net::telnet {
             return asio::co_spawn(
                 this->get_executor(),
                 //NOLINTNEXTLINE(cppcoreguidelines-avoid-capturing-lambda-coroutines): Lambda closure lifetime is ensured by Asio. `this` lifetime is bound to parent stream and must be guaranteed for the operation to complete.
-                [this,
-                 response  = std::move(response),
-                 awaitable = std::move(awaitable)] mutable -> asio::awaitable<std::size_t> {
+                [this, response = std::move(response), awaitable = std::move(awaitable)] mutable -> asio::awaitable<std::size_t> {
                     try {
                         std::size_t bytes_transferred = 0;
                         if (response) {
@@ -119,9 +117,7 @@ namespace net::telnet {
     auto stream<NLS, PC>::async_read_some(const MBufSeq& buffers, CompletionToken&& token)
     {
         return asio::async_compose<CompletionToken, typename stream<NLS, PC>::asio_completion_signature>(
-            input_processor<MBufSeq>(*this, fsm_, context_, std::move(buffers)),
-            std::forward<CompletionToken>(token),
-            this->get_executor()
+            input_processor<MBufSeq>(*this, fsm_, context_, std::move(buffers)), std::forward<CompletionToken>(token), this->get_executor()
         );
     } //stream::async_read_some(mutable_buffer_sequence, CompletionToken&&)
 
@@ -150,9 +146,7 @@ namespace net::telnet {
     template<const_buffer_sequence CBufSeq, write_token CompletionToken>
     auto stream<NLS, PC>::async_write_raw(const CBufSeq& data, CompletionToken&& token)
     {
-        return asio::async_write(
-            this->next_layer_, data, asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token))
-        );
+        return asio::async_write(this->next_layer_, data, asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token)));
     } //stream::async_write_raw(const CBufSeq&, CompletionToken&&)
 
     /**
@@ -167,9 +161,7 @@ namespace net::telnet {
         static std::array<byte_t, 2> buf{std::to_underlying(telnet::command::iac), std::to_underlying(cmd)};
 
         return asio::async_write(
-            this->next_layer_,
-            asio::buffer(buf),
-            asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token))
+            this->next_layer_, asio::buffer(buf), asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token))
         );
     } //stream::async_write_command(telnet::command, CompletionToken&&)
 
@@ -184,11 +176,7 @@ namespace net::telnet {
      */
     template<layerable_socket_stream NLS, protocol_fsm_config PC>
     template<write_token CompletionToken>
-    auto stream<NLS, PC>::async_write_subnegotiation(
-        option opt,
-        const std::vector<byte_t>& subnegotiation_buffer,
-        CompletionToken&& token
-    )
+    auto stream<NLS, PC>::async_write_subnegotiation(option opt, const std::vector<byte_t>& subnegotiation_buffer, CompletionToken&& token)
     {
         if (!opt.supports_subnegotiation()) {
             return async_report_error(make_error_code(error::invalid_subnegotiation), std::forward<CompletionToken>(token));
@@ -203,10 +191,7 @@ namespace net::telnet {
             constexpr double escaping_cushion_factor = 1.1;
             using size_type                          = decltype(subnegotiation_buffer.size());
             constexpr size_type framing_padding      = 5;
-            escaped_buffer.reserve(
-                static_cast<size_type>(static_cast<double>(subnegotiation_buffer.size()) * escaping_cushion_factor)
-                + framing_padding
-            );
+            escaped_buffer.reserve(static_cast<size_type>(static_cast<double>(subnegotiation_buffer.size()) * escaping_cushion_factor) + framing_padding);
 
             //Append initial framing: IAC SB opt
             escaped_buffer.push_back(std::to_underlying(telnet::command::iac));
@@ -322,9 +307,7 @@ namespace net::telnet {
             std::to_underlying(opt),
         };
         return asio::async_write(
-            this->next_layer_,
-            asio::buffer(buf),
-            asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token))
+            this->next_layer_, asio::buffer(buf), asio::bind_executor(this->get_executor(), std::forward<CompletionToken>(token))
         );
     } //stream::async_write_negotiation(fsm_type::negotiation_response, CompletionToken&&)
 
@@ -344,10 +327,9 @@ namespace net::telnet {
                 asio::async_write(
                     this->next_layer_,
                     asio::buffer(temp_buffer),
-                    asio::bind_executor(
-                        this->get_executor(),
-                        [handler](const std::error_code& ec, std::size_t bytes_written) mutable { handler(ec, bytes_written); }
-                    )
+                    asio::bind_executor(this->get_executor(), [handler](const std::error_code& ec, std::size_t bytes_written) mutable {
+                        handler(ec, bytes_written);
+                    })
                 );
             },
             std::forward<CompletionToken>(token)

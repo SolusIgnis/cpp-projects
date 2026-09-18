@@ -50,9 +50,7 @@ namespace {
             expect_ec_mapping(make_error_code(error::option_not_available), make_error_condition(std::errc::not_supported));
             expect_ec_mapping(make_error_code(error::subnegotiation_overflow), make_error_condition(std::errc::message_size));
             expect_ec_mapping(make_error_code(error::internal_error), make_error_condition(std::errc::state_not_recoverable));
-            expect_ec_mapping(
-                make_error_code(error::user_handler_forbidden), make_error_condition(std::errc::operation_not_permitted)
-            );
+            expect_ec_mapping(make_error_code(error::user_handler_forbidden), make_error_condition(std::errc::operation_not_permitted));
         };
 
         // ============================================================
