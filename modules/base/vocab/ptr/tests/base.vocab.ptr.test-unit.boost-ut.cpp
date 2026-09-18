@@ -195,7 +195,7 @@ namespace {
         //============================================================
 
         "triviality"_test = []<template<typename> typename ConcretePtr> (template_tag<ConcretePtr> tag) mutable {
-                should("be trivial") = []<typename Pointee>(type<Pointee> tag) {
+                should("be trivial") = []<typename Pointee>(std::type_identity<Pointee> tag) {
                     expect(eq(std::is_standard_layout_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_trivially_copyable_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_trivially_destructible_v<ConcretePtr<Pointee>>, true));
@@ -207,8 +207,8 @@ namespace {
                     expect(eq(std::is_nothrow_swappable_v<ConcretePtr<Pointee>>, true));
                 }
                 | std::tuple{
-                    type<std::int32_t>{},
-                    type<std::map<std::string, std::vector<std::int32_t>>>{}
+                    std::type_identity<std::int32_t>{},
+                    std::type_identity<std::map<std::string, std::vector<std::int32_t>>>{}
                 };
         }
         | std::tuple{
