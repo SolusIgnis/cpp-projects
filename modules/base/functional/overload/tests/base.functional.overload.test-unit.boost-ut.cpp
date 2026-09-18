@@ -210,8 +210,18 @@ int main()
         //NOLINTEND(bugprone-argument-comment)
     };
 
-    "overload{...} supports simple recursion"_test = [] mutable {
-        const auto factorial_tester = [](std::int32_t n, std::int32_t expected) {
+    "overload{...}"_test = [] mutable {
+        constexpr std::int32_t num1      = 5;
+        constexpr std::int32_t expected1 = 120; // 5 * 4 * 3 * 2 * 1
+
+        constexpr std::int32_t num2      = 4;
+        constexpr std::int32_t expected2 = 24; // 4 * 3 * 2 * 1
+
+        constexpr std::int32_t num3      = 1;
+        constexpr std::int32_t expected3 = 1; // sanity check
+
+        should("support simple recursion") = [](auto test_parameter) {
+            const auto [n, expected] = test_parameter;
             // fail fast for ill-formed test.
             if (n < 1) {
                 throw std::logic_error("factorial test runner requires n >= 1");
@@ -231,19 +241,10 @@ int main()
 
             expect(eq(factorial(n), expected)) << "factorial(" + std::to_string(n) + ") result";
             expect(eq(steps, n)) << "step count";
-        };
-
-        constexpr std::int32_t num1      = 5;
-        constexpr std::int32_t expected1 = 120; // 5 * 4 * 3 * 2 * 1
-        factorial_tester(num1, expected1);
-
-        constexpr std::int32_t num2      = 4;
-        constexpr std::int32_t expected2 = 24; // 4 * 3 * 2 * 1
-        factorial_tester(num2, expected2);
-
-        constexpr std::int32_t num3      = 1;
-        constexpr std::int32_t expected3 = 1; // sanity check
-        factorial_tester(num3, expected3);
+        }
+        | std::vector{std::tuple{num1, expected1},
+                      std::tuple{num2, expected2},
+                      std::tuple{num3, expected3},};
     };
 
     "overload{...} supports composed recursive multi-overload dispatch/visitation (binary tree)"_test = [] mutable {
