@@ -250,10 +250,8 @@ int main()
         expect(that % std::same_as<std::common_reference_t<iterator_ptr<simple_t>, iterator_ptr<simple_t>>, iterator_ptr<simple_t>>);
 
         expect(that % std::same_as<std::common_reference_t<dependency_ptr<base_type>, required_ptr<const derived_type>>, std::add_pointer_t<const base_type>>);
-        expect(
-            that % std::same_as<std::common_reference_t<required_ptr<const base_type>, dependency_ptr<volatile derived_type>>, std::add_pointer_t<const volatile base_type>>
-        );
-        expect(that % std::same_as<std::common_reference_t<alias_ptr<derived_type>, required_ptr<volatile base_type>>, std::add_pointer_t<volatile base_type>>);
+        expect(that % std::same_as<std::common_reference_t<required_ptr<base_type>, dependency_ptr<volatile derived_type>>, std::add_pointer_t<volatile base_type>>);
+        expect(that % std::same_as<std::common_reference_t<alias_ptr<const derived_type>, cursor_ptr<volatile base_type>>, std::add_pointer_t<const volatile base_type>>);
     };
 
     "vocabulary pointers alias external owning pointers"_test = [] mutable {

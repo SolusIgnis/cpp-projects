@@ -92,7 +92,7 @@ PenaltyBreakBeforeFirstCallParameter: 20
 PenaltyBreakBeforeMemberAccess:       1000
 PenaltyBreakComment:                  1000000
 PenaltyBreakFirstLessLess:            10
-PenaltyBreakOpenParenthesis:          10
+PenaltyBreakOpenParenthesis:          20
 PenaltyBreakScopeResolution:          1000
 PenaltyBreakString:                   500
 PenaltyBreakTemplateDeclaration:      0
