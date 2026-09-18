@@ -164,10 +164,10 @@ namespace {
 
     template<template<typename> typename TemplateName>
     struct template_tag {};
-
 } //namespace
 
-int main() {
+int main()
+{
     //============================================================
     // Template Constraint Validation
     //============================================================
@@ -195,30 +195,42 @@ int main() {
     // Triviality & ABI properties
     //============================================================
 
-    "triviality"_test = []<template<typename> typename ConcretePtr> (template_tag<ConcretePtr>) mutable {
-        should("be trivial") = []<typename Pointee>(std::type_identity<Pointee>) {
-            expect(that % std::is_standard_layout_v<ConcretePtr<Pointee>>) << "is_standard_layout_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-            expect(that % std::is_trivially_copyable_v<ConcretePtr<Pointee>>) << "is_trivially_copyable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-            expect(that % std::is_trivially_destructible_v<ConcretePtr<Pointee>>) << "is_trivially_destructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-            expect(that % std::is_trivially_copy_constructible_v<ConcretePtr<Pointee>>) << "is_trivially_copy_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-            expect(that % std::is_trivially_move_constructible_v<ConcretePtr<Pointee>>) << "is_trivially_move_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-            expect(that % std::is_trivially_copy_assignable_v<ConcretePtr<Pointee>>) << "is_trivially_copy_assignable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-            expect(that % std::is_trivially_move_assignable_v<ConcretePtr<Pointee>>) << "is_trivially_move_assignable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-            expect(that % std::is_nothrow_constructible_v<ConcretePtr<Pointee>, Pointee&>) << "is_nothrow_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ", " << reflection::type_name<Pointee> << "&)";
-            expect(that % std::is_nothrow_swappable_v<ConcretePtr<Pointee>>) << "is_nothrow_swappable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+    "triviality"_test =
+        []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
+            should("be trivial") =
+                []<typename Pointee>(std::type_identity<Pointee>) {
+                    expect(that % std::is_standard_layout_v<ConcretePtr<Pointee>>)
+                        << "is_standard_layout_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+                    expect(that % std::is_trivially_copyable_v<ConcretePtr<Pointee>>)
+                        << "is_trivially_copyable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+                    expect(that % std::is_trivially_destructible_v<ConcretePtr<Pointee>>)
+                        << "is_trivially_destructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+                    expect(that % std::is_trivially_copy_constructible_v<ConcretePtr<Pointee>>)
+                        << "is_trivially_copy_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+                    expect(that % std::is_trivially_move_constructible_v<ConcretePtr<Pointee>>)
+                        << "is_trivially_move_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+                    expect(that % std::is_trivially_copy_assignable_v<ConcretePtr<Pointee>>)
+                        << "is_trivially_copy_assignable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+                    expect(that % std::is_trivially_move_assignable_v<ConcretePtr<Pointee>>)
+                        << "is_trivially_move_assignable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+                    expect(that % std::is_nothrow_constructible_v<ConcretePtr<Pointee>, Pointee&>)
+                        << "is_nothrow_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ", "
+                        << reflection::type_name<Pointee> << "&)";
+                    expect(that % std::is_nothrow_swappable_v<ConcretePtr<Pointee>>)
+                        << "is_nothrow_swappable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+                }
+                | std::tuple{
+                    std::type_identity<std::int32_t>{},
+                    std::type_identity<std::map<std::string, std::vector<std::int32_t>>>{},
+                };
         }
         | std::tuple{
-            std::type_identity<std::int32_t>{},
-            std::type_identity<std::map<std::string, std::vector<std::int32_t>>>{},
+            template_tag<base::vocab::ptr::dependency_ptr>{},
+            template_tag<base::vocab::ptr::required_ptr>{},
+            template_tag<base::vocab::ptr::alias_ptr>{},
+            template_tag<base::vocab::ptr::cursor_ptr>{},
+            template_tag<base::vocab::ptr::iterator_ptr>{},
         };
-    }
-    | std::tuple{
-        template_tag<base::vocab::ptr::dependency_ptr>{},
-        template_tag<base::vocab::ptr::required_ptr>{},
-        template_tag<base::vocab::ptr::alias_ptr>{},
-        template_tag<base::vocab::ptr::cursor_ptr>{},
-        template_tag<base::vocab::ptr::iterator_ptr>{},
-    };
 
     "size and alignment match raw pointers"_test = [] mutable {
         test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
@@ -1188,7 +1200,7 @@ int main() {
     };
 #else
 //NOLINTNEXTLINE(clang-diagnostic-#warnings)
-#warning "std::start_lifetime_as not defined. Tests skipped."
+    #warning "std::start_lifetime_as not defined. Tests skipped."
 #endif
     //NOLINTEND(misc-const-correctness)
 
@@ -1199,9 +1211,7 @@ int main() {
     "basic_common_reference preserves concrete pointer type with cv-qualifications"_test = [] mutable {
         test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
             expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const std::int32_t>>, true
-            ));
+            expect(eq(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const std::int32_t>>, true));
 
             expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<volatile std::int32_t>>, true));
             expect(eq(
@@ -1228,13 +1238,10 @@ int main() {
     "basic_common_reference uses reference-to-pointer value category propagation"_test = [] mutable {
         test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
             static_assert(
-                std::same_as<std::common_reference_t<std::int32_t*&, const std::int32_t*&>, const std::int32_t*>,
-                "Sanity check for raw pointer common_reference_t<T*&, const T*&> -> const T*"
+                std::same_as<std::common_reference_t<std::int32_t*&, const std::int32_t*&>, const std::int32_t*>, "Sanity check for raw pointer common_reference_t<T*&, const T*&> -> const T*"
             );
             expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, ConcretePtr<const std::int32_t>>, true
-            ));
+            expect(eq(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, ConcretePtr<const std::int32_t>>, true));
 
             static_assert(
                 std::same_as<std::common_reference_t<std::int32_t*&&, const std::int32_t*&&>, const std::int32_t*>,
