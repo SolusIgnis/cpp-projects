@@ -168,12 +168,13 @@ namespace {
 
 int main()
 {
+    "vocabulary pointers"_test =
+        []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
     //============================================================
     // Template Constraint Validation
     //============================================================
 
     "template instantiation checks"_test = [] mutable {
-        test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
             using base::meta::concepts::instantiable_with;
             expect(eq(instantiable_with<ConcretePtr, std::int32_t>, true));
             expect(eq(instantiable_with<ConcretePtr, std::int32_t*>, true));
@@ -188,47 +189,36 @@ int main()
             expect(eq(instantiable_with<ConcretePtr, void (*)(std::int32_t, float)>, false));
             expect(eq(instantiable_with<ConcretePtr, void (**)(std::string, std::int32_t)>, false));
             expect(eq(instantiable_with<ConcretePtr, void (*******)(std::int32_t)>, false));
-        });
     };
 
     //============================================================
     // Triviality & ABI properties
     //============================================================
 
-    "triviality"_test =
-        []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-            should("be trivial") =
-                []<typename Pointee>(std::type_identity<Pointee>) {
-                    expect(that % std::is_standard_layout_v<ConcretePtr<Pointee>>)
-                        << "is_standard_layout_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-                    expect(that % std::is_trivially_copyable_v<ConcretePtr<Pointee>>)
-                        << "is_trivially_copyable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-                    expect(that % std::is_trivially_destructible_v<ConcretePtr<Pointee>>)
-                        << "is_trivially_destructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-                    expect(that % std::is_trivially_copy_constructible_v<ConcretePtr<Pointee>>)
-                        << "is_trivially_copy_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-                    expect(that % std::is_trivially_move_constructible_v<ConcretePtr<Pointee>>)
-                        << "is_trivially_move_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-                    expect(that % std::is_trivially_copy_assignable_v<ConcretePtr<Pointee>>)
-                        << "is_trivially_copy_assignable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-                    expect(that % std::is_trivially_move_assignable_v<ConcretePtr<Pointee>>)
-                        << "is_trivially_move_assignable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-                    expect(that % std::is_nothrow_constructible_v<ConcretePtr<Pointee>, Pointee&>)
-                        << "is_nothrow_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ", "
-                        << reflection::type_name<Pointee> << "&)";
-                    expect(that % std::is_nothrow_swappable_v<ConcretePtr<Pointee>>)
-                        << "is_nothrow_swappable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-                } | std::tuple{
-                    std::type_identity<std::int32_t>{},
-                    std::type_identity<std::map<std::string, std::vector<std::int32_t>>>{},
-                };
-        } | std::tuple{
-            template_tag<base::vocab::ptr::dependency_ptr>{},
-            template_tag<base::vocab::ptr::required_ptr>{},
-            template_tag<base::vocab::ptr::alias_ptr>{},
-            template_tag<base::vocab::ptr::cursor_ptr>{},
-            template_tag<base::vocab::ptr::iterator_ptr>{},
-        };
+    "triviality"_test = []<typename Pointee>(std::type_identity<Pointee>) mutable {
+        expect(that % std::is_standard_layout_v<ConcretePtr<Pointee>>)
+            << "is_standard_layout_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+        expect(that % std::is_trivially_copyable_v<ConcretePtr<Pointee>>)
+            << "is_trivially_copyable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+        expect(that % std::is_trivially_destructible_v<ConcretePtr<Pointee>>)
+            << "is_trivially_destructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+        expect(that % std::is_trivially_copy_constructible_v<ConcretePtr<Pointee>>)
+            << "is_trivially_copy_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+        expect(that % std::is_trivially_move_constructible_v<ConcretePtr<Pointee>>)
+            << "is_trivially_move_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+        expect(that % std::is_trivially_copy_assignable_v<ConcretePtr<Pointee>>)
+            << "is_trivially_copy_assignable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+        expect(that % std::is_trivially_move_assignable_v<ConcretePtr<Pointee>>)
+            << "is_trivially_move_assignable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+        expect(that % std::is_nothrow_constructible_v<ConcretePtr<Pointee>, Pointee&>)
+            << "is_nothrow_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ", "
+            << reflection::type_name<Pointee> << "&)";
+        expect(that % std::is_nothrow_swappable_v<ConcretePtr<Pointee>>)
+            << "is_nothrow_swappable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+    } | std::tuple{
+        std::type_identity<std::int32_t>{},
+        std::type_identity<std::map<std::string, std::vector<std::int32_t>>>{},
+    };
 
     "size and alignment match raw pointers"_test = [] mutable {
         test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
@@ -2045,4 +2035,11 @@ int main()
         });
     };
     //NOLINTEND(cppcoreguidelines-pro-type-const-cast)
+    } | std::tuple{
+        template_tag<base::vocab::ptr::dependency_ptr>{},
+        template_tag<base::vocab::ptr::required_ptr>{},
+        template_tag<base::vocab::ptr::alias_ptr>{},
+        template_tag<base::vocab::ptr::cursor_ptr>{},
+        template_tag<base::vocab::ptr::iterator_ptr>{},
+    };
 }
