@@ -523,7 +523,7 @@ int main()
                 auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
                 ptr.reset();
 
-                expect(that % !ptr == true));
+                expect(that % !ptr == true);
             }
         };
 
@@ -537,17 +537,12 @@ int main()
                 const std::int32_t* const bound_source{std::addressof(value)};
                 const std::int32_t* const null_source{};
 
-                bool threw_when_bound = false;
-                try {
+                expect(nothrow([]{
                     const ConcretePtr<const std::int32_t> ptr{bound_source};
 
                     expect(eq(*ptr, value));
                     expect(eq(ptr.get(), bound_source));
-                } catch (...) {
-                    threw_when_bound = true;
-                }
-
-                expect(eq(threw_when_bound, false));
+                }));
 
                 bool threw_when_null = false;
                 bool wrong_exception = false;
