@@ -227,7 +227,7 @@ int main()
 
         "type aliases are correct"_test = [] mutable {
             using ptr_t  = ConcretePtr<const std::int32_t>;
-            using traits = std::pointer_traits<t>;
+            using traits = std::pointer_traits<ptr_t>;
 
             expect(that % std::same_as<typename traits::pointer, ptr_t>);
             expect(that % std::same_as<typename ptr_t::element_type, const std::int32_t>);
