@@ -106,10 +106,7 @@ namespace {
 
             expect(eq(cat.message(static_cast<int>(processing_signal::go_ahead)), std::string{"Telnet encountered \"Go-Ahead\" command in the byte stream"}));
 
-            expect(
-                eq(cat.message(static_cast<int>(processing_signal::erase_character)),
-                   std::string{"Telnet encountered \"Erase Character\" command in the byte stream"})
-            );
+            expect(eq(cat.message(static_cast<int>(processing_signal::erase_character)), std::string{"Telnet encountered \"Erase Character\" command in the byte stream"}));
 
             expect(eq(cat.message(static_cast<int>(processing_signal::erase_line)), std::string{"Telnet encountered \"Erase Line\" command in the byte stream"}));
 

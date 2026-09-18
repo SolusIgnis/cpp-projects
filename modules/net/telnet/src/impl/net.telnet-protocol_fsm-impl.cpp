@@ -415,9 +415,7 @@ namespace net::telnet {
      */
     //NOLINTBEGIN(readability-function-cognitive-complexity)
     template<typename PC>
-    std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>> protocol_fsm<PC>::handle_state_option_negotiation(
-        byte_t byte
-    )
+    std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>> protocol_fsm<PC>::handle_state_option_negotiation(byte_t byte)
     {
         std::optional<processing_return_variant> response = std::nullopt;
 
@@ -548,9 +546,7 @@ namespace net::telnet {
      * Transitions to `protocol_state::subnegotiation` and discards the option byte (returns `false` for forward flag).
      */
     template<typename PC>
-    std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>> protocol_fsm<PC>::handle_state_subnegotiation_option(
-        byte_t byte
-    )
+    std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>> protocol_fsm<PC>::handle_state_subnegotiation_option(byte_t byte)
     {
         option_registry& registry = protocol_config_type::registered_options;
 
@@ -610,9 +606,7 @@ namespace net::telnet {
      * Transitions to `protocol_state::subnegotiation` for non-`SE` bytes and discards all bytes (returns `false` for forward flag).
      */
     template<typename PC>
-    std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>> protocol_fsm<PC>::handle_state_subnegotiation_iac(
-        byte_t byte
-    )
+    std::tuple<std::error_code, bool, std::optional<typename protocol_fsm<PC>::processing_return_variant>> protocol_fsm<PC>::handle_state_subnegotiation_iac(byte_t byte)
     {
         std::optional<processing_return_variant> response = std::nullopt;
         if (!current_option_) {

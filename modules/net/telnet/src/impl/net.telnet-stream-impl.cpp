@@ -201,9 +201,7 @@ namespace net::telnet {
                 desired_state = urgent_data_state::has_urgent_data;
             } else if (expected_state == urgent_data_state::unexpected_data_mark) {
                 //The DM arrived first; this is the delayed notification. Reset.
-                protocol_config_type::log_error(
-                    processing_signal::data_mark, "DM already arrived before current TCP urgent notification. Assuming Synch is already complete."
-                );
+                protocol_config_type::log_error(processing_signal::data_mark, "DM already arrived before current TCP urgent notification. Assuming Synch is already complete.");
                 desired_state = urgent_data_state::no_urgent_data;
             } else {
                 //CANT HAPPEN: state is `has_urgent_data`. This means another saw_urgent fired without saw_data_mark in between, or a logic error.
