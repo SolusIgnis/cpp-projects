@@ -218,13 +218,11 @@ int main()
                         << reflection::type_name<Pointee> << "&)";
                     expect(that % std::is_nothrow_swappable_v<ConcretePtr<Pointee>>)
                         << "is_nothrow_swappable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-                }
-                | std::tuple{
+                } | std::tuple{
                     std::type_identity<std::int32_t>{},
                     std::type_identity<std::map<std::string, std::vector<std::int32_t>>>{},
                 };
-        }
-        | std::tuple{
+        } | std::tuple{
             template_tag<base::vocab::ptr::dependency_ptr>{},
             template_tag<base::vocab::ptr::required_ptr>{},
             template_tag<base::vocab::ptr::alias_ptr>{},
