@@ -194,8 +194,8 @@ namespace {
         // Triviality & ABI properties
         //============================================================
 
-        "triviality"_test = []<template<typename> typename ConcretePtr> (template_tag<ConcretePtr>) mutable {
-                should("be trivial") = []<typename Pointee>(type<Pointee>) {
+        "triviality"_test = []<template<typename> typename ConcretePtr> (template_tag<ConcretePtr> tag) mutable {
+                should("be trivial") = []<typename Pointee>(type<Pointee> tag) {
                     expect(eq(std::is_standard_layout_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_trivially_copyable_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_trivially_destructible_v<ConcretePtr<Pointee>>, true));
@@ -208,18 +208,15 @@ namespace {
                 }
                 | std::tuple{
                     type<std::int32_t>{},
-                    type<std::map<std::string, std::vector<std::int32_t>>>{},
+                    type<std::map<std::string, std::vector<std::int32_t>>>{}
                 };
-
-                test_impl.template operator()<>();
-                test_impl.template operator()<>();
         }
         | std::tuple{
             template_tag<base::vocab::ptr::dependency_ptr>{},
             template_tag<base::vocab::ptr::required_ptr>{},
             template_tag<base::vocab::ptr::alias_ptr>{},
             template_tag<base::vocab::ptr::cursor_ptr>{},
-            template_tag<base::vocab::ptr::iterator_ptr>{},
+            template_tag<base::vocab::ptr::iterator_ptr>{}
         };
 
         "size and alignment match raw pointers"_test = [] mutable {
