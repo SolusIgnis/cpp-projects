@@ -97,7 +97,7 @@ PenaltyBreakScopeResolution:          1000
 PenaltyBreakString:                   500
 PenaltyBreakTemplateDeclaration:      0
 PenaltyExcessCharacter:               1
-PenaltyIndentedWhitespace:            10
+PenaltyIndentedWhitespace:            2
 PenaltyReturnTypeOnItsOwnLine:        1000
 
 BreakAfterOpenBracketBracedList:   true
