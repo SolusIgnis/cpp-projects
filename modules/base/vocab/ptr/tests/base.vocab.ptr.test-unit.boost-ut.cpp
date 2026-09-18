@@ -195,7 +195,7 @@ namespace {
         //============================================================
 
         "triviality"_test = []<template<typename> typename ConcretePtr> (template_tag<ConcretePtr>) mutable {
-                const auto test_impl = []<typename Pointee> {
+                should("be trivial") = []<typename Pointee>(type<Pointee>) {
                     expect(eq(std::is_standard_layout_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_trivially_copyable_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_trivially_destructible_v<ConcretePtr<Pointee>>, true));
@@ -205,11 +205,14 @@ namespace {
                     expect(eq(std::is_trivially_move_assignable_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_nothrow_constructible_v<ConcretePtr<Pointee>, Pointee&>, true));
                     expect(eq(std::is_nothrow_swappable_v<ConcretePtr<Pointee>>, true));
+                }
+                | std::tuple{
+                    type<std::int32_t>{},
+                    type<std::map<std::string, std::vector<std::int32_t>>>{},
                 };
 
-                test_impl.template operator()<std::int32_t>();
-                test_impl.template operator()<std::map<std::string, std::vector<std::int32_t>>>();
-            });
+                test_impl.template operator()<>();
+                test_impl.template operator()<>();
         }
         | std::tuple{
             template_tag<base::vocab::ptr::dependency_ptr>{},
