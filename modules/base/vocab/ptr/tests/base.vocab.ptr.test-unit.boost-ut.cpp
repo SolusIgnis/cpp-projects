@@ -194,8 +194,8 @@ namespace {
         // Triviality & ABI properties
         //============================================================
 
-        "triviality"_test = []<template<typename> typename ConcretePtr> (template_tag<ConcretePtr> tag) mutable {
-                should("be trivial") = []<typename Pointee>(std::type_identity<Pointee> tag) {
+        "triviality"_test = []<template<typename> typename ConcretePtr> (template_tag<ConcretePtr>) mutable {
+                should("be trivial") = []<typename Pointee>(std::type_identity<Pointee>) {
                     expect(eq(std::is_standard_layout_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_trivially_copyable_v<ConcretePtr<Pointee>>, true));
                     expect(eq(std::is_trivially_destructible_v<ConcretePtr<Pointee>>, true));
