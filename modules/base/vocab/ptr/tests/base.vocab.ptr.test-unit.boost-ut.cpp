@@ -198,14 +198,14 @@ int main() {
     "triviality"_test = []<template<typename> typename ConcretePtr> (template_tag<ConcretePtr>) mutable {
         should("be trivial") = []<typename Pointee>(std::type_identity<Pointee>) {
             expect(that % std::is_standard_layout_v<ConcretePtr<Pointee>>) << "is_standard_layout_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
-            expect(that % std::is_trivially_copyable_v<ConcretePtr<Pointee>>);
-            expect(that % std::is_trivially_destructible_v<ConcretePtr<Pointee>>);
-            expect(that % std::is_trivially_copy_constructible_v<ConcretePtr<Pointee>>);
-            expect(that % std::is_trivially_move_constructible_v<ConcretePtr<Pointee>>);
-            expect(that % std::is_trivially_copy_assignable_v<ConcretePtr<Pointee>>);
-            expect(that % std::is_trivially_move_assignable_v<ConcretePtr<Pointee>>);
-            expect(that % std::is_nothrow_constructible_v<ConcretePtr<Pointee>, Pointee&>);
-            expect(that % std::is_nothrow_swappable_v<ConcretePtr<Pointee>>);
+            expect(that % std::is_trivially_copyable_v<ConcretePtr<Pointee>>) << "is_trivially_copyable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+            expect(that % std::is_trivially_destructible_v<ConcretePtr<Pointee>>) << "is_trivially_destructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+            expect(that % std::is_trivially_copy_constructible_v<ConcretePtr<Pointee>>) << "is_trivially_copy_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+            expect(that % std::is_trivially_move_constructible_v<ConcretePtr<Pointee>>) << "is_trivially_move_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+            expect(that % std::is_trivially_copy_assignable_v<ConcretePtr<Pointee>>) << "is_trivially_copy_assignable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+            expect(that % std::is_trivially_move_assignable_v<ConcretePtr<Pointee>>) << "is_trivially_move_assignable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
+            expect(that % std::is_nothrow_constructible_v<ConcretePtr<Pointee>, Pointee&>) << "is_nothrow_constructible_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ", " << reflection::type_name<Pointee> << "&)";
+            expect(that % std::is_nothrow_swappable_v<ConcretePtr<Pointee>>) << "is_nothrow_swappable_v(" << reflection::type_name<ConcretePtr<Pointee>>() << ")";
         }
         | std::tuple{
             std::type_identity<std::int32_t>{},
