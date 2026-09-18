@@ -209,7 +209,7 @@ int main() {
         }
         | std::tuple{
             std::type_identity<std::int32_t>{},
-            std::type_identity<std::map<std::string, std::vector<std::int32_t>>>{}
+            std::type_identity<std::map<std::string, std::vector<std::int32_t>>>{},
         };
     }
     | std::tuple{
@@ -217,7 +217,7 @@ int main() {
         template_tag<base::vocab::ptr::required_ptr>{},
         template_tag<base::vocab::ptr::alias_ptr>{},
         template_tag<base::vocab::ptr::cursor_ptr>{},
-        template_tag<base::vocab::ptr::iterator_ptr>{}
+        template_tag<base::vocab::ptr::iterator_ptr>{},
     };
 
     "size and alignment match raw pointers"_test = [] mutable {
