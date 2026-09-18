@@ -537,25 +537,23 @@ int main()
                 const std::int32_t* const bound_source{std::addressof(value)};
                 const std::int32_t* const null_source{};
 
-                expect(nothrow([]{
+                expect(nothrow([&]{
                     const ConcretePtr<const std::int32_t> ptr{bound_source};
 
                     expect(eq(*ptr, value));
                     expect(eq(ptr.get(), bound_source));
                 }));
 
-                bool threw_when_null = false;
-                bool wrong_exception = false;
-                try {
-                    [[maybe_unused]] const ConcretePtr<const std::int32_t> dummy_ptr{null_source};
-                } catch (const std::invalid_argument&) {
-                    threw_when_null = true;
-                } catch (...) {
-                    wrong_exception = true;
+                const auto null_init = [&]{
+                    const ConcretePtr<const std::int32_t> ptr{null_source};
+                    expect(eq(ptr.get(), null_source)); //Skipped when construction throws.
+                };
+                
+                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                    expect(nothrow(null_init));
+                } else {
+                    expect(throws<std::invalid_argument>(null_init));
                 }
-
-                expect(eq(threw_when_null, !pointer_test_traits<ConcretePtr>::is_nullable));
-                expect(eq(wrong_exception, false));
             }
         };
 
@@ -565,30 +563,23 @@ int main()
                 const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
                 const trivial_smart_ptr<const std::int32_t> null_source{};
 
-                bool threw_when_bound = false;
-                try {
+                expect(nothrow([&]{
                     const ConcretePtr<const std::int32_t> ptr{bound_source};
 
                     expect(eq(*ptr, value));
                     expect(eq(ptr.get(), bound_source.get()));
-                } catch (...) {
-                    threw_when_bound = true;
+                }));
+
+                const auto null_init = [&]{
+                    const ConcretePtr<const std::int32_t> ptr{null_source};
+                    expect(eq(ptr.get(), null_source.get())); //Skipped when construction throws.
+                };
+                
+                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                    expect(nothrow(null_init));
+                } else {
+                    expect(throws<std::invalid_argument>(null_init));
                 }
-
-                expect(eq(threw_when_bound, false));
-
-                bool threw_when_null = false;
-                bool wrong_exception = false;
-                try {
-                    [[maybe_unused]] const ConcretePtr<const std::int32_t> dummy_ptr{null_source};
-                } catch (const std::invalid_argument&) {
-                    threw_when_null = true;
-                } catch (...) {
-                    wrong_exception = true;
-                }
-
-                expect(eq(threw_when_null, !pointer_test_traits<ConcretePtr>::is_nullable));
-                expect(eq(wrong_exception, false));
             }
         };
 
@@ -602,33 +593,23 @@ int main()
 
                 ConcretePtr<const std::int32_t> ptr{other};
 
-                bool threw_when_bound = false;
-                try {
+                expect(nothrow([&]{
                     ptr = bound_source;
-                } catch (...) {
-                    threw_when_bound = true;
-                }
 
-                expect(eq(threw_when_bound, false));
-                expect(eq(*ptr, *bound_source));
-                expect(eq(ptr.get(), bound_source));
+                    expect(eq(*ptr, *bound_source));
+                    expect(eq(ptr.get(), bound_source));
+                }));
 
-                bool threw_when_null = false;
-                bool wrong_exception = false;
-                try {
-                    ptr = null_source;
-                } catch (const std::invalid_argument&) {
-                    threw_when_null = true;
-                } catch (...) {
-                    wrong_exception = true;
-                }
-
-                expect(eq(threw_when_null, !pointer_test_traits<ConcretePtr>::is_nullable));
-                expect(eq(wrong_exception, false));
+                const auto null_assign = [&]{ ptr = null_source; };
 
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                    expect(nothrow(null_init));
+
+                    //Assignment successfully modifies stored address.
                     expect(eq(ptr.get(), null_source));
                 } else {
+                    expect(throws<std::invalid_argument>(null_init));
+
                     //Invariant preserved after failed assignment
                     expect(eq(*ptr, *bound_source));
                     expect(eq(ptr.get(), bound_source));
@@ -646,35 +627,25 @@ int main()
 
                 ConcretePtr<const std::int32_t> ptr{other};
 
-                bool threw_when_bound = false;
-                try {
+                expect(nothrow([&]{
                     ptr = bound_source;
-                } catch (...) {
-                    threw_when_bound = true;
-                }
 
-                expect(eq(threw_when_bound, false));
-                expect(eq(*ptr, value));
-                expect(eq(ptr.get(), bound_source.get()));
+                    expect(eq(*ptr, *bound_source));
+                    expect(eq(ptr.get(), bound_source.get()));
+                }));
 
-                bool threw_when_null = false;
-                bool wrong_exception = false;
-                try {
-                    ptr = null_source;
-                } catch (const std::invalid_argument&) {
-                    threw_when_null = true;
-                } catch (...) {
-                    wrong_exception = true;
-                }
-
-                expect(eq(threw_when_null, !pointer_test_traits<ConcretePtr>::is_nullable));
-                expect(eq(wrong_exception, false));
+                const auto null_assign = [&]{ ptr = null_source; };
 
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    expect(eq(ptr.get() == null_source.get(), true));
+                    expect(nothrow(null_init));
+
+                    //Assignment successfully modifies stored address.
+                    expect(eq(ptr.get(), null_source.get()));
                 } else {
+                    expect(throws<std::invalid_argument>(null_init));
+
                     //Invariant preserved after failed assignment
-                    expect(eq(*ptr, value));
+                    expect(eq(*ptr, *bound_source));
                     expect(eq(ptr.get(), bound_source.get()));
                 }
             }
