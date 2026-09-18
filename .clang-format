@@ -87,10 +87,18 @@ PackConstructorInitializers: NextLine
 
 WrapNamespaceBodyWithEmptyLines: Never
 
-PenaltyBreakBeforeFirstCallParameter: 200
-PenaltyBreakAssignment:               100
-PenaltyBreakTemplateDeclaration:      10
-PenaltyExcessCharacter:               1000000  # strongly prefer your manual wrapping
+PenaltyBreakAssignment:               10
+PenaltyBreakBeforeFirstCallParameter: 20
+PenaltyBreakBeforeMemberAccess:       1000
+PenaltyBreakComment:                  1000000
+PenaltyBreakFirstLessLess:            10
+PenaltyBreakOpenParenthesis:          10
+PenaltyBreakScopeResolution:          1000
+PenaltyBreakString:                   500
+PenaltyBreakTemplateDeclaration:      0
+PenaltyExcessCharacter:               1
+PenaltyIndentedWhitespace:            10
+PenaltyReturnTypeOnItsOwnLine:        1000
 
 BreakAfterOpenBracketBracedList:   true
 BreakBeforeCloseBracketBracedList: true
