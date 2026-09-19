@@ -265,7 +265,7 @@ int main()
         };
 
         "pointer binding according to policies"_test =
-            [] <typename Pointee, typename SourceTag, bool IsConstructibleFrom, bool IsConvertibleFrom, bool IsAssignableFrom = IsConstructibleFrom && !std::same_as<SourceTag, ref_tag>>
+            [] <typename Pointee, typename SourceTag, bool IsConstructibleFrom, bool IsConvertibleFrom, bool IsAssignableFrom>
                 (binding_parameters<Pointee, SourceTag, IsConstructibleFrom, IsConvertibleFrom, IsAssignableFrom>) mutable
             {
                 //Explicitly constructible unless removing qualifier
@@ -325,11 +325,11 @@ int main()
             |
             std::tuple{
                 //Reference binding is explicit when allowed
-                binding_parameters<std::int32_t, ref_tag, pointer_test_traits<ConcretePtr>::allows_reference_binding, false>{},
+                binding_parameters<std::int32_t, ref_tag, pointer_test_traits<ConcretePtr>::allows_reference_binding, false, false>{},
     
                 //Pointer binding allows implicit conversion
-                binding_parameters<std::int32_t, ptr_tag, pointer_test_traits<ConcretePtr>::allows_pointer_binding, pointer_test_traits<ConcretePtr>::allows_pointer_binding>{},
-                binding_parameters<std::int32_t, smart_ptr_tag, pointer_test_traits<ConcretePtr>::allows_pointer_binding, pointer_test_traits<ConcretePtr>::allows_pointer_binding>{},
+                binding_parameters<std::int32_t, ptr_tag, pointer_test_traits<ConcretePtr>::allows_pointer_binding, pointer_test_traits<ConcretePtr>::allows_pointer_binding, pointer_test_traits<ConcretePtr>::allows_pointer_binding>{},
+                binding_parameters<std::int32_t, smart_ptr_tag, pointer_test_traits<ConcretePtr>::allows_pointer_binding, pointer_test_traits<ConcretePtr>::allows_pointer_binding, pointer_test_traits<ConcretePtr>::allows_pointer_binding>{},
             };
 
         "not bindable from pointee rvalue"_test = [] mutable {
