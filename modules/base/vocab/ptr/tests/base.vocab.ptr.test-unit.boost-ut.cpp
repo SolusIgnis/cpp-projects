@@ -603,7 +603,7 @@ int main()
                 const auto null_assign = [&]{ ptr = null_source; };
 
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    expect(nothrow(null_init));
+                    expect(nothrow(null_assign));
 
                     //Assignment successfully modifies stored address.
                     expect(eq(ptr.get(), null_source));
@@ -637,7 +637,7 @@ int main()
                 const auto null_assign = [&]{ ptr = null_source; };
 
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    expect(nothrow(null_init));
+                    expect(nothrow(null_assign));
 
                     //Assignment successfully modifies stored address.
                     expect(eq(ptr.get(), null_source.get()));
