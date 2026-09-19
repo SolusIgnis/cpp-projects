@@ -1041,7 +1041,7 @@ int main()
                 expect(eq(result->velocity, expected.qux));
             };
 #else
-//NOLINTNEXTLINE(clang-diagnostic-#warnings)
+        //NOLINTNEXTLINE(clang-diagnostic-#warnings)
     #warning "std::start_lifetime_as not defined. Tests skipped."
 #endif
             //NOLINTEND(misc-const-correctness)
