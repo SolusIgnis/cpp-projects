@@ -608,7 +608,7 @@ int main()
                     //Assignment successfully modifies stored address.
                     expect(eq(ptr.get(), null_source));
                 } else {
-                    expect(throws<std::invalid_argument>(null_init));
+                    expect(throws<std::invalid_argument>(null_assign));
 
                     //Invariant preserved after failed assignment
                     expect(eq(*ptr, *bound_source));
@@ -642,7 +642,7 @@ int main()
                     //Assignment successfully modifies stored address.
                     expect(eq(ptr.get(), null_source.get()));
                 } else {
-                    expect(throws<std::invalid_argument>(null_init));
+                    expect(throws<std::invalid_argument>(null_assign));
 
                     //Invariant preserved after failed assignment
                     expect(eq(*ptr, *bound_source));
