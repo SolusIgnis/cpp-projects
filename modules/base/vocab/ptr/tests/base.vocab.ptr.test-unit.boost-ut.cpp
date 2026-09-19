@@ -686,9 +686,9 @@ int main()
             const auto ptr2 = base::vocab::pointer_to<ConcretePtr>(x);
             const auto ptr3 = base::vocab::pointer_to<ConcretePtr>(y);
 
-            expect(eq(ptr1 == ptr2, true));
-            expect(eq(ptr1 == ptr3, false));
-            expect(eq(ptr2 == ptr3, false));
+            expect(that % ptr1 == ptr2);
+            expect(that % (ptr1 != ptr3));
+            expect(that % (ptr2 != ptr3));
         };
 
         "nullable comparisons with nullptr"_test = [] mutable {
