@@ -1626,7 +1626,7 @@ int main()
             constexpr auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
             expect(eq(ptr.get(), std::addressof(value)));
-            expect(that % static_cast<bool>(ptr) == true));
+            expect(that % static_cast<bool>(ptr) == true);
         };
 
         "constexpr equality"_test = [] {
