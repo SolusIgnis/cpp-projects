@@ -965,7 +965,7 @@ int main()
             expect(that % std::same_as<decltype(result_bytes), ConcretePtr<std::byte>>);
             expect(eq(result_bytes.get(), reinterpret_cast<std::byte*>(std::addressof(value))));
 
-            expect(thst % std::same_as<decltype(result_chars), ConcretePtr<char>>);
+            expect(that % std::same_as<decltype(result_chars), ConcretePtr<char>>);
             expect(eq(result_chars.get(), reinterpret_cast<char*>(std::addressof(value))));
         };
 
