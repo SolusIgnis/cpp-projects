@@ -902,7 +902,7 @@ int main()
 
             auto result = dynamic_pointer_cast<derived_type>(source);
 
-            expect(thst % std::same_as<decltype(result), ConcretePtr<derived_type>>);
+            expect(that % std::same_as<decltype(result), ConcretePtr<derived_type>>);
             expect(eq(result.get(), std::addressof(value)));
             expect(eq(result->extra, value.extra));
         };
@@ -910,7 +910,7 @@ int main()
         "dynamic_pointer_cast handles failed downcasts according to policy"_test = [] mutable {
             struct wrong_derived : base_type {};
             wrong_derived sentinel{};
-            auto result = base::vocab::pointer_to<wrong_derived>(sentinel);
+            auto result = base::vocab::pointer_to<ConcretePtr>(sentinel);
 
             derived_type value;
 
@@ -1509,29 +1509,29 @@ int main()
 
         "construction from void raw pointer is explicit"_test = [] mutable {
             if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-                expect(eq(std::convertible_to<void*, ConcretePtr<void>>, false));
-                expect(eq(std::constructible_from<ConcretePtr<void>, void*>, true));
+                expect(that % !std::convertible_to<void*, ConcretePtr<void>>);
+                expect(that % std::constructible_from<ConcretePtr<void>, void*>);
             }
         };
 
         "construction from void smart pointer is explicit"_test = [] mutable {
             if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-                expect(eq(std::convertible_to<trivial_smart_ptr<void>&, ConcretePtr<void>>, false));
-                expect(eq(std::constructible_from<ConcretePtr<void>, trivial_smart_ptr<void>&>, true));
+                expect(that % !std::convertible_to<trivial_smart_ptr<void>&, ConcretePtr<void>>);
+                expect(that % std::constructible_from<ConcretePtr<void>, trivial_smart_ptr<void>&>);
             }
         };
 
         "void pointer constructs implicitly from typed pointer"_test = [] mutable {
             if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-                expect(eq(std::convertible_to<ConcretePtr<std::int32_t>, ConcretePtr<void>>, true));
-                expect(eq(std::convertible_to<ConcretePtr<void>, ConcretePtr<std::int32_t>>, false));
+                expect(that % std::convertible_to<ConcretePtr<std::int32_t>, ConcretePtr<void>>);
+                expect(that % !std::convertible_to<ConcretePtr<void>, ConcretePtr<std::int32_t>>);
 
                 const std::int32_t value{42};
                 const auto typed_ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
                 // Should be implicit (convertible)
                 const auto takes_void = [](ConcretePtr<const void> ptr) { return ptr.get(); };
-                expect(eq(takes_void(typed_ptr), static_cast<const void*>(std::addressof(value))));
+                expect(that % takes_void(typed_ptr) == std::addressof(value));
             }
         };
 
