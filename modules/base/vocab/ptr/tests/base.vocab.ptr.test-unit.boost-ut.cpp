@@ -1543,13 +1543,13 @@ int main()
                 auto source  = base::vocab::pointer_to<ConcretePtr>(object);
                 auto result1 = static_pointer_cast<void>(source);
 
-                expect(eq(std::same_as<decltype(result1), ConcretePtr<void>>, true));
-                expect(eq(result1.get(), static_cast<void*>(std::addressof(object))));
+                expect(that % std::same_as<decltype(result1), ConcretePtr<void>>);
+                expect(that % result1.get() == std::addressof(object));
 
                 auto result2 = static_pointer_cast<std::int32_t>(result1);
 
-                expect(eq(std::same_as<decltype(result2), ConcretePtr<std::int32_t>>, true));
-                expect(eq(result2.get(), std::addressof(object)));
+                expect(that % std::same_as<decltype(result2), ConcretePtr<std::int32_t>>);
+                expect(that % result2.get() == std::addressof(object));
             }
         };
         //NOLINTEND(misc-const-correctness)
@@ -1564,10 +1564,10 @@ int main()
                 const ConcretePtr<const void> erased_ptr1{typed_raw};
                 const ConcretePtr<const void> erased_ptr2{typed_ptr};
 
-                expect(eq(erased_ptr1 == erased_ptr2, true));
-                expect(eq(erased_ptr1 == typed_ptr, true));
-                expect(eq(erased_ptr1 == erased_raw, true));
-                expect(eq(erased_ptr1 == typed_raw, true));
+                expect(that % erased_ptr1 == erased_ptr2);
+                expect(that % erased_ptr1 == typed_ptr);
+                expect(that % erased_ptr1 == erased_raw);
+                expect(that % erased_ptr1 == typed_raw);
             }
         };
 
@@ -1635,7 +1635,7 @@ int main()
             constexpr auto ptr1 = base::vocab::pointer_to<ConcretePtr>(value);
             constexpr auto ptr2 = base::vocab::pointer_to<ConcretePtr>(value);
 
-            expect(eq(ptr1 == ptr2, true));
+            expect(that % ptr1 == ptr2);
         };
 
         "constexpr rebinding"_test = [] {
@@ -1694,8 +1694,8 @@ int main()
             const auto lhs_hash = std::hash<ConcretePtr<std::int32_t>>{}(lhs);
             const auto rhs_hash = std::hash<ConcretePtr<const std::int32_t>>{}(rhs);
 
-            expect(eq(lhs == rhs, true));
-            expect(eq(lhs_hash == rhs_hash, true));
+            expect(that % lhs == rhs);
+            expect(that % lhs_hash == rhs_hash);
         };
 
         //============================================================
