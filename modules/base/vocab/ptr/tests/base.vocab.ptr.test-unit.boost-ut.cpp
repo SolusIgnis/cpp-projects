@@ -852,12 +852,12 @@ int main()
             ConcretePtr<derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
             auto result1                     = static_pointer_cast<base_type>(source);
 
-            expect(eq(std::same_as<decltype(result1), ConcretePtr<base_type>>, true));
+            expect(that % std::same_as<decltype(result1), ConcretePtr<base_type>>);
             expect(eq(result1.get(), static_cast<base_type*>(std::addressof(object))));
 
             auto result2 = static_pointer_cast<derived_type>(result1);
 
-            expect(eq(std::same_as<decltype(result2), ConcretePtr<derived_type>>, true));
+            expect(that % std::same_as<decltype(result2), ConcretePtr<derived_type>>);
             expect(eq(result2.get(), std::addressof(object)));
         };
 
@@ -867,7 +867,7 @@ int main()
             ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
             auto result                            = static_pointer_cast<base_type>(source);
 
-            expect(eq(std::same_as<decltype(result), ConcretePtr<const base_type>>, true));
+            expect(that % std::same_as<decltype(result), ConcretePtr<const base_type>>);
         };
 
         "static_pointer_cast preserves null state"_test = [] mutable {
@@ -876,7 +876,7 @@ int main()
 
                 const auto result = static_pointer_cast<base_type>(source);
 
-                expect(eq(result == nullptr, true));
+                expect(that % result == nullptr);
             }
         };
 
@@ -888,10 +888,10 @@ int main()
             auto result_1 = dynamic_pointer_cast<mixin_1>(source);
             auto result_2 = dynamic_pointer_cast<mixin_2>(source);
 
-            expect(eq(std::same_as<decltype(result_1), ConcretePtr<mixin_1>>, true));
+            expect(that % std::same_as<decltype(result_1), ConcretePtr<mixin_1>>);
             expect(eq(result_1.get(), dynamic_cast<mixin_1*>(std::addressof(value))));
 
-            expect(eq(std::same_as<decltype(result_2), ConcretePtr<mixin_2>>, true));
+            expect(that % std::same_as<decltype(result_2), ConcretePtr<mixin_2>>);
             expect(eq(result_2.get(), dynamic_cast<mixin_2*>(std::addressof(value))));
         };
 
@@ -902,41 +902,41 @@ int main()
 
             auto result = dynamic_pointer_cast<derived_type>(source);
 
-            expect(eq(std::same_as<decltype(result), ConcretePtr<derived_type>>, true));
+            expect(thst % std::same_as<decltype(result), ConcretePtr<derived_type>>);
             expect(eq(result.get(), std::addressof(value)));
             expect(eq(result->extra, value.extra));
         };
 
         "dynamic_pointer_cast handles failed downcasts according to policy"_test = [] mutable {
             struct wrong_derived : base_type {};
+            wrong_derived sentinel{};
+            auto result = base::vocab::pointer_to<wrong_derived>(sentinel);
 
             derived_type value;
 
             ConcretePtr<base_type> source = base::vocab::pointer_to<ConcretePtr>(value);
 
-            bool threw           = false;
-            bool wrong_exception = false;
-            try {
-                const auto result = dynamic_pointer_cast<wrong_derived>(source);
+            const auto fail_to_cast = [&]{
+                result = dynamic_pointer_cast<wrong_derived>(source);
+            };
 
-                expect(eq(result.get() == nullptr, pointer_test_traits<ConcretePtr>::is_nullable));
-            } catch (const std::bad_cast&) {
-                threw = true;
-            } catch (...) {
-                wrong_exception = true;
+            if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                expect(nothrow(fail_to_cast));
+                expect(that % result.get() == nullptr);
+            } else {
+                expect(throws<std::bad_cast>(fail_to_cast));
+                expect(that % result.get() == std::addressof(sentinel));
             }
-
-            expect(eq(threw, !pointer_test_traits<ConcretePtr>::is_nullable));
-            expect(eq(wrong_exception, false));
         };
 
         "dynamic_pointer_cast preserves cv-qualifications"_test = [] mutable {
             const derived_type object;
 
             ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
-            auto result                            = dynamic_pointer_cast<base_type>(source);
 
-            expect(eq(std::same_as<decltype(result), ConcretePtr<const base_type>>, true));
+            auto result = dynamic_pointer_cast<base_type>(source);
+
+            expect(that % std::same_as<decltype(result), ConcretePtr<const base_type>>);
         };
 
         "dynamic_pointer_cast preserves null state"_test = [] mutable {
@@ -945,7 +945,7 @@ int main()
 
                 auto result = dynamic_pointer_cast<base_type>(source);
 
-                expect(eq(result == nullptr, true));
+                expect(that % result == nullptr);
             }
         };
 
@@ -962,10 +962,10 @@ int main()
             auto result_bytes = reinterpret_pointer_cast<std::byte>(source);
             auto result_chars = reinterpret_pointer_cast<char>(source);
 
-            expect(eq(std::same_as<decltype(result_bytes), ConcretePtr<std::byte>>, true));
+            expect(that % std::same_as<decltype(result_bytes), ConcretePtr<std::byte>>);
             expect(eq(result_bytes.get(), reinterpret_cast<std::byte*>(std::addressof(value))));
 
-            expect(eq(std::same_as<decltype(result_chars), ConcretePtr<char>>, true));
+            expect(thst % std::same_as<decltype(result_chars), ConcretePtr<char>>);
             expect(eq(result_chars.get(), reinterpret_cast<char*>(std::addressof(value))));
         };
 
@@ -987,7 +987,7 @@ int main()
             //WARNING: Using this result pointer's stored address potentially invokes undefined behavior.
             auto result = reinterpret_pointer_cast<target_t>(source);
 
-            expect(eq(std::same_as<decltype(result), ConcretePtr<target_t>>, true));
+            expect(that % std::same_as<decltype(result), ConcretePtr<target_t>>);
             expect(eq(result.get(), reinterpret_cast<target_t*>(std::addressof(value))));
         };
 
@@ -995,9 +995,10 @@ int main()
             const derived_type object;
 
             ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
-            auto result                            = reinterpret_pointer_cast<base_type>(source);
 
-            expect(eq(std::same_as<decltype(result), ConcretePtr<const base_type>>, true));
+            auto result = reinterpret_pointer_cast<base_type>(source);
+
+            expect(that % std::same_as<decltype(result), ConcretePtr<const base_type>>);
         };
 
         "reinterpret_pointer_cast preserves null state"_test = [] mutable {
@@ -1006,7 +1007,7 @@ int main()
 
                 auto result = reinterpret_pointer_cast<std::byte>(source);
 
-                expect(eq(result.get() == nullptr, true));
+                expect(that % result.get() == nullptr);
             }
         };
     //NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -1032,7 +1033,7 @@ int main()
             auto source = base::vocab::pointer_to<ConcretePtr>(value);
             auto result = start_lifetime_as<target_t>(source);
 
-            expect(eq(std::same_as<decltype(result), ConcretePtr<const target_t>>, true));
+            expect(that % std::same_as<decltype(result), ConcretePtr<const target_t>>);
             expect(eq(result.get(), reinterpret_cast<target_t*>(std::addressof(value))));
             expect(eq(result->x, expected.foo));
             expect(eq(result->y, expected.bar));
@@ -1040,7 +1041,7 @@ int main()
             expect(eq(result->velocity, expected.qux));
         };
 #else
-    //NOLINTNEXTLINE(clang-diagnostic-#warnings)
+//NOLINTNEXTLINE(clang-diagnostic-#warnings)
 #warning "std::start_lifetime_as not defined. Tests skipped."
 #endif
         //NOLINTEND(misc-const-correctness)
@@ -1050,30 +1051,28 @@ int main()
         //============================================================
 
         "basic_common_reference preserves concrete pointer type with cv-qualifications"_test = [] mutable {
-            expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const std::int32_t>>, true
-            ));
+            expect(that % std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>);
+            expect(that % 
+                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const std::int32_t>>
+            );
 
-            expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<volatile std::int32_t>>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<volatile std::int32_t>>, ConcretePtr<volatile std::int32_t>>, true
-            ));
+            expect(that % std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<volatile std::int32_t>>);
+            expect(that % 
+                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<volatile std::int32_t>>, ConcretePtr<volatile std::int32_t>>
+            );
 
-            expect(eq(std::common_reference_with<ConcretePtr<const std::int32_t>, ConcretePtr<const volatile std::int32_t>>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<const std::int32_t>, ConcretePtr<const volatile std::int32_t>>, ConcretePtr<const volatile std::int32_t>>, true
-            ));
+            expect(that % std::common_reference_with<ConcretePtr<const std::int32_t>, ConcretePtr<const volatile std::int32_t>>);
+            expect(that % 
+                std::same_as<std::common_reference_t<ConcretePtr<const std::int32_t>, ConcretePtr<const volatile std::int32_t>>, ConcretePtr<const volatile std::int32_t>>
+            );
 
-            expect(eq(std::common_reference_with<ConcretePtr<volatile std::int32_t>, ConcretePtr<const volatile std::int32_t>>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const volatile std::int32_t>>, ConcretePtr<const volatile std::int32_t>>, true
-            ));
+            expect(that % std::common_reference_with<ConcretePtr<volatile std::int32_t>, ConcretePtr<const volatile std::int32_t>>);
+            expect(that % 
+                std::same_as<std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const volatile std::int32_t>>, ConcretePtr<const volatile std::int32_t>>
+            );
 
-            expect(eq(std::common_reference_with<ConcretePtr<volatile std::int32_t>, ConcretePtr<const std::int32_t>>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const volatile std::int32_t>>, true
-            ));
+            expect(that % std::common_reference_with<ConcretePtr<volatile std::int32_t>, ConcretePtr<const std::int32_t>>);
+            expect(that % std::same_as<std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const volatile std::int32_t>>);
         };
 
         "basic_common_reference uses reference-to-pointer value category propagation"_test = [] mutable {
@@ -1081,81 +1080,79 @@ int main()
                 std::same_as<std::common_reference_t<std::int32_t*&, const std::int32_t*&>, const std::int32_t*>,
                 "Sanity check for raw pointer common_reference_t<T*&, const T*&> -> const T*"
             );
-            expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, ConcretePtr<const std::int32_t>>, true
-            ));
+            expect(that % std::common_reference_with<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>);
+            expect(that % 
+                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, ConcretePtr<const std::int32_t>>
+            );
 
             static_assert(
                 std::same_as<std::common_reference_t<std::int32_t*&&, const std::int32_t*&&>, const std::int32_t*>,
                 "Sanity check for raw pointer common_reference_t<T*&&, const T*&&> -> const T*"
             );
-            expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>, ConcretePtr<const std::int32_t>>, true
-            ));
+            expect(that % std::common_reference_with<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>);
+            expect(that % 
+                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>, ConcretePtr<const std::int32_t>>
+            );
 
             static_assert(
                 std::same_as<std::common_reference_t<const std::int32_t*&, std::int32_t*&&>, const std::int32_t* const&>,
                 "Sanity check for raw pointer common_reference_t<const T*&, T*&&> -> const T* const &"
             );
-            expect(eq(std::common_reference_with<ConcretePtr<const std::int32_t>&, ConcretePtr<std::int32_t>&&>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<const std::int32_t>&, ConcretePtr<std::int32_t>&&>, const ConcretePtr<const std::int32_t>&>, true
-            ));
+            expect(that % std::common_reference_with<ConcretePtr<const std::int32_t>&, ConcretePtr<std::int32_t>&&>);
+            expect(that % 
+                std::same_as<std::common_reference_t<ConcretePtr<const std::int32_t>&, ConcretePtr<std::int32_t>&&>, const ConcretePtr<const std::int32_t>&>
+            );
 
             static_assert(
                 std::same_as<std::common_reference_t<std::int32_t* const&, std::int32_t*&&>, std::int32_t* const&>,
                 "Sanity check for raw pointer common_reference_t<T* const &, T*&&> -> T* const &"
             );
-            expect(eq(std::common_reference_with<const ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&&>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<const ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&&>, const ConcretePtr<const std::int32_t>&>, true
-            ));
+            expect(that % std::common_reference_with<const ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&&>);
+            expect(that % 
+                std::same_as<std::common_reference_t<const ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&&>, const ConcretePtr<const std::int32_t>&>
+            );
         };
 
         "basic_common_reference matches raw pointer common_reference"_test = [] mutable {
-            expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const volatile std::int32_t>>, true));
-            expect(eq(
+            expect(that % std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const volatile std::int32_t>>);
+            expect(that % 
                 std::same_as<
                     std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const volatile std::int32_t>>,
                     ConcretePtr<std::remove_pointer_t<std::remove_cvref_t<std::common_reference_t<std::int32_t*, const volatile std::int32_t*>>>>
-                >,
-                true
-            ));
+                >);
         };
 
         "vocabulary pointer and raw pointer share raw pointer common reference"_test = [] mutable {
-            expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, std::int32_t*>, true));
-            expect(eq(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, std::int32_t*>, std::int32_t*>, true));
+            expect(that % std::common_reference_with<ConcretePtr<std::int32_t>, std::int32_t*>);
+            expect(that % std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, std::int32_t*>, std::int32_t*>);
 
-            expect(eq(std::common_reference_with<std::int32_t*, ConcretePtr<std::int32_t>>, true));
-            expect(eq(std::same_as<std::common_reference_t<std::int32_t*, ConcretePtr<std::int32_t>>, std::int32_t*>, true));
+            expect(that % std::common_reference_with<std::int32_t*, ConcretePtr<std::int32_t>>);
+            expect(that % std::same_as<std::common_reference_t<std::int32_t*, ConcretePtr<std::int32_t>>, std::int32_t*>);
         };
 
         "common_reference supports covariance"_test = [] mutable {
-            expect(eq(std::common_reference_with<ConcretePtr<derived_type>, ConcretePtr<base_type>>, true));
-            expect(eq(std::same_as<std::common_reference_t<ConcretePtr<derived_type>, ConcretePtr<base_type>>, ConcretePtr<base_type>>, true));
+            expect(that % std::common_reference_with<ConcretePtr<derived_type>, ConcretePtr<base_type>>);
+            expect(that % std::same_as<std::common_reference_t<ConcretePtr<derived_type>, ConcretePtr<base_type>>, ConcretePtr<base_type>>);
 
-            expect(eq(std::common_reference_with<ConcretePtr<const derived_type>, ConcretePtr<base_type>>, true));
-            expect(eq(std::same_as<std::common_reference_t<ConcretePtr<const derived_type>, ConcretePtr<base_type>>, ConcretePtr<const base_type>>, true));
+            expect(that % std::common_reference_with<ConcretePtr<const derived_type>, ConcretePtr<base_type>>);
+            expect(that % std::same_as<std::common_reference_t<ConcretePtr<const derived_type>, ConcretePtr<base_type>>, ConcretePtr<const base_type>>);
 
-            expect(eq(std::common_reference_with<ConcretePtr<derived_type>, ConcretePtr<const base_type>>, true));
-            expect(eq(std::same_as<std::common_reference_t<ConcretePtr<derived_type>, ConcretePtr<const base_type>>, ConcretePtr<const base_type>>, true));
+            expect(that % std::common_reference_with<ConcretePtr<derived_type>, ConcretePtr<const base_type>>);
+            expect(that % std::same_as<std::common_reference_t<ConcretePtr<derived_type>, ConcretePtr<const base_type>>, ConcretePtr<const base_type>>);
 
-            expect(eq(std::common_reference_with<ConcretePtr<const derived_type>, ConcretePtr<volatile base_type>>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<const derived_type>, ConcretePtr<volatile base_type>>, ConcretePtr<const volatile base_type>>, true
-            ));
+            expect(that % std::common_reference_with<ConcretePtr<const derived_type>, ConcretePtr<volatile base_type>>);
+            expect(that % 
+                std::same_as<std::common_reference_t<ConcretePtr<const derived_type>, ConcretePtr<volatile base_type>>, ConcretePtr<const volatile base_type>>
+            );
 
-            expect(eq(std::common_reference_with<ConcretePtr<derived_type>, base_type*>, true));
-            expect(eq(std::same_as<std::common_reference_t<ConcretePtr<derived_type>, base_type*>, base_type*>, true));
+            expect(that % std::common_reference_with<ConcretePtr<derived_type>, base_type*>);
+            expect(that % std::same_as<std::common_reference_t<ConcretePtr<derived_type>, base_type*>, base_type*>);
 
-            expect(eq(std::common_reference_with<derived_type*, ConcretePtr<base_type>>, true));
-            expect(eq(std::same_as<std::common_reference_t<derived_type*, ConcretePtr<base_type>>, base_type*>, true));
+            expect(that % std::common_reference_with<derived_type*, ConcretePtr<base_type>>);
+            expect(that % std::same_as<std::common_reference_t<derived_type*, ConcretePtr<base_type>>, base_type*>);
 
-            expect(eq(std::common_reference_with<ConcretePtr<const derived_type>, volatile base_type*>, true));
-            expect(eq(std::same_as<std::common_reference_t<ConcretePtr<const derived_type>, volatile base_type*>, const volatile base_type*>, true));
+            expect(that % std::common_reference_with<ConcretePtr<const derived_type>, volatile base_type*>);
+            expect(that % std::same_as<std::common_reference_t<ConcretePtr<const derived_type>, volatile base_type*>, const volatile base_type*>);
         };
 
         //============================================================
@@ -1183,7 +1180,7 @@ int main()
             expect(eq(std::three_way_comparable_with<base_type*, ConcretePtr<derived_type>>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
         };
 
-        "input_or _output_iterator according to policy"_test = [] mutable {
+        "input_or_output_iterator according to policy"_test = [] mutable {
             //note: all other iterator concepts subsume this one and thus are implicitly false when it is false
             expect(eq(std::input_or_output_iterator<ConcretePtr<std::int32_t>>, pointer_test_traits<ConcretePtr>::has_arithmetic_traversal));
         };
@@ -1215,9 +1212,9 @@ int main()
 
                 expect(eq(*advanced, values[step]));
                 expect(eq(advanced.get(), values + step));
-                expect(eq(ptr < advanced, true));
-                expect(eq(advanced > ptr, true));
-                expect(eq(advanced >= (values + (step / 2)), true));
+                expect(that % ptr < advanced);
+                expect(that % advanced > ptr);
+                expect(that % advanced >= (values + (step / 2)));
             }
         };
 
@@ -1296,10 +1293,7 @@ int main()
             const std::int32_t value{};
             const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-            // Compile-time: *ptr must NOT be assignable
-            constexpr bool can_assign = std::is_assignable_v<decltype(*ptr), std::int32_t>;
-
-            expect(eq(can_assign, false));
+            expect(that % !std::is_assignable_v<decltype(*ptr), std::int32_t>) << "Compile-time: *ptr must NOT be assignable";
         };
 
         "const pointer prevents rebinding but not mutation"_test = [] mutable {
@@ -1311,24 +1305,22 @@ int main()
 
             *ptr = expected;
 
-            constexpr bool can_rebind = std::is_assignable_v<decltype(ptr)&, const decltype(ptr)&>;
-
-            expect(eq(can_rebind, false));
+            expect(that % !std::is_assignable_v<decltype(ptr)&, const decltype(ptr)&>) << "Compile-time: ptr must NOT be assignable";
 
             expect(neq(value, initial));
             expect(eq(value, expected));
         };
 
         "`address_type` nested type preserves top-level const"_test = [] mutable {
-            using t = ConcretePtr<const std::int32_t>;
+            using ptr_t = ConcretePtr<const std::int32_t>;
 
-            expect(eq(std::same_as<typename t::address_type, const std::int32_t*>, true));
+            expect(that % std::same_as<typename ptr_t::address_type, const std::int32_t*>);
         };
 
         "`reference` nested type preserves const"_test = [] mutable {
-            using t = ConcretePtr<const std::int32_t>;
+            using ptr_t = ConcretePtr<const std::int32_t>;
 
-            expect(eq(std::same_as<typename t::reference, const std::int32_t&>, true));
+            expect(that % std::same_as<typename ptr_t::reference, const std::int32_t&>);
         };
 
         //NOLINTBEGIN(misc-const-correctness): Readability suffers with const correctness in this test.
@@ -1340,11 +1332,11 @@ int main()
 
             //Qualification climbing (Assignment)
             const_ptr = mutable_ptr;
-            expect(eq(const_ptr.get() == mutable_ptr.get(), true));
+            expect(that % const_ptr.get() == mutable_ptr.get());
 
             //Qualification climbing (Construction)
             ConcretePtr<const std::int32_t> const_copy{mutable_ptr};
-            expect(eq(const_copy.get() == mutable_ptr.get(), true));
+            expect(that % const_copy.get() == mutable_ptr.get());
         };
         //NOLINTEND(misc-const-correctness)
 
@@ -1354,7 +1346,7 @@ int main()
             const auto ptr                          = base::vocab::pointer_to<ConcretePtr>(hardware_register);
 
             //Ensure the raw pointer retrieved is also volatile
-            expect(eq(std::same_as<decltype(ptr.get()), volatile std::int32_t*>, true));
+            expect(that % std::same_as<decltype(ptr.get()), volatile std::int32_t*>);
 
             //Ensure conversion to raw pointer preserves volatile
             volatile std::int32_t* raw = ptr;
@@ -1370,13 +1362,13 @@ int main()
         "common_type preserves const qualification"_test = [] mutable {
             using common_t = std::common_type_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>;
 
-            expect(eq(std::same_as<common_t, ConcretePtr<const std::int32_t>>, true));
+            expect(that % std::same_as<common_t, ConcretePtr<const std::int32_t>>);
         };
 
         "common_reference preserves const qualification"_test = [] mutable {
             using common_ref = std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>;
 
-            expect(eq(std::same_as<common_ref, ConcretePtr<const std::int32_t>>, true));
+            expect(that % std::same_as<common_ref, ConcretePtr<const std::int32_t>>);
         };
 
         //============================================================
@@ -1410,11 +1402,11 @@ int main()
 
             //ConcretePtr<std::int32_t> should_fail{array};
 
-            expect(eq(std::convertible_to<decltype(array), ConcretePtr<std::int32_t>>, false));
-            expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, decltype(array)>, false));
-            expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t>&, decltype(array)>, false));
+            expect(that % !std::convertible_to<decltype(array), ConcretePtr<std::int32_t>>);
+            expect(that % !std::constructible_from<ConcretePtr<std::int32_t>, decltype(array)>);
+            expect(that % !std::is_assignable_v<ConcretePtr<std::int32_t>&, decltype(array)>);
 
-            expect(eq(std::constructible_from<ConcretePtr<std::int32_t>, decltype(array[0])>, true));
+            expect(that % std::constructible_from<ConcretePtr<std::int32_t>, decltype(array[0])>);
 
             const auto ptr = base::vocab::pointer_to<ConcretePtr>(array[1]);
 
@@ -1433,11 +1425,11 @@ int main()
 
             //ConcretePtr<std::int32_t[3]> should_fail{array};
 
-            expect(eq(std::convertible_to<decltype(array), ConcretePtr<std::int32_t[3]>>, false));
-            expect(eq(std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array)>, false));
-            expect(eq(std::is_assignable_v<ConcretePtr<std::int32_t[3]>&, decltype(array)>, false));
+            expect(that % !std::convertible_to<decltype(array), ConcretePtr<std::int32_t[3]>>);
+            expect(that % !std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array)>);
+            expect(that % !std::is_assignable_v<ConcretePtr<std::int32_t[3]>&, decltype(array)>);
 
-            expect(eq(std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array[0])>, true));
+            expect(that % std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array[0])>);
 
             const auto ptr = base::vocab::pointer_to<ConcretePtr, std::int32_t[3]>(array[1]);
 
@@ -1454,7 +1446,7 @@ int main()
 
         "incomplete type support"_test = [] mutable {
             if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
-                expect(eq(base::meta::concepts::instantiable_with<ConcretePtr, incomplete_type>, true));
+                expect(that % base::meta::concepts::instantiable_with<ConcretePtr, incomplete_type>);
 
                 //NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, readability-magic-numbers): Test requires a fabricated pointer value to an incomplete type.
                 auto* const raw = reinterpret_cast<incomplete_type*>(0x1234);
@@ -1485,17 +1477,12 @@ int main()
 
         "type aliases are correct for `void`"_test = [] mutable {
             if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-                using t = ConcretePtr<void>;
+                using ptr_t = ConcretePtr<void>;
 
-                constexpr bool element = std::same_as<typename t::element_type, void>;
-                constexpr bool value   = std::same_as<typename t::value_type, void>;
-                constexpr bool pointer = std::same_as<typename t::address_type, void*>;
-                constexpr bool ptrdiff = std::same_as<typename t::difference_type, std::ptrdiff_t>;
-
-                expect(eq(element, true));
-                expect(eq(value, true));
-                expect(eq(pointer, true));
-                expect(eq(ptrdiff, true));
+                expect(that % std::same_as<typename ptr_t::element_type, void>);
+                expect(that % std::same_as<typename ptr_t::value_type, void>);
+                expect(that % std::same_as<typename ptr_t::address_type, void*>);
+                expect(that % std::same_as<typename ptr_t::difference_type, std::ptrdiff_t>);
             }
         };
 
@@ -1506,17 +1493,17 @@ int main()
                 const auto typed = base::vocab::pointer_to<ConcretePtr>(x);
                 const ConcretePtr<void> erased{typed};
 
-                expect(eq(erased.get(), static_cast<void*>(std::addressof(x))));
+                expect(that % erased.get() == std::addressof(x));
             }
         };
 
         "void specialization disables dereference operators"_test = [] mutable {
             if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-                expect(eq(dereferenceable<ConcretePtr<base_type>>, true));
-                expect(eq(arrow_accessible<ConcretePtr<base_type>>, true));
+                expect(that % dereferenceable<ConcretePtr<base_type>>);
+                expect(that % arrow_accessible<ConcretePtr<base_type>>);
 
-                expect(eq(dereferenceable<ConcretePtr<void>>, false));
-                expect(eq(arrow_accessible<ConcretePtr<void>>, false));
+                expect(that % !dereferenceable<ConcretePtr<void>>);
+                expect(that % !arrow_accessible<ConcretePtr<void>>);
             }
         };
 
