@@ -736,7 +736,7 @@ int main()
 
             const ConcretePtr<base_type> b_ptr{d_ptr};
 
-            expect(eq(b_ptr.get(), static_cast<base_type*>(std::addressof(d_obj))));
+            expect(that % b_ptr.get() == std::addressof(d_obj));
         };
 
         "construct base from derived reference"_test = [] mutable {
@@ -744,7 +744,7 @@ int main()
 
             const auto b_ptr = base::vocab::pointer_to<ConcretePtr, base_type>(d_obj);
 
-            expect(eq(b_ptr.get(), static_cast<base_type*>(std::addressof(d_obj))));
+            expect(that % b_ptr.get() == std::addressof(d_obj));
         };
 
         "assign base from derived pointer"_test = [] mutable {
@@ -756,7 +756,7 @@ int main()
 
             b_ptr = d_ptr;
 
-            expect(eq(b_ptr.get(), static_cast<base_type*>(std::addressof(d_obj))));
+            expect(that % b_ptr.get() == std::addressof(d_obj));
         };
 
         "rebind base from derived reference"_test = [] mutable {
@@ -768,7 +768,7 @@ int main()
 
                 b_ptr = ConcretePtr{d_obj};
 
-                expect(eq(b_ptr.get(), static_cast<base_type*>(std::addressof(d_obj))));
+                expect(that % b_ptr.get() == std::addressof(d_obj));
             }
         };
 
@@ -781,7 +781,7 @@ int main()
 
             b_ptr = d_ptr;
 
-            expect(eq(b_ptr.get(), static_cast<const base_type*>(std::addressof(d_obj))));
+            expect(that % b_ptr.get() == std::addressof(d_obj));
         };
 
         "rebind const base from derived reference"_test = [] mutable {
@@ -793,7 +793,7 @@ int main()
 
                 b_ptr = ConcretePtr{d_obj};
 
-                expect(eq(b_ptr.get(), static_cast<const base_type*>(std::addressof(d_obj))));
+                expect(that % b_ptr.get() == std::addressof(d_obj));
             }
         };
 
@@ -853,12 +853,12 @@ int main()
             auto result1                     = static_pointer_cast<base_type>(source);
 
             expect(that % std::same_as<decltype(result1), ConcretePtr<base_type>>);
-            expect(eq(result1.get(), static_cast<base_type*>(std::addressof(object))));
+            expect(that % result1.get() == std::addressof(object));
 
             auto result2 = static_pointer_cast<derived_type>(result1);
 
             expect(that % std::same_as<decltype(result2), ConcretePtr<derived_type>>);
-            expect(eq(result2.get(), std::addressof(object)));
+            expect(that % result2.get() == std::addressof(object));
         };
 
         "static_pointer_cast preserves cv-qualifications"_test = [] mutable {
@@ -1626,7 +1626,7 @@ int main()
             constexpr auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
             expect(eq(ptr.get(), std::addressof(value)));
-            expect(eq(static_cast<bool>(ptr), true));
+            expect(that % static_cast<bool>(ptr) == true));
         };
 
         "constexpr equality"_test = [] {
