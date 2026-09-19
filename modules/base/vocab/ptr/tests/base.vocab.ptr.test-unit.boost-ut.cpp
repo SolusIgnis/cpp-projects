@@ -596,7 +596,7 @@ int main()
                 expect(nothrow([&]{
                     ptr = bound_source;
 
-                    expect(eq(*ptr, *bound_source));
+                    expect(eq(*ptr, value));
                     expect(eq(ptr.get(), bound_source));
                 }));
 
@@ -630,7 +630,7 @@ int main()
                 expect(nothrow([&]{
                     ptr = bound_source;
 
-                    expect(eq(*ptr, *bound_source));
+                    expect(eq(*ptr, value));
                     expect(eq(ptr.get(), bound_source.get()));
                 }));
 
@@ -645,7 +645,7 @@ int main()
                     expect(throws<std::invalid_argument>(null_assign));
 
                     //Invariant preserved after failed assignment
-                    expect(eq(*ptr, *bound_source));
+                    expect(eq(*ptr, value));
                     expect(eq(ptr.get(), bound_source.get()));
                 }
             }
