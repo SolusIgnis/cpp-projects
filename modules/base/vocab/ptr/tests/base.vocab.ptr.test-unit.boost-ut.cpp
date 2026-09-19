@@ -153,6 +153,9 @@ namespace {
 
     template<template<typename> typename TemplateName>
     struct template_tag {};
+    
+    template<typename... Types>
+    struct type_list {};
 } //namespace
 
 int main()
@@ -677,7 +680,7 @@ int main()
         //============================================================
 
         "equality compares pointer identity"_test = [] mutable {
-            expect(eq(std::equality_comparable<ConcretePtr<std::int32_t>>, true));
+            expect(that % std::equality_comparable<ConcretePtr<std::int32_t>>);
 
             std::int32_t x = 1;
             std::int32_t y = 1;
@@ -687,8 +690,8 @@ int main()
             const auto ptr3 = base::vocab::pointer_to<ConcretePtr>(y);
 
             expect(that % ptr1 == ptr2);
-            expect(that % (ptr1 != ptr3));
-            expect(that % (ptr2 != ptr3));
+            expect(that % ptr1 != ptr3);
+            expect(that % ptr2 != ptr3);
         };
 
         "nullable comparisons with nullptr"_test = [] mutable {
@@ -699,17 +702,17 @@ int main()
                 const ConcretePtr<std::int32_t> null{nullptr};
 
                 //Expecting both operator== and operator!= to be synthesized correctly
-                expect(eq(bound == nullptr, false));
-                expect(eq(nullptr == bound, false));
+                expect(that % !(bound == nullptr));
+                expect(that % !(nullptr == bound));
 
-                expect(eq(bound != nullptr, true));
-                expect(eq(nullptr != bound, true));
+                expect(that % (bound != nullptr));
+                expect(that % (nullptr != bound));
 
-                expect(eq(null == nullptr, true));
-                expect(eq(nullptr == null, true));
+                expect(that % (null == nullptr));
+                expect(that % (nullptr == null));
 
-                expect(eq(null != nullptr, false));
-                expect(eq(nullptr != null, false));
+                expect(that % !(null != nullptr));
+                expect(that % !(nullptr != null));
             }
         };
 
@@ -718,8 +721,8 @@ int main()
                 const ConcretePtr<std::int32_t> lhs{nullptr};
                 const ConcretePtr<const std::int32_t> rhs{nullptr};
 
-                expect(eq(lhs == rhs, true));
-                expect(eq(lhs != rhs, false));
+                expect(that % (lhs == rhs));
+                expect(that % !(lhs != rhs));
             }
         };
 
@@ -795,42 +798,42 @@ int main()
         };
 
         "covariant equality comparison"_test = [] mutable {
-            expect(eq(std::equality_comparable_with<ConcretePtr<base_type>, ConcretePtr<derived_type>>, true));
-            expect(eq(std::equality_comparable_with<ConcretePtr<base_type>, derived_type*>, true));
-            expect(eq(std::equality_comparable_with<base_type*, ConcretePtr<derived_type>>, true));
+            expect(that % std::equality_comparable_with<ConcretePtr<base_type>, ConcretePtr<derived_type>>);
+            expect(that % std::equality_comparable_with<ConcretePtr<base_type>, derived_type*>);
+            expect(that % std::equality_comparable_with<base_type*, ConcretePtr<derived_type>>);
         };
 
         //============================================================
         // Pointer Casting & Lifetime Transmutation
         //============================================================
         //NOLINTBEGIN(misc-const-correctness): Readability suffers with const correctness in these tests.
-        "const_pointer_cast alters pointee cv-qualifications"_test = [] mutable {
-            const auto test_cast = []<typename Source, typename Destination> {
-                Source value{};
+        "const_pointer_cast alters pointee cv-qualifications"_test = []<typename Source, typename Destination> (type_list<Source, Destination>)  mutable {
+            Source value{};
 
-                auto source = base::vocab::pointer_to<ConcretePtr>(value);
-                auto result = const_pointer_cast<Destination>(source);
+            auto source = base::vocab::pointer_to<ConcretePtr>(value);
+            auto result = const_pointer_cast<Destination>(source);
 
-                expect(eq(std::same_as<decltype(result), ConcretePtr<Destination>>, true));
-                expect(eq(result.get() == std::addressof(value), true));
-            };
-
-            test_cast.template operator()<std::int32_t, std::int32_t>();
-            test_cast.template operator()<std::int32_t, const std::int32_t>();
-            test_cast.template operator()<std::int32_t, volatile std::int32_t>();
-            test_cast.template operator()<std::int32_t, const volatile std::int32_t>();
-            test_cast.template operator()<const std::int32_t, std::int32_t>();
-            test_cast.template operator()<const std::int32_t, const std::int32_t>();
-            test_cast.template operator()<const std::int32_t, volatile std::int32_t>();
-            test_cast.template operator()<const std::int32_t, const volatile std::int32_t>();
-            test_cast.template operator()<volatile std::int32_t, std::int32_t>();
-            test_cast.template operator()<volatile std::int32_t, const std::int32_t>();
-            test_cast.template operator()<volatile std::int32_t, volatile std::int32_t>();
-            test_cast.template operator()<volatile std::int32_t, const volatile std::int32_t>();
-            test_cast.template operator()<const volatile std::int32_t, std::int32_t>();
-            test_cast.template operator()<const volatile std::int32_t, const std::int32_t>();
-            test_cast.template operator()<const volatile std::int32_t, volatile std::int32_t>();
-            test_cast.template operator()<const volatile std::int32_t, const volatile std::int32_t>();
+            expect(that % std::same_as<decltype(result), ConcretePtr<Destination>>);
+            expect(that % result.get() == std::addressof(value));
+        }
+        |
+        std::tuple{
+            type_list<std::int32_t, std::int32_t>{},
+            type_list<std::int32_t, const std::int32_t>{},
+            type_list<std::int32_t, volatile std::int32_t>{},
+            type_list<std::int32_t, const volatile std::int32_t>{},
+            type_list<const std::int32_t, std::int32_t>{},
+            type_list<const std::int32_t, const std::int32_t>{},
+            type_list<const std::int32_t, volatile std::int32_t>{},
+            type_list<const std::int32_t, const volatile std::int32_t>{},
+            type_list<volatile std::int32_t, std::int32_t>{},
+            type_list<volatile std::int32_t, const std::int32_t>{},
+            type_list<volatile std::int32_t, volatile std::int32_t>{},
+            type_list<volatile std::int32_t, const volatile std::int32_t>{},
+            type_list<const volatile std::int32_t, std::int32_t>{},
+            type_list<const volatile std::int32_t, const std::int32_t>{},
+            type_list<const volatile std::int32_t, volatile std::int32_t>{},
+            type_list<const volatile std::int32_t, const volatile std::int32_t>{},
         };
 
         "const_pointer_cast preserves null state"_test = [] mutable {
@@ -839,7 +842,7 @@ int main()
 
                 const auto result = const_pointer_cast<const std::int32_t>(source);
 
-                expect(eq(result == nullptr, true));
+                expect(that % result == nullptr);
             }
         };
 
