@@ -173,7 +173,7 @@ namespace {
 int main()
 {
     //traits and properties
-    
+
     //============================================================
     // Template Constraint Validation
     //============================================================
@@ -273,7 +273,7 @@ int main()
     //end: traits and properties
 
     //binding and construction
-    
+
     //============================================================
     // Construction (Initial Binding) / Assignment (Rebinding)
     //============================================================
@@ -540,138 +540,130 @@ int main()
     // Nullability-based exception throwing
     //============================================================
 
-    "constructing from null raw pointer throws according to policy"_test =
-        []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-            if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
-                const std::int32_t value{42};
-                const std::int32_t* const bound_source{std::addressof(value)};
-                const std::int32_t* const null_source{};
+    "constructing from null raw pointer throws according to policy"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
+        if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
+            const std::int32_t value{42};
+            const std::int32_t* const bound_source{std::addressof(value)};
+            const std::int32_t* const null_source{};
 
-                expect(nothrow([&] {
-                    const ConcretePtr<const std::int32_t> ptr{bound_source};
+            expect(nothrow([&] {
+                const ConcretePtr<const std::int32_t> ptr{bound_source};
 
-                    expect(eq(*ptr, value));
-                    expect(eq(ptr.get(), bound_source));
-                }));
+                expect(eq(*ptr, value));
+                expect(eq(ptr.get(), bound_source));
+            }));
 
-                const auto null_init = [&] {
-                    const ConcretePtr<const std::int32_t> ptr{null_source};
-                    expect(eq(ptr.get(), null_source)); //Skipped when construction throws.
-                };
+            const auto null_init = [&] {
+                const ConcretePtr<const std::int32_t> ptr{null_source};
+                expect(eq(ptr.get(), null_source)); //Skipped when construction throws.
+            };
 
-                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    expect(nothrow(null_init));
-                } else {
-                    expect(throws<std::invalid_argument>(null_init));
-                }
+            if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                expect(nothrow(null_init));
+            } else {
+                expect(throws<std::invalid_argument>(null_init));
             }
         }
-        | pointers_to_test;
+    } | pointers_to_test;
 
-    "constructing from null smart pointer throws according to policy"_test =
-        []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-            if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
-                const std::int32_t value{42};
-                const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
-                const trivial_smart_ptr<const std::int32_t> null_source{};
+    "constructing from null smart pointer throws according to policy"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
+        if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
+            const std::int32_t value{42};
+            const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
+            const trivial_smart_ptr<const std::int32_t> null_source{};
 
-                expect(nothrow([&] {
-                    const ConcretePtr<const std::int32_t> ptr{bound_source};
+            expect(nothrow([&] {
+                const ConcretePtr<const std::int32_t> ptr{bound_source};
 
-                    expect(eq(*ptr, value));
-                    expect(eq(ptr.get(), bound_source.get()));
-                }));
+                expect(eq(*ptr, value));
+                expect(eq(ptr.get(), bound_source.get()));
+            }));
 
-                const auto null_init = [&] {
-                    const ConcretePtr<const std::int32_t> ptr{null_source};
-                    expect(eq(ptr.get(), null_source.get())); //Skipped when construction throws.
-                };
+            const auto null_init = [&] {
+                const ConcretePtr<const std::int32_t> ptr{null_source};
+                expect(eq(ptr.get(), null_source.get())); //Skipped when construction throws.
+            };
 
-                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    expect(nothrow(null_init));
-                } else {
-                    expect(throws<std::invalid_argument>(null_init));
-                }
+            if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                expect(nothrow(null_init));
+            } else {
+                expect(throws<std::invalid_argument>(null_init));
             }
         }
-        | pointers_to_test;
+    } | pointers_to_test;
 
-    "assigning from null raw pointer throws according to policy"_test =
-        []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-            if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
-                const std::int32_t value{42};
-                const std::int32_t other{};
+    "assigning from null raw pointer throws according to policy"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
+        if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
+            const std::int32_t value{42};
+            const std::int32_t other{};
 
-                const std::int32_t* const bound_source{std::addressof(value)};
-                const std::int32_t* const null_source{nullptr};
+            const std::int32_t* const bound_source{std::addressof(value)};
+            const std::int32_t* const null_source{nullptr};
 
-                ConcretePtr<const std::int32_t> ptr{other};
+            ConcretePtr<const std::int32_t> ptr{other};
 
-                expect(nothrow([&] {
-                    ptr = bound_source;
+            expect(nothrow([&] {
+                ptr = bound_source;
 
-                    expect(eq(*ptr, value));
-                    expect(eq(ptr.get(), bound_source));
-                }));
+                expect(eq(*ptr, value));
+                expect(eq(ptr.get(), bound_source));
+            }));
 
-                const auto null_assign = [&] { ptr = null_source; };
+            const auto null_assign = [&] { ptr = null_source; };
 
-                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    expect(nothrow(null_assign));
+            if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                expect(nothrow(null_assign));
 
-                    //Assignment successfully modifies stored address.
-                    expect(eq(ptr.get(), null_source));
-                } else {
-                    expect(throws<std::invalid_argument>(null_assign));
+                //Assignment successfully modifies stored address.
+                expect(eq(ptr.get(), null_source));
+            } else {
+                expect(throws<std::invalid_argument>(null_assign));
 
-                    //Invariant preserved after failed assignment
-                    expect(eq(*ptr, *bound_source));
-                    expect(eq(ptr.get(), bound_source));
-                }
+                //Invariant preserved after failed assignment
+                expect(eq(*ptr, *bound_source));
+                expect(eq(ptr.get(), bound_source));
             }
         }
-        | pointers_to_test;
+    } | pointers_to_test;
 
-    "assigning from null smart pointer throws according to policy"_test =
-        []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-            if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
-                const std::int32_t value{42};
-                const std::int32_t other{};
+    "assigning from null smart pointer throws according to policy"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
+        if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
+            const std::int32_t value{42};
+            const std::int32_t other{};
 
-                const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
-                const trivial_smart_ptr<std::int32_t> null_source{};
+            const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
+            const trivial_smart_ptr<std::int32_t> null_source{};
 
-                ConcretePtr<const std::int32_t> ptr{other};
+            ConcretePtr<const std::int32_t> ptr{other};
 
-                expect(nothrow([&] {
-                    ptr = bound_source;
+            expect(nothrow([&] {
+                ptr = bound_source;
 
-                    expect(eq(*ptr, value));
-                    expect(eq(ptr.get(), bound_source.get()));
-                }));
+                expect(eq(*ptr, value));
+                expect(eq(ptr.get(), bound_source.get()));
+            }));
 
-                const auto null_assign = [&] { ptr = null_source; };
+            const auto null_assign = [&] { ptr = null_source; };
 
-                if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                    expect(nothrow(null_assign));
+            if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+                expect(nothrow(null_assign));
 
-                    //Assignment successfully modifies stored address.
-                    expect(eq(ptr.get(), null_source.get()));
-                } else {
-                    expect(throws<std::invalid_argument>(null_assign));
+                //Assignment successfully modifies stored address.
+                expect(eq(ptr.get(), null_source.get()));
+            } else {
+                expect(throws<std::invalid_argument>(null_assign));
 
-                    //Invariant preserved after failed assignment
-                    expect(eq(*ptr, value));
-                    expect(eq(ptr.get(), bound_source.get()));
-                }
+                //Invariant preserved after failed assignment
+                expect(eq(*ptr, value));
+                expect(eq(ptr.get(), bound_source.get()));
             }
         }
-        | pointers_to_test;
+    } | pointers_to_test;
 
     //end: binding and construction
 
     //pointer semantics and access
-    
+
     //============================================================
     // Pointer semantics
     //============================================================
@@ -933,11 +925,11 @@ int main()
         }
         | pointers_to_test;
     //NOLINTEND(modernize-avoid-c-arrays, cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        
+
     //end: pointer semantics and access
 
     //pointer casts and conversions
-    
+
     //============================================================
     // Pointer Casting & Lifetime Transmutation
     //============================================================
@@ -1020,22 +1012,20 @@ int main()
         }
     } | pointers_to_test;
 
-    "dynamic_pointer_cast performs multiple-inheritance upcasts"_test =
-        []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-            derived_type value;
+    "dynamic_pointer_cast performs multiple-inheritance upcasts"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
+        derived_type value;
 
-            auto source = base::vocab::pointer_to<ConcretePtr>(value);
+        auto source = base::vocab::pointer_to<ConcretePtr>(value);
 
-            auto result_1 = dynamic_pointer_cast<mixin_1>(source);
-            auto result_2 = dynamic_pointer_cast<mixin_2>(source);
+        auto result_1 = dynamic_pointer_cast<mixin_1>(source);
+        auto result_2 = dynamic_pointer_cast<mixin_2>(source);
 
-            expect(that % std::same_as<decltype(result_1), ConcretePtr<mixin_1>>);
-            expect(eq(result_1.get(), dynamic_cast<mixin_1*>(std::addressof(value))));
+        expect(that % std::same_as<decltype(result_1), ConcretePtr<mixin_1>>);
+        expect(eq(result_1.get(), dynamic_cast<mixin_1*>(std::addressof(value))));
 
-            expect(that % std::same_as<decltype(result_2), ConcretePtr<mixin_2>>);
-            expect(eq(result_2.get(), dynamic_cast<mixin_2*>(std::addressof(value))));
-        }
-        | pointers_to_test;
+        expect(that % std::same_as<decltype(result_2), ConcretePtr<mixin_2>>);
+        expect(eq(result_2.get(), dynamic_cast<mixin_2*>(std::addressof(value))));
+    } | pointers_to_test;
 
     "dynamic_pointer_cast performs successful downcasts"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         derived_type value;
@@ -1186,7 +1176,7 @@ int main()
     } | pointers_to_test;
 #else
     //NOLINTNEXTLINE(clang-diagnostic-#warnings)
-#warning "std::start_lifetime_as not defined. Tests skipped."
+    #warning "std::start_lifetime_as not defined. Tests skipped."
 #endif
     //NOLINTEND(misc-const-correctness)
 
@@ -1328,7 +1318,7 @@ int main()
     //end: pointer casts and conversions
 
     //comparisons and concepts
-    
+
     //============================================================
     // Equality semantics
     //============================================================
@@ -1402,22 +1392,18 @@ int main()
         );
 
         expect(that % std::common_reference_with<ConcretePtr<volatile std::int32_t>, ConcretePtr<const std::int32_t>>);
-        expect(
-            that % std::same_as<std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const volatile std::int32_t>>
-        );
+        expect(that % std::same_as<std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const volatile std::int32_t>>);
     } | pointers_to_test;
 
     "basic_common_reference uses reference-to-pointer value category propagation"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         static_assert(
-            std::same_as<std::common_reference_t<std::int32_t*&, const std::int32_t*&>, const std::int32_t*>,
-            "Sanity check for raw pointer common_reference_t<T*&, const T*&> -> const T*"
+            std::same_as<std::common_reference_t<std::int32_t*&, const std::int32_t*&>, const std::int32_t*>, "Sanity check for raw pointer common_reference_t<T*&, const T*&> -> const T*"
         );
         expect(that % std::common_reference_with<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>);
         expect(that % std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, ConcretePtr<const std::int32_t>>);
 
         static_assert(
-            std::same_as<std::common_reference_t<std::int32_t*&&, const std::int32_t*&&>, const std::int32_t*>,
-            "Sanity check for raw pointer common_reference_t<T*&&, const T*&&> -> const T*"
+            std::same_as<std::common_reference_t<std::int32_t*&&, const std::int32_t*&&>, const std::int32_t*>, "Sanity check for raw pointer common_reference_t<T*&&, const T*&&> -> const T*"
         );
         expect(that % std::common_reference_with<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>);
         expect(that % std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>, ConcretePtr<const std::int32_t>>);
@@ -1434,9 +1420,7 @@ int main()
             "Sanity check for raw pointer common_reference_t<T* const &, T*&&> -> T* const &"
         );
         expect(that % std::common_reference_with<const ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&&>);
-        expect(
-            that % std::same_as<std::common_reference_t<const ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&&>, const ConcretePtr<const std::int32_t>&>
-        );
+        expect(that % std::same_as<std::common_reference_t<const ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&&>, const ConcretePtr<const std::int32_t>&>);
     } | pointers_to_test;
 
     "basic_common_reference matches raw pointer common_reference"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
@@ -1498,7 +1482,7 @@ int main()
     //end: comparisons and concepts
 
     //traversal and arithmetic
-    
+
     //============================================================
     // Arithmetic operations
     //============================================================
@@ -1616,19 +1600,17 @@ int main()
         }
     } | pointers_to_test;
 
-    "mixed raw and cursor arithmetic produce identical addresses"_test =
-        []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-            if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
-                //NOLINTNEXTLINE(readability-magic-numbers, modernize-avoid-c-arrays): Test fixture.
-                std::int32_t values[] = {1, 2, 3, 4};
+    "mixed raw and cursor arithmetic produce identical addresses"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
+        if constexpr (pointer_test_traits<ConcretePtr>::has_arithmetic_traversal) {
+            //NOLINTNEXTLINE(readability-magic-numbers, modernize-avoid-c-arrays): Test fixture.
+            std::int32_t values[] = {1, 2, 3, 4};
 
-                const auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
+            const auto ptr = base::vocab::pointer_to<ConcretePtr>(values[0]);
 
-                expect(eq((ptr + 3).get(), values + 3));
-                expect(eq((3 + ptr).get(), values + 3));
-            }
+            expect(eq((ptr + 3).get(), values + 3));
+            expect(eq((3 + ptr).get(), values + 3));
         }
-        | pointers_to_test;
+    } | pointers_to_test;
     //NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic, cppcoreguidelines-pro-bounds-avoid-unchecked-container-access, cppcoreguidelines-pro-bounds-array-to-pointer-decay)
 
     //end: traversal and arithmetic
@@ -1811,21 +1793,19 @@ int main()
         expect(eq(ptr_stream.str(), raw_stream.str()));
     } | pointers_to_test;
 
-    "ostream insertion outputs null equivalently to raw pointer"_test =
-        []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-            if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                const ConcretePtr<std::int32_t> ptr{nullptr};
+    "ostream insertion outputs null equivalently to raw pointer"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
+        if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
+            const ConcretePtr<std::int32_t> ptr{nullptr};
 
-                std::ostringstream ptr_stream;
-                std::ostringstream raw_stream;
+            std::ostringstream ptr_stream;
+            std::ostringstream raw_stream;
 
-                ptr_stream << ptr;
-                raw_stream << static_cast<std::int32_t*>(nullptr);
+            ptr_stream << ptr;
+            raw_stream << static_cast<std::int32_t*>(nullptr);
 
-                expect(eq(ptr_stream.str(), raw_stream.str()));
-            }
+            expect(eq(ptr_stream.str(), raw_stream.str()));
         }
-        | pointers_to_test;
+    } | pointers_to_test;
 
     //NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast): Raw pointer stream inserters lack support for `volatile` pointees, so a `const_cast` to remove the qualifier is required to stream the address value.
     "ostream insertion supports cv-qualified element types"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
