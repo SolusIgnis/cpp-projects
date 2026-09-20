@@ -657,12 +657,12 @@ int main()
             } | pointers_to_test;
         };
 
-        "vocabulary pointer semantics and access"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
+        "vocabulary pointer semantics and access"_test = [] mutable {
             //============================================================
             // Pointer semantics
             //============================================================
 
-            "`pointer_to` forms a valid pointer instance whose `get` returns its stored address"_test = [] mutable {
+            "`pointer_to` forms a valid pointer instance whose `get` returns its stored address"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
                 using pointee_t = std::int32_t;
                 using pointer_t = const ConcretePtr<pointee_t>;
 
