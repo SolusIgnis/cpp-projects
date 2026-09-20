@@ -1280,7 +1280,7 @@ int main()
 
             struct incomplete_type {
                 std::int32_t value;
-            } | pointers_to_test;
+            };
 
             "incomplete type becomes usable after completion"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
                 //NOLINTNEXTLINE(readability-magic-numbers): Test fixture needs a meaningless number.
