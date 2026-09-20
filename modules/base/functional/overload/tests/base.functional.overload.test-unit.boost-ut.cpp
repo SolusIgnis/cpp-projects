@@ -239,16 +239,17 @@ int main()
                         }
                         return n * self(n - 1);
                     },
-                };
+                }
+                    ;
 
                 expect(eq(factorial(num), expected)) << "factorial(" + std::to_string(num) + ") result";
                 expect(eq(steps, num)) << "step count";
         }
-        | std::vector{
-            std::tuple{num1, expected1},
-            std::tuple{num2, expected2},
-            std::tuple{num3, expected3},
-        };
+            | std::vector{
+                std::tuple{num1, expected1},
+                std::tuple{num2, expected2},
+                std::tuple{num3, expected3},
+            };
     };
 
     "overload{...} supports composed recursive multi-overload dispatch/visitation (binary tree)"_test = [] mutable {
