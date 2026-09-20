@@ -88,6 +88,7 @@ namespace {
     }
 } //namespace
 
+//NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
 {
     "in-place construction and destructive extraction"_test = [] mutable {

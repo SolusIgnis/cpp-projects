@@ -20,6 +20,7 @@ using namespace std::literals;
 using base::functional::overload;
 using base::vocab::alias_ptr;
 
+//NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
 {
     //NOLINTBEGIN(performance-unnecessary-value-param, performance-move-const-arg): Value categories are selected for overload resolution testing.
@@ -222,10 +223,10 @@ int main()
 
         should("support simple recursion") =
             [](auto test_parameter) {
-                const auto [n, expected] = test_parameter;
+                const auto [num, expected] = test_parameter;
                 // fail fast for ill-formed test.
-                if (n < 1) {
-                    throw std::logic_error("factorial test runner requires n >= 1");
+                if (num < 1) {
+                    throw std::logic_error("factorial test runner requires num >= 1");
                 }
 
                 std::int32_t steps = 0;
@@ -236,19 +237,18 @@ int main()
                         if (n <= 1) {
                             return 1;
                         }
-                        return n * self(n - 1);
+                        return num * self(n - 1);
                     },
-                }
-                    ;
+                };
 
-                expect(eq(factorial(n), expected)) << "factorial(" + std::to_string(n) + ") result";
-                expect(eq(steps, n)) << "step count";
+                expect(eq(factorial(num), expected)) << "factorial(" + std::to_string(num) + ") result";
+                expect(eq(steps, num)) << "step count";
         }
-            | std::vector{
-                std::tuple{num1, expected1},
-                std::tuple{num2, expected2},
-                std::tuple{num3, expected3},
-            };
+        | std::vector{
+            std::tuple{num1, expected1},
+            std::tuple{num2, expected2},
+            std::tuple{num3, expected3},
+        };
     };
 
     "overload{...} supports composed recursive multi-overload dispatch/visitation (binary tree)"_test = [] mutable {

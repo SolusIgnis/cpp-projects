@@ -87,6 +87,7 @@ namespace {
     };
 } //namespace
 
+//NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
 {
     "vocabulary pointers interoperate to model object relationships"_test = [] mutable {
