@@ -1800,4 +1800,5 @@ int main()
             } | pointers_to_test;
             //NOLINTEND(cppcoreguidelines-pro-type-const-cast)
         };
+    };
 }
