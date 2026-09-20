@@ -237,7 +237,7 @@ int main()
                         if (n <= 1) {
                             return 1;
                         }
-                        return num * self(n - 1);
+                        return n * self(n - 1);
                     },
                 };
 
