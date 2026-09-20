@@ -757,7 +757,7 @@ int main()
                 expect(eq(raw, std::addressof(value)));
             } | pointers_to_test;
 
-            "contextual boolean conversion is supported"_test = [] mutable {
+            "contextual boolean conversion is supported"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
                 expect(that % std::constructible_from<bool, ConcretePtr<std::int32_t>>);
 
                 const std::int32_t value{};
