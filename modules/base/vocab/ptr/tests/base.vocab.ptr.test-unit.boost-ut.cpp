@@ -10,6 +10,17 @@ import base.meta.concepts;
 using namespace boost::ext::ut;
 
 namespace {
+    template<template<typename> typename>
+    struct template_tag {};
+
+    constexpr std::tuple pointers_to_test{
+        template_tag<base::vocab::ptr::dependency_ptr>{},
+        template_tag<base::vocab::ptr::required_ptr>{},
+        template_tag<base::vocab::ptr::alias_ptr>{},
+        template_tag<base::vocab::ptr::cursor_ptr>{},
+        template_tag<base::vocab::ptr::iterator_ptr>{},
+    };
+    
     template<template<typename> typename Ptr>
     struct pointer_test_traits_base;
 
@@ -150,9 +161,6 @@ namespace {
 
     template<typename T, typename Tag>
     using source_t = source_category<T, Tag>::type;
-
-    template<template<typename> typename>
-    struct template_tag {};
 
     template<typename...>
     struct type_list {};
@@ -1789,11 +1797,5 @@ int main()
             //NOLINTEND(cppcoreguidelines-pro-type-const-cast)
         };
     }
-    | std::tuple{
-        template_tag<base::vocab::ptr::dependency_ptr>{},
-        template_tag<base::vocab::ptr::required_ptr>{},
-        template_tag<base::vocab::ptr::alias_ptr>{},
-        template_tag<base::vocab::ptr::cursor_ptr>{},
-        template_tag<base::vocab::ptr::iterator_ptr>{},
-    };
+    | pointers_to_test;
 }
