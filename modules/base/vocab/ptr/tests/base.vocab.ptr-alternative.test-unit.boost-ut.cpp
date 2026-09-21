@@ -164,7 +164,8 @@ namespace {
 } //namespace
 
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
-int main() {
+int main()
+{
     //============================================================
     // Template Constraint Validation
     //============================================================
@@ -1179,7 +1180,7 @@ int main() {
     };
 #else
 //NOLINTNEXTLINE(clang-diagnostic-#warnings)
-#warning "std::start_lifetime_as not defined. Tests skipped."
+    #warning "std::start_lifetime_as not defined. Tests skipped."
 #endif
     //NOLINTEND(misc-const-correctness)
 
@@ -1190,9 +1191,7 @@ int main() {
     "basic_common_reference preserves concrete pointer type with cv-qualifications"_test = [] mutable {
         test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
             expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const std::int32_t>>, true
-            ));
+            expect(eq(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const std::int32_t>>, true));
 
             expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<volatile std::int32_t>>, true));
             expect(eq(
@@ -1219,13 +1218,10 @@ int main() {
     "basic_common_reference uses reference-to-pointer value category propagation"_test = [] mutable {
         test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
             static_assert(
-                std::same_as<std::common_reference_t<std::int32_t*&, const std::int32_t*&>, const std::int32_t*>,
-                "Sanity check for raw pointer common_reference_t<T*&, const T*&> -> const T*"
+                std::same_as<std::common_reference_t<std::int32_t*&, const std::int32_t*&>, const std::int32_t*>, "Sanity check for raw pointer common_reference_t<T*&, const T*&> -> const T*"
             );
             expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, ConcretePtr<const std::int32_t>>, true
-            ));
+            expect(eq(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, ConcretePtr<const std::int32_t>>, true));
 
             static_assert(
                 std::same_as<std::common_reference_t<std::int32_t*&&, const std::int32_t*&&>, const std::int32_t*>,
