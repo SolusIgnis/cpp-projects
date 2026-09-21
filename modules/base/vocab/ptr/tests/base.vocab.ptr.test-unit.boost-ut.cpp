@@ -169,6 +169,7 @@ namespace {
     concept has_pointer_to = requires(T::element_type obj) { T::pointer_to(obj); };
 } //namespace
 
+//NOLINTBEGIN(readability-function-size, readability-function-cognitive-complexity)
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
 {
@@ -1828,3 +1829,4 @@ int main()
 
     //end: constexpr and std lib customization points
 }
+//NOLINTEND(readability-function-size, readability-function-cognitive-complexity)

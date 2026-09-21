@@ -163,6 +163,7 @@ namespace {
     using source_t = source_category<T, Tag>::type;
 } //namespace
 
+//NOLINTBEGIN(readability-function-size, readability-function-cognitive-complexity)
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
 {
@@ -2028,3 +2029,4 @@ int main()
     };
     //NOLINTEND(cppcoreguidelines-pro-type-const-cast)
 }
+//NOLINTEND(readability-function-size, readability-function-cognitive-complexity)
