@@ -10,6 +10,9 @@ import base.meta.concepts;
 using namespace boost::ext::ut;
 
 namespace {
+    template<typename...>
+    struct type_list {};
+
     template<template<typename> typename>
     struct template_tag {};
 
@@ -70,36 +73,6 @@ namespace {
             !pointer_test_traits_base<Ptr>::has_arithmetic_traversal && pointer_test_traits_base<Ptr>::allows_pointer_binding;
     };
 
-    template<typename T>
-    concept has_addition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
-
-    template<typename T>
-    concept has_subtraction = requires(T t) { t - 1; };
-
-    template<typename T>
-    concept has_difference = requires(T t) { t - t; };
-
-    template<typename T>
-    concept has_pre_increment = requires(T t) { ++t; };
-
-    template<typename T>
-    concept has_post_increment = requires(T t) { t++; };
-
-    template<typename T>
-    concept has_pre_decrement = requires(T t) { --t; };
-
-    template<typename T>
-    concept has_post_decrement = requires(T t) { t--; };
-
-    template<typename T>
-    concept dereferenceable = requires(T t) { *t; };
-
-    template<typename T>
-    concept arrow_accessible = requires(T t) { t.operator->(); };
-
-    template<typename T>
-    concept has_pointer_to = requires(T::element_type obj) { T::pointer_to(obj); };
-
     //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct mixin_1 {
         virtual ~mixin_1() = default;
@@ -137,36 +110,35 @@ namespace {
         T* operator->() const { return address; }
     };
 
-    struct ref_tag;
-    struct ptr_tag;
-    struct smart_ptr_tag;
-
-    template<typename T, typename Tag>
-    struct source_category;
+    template<typename T>
+    concept has_addition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
 
     template<typename T>
-    struct source_category<T, ref_tag> {
-        using type = std::add_lvalue_reference_t<T>;
-    };
+    concept has_subtraction = requires(T t) { t - 1; };
 
     template<typename T>
-    struct source_category<T, ptr_tag> {
-        using type = std::add_pointer_t<T>;
-    };
+    concept has_difference = requires(T t) { t - t; };
 
     template<typename T>
-    struct source_category<T, smart_ptr_tag> {
-        using type = trivial_smart_ptr<T>&;
-    };
+    concept has_pre_increment = requires(T t) { ++t; };
 
-    template<typename T, typename Tag>
-    using source_t = source_category<T, Tag>::type;
+    template<typename T>
+    concept has_post_increment = requires(T t) { t++; };
 
-    template<typename...>
-    struct type_list {};
+    template<typename T>
+    concept has_pre_decrement = requires(T t) { --t; };
 
-    template<typename, typename, bool, bool, bool>
-    struct binding_parameters {};
+    template<typename T>
+    concept has_post_decrement = requires(T t) { t--; };
+
+    template<typename T>
+    concept dereferenceable = requires(T t) { *t; };
+
+    template<typename T>
+    concept arrow_accessible = requires(T t) { t.operator->(); };
+
+    template<typename T>
+    concept has_pointer_to = requires(T::element_type obj) { T::pointer_to(obj); };
 } //namespace
 
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
@@ -284,6 +256,34 @@ int main()
     } | pointers_to_test;
 
     "pointer binding according to policies"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
+        struct ref_tag;
+        struct ptr_tag;
+        struct smart_ptr_tag;
+
+        template<typename T, typename Tag>
+        struct source_category;
+
+        template<typename T>
+        struct source_category<T, ref_tag> {
+            using type = std::add_lvalue_reference_t<T>;
+        };
+
+        template<typename T>
+        struct source_category<T, ptr_tag> {
+            using type = std::add_pointer_t<T>;
+        };
+
+        template<typename T>
+        struct source_category<T, smart_ptr_tag> {
+            using type = trivial_smart_ptr<T>&;
+        };
+
+        template<typename T, typename Tag>
+        using source_t = source_category<T, Tag>::type;
+
+        template<typename, typename, bool, bool, bool>
+        struct binding_parameters {};
+
         should("bind") =
             []<typename Pointee, typename SourceTag, bool IsConstructibleFrom, bool IsConvertibleFrom, bool IsAssignableFrom>(
                 binding_parameters<Pointee, SourceTag, IsConstructibleFrom, IsConvertibleFrom, IsAssignableFrom>
