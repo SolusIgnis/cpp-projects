@@ -2029,4 +2029,5 @@ int main()
     };
     //NOLINTEND(cppcoreguidelines-pro-type-const-cast)
 }
+
 //NOLINTEND(readability-function-size, readability-function-cognitive-complexity)
