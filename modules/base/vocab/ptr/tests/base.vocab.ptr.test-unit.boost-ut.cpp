@@ -73,34 +73,6 @@ namespace {
             !pointer_test_traits_base<Ptr>::has_arithmetic_traversal && pointer_test_traits_base<Ptr>::allows_pointer_binding;
     };
 
-    struct ref_tag;
-    struct ptr_tag;
-    struct smart_ptr_tag;
-
-    template<typename T, typename Tag>
-    struct source_category;
-
-    template<typename T>
-    struct source_category<T, ref_tag> {
-        using type = std::add_lvalue_reference_t<T>;
-    };
-
-    template<typename T>
-    struct source_category<T, ptr_tag> {
-        using type = std::add_pointer_t<T>;
-    };
-
-    template<typename T>
-    struct source_category<T, smart_ptr_tag> {
-        using type = trivial_smart_ptr<T>&;
-    };
-
-    template<typename T, typename Tag>
-    using source_t = source_category<T, Tag>::type;
-
-    template<typename, typename, bool, bool, bool>
-    struct binding_parameters {};
-
     //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct mixin_1 {
         virtual ~mixin_1() = default;
@@ -137,6 +109,34 @@ namespace {
 
         T* operator->() const { return address; }
     };
+
+    struct ref_tag;
+    struct ptr_tag;
+    struct smart_ptr_tag;
+
+    template<typename T, typename Tag>
+    struct source_category;
+
+    template<typename T>
+    struct source_category<T, ref_tag> {
+        using type = std::add_lvalue_reference_t<T>;
+    };
+
+    template<typename T>
+    struct source_category<T, ptr_tag> {
+        using type = std::add_pointer_t<T>;
+    };
+
+    template<typename T>
+    struct source_category<T, smart_ptr_tag> {
+        using type = trivial_smart_ptr<T>&;
+    };
+
+    template<typename T, typename Tag>
+    using source_t = source_category<T, Tag>::type;
+
+    template<typename, typename, bool, bool, bool>
+    struct binding_parameters {};
 
     template<typename T>
     concept has_addition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
