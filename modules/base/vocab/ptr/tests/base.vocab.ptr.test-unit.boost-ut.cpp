@@ -73,6 +73,34 @@ namespace {
             !pointer_test_traits_base<Ptr>::has_arithmetic_traversal && pointer_test_traits_base<Ptr>::allows_pointer_binding;
     };
 
+    struct ref_tag;
+    struct ptr_tag;
+    struct smart_ptr_tag;
+
+    template<typename T, typename Tag>
+    struct source_category;
+
+    template<typename T>
+    struct source_category<T, ref_tag> {
+        using type = std::add_lvalue_reference_t<T>;
+    };
+
+    template<typename T>
+    struct source_category<T, ptr_tag> {
+        using type = std::add_pointer_t<T>;
+    };
+
+    template<typename T>
+    struct source_category<T, smart_ptr_tag> {
+        using type = trivial_smart_ptr<T>&;
+    };
+
+    template<typename T, typename Tag>
+    using source_t = source_category<T, Tag>::type;
+
+    template<typename, typename, bool, bool, bool>
+    struct binding_parameters {};
+
     //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct mixin_1 {
         virtual ~mixin_1() = default;
@@ -256,34 +284,6 @@ int main()
     } | pointers_to_test;
 
     "pointer binding according to policies"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-        struct ref_tag;
-        struct ptr_tag;
-        struct smart_ptr_tag;
-
-        template<typename T, typename Tag>
-        struct source_category;
-
-        template<typename T>
-        struct source_category<T, ref_tag> {
-            using type = std::add_lvalue_reference_t<T>;
-        };
-
-        template<typename T>
-        struct source_category<T, ptr_tag> {
-            using type = std::add_pointer_t<T>;
-        };
-
-        template<typename T>
-        struct source_category<T, smart_ptr_tag> {
-            using type = trivial_smart_ptr<T>&;
-        };
-
-        template<typename T, typename Tag>
-        using source_t = source_category<T, Tag>::type;
-
-        template<typename, typename, bool, bool, bool>
-        struct binding_parameters {};
-
         should("bind") =
             []<typename Pointee, typename SourceTag, bool IsConstructibleFrom, bool IsConvertibleFrom, bool IsAssignableFrom>(
                 binding_parameters<Pointee, SourceTag, IsConstructibleFrom, IsConvertibleFrom, IsAssignableFrom>
@@ -839,7 +839,8 @@ int main()
     "volatile qualifier preservation"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         //NOLINTNEXTLINE(readability-magic-numbers): Test fixture needs a meaningless number.
         volatile std::int32_t hardware_register = 0xAA;
-        const auto ptr                          = base::vocab::pointer_to<ConcretePtr>(hardware_register);
+
+        const auto ptr = base::vocab::pointer_to<ConcretePtr>(hardware_register);
 
         //Ensure the raw pointer retrieved is also volatile
         expect(that % std::same_as<decltype(ptr.get()), volatile std::int32_t*>);

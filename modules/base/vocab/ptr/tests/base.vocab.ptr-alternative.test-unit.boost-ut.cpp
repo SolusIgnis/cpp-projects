@@ -1539,7 +1539,7 @@ int main() {
             //NOLINTNEXTLINE(misc-const-correctness): It would be missing the point.
             decltype(auto) dereferenced = *ptr;
             expect(eq(std::is_volatile_v<std::remove_reference_t<decltype(dereferenced)>>, true));
-            expect(eq(dereferenced, hardware_register));
+            expect(that % (dereferenced == hardware_register));
         });
     };
 
