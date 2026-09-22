@@ -938,7 +938,7 @@ int main()
             std::int32_t value = 4;
             const auto ptr     = base::vocab::pointer_to<ConcretePtr>(value);
 
-            expect(takes_ptr(ptr.get()), value));
+            expect(eq(takes_ptr(ptr.get()), value));
         });
     };
 
@@ -1175,7 +1175,7 @@ int main()
             auto result_chars = reinterpret_pointer_cast<char>(source);
 
             expect(that % std::same_as<decltype(result_bytes), ConcretePtr<std::byte>>);
-            expect(result_bytes.get(), reinterpret_cast<std::byte*>(std::addressof(value))));
+            expect(eq(result_bytes.get(), reinterpret_cast<std::byte*>(std::addressof(value))));
 
             expect(that % std::same_as<decltype(result_chars), ConcretePtr<char>>);
             expect(eq(result_chars.get(), reinterpret_cast<char*>(std::addressof(value))));
@@ -1542,7 +1542,7 @@ int main()
                     std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const volatile std::int32_t>>,
                     ConcretePtr<std::remove_pointer_t<std::remove_cvref_t<std::common_reference_t<std::int32_t*, const volatile std::int32_t*>>>>
                 >
-            ));
+            );
         });
     };
 
