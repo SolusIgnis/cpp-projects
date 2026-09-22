@@ -353,11 +353,11 @@ int main()
             expect(that % !std::constructible_from<ConcretePtr<std::int32_t>, std::int32_t>);
             expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, std::int32_t>);
             expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, const std::int32_t>);
-    
+
             expect(that % !std::constructible_from<ConcretePtr<std::int32_t>, std::int32_t&&>);
             expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, std::int32_t&&>);
             expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, const std::int32_t&&>);
-    
+
             expect(that % !std::is_assignable_v<ConcretePtr<std::int32_t>&, std::int32_t&&>);
             expect(that % !std::is_assignable_v<ConcretePtr<const std::int32_t>&, std::int32_t&&>);
             expect(that % !std::is_assignable_v<ConcretePtr<const std::int32_t>&, const std::int32_t&&>);
@@ -369,11 +369,11 @@ int main()
             expect(that % !std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>>);
             expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>>);
             expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>>);
-        
+
             expect(that % !std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>&&>);
             expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>&&>);
             expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>&&>);
-        
+
             expect(that % !std::is_assignable_v<ConcretePtr<std::int32_t>&, trivial_smart_ptr<std::int32_t>&&>);
             expect(that % !std::is_assignable_v<ConcretePtr<const std::int32_t>&, trivial_smart_ptr<std::int32_t>&&>);
             expect(that % !std::is_assignable_v<ConcretePtr<const std::int32_t>&, const trivial_smart_ptr<std::int32_t>&&>);
@@ -570,19 +570,19 @@ int main()
                 const std::int32_t value{42};
                 const std::int32_t* const bound_source{std::addressof(value)};
                 const std::int32_t* const null_source{};
-    
+
                 expect(nothrow([&] {
                     const ConcretePtr<const std::int32_t> ptr{bound_source};
-    
+
                     expect(eq(*ptr, value));
                     expect(eq(ptr.get(), bound_source));
                 }));
-    
+
                 const auto null_init = [&] {
                     const ConcretePtr<const std::int32_t> ptr{null_source};
                     expect(eq(ptr.get(), null_source)); //Skipped when construction throws.
                 };
-    
+
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     expect(nothrow(null_init));
                 } else {
@@ -598,19 +598,19 @@ int main()
                 const std::int32_t value{42};
                 const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
                 const trivial_smart_ptr<const std::int32_t> null_source{};
-    
+
                 expect(nothrow([&] {
                     const ConcretePtr<const std::int32_t> ptr{bound_source};
-    
+
                     expect(eq(*ptr, value));
                     expect(eq(ptr.get(), bound_source.get()));
                 }));
-    
+
                 const auto null_init = [&] {
                     const ConcretePtr<const std::int32_t> ptr{null_source};
                     expect(eq(ptr.get(), null_source.get())); //Skipped when construction throws.
                 };
-    
+
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     expect(nothrow(null_init));
                 } else {
@@ -625,29 +625,29 @@ int main()
             if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                 const std::int32_t value{42};
                 const std::int32_t other{};
-    
+
                 const std::int32_t* const bound_source{std::addressof(value)};
                 const std::int32_t* const null_source{nullptr};
-    
+
                 ConcretePtr<const std::int32_t> ptr{other};
-    
+
                 expect(nothrow([&] {
                     ptr = bound_source;
-    
+
                     expect(eq(*ptr, value));
                     expect(eq(ptr.get(), bound_source));
                 }));
-    
+
                 const auto null_assign = [&] { ptr = null_source; };
-    
+
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     expect(nothrow(null_assign));
-    
+
                     //Assignment successfully modifies stored address.
                     expect(eq(ptr.get(), null_source));
                 } else {
                     expect(throws<std::invalid_argument>(null_assign));
-    
+
                     //Invariant preserved after failed assignment
                     expect(eq(*ptr, *bound_source));
                     expect(eq(ptr.get(), bound_source));
@@ -661,29 +661,29 @@ int main()
             if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
                 const std::int32_t value{42};
                 const std::int32_t other{};
-    
+
                 const trivial_smart_ptr<const std::int32_t> bound_source{std::addressof(value)};
                 const trivial_smart_ptr<std::int32_t> null_source{};
-    
+
                 ConcretePtr<const std::int32_t> ptr{other};
-    
+
                 expect(nothrow([&] {
                     ptr = bound_source;
-    
+
                     expect(eq(*ptr, value));
                     expect(eq(ptr.get(), bound_source.get()));
                 }));
-    
+
                 const auto null_assign = [&] { ptr = null_source; };
-    
+
                 if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
                     expect(nothrow(null_assign));
-    
+
                     //Assignment successfully modifies stored address.
                     expect(eq(ptr.get(), null_source.get()));
                 } else {
                     expect(throws<std::invalid_argument>(null_assign));
-    
+
                     //Invariant preserved after failed assignment
                     expect(eq(*ptr, value));
                     expect(eq(ptr.get(), bound_source.get()));
@@ -1493,10 +1493,14 @@ int main()
             expect(that % std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<volatile std::int32_t>>, ConcretePtr<volatile std::int32_t>>);
 
             expect(that % std::common_reference_with<ConcretePtr<const std::int32_t>, ConcretePtr<const volatile std::int32_t>>);
-            expect(that % std::same_as<std::common_reference_t<ConcretePtr<const std::int32_t>, ConcretePtr<const volatile std::int32_t>>, ConcretePtr<const volatile std::int32_t>>);
+            expect(
+                that % std::same_as<std::common_reference_t<ConcretePtr<const std::int32_t>, ConcretePtr<const volatile std::int32_t>>, ConcretePtr<const volatile std::int32_t>>
+            );
 
             expect(that % std::common_reference_with<ConcretePtr<volatile std::int32_t>, ConcretePtr<const volatile std::int32_t>>);
-            expect(that % std::same_as<std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const volatile std::int32_t>>, ConcretePtr<const volatile std::int32_t>>);
+            expect(
+                that % std::same_as<std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const volatile std::int32_t>>, ConcretePtr<const volatile std::int32_t>>
+            );
 
             expect(that % std::common_reference_with<ConcretePtr<volatile std::int32_t>, ConcretePtr<const std::int32_t>>);
             expect(that % std::same_as<std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const volatile std::int32_t>>);
@@ -1537,7 +1541,8 @@ int main()
     "basic_common_reference matches raw pointer common_reference"_test = [] mutable {
         test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
             expect(that % std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const volatile std::int32_t>>);
-            expect(that
+            expect(
+                that
                 % std::same_as<
                     std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const volatile std::int32_t>>,
                     ConcretePtr<std::remove_pointer_t<std::remove_cvref_t<std::common_reference_t<std::int32_t*, const volatile std::int32_t*>>>>
@@ -1568,9 +1573,7 @@ int main()
             expect(that % std::same_as<std::common_reference_t<ConcretePtr<derived_type>, ConcretePtr<const base_type>>, ConcretePtr<const base_type>>);
 
             expect(that % std::common_reference_with<ConcretePtr<const derived_type>, ConcretePtr<volatile base_type>>);
-            expect(that %
-                std::same_as<std::common_reference_t<ConcretePtr<const derived_type>, ConcretePtr<volatile base_type>>, ConcretePtr<const volatile base_type>>
-            );
+            expect(that % std::same_as<std::common_reference_t<ConcretePtr<const derived_type>, ConcretePtr<volatile base_type>>, ConcretePtr<const volatile base_type>>);
 
             expect(that % std::common_reference_with<ConcretePtr<derived_type>, base_type*>);
             expect(that % std::same_as<std::common_reference_t<ConcretePtr<derived_type>, base_type*>, base_type*>);
