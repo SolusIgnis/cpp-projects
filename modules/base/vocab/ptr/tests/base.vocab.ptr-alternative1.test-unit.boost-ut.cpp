@@ -1474,8 +1474,8 @@ int main()
                 const ConcretePtr<std::int32_t> lhs{nullptr};
                 const ConcretePtr<const std::int32_t> rhs{nullptr};
 
-                expect(that % lhs == rhs);
-                expect(that % lhs != rhs);
+                expect(that % (lhs == rhs));
+                expect(that % !(lhs != rhs));
             }
         });
     };
