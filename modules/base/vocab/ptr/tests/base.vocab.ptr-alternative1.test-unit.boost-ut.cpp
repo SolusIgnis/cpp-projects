@@ -1565,7 +1565,7 @@ int main()
             expect(that % std::same_as<std::common_reference_t<ConcretePtr<const derived_type>, ConcretePtr<base_type>>, ConcretePtr<const base_type>>);
 
             expect(that % std::common_reference_with<ConcretePtr<derived_type>, ConcretePtr<const base_type>>);
-            expect(thsr % std::same_as<std::common_reference_t<ConcretePtr<derived_type>, ConcretePtr<const base_type>>, ConcretePtr<const base_type>>);
+            expect(that % std::same_as<std::common_reference_t<ConcretePtr<derived_type>, ConcretePtr<const base_type>>, ConcretePtr<const base_type>>);
 
             expect(that % std::common_reference_with<ConcretePtr<const derived_type>, ConcretePtr<volatile base_type>>);
             expect(that %
