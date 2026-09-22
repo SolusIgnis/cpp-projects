@@ -170,4 +170,7 @@ namespace {
 
     template<typename T, typename Tag>
     using source_t = source_category<T, Tag>::type;
+
+    template<typename, typename, bool, bool, bool>
+    struct binding_parameters {};
 } //namespace
