@@ -207,7 +207,7 @@ int main()
                 expect(that % std::is_trivially_move_constructible_v<ConcretePtr<Pointee>>);
                 expect(that % std::is_trivially_copy_assignable_v<ConcretePtr<Pointee>>);
                 expect(that % std::is_trivially_move_assignable_v<ConcretePtr<Pointee>>);
-                expect(thst % std::is_nothrow_constructible_v<ConcretePtr<Pointee>, Pointee&>);
+                expect(that % std::is_nothrow_constructible_v<ConcretePtr<Pointee>, Pointee&>);
                 expect(that % std::is_nothrow_swappable_v<ConcretePtr<Pointee>>);
             };
 
@@ -1813,7 +1813,7 @@ int main()
             constexpr auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
             expect(eq(ptr.get(), std::addressof(value)));
-            expect(thst % static_cast<bool>(ptr) == true);
+            expect(that % static_cast<bool>(ptr) == true);
         });
     };
 
