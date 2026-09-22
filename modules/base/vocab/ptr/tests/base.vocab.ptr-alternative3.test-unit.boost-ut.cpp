@@ -7,9 +7,161 @@ import std;
 
 import base.meta.concepts;
 
-#include "base.vocab.ptr-common_fixtures.boost-ut.hpp"
-
 using namespace boost::ext::ut;
+
+namespace {
+    template<template<typename> typename Ptr>
+    struct pointer_test_traits_base;
+
+    template<>
+    struct pointer_test_traits_base<base::vocab::ptr::dependency_ptr> {
+        static constexpr bool is_nullable              = false;
+        static constexpr bool has_arithmetic_traversal = false;
+        static constexpr bool allows_pointer_binding   = false;
+        static constexpr bool allows_reference_binding = true;
+    };
+
+    template<>
+    struct pointer_test_traits_base<base::vocab::ptr::required_ptr> {
+        static constexpr bool is_nullable              = false;
+        static constexpr bool has_arithmetic_traversal = false;
+        static constexpr bool allows_pointer_binding   = true;
+        static constexpr bool allows_reference_binding = true;
+    };
+
+    template<>
+    struct pointer_test_traits_base<base::vocab::ptr::alias_ptr> {
+        static constexpr bool is_nullable              = true;
+        static constexpr bool has_arithmetic_traversal = false;
+        static constexpr bool allows_pointer_binding   = true;
+        static constexpr bool allows_reference_binding = true;
+    };
+
+    template<>
+    struct pointer_test_traits_base<base::vocab::ptr::cursor_ptr> {
+        static constexpr bool is_nullable              = false;
+        static constexpr bool has_arithmetic_traversal = true;
+        static constexpr bool allows_pointer_binding   = true;
+        static constexpr bool allows_reference_binding = true;
+    };
+
+    template<>
+    struct pointer_test_traits_base<base::vocab::ptr::iterator_ptr> {
+        static constexpr bool is_nullable              = true;
+        static constexpr bool has_arithmetic_traversal = true;
+        static constexpr bool allows_pointer_binding   = true;
+        static constexpr bool allows_reference_binding = true;
+    };
+
+    template<template<typename> typename Ptr>
+    struct pointer_test_traits : pointer_test_traits_base<Ptr> {
+        static constexpr bool permits_void_pointee =
+            !pointer_test_traits_base<Ptr>::has_arithmetic_traversal && pointer_test_traits_base<Ptr>::allows_pointer_binding;
+    };
+
+    template<typename Lambda>
+    //NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward): Forwarding is not needed to call the lambda.
+    constexpr void test_each_pointer_type_with(Lambda&& test_impl)
+    {
+        test_impl.template operator()<base::vocab::ptr::dependency_ptr>();
+        test_impl.template operator()<base::vocab::ptr::required_ptr>();
+        test_impl.template operator()<base::vocab::ptr::alias_ptr>();
+        test_impl.template operator()<base::vocab::ptr::cursor_ptr>();
+        test_impl.template operator()<base::vocab::ptr::iterator_ptr>();
+    }
+
+    template<typename T>
+    concept has_addition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
+
+    template<typename T>
+    concept has_subtraction = requires(T t) { t - 1; };
+
+    template<typename T>
+    concept has_difference = requires(T t) { t - t; };
+
+    template<typename T>
+    concept has_pre_increment = requires(T t) { ++t; };
+
+    template<typename T>
+    concept has_post_increment = requires(T t) { t++; };
+
+    template<typename T>
+    concept has_pre_decrement = requires(T t) { --t; };
+
+    template<typename T>
+    concept has_post_decrement = requires(T t) { t--; };
+
+    template<typename T>
+    concept dereferenceable = requires(T t) { *t; };
+
+    template<typename T>
+    concept arrow_accessible = requires(T t) { t.operator->(); };
+
+    template<typename T>
+    concept has_pointer_to = requires(T::element_type obj) { T::pointer_to(obj); };
+
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
+    struct mixin_1 {
+        virtual ~mixin_1() = default;
+    };
+
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
+    struct mixin_2 {
+        virtual ~mixin_2() = default;
+    };
+
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
+    struct base_type : mixin_1,
+                       mixin_2 {
+        ~base_type() override = default;
+        std::int32_t value{0};
+    };
+
+    //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
+    struct derived_type : base_type {
+        ~derived_type() override = default;
+        std::int32_t extra{42};
+    };
+
+    union union_type {
+        std::int32_t value;
+        std::int16_t irrelevant;
+    };
+
+    template<typename T>
+    struct trivial_smart_ptr {
+        T* address{};
+
+        [[nodiscard]] T* get() const { return address; }
+
+        T* operator->() const { return address; }
+    };
+
+    struct ref_tag;
+    struct ptr_tag;
+    struct smart_ptr_tag;
+
+    template<typename T, typename Tag>
+    struct source_category;
+
+    template<typename T>
+    struct source_category<T, ref_tag> {
+        using type = std::add_lvalue_reference_t<T>;
+    };
+
+    template<typename T>
+    struct source_category<T, ptr_tag> {
+        using type = std::add_pointer_t<T>;
+    };
+
+    template<typename T>
+    struct source_category<T, smart_ptr_tag> {
+        using type = trivial_smart_ptr<T>&;
+    };
+
+    template<typename T, typename Tag>
+    using source_t = source_category<T, Tag>::type;
+} //namespace
 
 //NOLINTBEGIN(readability-function-size, readability-function-cognitive-complexity)
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
