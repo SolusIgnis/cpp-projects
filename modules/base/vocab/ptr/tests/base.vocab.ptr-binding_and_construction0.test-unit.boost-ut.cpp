@@ -332,4 +332,5 @@ int main()
         }
     } | pointers_to_test;
 }
+
 //NOLINTEND(readability-function-size, readability-function-cognitive-complexity)
