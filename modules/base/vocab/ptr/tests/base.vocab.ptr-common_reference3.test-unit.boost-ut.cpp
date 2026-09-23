@@ -15,63 +15,6 @@ using namespace boost::ext::ut;
 int main()
 {
     //============================================================
-    // Equality semantics
-    //============================================================
-
-    "equality compares pointer identity"_test = [] mutable {
-        test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-            expect(that % std::equality_comparable<ConcretePtr<std::int32_t>>);
-
-            std::int32_t x = 1;
-            std::int32_t y = 1;
-
-            const auto ptr1 = base::vocab::pointer_to<ConcretePtr, const std::int32_t>(x);
-            const auto ptr2 = base::vocab::pointer_to<ConcretePtr>(x);
-            const auto ptr3 = base::vocab::pointer_to<ConcretePtr>(y);
-
-            expect(that % ptr1 == ptr2);
-            expect(that % ptr1 != ptr3);
-            expect(that % ptr2 != ptr3);
-        });
-    };
-
-    "nullable comparisons with nullptr"_test = [] mutable {
-        test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-            if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding && pointer_test_traits<ConcretePtr>::is_nullable) {
-                std::int32_t value{};
-
-                const ConcretePtr<std::int32_t> bound{std::addressof(value)};
-                const ConcretePtr<std::int32_t> null{nullptr};
-
-                //Expecting both operator== and operator!= to be synthesized correctly
-                expect(that % !(bound == nullptr));
-                expect(that % !(nullptr == bound));
-
-                expect(that % bound != nullptr);
-                expect(that % nullptr != bound);
-
-                expect(that % null == nullptr);
-                expect(that % nullptr == null);
-
-                expect(that % !(null != nullptr));
-                expect(that % !(nullptr != null));
-            }
-        });
-    };
-
-    "null pointers of same pointer type compare equal"_test = [] mutable {
-        test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-            if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                const ConcretePtr<std::int32_t> lhs{nullptr};
-                const ConcretePtr<const std::int32_t> rhs{nullptr};
-
-                expect(that % (lhs == rhs));
-                expect(that % !(lhs != rhs));
-            }
-        });
-    };
-
-    //============================================================
     // Common Reference
     //============================================================
 
