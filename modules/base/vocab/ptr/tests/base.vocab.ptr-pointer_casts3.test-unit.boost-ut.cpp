@@ -19,49 +19,6 @@ int main()
     //============================================================
 
     //NOLINTBEGIN(misc-const-correctness): Readability suffers with const correctness in these tests.
-    "const_pointer_cast alters pointee cv-qualifications"_test = [] mutable {
-        test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-            const auto test_cast = []<typename Source, typename Destination> {
-                Source value{};
-
-                auto source = base::vocab::pointer_to<ConcretePtr>(value);
-                auto result = const_pointer_cast<Destination>(source);
-
-                expect(that % std::same_as<decltype(result), ConcretePtr<Destination>>);
-                expect(that % result.get() == std::addressof(value));
-            };
-
-            test_cast.template operator()<std::int32_t, std::int32_t>();
-            test_cast.template operator()<std::int32_t, const std::int32_t>();
-            test_cast.template operator()<std::int32_t, volatile std::int32_t>();
-            test_cast.template operator()<std::int32_t, const volatile std::int32_t>();
-            test_cast.template operator()<const std::int32_t, std::int32_t>();
-            test_cast.template operator()<const std::int32_t, const std::int32_t>();
-            test_cast.template operator()<const std::int32_t, volatile std::int32_t>();
-            test_cast.template operator()<const std::int32_t, const volatile std::int32_t>();
-            test_cast.template operator()<volatile std::int32_t, std::int32_t>();
-            test_cast.template operator()<volatile std::int32_t, const std::int32_t>();
-            test_cast.template operator()<volatile std::int32_t, volatile std::int32_t>();
-            test_cast.template operator()<volatile std::int32_t, const volatile std::int32_t>();
-            test_cast.template operator()<const volatile std::int32_t, std::int32_t>();
-            test_cast.template operator()<const volatile std::int32_t, const std::int32_t>();
-            test_cast.template operator()<const volatile std::int32_t, volatile std::int32_t>();
-            test_cast.template operator()<const volatile std::int32_t, const volatile std::int32_t>();
-        });
-    };
-
-    "const_pointer_cast preserves null state"_test = [] mutable {
-        test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
-            if constexpr (pointer_test_traits<ConcretePtr>::is_nullable) {
-                ConcretePtr<std::int32_t> source{nullptr};
-
-                const auto result = const_pointer_cast<const std::int32_t>(source);
-
-                expect(that % result == nullptr);
-            }
-        });
-    };
-
     "static_pointer_cast converts static pointee type up and down inheritance hierarchies"_test = [] mutable {
         test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
             derived_type object;

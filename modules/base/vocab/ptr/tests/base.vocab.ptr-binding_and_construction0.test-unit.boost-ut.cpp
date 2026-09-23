@@ -11,6 +11,7 @@ import base.meta.concepts;
 
 using namespace boost::ext::ut;
 
+//NOLINTBEGIN(readability-function-size, readability-function-cognitive-complexity)
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
 {
@@ -400,3 +401,4 @@ int main()
         }
     } | pointers_to_test;
 }
+//NOLINTEND(readability-function-size, readability-function-cognitive-complexity)
