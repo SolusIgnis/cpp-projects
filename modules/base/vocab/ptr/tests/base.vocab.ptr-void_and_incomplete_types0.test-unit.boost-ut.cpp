@@ -14,6 +14,9 @@ using namespace boost::ext::ut;
 namespace {
     template<typename T>
     concept dereferenceable = requires(T t) { *t; };
+
+    template<typename T>
+    concept arrow_accessible = requires(T t) { t.operator->(); };
 } //namespace
 
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
