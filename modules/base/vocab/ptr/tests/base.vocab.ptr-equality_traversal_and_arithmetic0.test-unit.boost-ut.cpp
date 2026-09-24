@@ -11,6 +11,32 @@ import base.meta.concepts;
 
 using namespace boost::ext::ut;
 
+namespace {
+    template<typename T>
+    concept has_addition = requires(T t) { t + 1; } || requires(T t) { 1 + t; };
+
+    template<typename T>
+    concept has_subtraction = requires(T t) { t - 1; };
+
+    template<typename T>
+    concept has_difference = requires(T t) { t - t; };
+
+    template<typename T>
+    concept has_pre_increment = requires(T t) { ++t; };
+
+    template<typename T>
+    concept has_post_increment = requires(T t) { t++; };
+
+    template<typename T>
+    concept has_pre_decrement = requires(T t) { --t; };
+
+    template<typename T>
+    concept has_post_decrement = requires(T t) { t--; };
+
+    template<typename T>
+    concept dereferenceable = requires(T t) { *t; };
+} //namespace
+
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
 {

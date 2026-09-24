@@ -11,6 +11,36 @@ import base.meta.concepts;
 
 using namespace boost::ext::ut;
 
+namespace {
+    struct ref_tag;
+    struct ptr_tag;
+    struct smart_ptr_tag;
+
+    template<typename T, typename Tag>
+    struct source_category;
+
+    template<typename T>
+    struct source_category<T, ref_tag> {
+        using type = std::add_lvalue_reference_t<T>;
+    };
+
+    template<typename T>
+    struct source_category<T, ptr_tag> {
+        using type = std::add_pointer_t<T>;
+    };
+
+    template<typename T>
+    struct source_category<T, smart_ptr_tag> {
+        using type = trivial_smart_ptr<T>&;
+    };
+
+    template<typename T, typename Tag>
+    using source_t = source_category<T, Tag>::type;
+
+    template<typename, typename, bool, bool, bool>
+    struct binding_parameters {};
+} //namespace
+
 //NOLINTBEGIN(readability-function-size, readability-function-cognitive-complexity)
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
