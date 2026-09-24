@@ -110,7 +110,7 @@ int main()
         expect(that % (dummy_ptr->counter == nullptr));
         dummy_ptr->counter = std::addressof(count);
 
-        expect(eq(*dummy_ptr->counter, 0ZU));
+        expect(that % *dummy_ptr->counter == 0ZU);
 
         required_ptr local_counter = dummy_ptr->counter;
         (*local_counter)++;
