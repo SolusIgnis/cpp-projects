@@ -32,9 +32,6 @@ namespace {
 
     template<typename T>
     concept has_post_decrement = requires(T t) { t--; };
-
-    template<typename T>
-    concept dereferenceable = requires(T t) { *t; };
 } //namespace
 
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.

@@ -11,6 +11,11 @@ import base.meta.concepts;
 
 using namespace boost::ext::ut;
 
+namespace {
+    template<typename T>
+    concept dereferenceable = requires(T t) { *t; };
+} //namespace
+
 //NOLINTBEGIN(readability-function-size, readability-function-cognitive-complexity)
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()

@@ -79,8 +79,8 @@ namespace {
         test_impl.template operator()<base::vocab::ptr::iterator_ptr>();
     }
 
-    template<typename T>
-    concept has_pointer_to = requires(T::element_type obj) { T::pointer_to(obj); };
+//    template<typename T>
+//    concept has_pointer_to = requires(T::element_type obj) { T::pointer_to(obj); };
 
     //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct mixin_1 {
