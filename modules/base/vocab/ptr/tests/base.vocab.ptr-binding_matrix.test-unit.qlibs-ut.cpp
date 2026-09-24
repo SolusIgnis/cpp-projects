@@ -2,14 +2,14 @@
 // Parameterized unit tests for base.vocab.ptr
 
 import base.vocab.ptr;
-import boost.ut;
+import ut;
 import std;
 
 import base.meta.concepts;
 
 #include "base.vocab.ptr-common_fixtures.boost-ut.hpp"
 
-using namespace boost::ext::ut;
+using namespace ut;
 
 namespace {
     struct ref_tag;
