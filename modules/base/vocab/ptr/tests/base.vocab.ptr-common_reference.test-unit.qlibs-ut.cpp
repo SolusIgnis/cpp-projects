@@ -21,9 +21,7 @@ int main()
     "basic_common_reference preserves concrete pointer type with cv-qualifications"_test = [] mutable {
         test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
             expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const std::int32_t>>, true
-            ));
+            expect(eq(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const std::int32_t>>, true));
 
             expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<volatile std::int32_t>>, true));
             expect(eq(
@@ -50,13 +48,10 @@ int main()
     "basic_common_reference uses reference-to-pointer value category propagation"_test = [] mutable {
         test_each_pointer_type_with([]<template<typename> typename ConcretePtr> {
             static_assert(
-                std::same_as<std::common_reference_t<std::int32_t*&, const std::int32_t*&>, const std::int32_t*>,
-                "Sanity check for raw pointer common_reference_t<T*&, const T*&> -> const T*"
+                std::same_as<std::common_reference_t<std::int32_t*&, const std::int32_t*&>, const std::int32_t*>, "Sanity check for raw pointer common_reference_t<T*&, const T*&> -> const T*"
             );
             expect(eq(std::common_reference_with<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, true));
-            expect(eq(
-                std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, ConcretePtr<const std::int32_t>>, true
-            ));
+            expect(eq(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, ConcretePtr<const std::int32_t>>, true));
 
             static_assert(
                 std::same_as<std::common_reference_t<std::int32_t*&&, const std::int32_t*&&>, const std::int32_t*>,
