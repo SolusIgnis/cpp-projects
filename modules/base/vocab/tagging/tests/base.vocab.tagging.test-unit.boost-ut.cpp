@@ -44,7 +44,7 @@ int main()
         struct point {
             std::int32_t x;
             std::int32_t y;
-    
+
             constexpr point(std::int32_t x_val, std::int32_t y_val) : x(x_val), y(y_val) {}
         };
 
