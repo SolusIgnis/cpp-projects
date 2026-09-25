@@ -212,7 +212,7 @@ int main()
     };
 
     "overload{...} supports simple recursion"_test = [] mutable {
-        constexpr std::array<std::tuple<std::int32_t>> test_arguments{
+        constexpr std::array<std::tuple<std::int32_t>, 3> test_arguments{
             {5, 120}, // 5 * 4 * 3 * 2 * 1
             {4, 24},  // 4 * 3 * 2 * 1
             {1, 1},   // sanity check
