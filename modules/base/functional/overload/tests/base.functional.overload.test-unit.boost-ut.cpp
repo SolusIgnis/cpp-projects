@@ -212,14 +212,11 @@ int main()
     };
 
     "overload{...} supports simple recursion"_test = [] mutable {
-        constexpr std::int32_t num1      = 5;
-        constexpr std::int32_t expected1 = 120; // 5 * 4 * 3 * 2 * 1
-
-        constexpr std::int32_t num2      = 4;
-        constexpr std::int32_t expected2 = 24; // 4 * 3 * 2 * 1
-
-        constexpr std::int32_t num3      = 1;
-        constexpr std::int32_t expected3 = 1; // sanity check
+        constexpr std::array<std::tuple<std::int32_t>> test_arguments{
+            {5, 120}, // 5 * 4 * 3 * 2 * 1
+            {4, 24},  // 4 * 3 * 2 * 1
+            {1, 1},   // sanity check
+        }; std::int32_t num1      = 5;
 
         should("recurse") =
             [](auto test_parameter) {
@@ -239,17 +236,11 @@ int main()
                         }
                         return n * self(n - 1);
                     },
-                }
-                    ;
+                };
 
-                expect(eq(factorial(num), expected)) << "factorial(" + std::to_string(num) + ") result";
+                expect(eq(factorial(num), expected)) << std::format("factorial({}) result", num);
                 expect(eq(steps, num)) << "step count";
-        }
-            | std::array{
-                std::tuple{num1, expected1},
-                std::tuple{num2, expected2},
-                std::tuple{num3, expected3},
-            };
+        } | test_arguments;
     };
 
     "overload{...} supports composed recursive multi-overload dispatch/visitation (binary tree)"_test = [] mutable {
