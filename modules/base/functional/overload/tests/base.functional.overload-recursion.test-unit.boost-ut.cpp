@@ -16,7 +16,6 @@ import boost.ut;
 import std;
 
 using namespace boost::ext::ut;
-using namespace std::literals;
 using base::functional::overload;
 using base::vocab::alias_ptr;
 
