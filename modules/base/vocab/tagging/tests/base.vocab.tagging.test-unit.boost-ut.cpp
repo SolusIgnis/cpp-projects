@@ -196,6 +196,37 @@ int main()
     };
 
     "perfect forwarding through variadic parameter pack"_test = [] mutable {
+        struct position {
+        private:
+            struct longitude_tag;
+            struct elevation_tag;
+            struct latitude_tag;
+
+            using coordinate_t = std::int64_t;
+
+        public:
+            using longitude_t = base::vocab::tagged_boundary<longitude_tag, coordinate_t>;
+            using elevation_t = base::vocab::tagged_boundary<elevation_tag, coordinate_t>;
+            using latitude_t  = base::vocab::tagged_boundary<latitude_tag, coordinate_t>;
+
+            coordinate_t x{0}; //-west to +east
+            coordinate_t y{0}; //-down to +up
+            coordinate_t z{0}; //-north to +south
+
+            constexpr position() = default;
+
+            //"Pass-by-value and move" idiom automatically unwraps the tagged int values
+            constexpr position(longitude_t x_val, elevation_t y_val, latitude_t z_val)
+                : x(std::move(x_val)), y(std::move(y_val)), z(std::move(z_val))
+            {}
+        };
+
+        struct begin_tag;
+        struct end_tag;
+
+        using first_pos   = base::vocab::tagged_boundary<begin_tag, const position&>;
+        using last_pos    = base::vocab::tagged_boundary<end_tag, const position&>;
+
         constexpr auto forwarding_test = [](auto&&... args) { return distance(std::forward<decltype(args)>(args)...); };
 
         constexpr position pos1{position::longitude_t{-2}, position::elevation_t{10}, position::latitude_t{5}};
