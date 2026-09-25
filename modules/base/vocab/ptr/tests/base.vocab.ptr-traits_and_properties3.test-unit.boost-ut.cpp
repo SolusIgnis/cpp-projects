@@ -7,7 +7,7 @@ import std;
 
 import base.meta.concepts;
 
-#include "base.vocab.ptr-common_fixtures.boost-ut.hpp"
+#include "base.vocab.ptr-common_fixtures.qlibs-ut.hpp"
 
 using namespace boost::ext::ut;
 
