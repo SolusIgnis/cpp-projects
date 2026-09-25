@@ -7,29 +7,27 @@ import std;
 
 using namespace boost::ext::ut;
 
-namespace {
-    struct test_tag;
-
-    //Move-only target type used to verify destructive extraction
-    struct move_only_t {
-        std::int32_t value{0};
-
-        constexpr explicit move_only_t(std::int32_t val) : value(val) {}
-
-        constexpr ~move_only_t() = default;
-
-        constexpr move_only_t(move_only_t&& other) noexcept            = default;
-        constexpr move_only_t& operator=(move_only_t&& other) noexcept = default;
-
-        constexpr move_only_t(const move_only_t&)            = delete;
-        constexpr move_only_t& operator=(const move_only_t&) = delete;
-    };
-} //namespace
-
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
 {
+    struct test_tag;
+
     "in-place construction and destructive extraction"_test = [] mutable {
+        //Move-only target type used to verify destructive extraction
+        struct move_only_t {
+            std::int32_t value{0};
+
+            constexpr explicit move_only_t(std::int32_t val) : value(val) {}
+
+            constexpr ~move_only_t() = default;
+
+            constexpr move_only_t(move_only_t&& other) noexcept            = default;
+            constexpr move_only_t& operator=(move_only_t&& other) noexcept = default;
+
+            constexpr move_only_t(const move_only_t&)            = delete;
+            constexpr move_only_t& operator=(const move_only_t&) = delete;
+        };
+
         static_assert(!std::copy_constructible<move_only_t>, "`move_only_t` must be move-only, or this test is invalid.");
         static_assert(std::move_constructible<move_only_t>, "`move_only_t` must be move-only, or this test is invalid.");
 
@@ -43,6 +41,13 @@ int main()
     };
 
     "multi argument forwarding"_test = [] mutable {
+        struct point {
+            std::int32_t x;
+            std::int32_t y;
+    
+            constexpr point(std::int32_t x_val, std::int32_t y_val) : x(x_val), y(y_val) {}
+        };
+
         constexpr std::int32_t expected_x{10};
         constexpr std::int32_t expected_y{20};
         using point_tagged = base::vocab::tagged_boundary<test_tag, point>;
@@ -131,7 +136,8 @@ int main()
         constexpr std::int32_t expected_changed{200};
 
         std::int32_t original = expected_original;
-        using ref_t           = base::vocab::tagged_boundary<test_tag, std::int32_t&>;
+
+        using ref_t = base::vocab::tagged_boundary<test_tag, std::int32_t&>;
 
         const auto bind_ref = [](ref_t tagged) -> std::int32_t& { return std::move(tagged); };
 
