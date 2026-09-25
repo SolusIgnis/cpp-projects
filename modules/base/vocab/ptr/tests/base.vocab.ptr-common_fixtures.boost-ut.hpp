@@ -5,9 +5,6 @@
 
 //NOTE: This header is only included in single-TU test runners.
 namespace {
-    template<typename...>
-    struct type_list {};
-
     template<template<typename> typename>
     struct template_tag {};
 
@@ -67,20 +64,6 @@ namespace {
         static constexpr bool permits_void_pointee =
             !pointer_test_traits_base<Ptr>::has_arithmetic_traversal && pointer_test_traits_base<Ptr>::allows_pointer_binding;
     };
-
-    template<typename Lambda>
-    //NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward): Forwarding is not needed to call the lambda.
-    constexpr void test_each_pointer_type_with(Lambda&& test_impl)
-    {
-        test_impl.template operator()<base::vocab::ptr::dependency_ptr>();
-        test_impl.template operator()<base::vocab::ptr::required_ptr>();
-        test_impl.template operator()<base::vocab::ptr::alias_ptr>();
-        test_impl.template operator()<base::vocab::ptr::cursor_ptr>();
-        test_impl.template operator()<base::vocab::ptr::iterator_ptr>();
-    }
-
-//    template<typename T>
-//    concept has_pointer_to = requires(T::element_type obj) { T::pointer_to(obj); };
 
     //NOLINTNEXTLINE(cppcoreguidelines-special-member-functions): Trivial fixture.
     struct mixin_1 {

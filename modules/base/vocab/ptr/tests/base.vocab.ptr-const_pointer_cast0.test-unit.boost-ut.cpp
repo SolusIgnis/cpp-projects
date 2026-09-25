@@ -11,6 +11,11 @@ import base.meta.concepts;
 
 using namespace boost::ext::ut;
 
+namespace {
+    template<typename...>
+    struct type_list {};
+} //namespace
+
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
 {
