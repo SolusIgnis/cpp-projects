@@ -18,7 +18,6 @@ import std;
 using namespace boost::ext::ut;
 using namespace std::literals;
 using base::functional::overload;
-using base::vocab::alias_ptr;
 
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
