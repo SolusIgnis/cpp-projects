@@ -212,11 +212,11 @@ int main()
     };
 
     "overload{...} supports simple recursion"_test = [] mutable {
-        constexpr std::array<std::tuple<std::int32_t, std::int32_t>, 3> test_arguments{
-            {5, 120}, // 5 * 4 * 3 * 2 * 1
-            {4, 24},  // 4 * 3 * 2 * 1
-            {1, 1},   // sanity check
-        }; std::int32_t num1      = 5;
+        constexpr auto test_arguments = std::array{
+            std::pair{5, 120}, // 5 * 4 * 3 * 2 * 1
+            std::pair{4, 24},  // 4 * 3 * 2 * 1
+            std::pair{1, 1},   // sanity check
+        };
 
         should("recurse") =
             [](auto test_parameter) {
