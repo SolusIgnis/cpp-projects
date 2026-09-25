@@ -211,7 +211,7 @@ int main()
         //NOLINTEND(bugprone-argument-comment)
     };
 
-    "overload{...}"_test = [] mutable {
+    "overload{...} supports simple recursion"_test = [] mutable {
         constexpr std::int32_t num1      = 5;
         constexpr std::int32_t expected1 = 120; // 5 * 4 * 3 * 2 * 1
 
@@ -221,7 +221,7 @@ int main()
         constexpr std::int32_t num3      = 1;
         constexpr std::int32_t expected3 = 1; // sanity check
 
-        should("support simple recursion") =
+        should("recurse") =
             [](auto test_parameter) {
                 const auto [num, expected] = test_parameter;
                 // fail fast for ill-formed test.
@@ -245,7 +245,7 @@ int main()
                 expect(eq(factorial(num), expected)) << "factorial(" + std::to_string(num) + ") result";
                 expect(eq(steps, num)) << "step count";
         }
-            | std::vector{
+            | std::array{
                 std::tuple{num1, expected1},
                 std::tuple{num2, expected2},
                 std::tuple{num3, expected3},
