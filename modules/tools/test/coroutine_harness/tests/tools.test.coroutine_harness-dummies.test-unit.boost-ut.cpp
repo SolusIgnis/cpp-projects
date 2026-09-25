@@ -119,7 +119,7 @@ int main()
         run(task);
 
         expect(that % probe.suspended);
-        expect(thar % probe.done);
+        expect(that % probe.done);
     };
 
     "immediate_awaiter fallback path (non-test_task)"_test = [] mutable {
