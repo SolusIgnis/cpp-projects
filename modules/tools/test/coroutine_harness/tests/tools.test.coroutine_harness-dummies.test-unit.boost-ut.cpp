@@ -61,7 +61,7 @@ int main()
     "ready_awaiter await_suspend throws (contract enforcement)"_test = [] mutable {
         const dummies::ready_awaiter<std::int32_t> awaiter{};
 
-        expect(throws<std::logic_error>([&]{ awaiter.await_suspend(std::noop_coroutine()); }
+        expect(throws<std::logic_error>([&]{ awaiter.await_suspend(std::noop_coroutine()); }));
     };
 
     "ready_awaiter returns value without suspension"_test = [] mutable {
