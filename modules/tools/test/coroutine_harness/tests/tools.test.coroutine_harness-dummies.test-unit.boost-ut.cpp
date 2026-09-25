@@ -40,7 +40,7 @@ int main()
 
         const auto result = base.await_resume();
 
-        expect(that % result && *result == expected);
+        expect(that % static_cast<bool>(result) && *result == expected);
     };
 
     "trivial_awaiter_base await_resume value category correctness"_test = [] mutable {
