@@ -40,7 +40,6 @@ namespace {
         {}
     };
 
-    struct test_tag;
     struct begin_tag;
     struct end_tag;
 

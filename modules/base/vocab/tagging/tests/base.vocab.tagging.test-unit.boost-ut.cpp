@@ -8,6 +8,8 @@ import std;
 using namespace boost::ext::ut;
 
 namespace {
+    struct test_tag;
+
     //Move-only target type used to verify destructive extraction
     struct move_only_t {
         std::int32_t value{0};
