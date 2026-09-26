@@ -86,13 +86,13 @@ int main()
     "run throws on empty test_task"_test = [] mutable {
         test_task<void> task;
 
-        expect(throws<std::logic_error>([&]{ run(task); }));
+        expect(throws<std::logic_error>([&] { run(task); }));
     };
 
     "operator co_await throws from empty test_task"_test = [] mutable {
         test_task<void> empty_task;
 
-        expect(throws<std::logic_error>([&]{ [[maybe_unused]] const auto awaiter = empty_task.operator co_await(); }));
+        expect(throws<std::logic_error>([&] { [[maybe_unused]] const auto awaiter = empty_task.operator co_await(); }));
     };
 
     "probe lifecycle"_test = [] mutable {
@@ -143,7 +143,7 @@ int main()
     };
 
     "premature destruction throws without probe"_test = [] mutable {
-        expect(throws<std::logic_error>([&]{ const auto unawaited_task = echo({}); }));
+        expect(throws<std::logic_error>([&] { const auto unawaited_task = echo({}); }));
     };
 
     "swap exchanges tasks and preserves invariants"_test = [] mutable {
@@ -334,7 +334,7 @@ int main()
 
         [[maybe_unused]] const auto result1 = run(task);
 
-        expect(throws<std::logic_error>([&]{ [[maybe_unused]] const auto result2 = run(task); }));
+        expect(throws<std::logic_error>([&] { [[maybe_unused]] const auto result2 = run(task); }));
     };
 
     "double await across swap throws"_test = [] mutable {
@@ -347,10 +347,10 @@ int main()
         swap(task1, task2); //swap A and B
 
         //run A again as task2 (while task2 has never yet run)
-        expect(throws<std::logic_error>([&]{ [[maybe_unused]] const auto result2 = run(task2); }));
+        expect(throws<std::logic_error>([&] { [[maybe_unused]] const auto result2 = run(task2); }));
 
         //run B once as task1 (even though task1 was run as A previously)
-        expect(nothrow([&]{ [[maybe_unused]] const auto result3 = run(task1); }));
+        expect(nothrow([&] { [[maybe_unused]] const auto result3 = run(task1); }));
     };
 
     "double await across move construction throws"_test = [] mutable {
@@ -362,7 +362,7 @@ int main()
 
         expect(eq(static_cast<bool>(task1), false)); //NOLINT(bugprone-use-after-move): Testing moved-from state.
 
-        expect(throws<std::logic_error>([&]{ [[maybe_unused]] const auto result2 = run(task2); }));
+        expect(throws<std::logic_error>([&] { [[maybe_unused]] const auto result2 = run(task2); }));
     };
 
     "double await across move assignment throws"_test = [] mutable {
@@ -375,7 +375,7 @@ int main()
 
         expect(eq(static_cast<bool>(task1), false)); //NOLINT(bugprone-use-after-move): Testing moved-from state.
 
-        expect(throws<std::logic_error>([&]{ [[maybe_unused]] const auto result2 = run(task2); }));
+        expect(throws<std::logic_error>([&] { [[maybe_unused]] const auto result2 = run(task2); }));
     };
 
     "exception propagates"_test = [] mutable {
@@ -384,7 +384,7 @@ int main()
             co_return {};
         }();
 
-        expect(throws<std::runtime_error>([&]{ [[maybe_unused]] const auto result = run(task); }));
+        expect(throws<std::runtime_error>([&] { [[maybe_unused]] const auto result = run(task); }));
     };
 
     "stalled coroutine detected"_test = [] mutable {
@@ -396,8 +396,8 @@ int main()
 
         task.set_probe(&probe);
 
-        bool threw = false;
-        bool wrong_errc = false;
+        bool threw           = false;
+        bool wrong_errc      = false;
         bool wrong_exception = false;
 
         try {
