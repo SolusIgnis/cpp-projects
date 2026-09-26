@@ -229,7 +229,8 @@ int main()
                     }
                     return n * self(n - 1);
                 },
-            };
+            }
+                ;
 
             expect(eq(factorial(num), expected)) << std::format("factorial({}) result", num);
             expect(eq(steps, num)) << "step count";
