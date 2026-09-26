@@ -52,9 +52,9 @@ int main()
         using baz_t = foo_t;
 
         // Verify they are the same type
-        expect(eq(that % std::same_as<foo_t, bar_t>);
-        expect(eq(that % std::same_as<foo_t, baz_t>);
-        expect(eq(that % std::same_as<bar_t, baz_t>);
+        expect(that % std::same_as<foo_t, bar_t>);
+        expect(that % std::same_as<foo_t, baz_t>);
+        expect(that % std::same_as<bar_t, baz_t>);
     };
 
     "tagged_awaitables with different tags are distinct types"_test = [] mutable {
@@ -220,7 +220,7 @@ int main()
 
         //Verify the destruction worked
         expect(that % !probe.done);
-        expect(thst % probe.destroyed);
+        expect(that % probe.destroyed);
     };
 
     // ============================================================
