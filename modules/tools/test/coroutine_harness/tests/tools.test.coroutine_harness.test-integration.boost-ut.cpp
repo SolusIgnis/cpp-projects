@@ -93,7 +93,7 @@ int main()
             co_await leaf_void().set_probe(&probe_void); // void task
 
             // Exception propagation check
-            bool threw = false;
+            bool threw           = false;
             bool wrong_exception = false;
             try {
                 co_await leaf_throw().set_probe(&probe_throw);

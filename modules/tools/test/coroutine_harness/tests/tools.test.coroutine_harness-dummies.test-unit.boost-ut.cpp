@@ -30,7 +30,7 @@ int main()
     "trivial_awaiter_base<void> is no-op"_test = [] mutable {
         dummies::trivial_awaiter_base<void> base;
 
-        expect(nothrow([&]{ base.await_resume(); }));
+        expect(nothrow([&] { base.await_resume(); }));
         expect(that % std::is_void_v<decltype(base.await_resume())>);
     };
 
@@ -61,7 +61,7 @@ int main()
     "ready_awaiter await_suspend throws (contract enforcement)"_test = [] mutable {
         const dummies::ready_awaiter<std::int32_t> awaiter{};
 
-        expect(throws<std::logic_error>([&]{ awaiter.await_suspend(std::noop_coroutine()); }));
+        expect(throws<std::logic_error>([&] { awaiter.await_suspend(std::noop_coroutine()); }));
     };
 
     "ready_awaiter returns value without suspension"_test = [] mutable {

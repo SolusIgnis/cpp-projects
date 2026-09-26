@@ -80,7 +80,7 @@ int main()
         };
         //NOLINTEND(readability-convert-member-functions-to-static)
 
-        expect(throws<std::runtime_error>([&]{ [[maybe_unused]] const auto result = run(as_task<int>(throwing_awaiter{})); }));
+        expect(throws<std::runtime_error>([&] { [[maybe_unused]] const auto result = run(as_task<int>(throwing_awaiter{})); }));
     };
 
     "as_task propagates exception from await_suspend"_test = [] mutable {
@@ -92,7 +92,7 @@ int main()
         };
         //NOLINTEND(readability-convert-member-functions-to-static)
 
-        expect(throws<std::runtime_error>([&]{ run(as_task<void>(throwing_suspend_awaiter{})); }));
+        expect(throws<std::runtime_error>([&] { run(as_task<void>(throwing_suspend_awaiter{})); }));
     };
 
     "as_task supports move-only return types (unique_ptr)"_test = [] mutable {
