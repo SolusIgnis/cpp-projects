@@ -94,7 +94,8 @@ int main()
     // Zero runtime overhead
     // ============================================================
 
-    "tagged_awaitable has zero size overhead"_test = []<typename AwaitableT>(std::type_identity<AwaitableT>) mutable {
+    "tagged_awaitable has zero size overhead"_test =
+        []<typename AwaitableT>(std::type_identity<AwaitableT>) mutable {
             using raw_t          = AwaitableT;
             using tagged_t       = tagged_awaitable<test_tag, AwaitableT>;
             using pathological_t = tagged_awaitable<std::array<std::int32_t, 4>, AwaitableT>;
@@ -105,22 +106,23 @@ int main()
             // It should also share the same alignment requirements.
             expect(eq(alignof(raw_t), alignof(tagged_t)));
             expect(eq(alignof(raw_t), alignof(pathological_t)));
-    } | std::tuple{
-        std::type_identity<test_task<void>>{},
-        std::type_identity<test_task<std::int32_t>>{},
-        std::type_identity<test_task<std::array<std::int32_t, 4>>>{},
+        }
+        | std::tuple{
+            std::type_identity<test_task<void>>{},
+            std::type_identity<test_task<std::int32_t>>{},
+            std::type_identity<test_task<std::array<std::int32_t, 4>>>{},
 
-        std::type_identity<dummies::ready_awaiter<void>>{},
-        std::type_identity<dummies::ready_awaiter<std::int32_t>>{},
-        std::type_identity<dummies::ready_awaiter<std::array<std::int32_t, 4>>>{},
+            std::type_identity<dummies::ready_awaiter<void>>{},
+            std::type_identity<dummies::ready_awaiter<std::int32_t>>{},
+            std::type_identity<dummies::ready_awaiter<std::array<std::int32_t, 4>>>{},
 
-        std::type_identity<dummies::immediate_awaiter<void>>{},
-        std::type_identity<dummies::immediate_awaiter<std::int32_t>>{},
-        std::type_identity<dummies::immediate_awaiter<std::array<std::int32_t, 4>>>{},
+            std::type_identity<dummies::immediate_awaiter<void>>{},
+            std::type_identity<dummies::immediate_awaiter<std::int32_t>>{},
+            std::type_identity<dummies::immediate_awaiter<std::array<std::int32_t, 4>>>{},
 
-        std::type_identity<dummies::adl::awaitable_by_adl<std::int32_t>>{},
-        std::type_identity<dummies::adl::awaitable_by_adl<std::array<std::int32_t, 4>>>{},
-    };
+            std::type_identity<dummies::adl::awaitable_by_adl<std::int32_t>>{},
+            std::type_identity<dummies::adl::awaitable_by_adl<std::array<std::int32_t, 4>>>{},
+        };
 
     // ============================================================
     // Await semantics
@@ -292,7 +294,7 @@ int main()
 
         std::int32_t result = expected;
 
-        expect(throws<std::runtime_error>([&]{ result = run(wrapped(herring)); }));
+        expect(throws<std::runtime_error>([&] { result = run(wrapped(herring)); }));
 
         expect(eq(result, expected));
     };
