@@ -23,35 +23,31 @@ using base::vocab::alias_ptr;
 int main()
 {
     //NOLINTBEGIN(performance-unnecessary-value-param, performance-move-const-arg): Value categories are selected for overload resolution testing.
-    "overload{...} supports simple recursion"_test = [] mutable {
-        constexpr auto test_arguments = std::array{
-            std::pair{5, 120}, // 5 * 4 * 3 * 2 * 1
-            std::pair{4,  24}, // 4 * 3 * 2 * 1
-            std::pair{1,   1}, // sanity check
+        "overload{...} supports simple recursion"_test = [](auto test_parameter) mutable {
+        const auto [num, expected] = test_parameter;
+        // fail fast for ill-formed test.
+        if (num < 1) {
+            throw std::logic_error("factorial test runner requires num >= 1");
+        }
+
+        std::int32_t steps = 0;
+
+        const auto factorial = overload{
+            [&steps](this auto& self, std::int32_t n) -> std::int32_t {
+                ++steps;
+                if (n <= 1) {
+                    return 1;
+                }
+                return n * self(n - 1);
+            },
         };
 
-        should("recurse") = [](auto test_parameter) {
-            const auto [num, expected] = test_parameter;
-            // fail fast for ill-formed test.
-            if (num < 1) {
-                throw std::logic_error("factorial test runner requires num >= 1");
-            }
-
-            std::int32_t steps = 0;
-
-            const auto factorial = overload{
-                [&steps](this auto& self, std::int32_t n) -> std::int32_t {
-                    ++steps;
-                    if (n <= 1) {
-                        return 1;
-                    }
-                    return n * self(n - 1);
-                },
-            };
-
-            expect(eq(factorial(num), expected)) << std::format("factorial({}) result", num);
-            expect(eq(steps, num)) << "step count";
-        } | test_arguments;
+        expect(eq(factorial(num), expected)) << std::format("factorial({}) result", num);
+        expect(eq(steps, num)) << "step count";
+    } | std::array{
+        std::pair{5, 120}, // 5 * 4 * 3 * 2 * 1
+        std::pair{4,  24}, // 4 * 3 * 2 * 1
+        std::pair{1,   1}, // sanity check
     };
 
     "overload{...} supports composed recursive multi-overload dispatch/visitation (binary tree)"_test = [] mutable {
