@@ -134,7 +134,7 @@ namespace {
             // Verify probes for all leaf tasks
             // -------------------------------
 
-            // leafIntL (lvalue)
+            // leaf_int_l (lvalue)
             expect(eq(probe_int_lvalue.awaited, true));
             expect(eq(probe_int_lvalue.resumed, true));
             expect(eq(probe_int_lvalue.done, true));
@@ -142,7 +142,7 @@ namespace {
             expect(eq(probe_int_lvalue.moved, false));
             expect(eq(probe_int_lvalue.destroyed, true));
 
-            // leafIntR (rvalue)
+            // leaf_int_r (rvalue)
             expect(eq(probe_int_rvalue.awaited, true));
             expect(eq(probe_int_rvalue.resumed, true));
             expect(eq(probe_int_rvalue.done, true));
@@ -150,7 +150,7 @@ namespace {
             expect(eq(probe_int_rvalue.moved, false));
             expect(eq(probe_int_rvalue.destroyed, true));
 
-            // leafPtr
+            // leaf_ptr
             expect(eq(probe_ptr.awaited, true));
             expect(eq(probe_ptr.done, true));
             expect(eq(probe_ptr.resumed, true));
@@ -158,7 +158,7 @@ namespace {
             expect(eq(probe_ptr.moved, false));
             expect(eq(probe_ptr.destroyed, true));
 
-            // leafVoid
+            // leaf_void
             expect(eq(probe_void.awaited, true));
             expect(eq(probe_void.done, true));
             expect(eq(probe_void.resumed, true));
@@ -166,7 +166,7 @@ namespace {
             expect(eq(probe_void.moved, false));
             expect(eq(probe_void.destroyed, true));
 
-            // leafThrow
+            // leaf_throw
             expect(eq(probe_throw.awaited, true));
             expect(eq(probe_throw.done, true));
             expect(eq(probe_throw.resumed, true));
