@@ -295,7 +295,6 @@ int main()
         std::int32_t result = expected;
 
         expect(throws<std::runtime_error>([&] { result = run(wrapped(herring)); }));
-
         expect(eq(result, expected));
     };
 }
