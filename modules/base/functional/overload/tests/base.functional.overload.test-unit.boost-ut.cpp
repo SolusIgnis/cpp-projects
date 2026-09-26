@@ -232,7 +232,7 @@ int main()
 
         expect(eq(factorial(num), expected)) << std::format("factorial({}) result", num);
         expect(eq(steps, num)) << "step count";
-    } | std::tuple{
+    } | std::array{
         std::pair{5, 120}, // 5 * 4 * 3 * 2 * 1
         std::pair{4,  24}, // 4 * 3 * 2 * 1
         std::pair{1,   1}, // sanity check

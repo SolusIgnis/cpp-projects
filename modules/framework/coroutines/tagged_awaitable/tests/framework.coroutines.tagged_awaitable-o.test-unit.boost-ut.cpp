@@ -105,7 +105,7 @@ int main()
             // It should also share the same alignment requirements.
             expect(eq(alignof(raw_t), alignof(tagged_t)));
             expect(eq(alignof(raw_t), alignof(pathological_t)));
-    } | std::array{
+    } | std::tuple{
         std::type_identity<test_task<void>>{},
         std::type_identity<test_task<std::int32_t>>{},
         std::type_identity<test_task<std::array<std::int32_t, 4>>>{},
@@ -261,7 +261,7 @@ int main()
     // ============================================================
 
     "tagged_awaitable preserves underlying awaitable's promise type"_test = [] mutable {
-        expect(that % std::same_as<test_task<std::int32_t>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, test_task<std::int32_t>>>::promise_type>));
+        expect(that % std::same_as<test_task<std::int32_t>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, test_task<std::int32_t>>>::promise_type>);
         expect(that % std::same_as<test_task<void>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, test_task<void>>>::promise_type>);
     };
 
