@@ -24,9 +24,9 @@ namespace {
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
 {
-    // ============================================================
+    //============================================================
     // Basic construction
-    // ============================================================
+    //============================================================
 
     "tagged_awaitable default constructible"_test = [] mutable {
         expect(that % std::is_default_constructible_v<tagged_awaitable<test_tag, test_task<std::int32_t>>>);
@@ -41,9 +41,9 @@ int main()
         expect(that % !probe.done);
     };
 
-    // ============================================================
+    //============================================================
     // Type Safety and Tag Isolation
-    // ============================================================
+    //============================================================
 
     "tagged_awaitables with identical tags and underlying value/awaitable types are the same type"_test = [] mutable {
         // Sanity check correlating with subsequent tests
@@ -90,9 +90,9 @@ int main()
         expect(that % !std::constructible_from<bar_t, foo_t>);
     };
 
-    // ============================================================
+    //============================================================
     // Zero runtime overhead
-    // ============================================================
+    //============================================================
 
     "tagged_awaitable has zero size overhead"_test =
         []<typename AwaitableT>(std::type_identity<AwaitableT>) mutable {
@@ -124,9 +124,9 @@ int main()
             std::type_identity<dummies::adl::awaitable_by_adl<std::array<std::int32_t, 4>>>{},
         };
 
-    // ============================================================
+    //============================================================
     // Await semantics
-    // ============================================================
+    //============================================================
 
     "tagged_awaitable supports lvalue co_await"_test = [] mutable {
         coroutine_probe probe;
@@ -186,9 +186,9 @@ int main()
         expect(eq(run(as_task<std::int32_t>(wrapped)), expected));
     };
 
-    // ============================================================
+    //============================================================
     // Coroutine probe lifecycle tracking
-    // ============================================================
+    //============================================================
 
     "tagged_awaitable propagates coroutine lifecycle"_test = [] mutable {
         constexpr std::int32_t expected = 42;
@@ -225,9 +225,9 @@ int main()
         expect(that % probe.destroyed);
     };
 
-    // ============================================================
+    //============================================================
     // Nested awaitable composition
-    // ============================================================
+    //============================================================
 
     "tagged_awaitable composes inside other coroutines"_test = [] mutable {
         constexpr std::int32_t base     = 7;
@@ -244,9 +244,9 @@ int main()
         expect(eq(result, expected));
     };
 
-    // ============================================================
+    //============================================================
     // Conversion to underlying awaitable
-    // ============================================================
+    //============================================================
 
     "tagged_awaitable converts to underlying awaitable"_test = [] mutable {
         constexpr std::int32_t expected = 42;
@@ -258,9 +258,9 @@ int main()
         expect(eq(result, expected));
     };
 
-    // ============================================================
+    //============================================================
     // Coroutine Traits promise type
-    // ============================================================
+    //============================================================
 
     "tagged_awaitable preserves underlying awaitable's promise type"_test = [] mutable {
         expect(that % std::same_as<test_task<std::int32_t>::promise_type, std::coroutine_traits<tagged_awaitable<test_tag, test_task<std::int32_t>>>::promise_type>);
@@ -279,9 +279,9 @@ int main()
         expect(eq(result, expected));
     };
 
-    // ============================================================
+    //============================================================
     // Exception Propagation
-    // ============================================================
+    //============================================================
 
     "tagged_awaitable propagates exceptions"_test = [] mutable {
         const auto wrapped = [](std::int32_t value) -> tagged_awaitable<test_tag, test_task<std::int32_t>> {

@@ -126,7 +126,7 @@ int main()
         // -------------------------------
         // Verify trace order
         // -------------------------------
-        std::vector<std::int32_t> expected_trace{first, second, third, fourth, fifth, sixth, seventh};
+        const std::vector<std::int32_t> expected_trace{first, second, third, fourth, fifth, sixth, seventh};
 
         expect(that % trace == expected_trace);
 

@@ -514,7 +514,7 @@ int main()
         constexpr std::int32_t third  = 3;
         constexpr std::int32_t fourth = 4;
         constexpr std::int32_t fifth  = 5;
-        std::vector<std::int32_t> expected{first, second, third, fourth, fifth};
+        const std::vector<std::int32_t> expected{first, second, third, fourth, fifth};
 
         //NOLINTBEGIN(cppcoreguidelines-avoid-capturing-lambda-coroutines)
         // This coroutine lambda is invoked and completed synchronously by the test harness.
