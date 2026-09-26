@@ -250,7 +250,7 @@ int main()
             const auto result = run(task);
             expect(eq(result, expected));
 
-            expect(that % !probe.awaited);
+            expect(that % probe.awaited);
 
             // Should not be destroyed yet (still in scope)
             expect(that % !probe.destroyed);
@@ -341,16 +341,16 @@ int main()
         auto task1 = echo({}); //A
         auto task2 = echo({}); //B
 
-        [[maybe_unused]] const auto result1 = run(task1); //run A as task1
+        [[maybe_unused]] const auto result1 = run(task1); //run A first as task1
 
         using std::swap;
         swap(task1, task2); //swap A and B
 
-        //run A as task2
+        //run A again as task2 (while task2 has never yet run)
         expect(throws<std::logic_error>([&]{ [[maybe_unused]] const auto result2 = run(task2); }));
 
-        //run B as task1
-        expect(throws<std::logic_error>([&]{ [[maybe_unused]] const auto result3 = run(task1); }));
+        //run B once as task1 (even though task1 was run as A previously)
+        expect(nothrow([&]{ [[maybe_unused]] const auto result3 = run(task1); }));
     };
 
     "double await across move construction throws"_test = [] mutable {
