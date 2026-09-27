@@ -32,9 +32,9 @@ int main()
         expect(eq(formatted, "BRK"s));
     };
 
-    // ------------------------------------------------------------
+    //------------------------------------------------------------
     // hex-only formatting
-    // ------------------------------------------------------------
+    //------------------------------------------------------------
 
     "hex-only formatting works"_test = [] mutable {
         const auto formatted1 = std::format("{:x}", command::ec);
@@ -44,9 +44,9 @@ int main()
         expect(eq(formatted2, "0xF7"s));
     };
 
-    // ------------------------------------------------------------
+    //------------------------------------------------------------
     // unknown command formatting
-    // ------------------------------------------------------------
+    //------------------------------------------------------------
 
     "unknown command formats as UNKNOWN in name mode"_test = [] mutable {
         constexpr auto invalid_command_num{0x0A};
@@ -65,17 +65,17 @@ int main()
         expect(eq(formatted2, "0x0A"s));
     };
 
-    // ------------------------------------------------------------
+    //------------------------------------------------------------
     // invalid format specifier throws
-    // ------------------------------------------------------------
+    //------------------------------------------------------------
 
     "invalid command format specifier throws"_test = [] mutable {
         expect(throws<std::format_error>([] { [[maybe_unused]] const auto formatted = std::vformat("{:z}", std::make_format_args(command::iac)); }));
     };
 
-    // ------------------------------------------------------------
+    //------------------------------------------------------------
     // negotiation_direction formatting
-    // ------------------------------------------------------------
+    //------------------------------------------------------------
 
     "negotiation_direction formats correctly"_test = [] mutable {
         const auto formatted1 = std::format("{}", negotiation_direction::local);
@@ -89,9 +89,9 @@ int main()
         expect(throws<std::format_error>([]{ [[maybe_unused]] const auto formatted = std::vformat("{:x}", std::make_format_args(negotiation_direction::local)); }));
     };
 
-    // ============================================================
+    //============================================================
     // Composability inside larger formatted expressions
-    // ============================================================
+    //============================================================
 
     "formatter composes inside nested format expressions"_test = [] mutable {
         const auto msg = std::format("[{}:{}]", command::iac, negotiation_direction::remote);
