@@ -19,7 +19,7 @@ int main()
     //============================================================
 
     "equality compares pointer identity"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-        expect(that % std::equality_comparable<ConcretePtr<std::int32_t>>);
+        expect(std::equality_comparable<ConcretePtr<std::int32_t>>);
 
         std::int32_t x = 1;
         std::int32_t y = 1;

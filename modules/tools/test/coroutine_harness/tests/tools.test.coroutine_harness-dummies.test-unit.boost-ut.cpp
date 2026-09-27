@@ -31,7 +31,7 @@ int main()
         dummies::trivial_awaiter_base<void> base;
 
         expect(nothrow([&] { base.await_resume(); }));
-        expect(that % std::is_void_v<decltype(base.await_resume())>);
+        expect(std::is_void_v<decltype(base.await_resume())>);
     };
 
     "trivial_awaiter_base supports move-only return types (unique_ptr)"_test = [] mutable {
@@ -44,14 +44,14 @@ int main()
     };
 
     "trivial_awaiter_base await_resume value category correctness"_test = [] mutable {
-        expect(that % requires(std::int32_t& result, dummies::trivial_awaiter_base<std::int32_t>& base) {
-                          result = base.await_resume();
-                      });
-        expect(that % requires(std::int32_t& result, dummies::trivial_awaiter_base<std::int32_t>& base) {
-                          result = std::move(base).await_resume();
-                      });
-        expect(that % const_lvalue_resumable<dummies::trivial_awaiter_base<std::int32_t>, std::int32_t>);
-        expect(that % !const_lvalue_resumable<dummies::trivial_awaiter_base<std::unique_ptr<std::int32_t>>, std::unique_ptr<std::int32_t>>);
+        expect(requires(std::int32_t& result, dummies::trivial_awaiter_base<std::int32_t>& base) {
+                   result = base.await_resume();
+               });
+        expect(requires(std::int32_t& result, dummies::trivial_awaiter_base<std::int32_t>& base) {
+                   result = std::move(base).await_resume();
+               });
+        expect(const_lvalue_resumable<dummies::trivial_awaiter_base<std::int32_t>, std::int32_t>);
+        expect(!const_lvalue_resumable<dummies::trivial_awaiter_base<std::unique_ptr<std::int32_t>>, std::unique_ptr<std::int32_t>>);
     };
 
     // ============================================================
@@ -75,7 +75,7 @@ int main()
         const auto result = run(task);
 
         expect(eq(result, expected));
-        expect(that % !probe.suspended);
+        expect(!probe.suspended);
     };
 
     "ready_awaiter<void> completes without suspension"_test = [] mutable {
@@ -86,7 +86,7 @@ int main()
 
         run(task);
 
-        expect(that % !probe.suspended);
+        expect(!probe.suspended);
     };
 
     // ============================================================
@@ -105,8 +105,8 @@ int main()
         const auto result = run(task);
 
         expect(eq(result, expected));
-        expect(that % probe.suspended);
-        expect(that % probe.done);
+        expect(probe.suspended);
+        expect(probe.done);
     };
 
     "immediate_awaiter<void> suspends and resumes"_test = [] mutable {
@@ -118,8 +118,8 @@ int main()
 
         run(task);
 
-        expect(that % probe.suspended);
-        expect(that % probe.done);
+        expect(probe.suspended);
+        expect(probe.done);
     };
 
     "immediate_awaiter fallback path (non-test_task)"_test = [] mutable {
@@ -148,6 +148,6 @@ int main()
         const auto result = run(task);
 
         expect(eq(result, expected));
-        expect(that % !probe.suspended); // uses ready_awaiter
+        expect(!probe.suspended); // uses ready_awaiter
     };
 }

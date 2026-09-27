@@ -67,8 +67,8 @@ int main()
         const auto result = run(task);
 
         expect(eq(result, expected));
-        expect(that % probe.suspended);
-        expect(that % probe.resumed);
+        expect(probe.suspended);
+        expect(probe.resumed);
     };
 
     "as_task propagates exception from await_resume"_test = [] mutable {

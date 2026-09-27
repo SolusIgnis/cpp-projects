@@ -102,8 +102,8 @@ int main()
             } catch (...) {
                 wrong_exception = true;
             }
-            expect(that % threw);
-            expect(that % !wrong_exception);
+            expect(threw);
+            expect(!wrong_exception);
 
             trace.push_back(seventh);
             co_return val_l + val_r + *ptr;
@@ -135,51 +135,51 @@ int main()
         // -------------------------------
 
         // leaf_int_l (lvalue)
-        expect(that % probe_int_lvalue.awaited);
-        expect(that % probe_int_lvalue.resumed);
-        expect(that % probe_int_lvalue.done);
-        expect(that % !probe_int_lvalue.suspended);
-        expect(that % !probe_int_lvalue.moved);
-        expect(that % probe_int_lvalue.destroyed);
+        expect(probe_int_lvalue.awaited);
+        expect(probe_int_lvalue.resumed);
+        expect(probe_int_lvalue.done);
+        expect(!probe_int_lvalue.suspended);
+        expect(!probe_int_lvalue.moved);
+        expect(probe_int_lvalue.destroyed);
 
         // leaf_int_r (rvalue)
-        expect(that % probe_int_rvalue.awaited);
-        expect(that % probe_int_rvalue.resumed);
-        expect(that % probe_int_rvalue.done);
-        expect(that % !probe_int_rvalue.suspended);
-        expect(that % !probe_int_rvalue.moved);
-        expect(that % probe_int_rvalue.destroyed);
+        expect(probe_int_rvalue.awaited);
+        expect(probe_int_rvalue.resumed);
+        expect(probe_int_rvalue.done);
+        expect(!probe_int_rvalue.suspended);
+        expect(!probe_int_rvalue.moved);
+        expect(probe_int_rvalue.destroyed);
 
         // leaf_ptr
-        expect(that % probe_ptr.awaited);
-        expect(that % probe_ptr.done);
-        expect(that % probe_ptr.resumed);
-        expect(that % !probe_ptr.suspended);
-        expect(that % !probe_ptr.moved);
-        expect(that % probe_ptr.destroyed);
+        expect(probe_ptr.awaited);
+        expect(probe_ptr.done);
+        expect(probe_ptr.resumed);
+        expect(!probe_ptr.suspended);
+        expect(!probe_ptr.moved);
+        expect(probe_ptr.destroyed);
 
         // leaf_void
-        expect(that % probe_void.awaited);
-        expect(that % probe_void.done);
-        expect(that % probe_void.resumed);
-        expect(that % probe_void.suspended);
-        expect(that % !probe_void.moved);
-        expect(that % probe_void.destroyed);
+        expect(probe_void.awaited);
+        expect(probe_void.done);
+        expect(probe_void.resumed);
+        expect(probe_void.suspended);
+        expect(!probe_void.moved);
+        expect(probe_void.destroyed);
 
         // leaf_throw
-        expect(that % probe_throw.awaited);
-        expect(that % probe_throw.done);
-        expect(that % probe_throw.resumed);
-        expect(that % probe_throw.suspended);
-        expect(that % !probe_throw.moved);
-        expect(that % probe_throw.destroyed);
+        expect(probe_throw.awaited);
+        expect(probe_throw.done);
+        expect(probe_throw.resumed);
+        expect(probe_throw.suspended);
+        expect(!probe_throw.moved);
+        expect(probe_throw.destroyed);
 
         // nested
-        expect(that % probe_nested.awaited);
-        expect(that % probe_nested.done);
-        expect(that % probe_nested.resumed);
-        expect(that % probe_nested.suspended);
-        expect(that % !probe_nested.moved);
-        expect(that % !probe_nested.destroyed);
+        expect(probe_nested.awaited);
+        expect(probe_nested.done);
+        expect(probe_nested.resumed);
+        expect(probe_nested.suspended);
+        expect(!probe_nested.moved);
+        expect(!probe_nested.destroyed);
     };
 }

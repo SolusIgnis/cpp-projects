@@ -22,7 +22,7 @@ int main()
         const std::int32_t value{};
         const auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
 
-        expect(that % !std::is_assignable_v<decltype(*ptr), std::int32_t>) << "Compile-time: *ptr must NOT be assignable";
+        expect(!std::is_assignable_v<decltype(*ptr), std::int32_t>) << "Compile-time: *ptr must NOT be assignable";
     } | pointers_to_test;
 
     "const pointer prevents rebinding but not mutation"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
@@ -34,7 +34,7 @@ int main()
 
         *ptr = expected;
 
-        expect(that % !std::is_assignable_v<decltype(ptr)&, const decltype(ptr)&>) << "Compile-time: ptr must NOT be assignable";
+        expect(!std::is_assignable_v<decltype(ptr)&, const decltype(ptr)&>) << "Compile-time: ptr must NOT be assignable";
 
         expect(neq(value, initial));
         expect(eq(value, expected));
@@ -43,13 +43,13 @@ int main()
     "`address_type` nested type preserves top-level const"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         using ptr_t = ConcretePtr<const std::int32_t>;
 
-        expect(that % std::same_as<typename ptr_t::address_type, const std::int32_t*>);
+        expect(std::same_as<typename ptr_t::address_type, const std::int32_t*>);
     } | pointers_to_test;
 
     "`reference` nested type preserves const"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         using ptr_t = ConcretePtr<const std::int32_t>;
 
-        expect(that % std::same_as<typename ptr_t::reference, const std::int32_t&>);
+        expect(std::same_as<typename ptr_t::reference, const std::int32_t&>);
     } | pointers_to_test;
 
     //NOLINTBEGIN(misc-const-correctness): Readability suffers with const correctness in this test.
@@ -76,7 +76,7 @@ int main()
         const auto ptr = base::vocab::pointer_to<ConcretePtr>(hardware_register);
 
         //Ensure the raw pointer retrieved is also volatile
-        expect(that % std::same_as<decltype(ptr.get()), volatile std::int32_t*>);
+        expect(std::same_as<decltype(ptr.get()), volatile std::int32_t*>);
 
         //Ensure conversion to raw pointer preserves volatile
         volatile std::int32_t* raw = ptr;
@@ -85,7 +85,7 @@ int main()
         //Ensure dereference preserves volatile
         //NOLINTNEXTLINE(misc-const-correctness): It would be missing the point.
         decltype(auto) dereferenced = *ptr;
-        expect(that % std::is_volatile_v<std::remove_reference_t<decltype(dereferenced)>>);
+        expect(std::is_volatile_v<std::remove_reference_t<decltype(dereferenced)>>);
         expect(that % (dereferenced == hardware_register));
     } | pointers_to_test;
 
@@ -121,11 +121,11 @@ int main()
 
             //ConcretePtr<std::int32_t> should_fail{array};
 
-            expect(that % !std::convertible_to<decltype(array), ConcretePtr<std::int32_t>>);
-            expect(that % !std::constructible_from<ConcretePtr<std::int32_t>, decltype(array)>);
-            expect(that % !std::is_assignable_v<ConcretePtr<std::int32_t>&, decltype(array)>);
+            expect(!std::convertible_to<decltype(array), ConcretePtr<std::int32_t>>);
+            expect(!std::constructible_from<ConcretePtr<std::int32_t>, decltype(array)>);
+            expect(!std::is_assignable_v<ConcretePtr<std::int32_t>&, decltype(array)>);
 
-            expect(that % std::constructible_from<ConcretePtr<std::int32_t>, decltype(array[0])>);
+            expect(std::constructible_from<ConcretePtr<std::int32_t>, decltype(array[0])>);
 
             const auto ptr = base::vocab::pointer_to<ConcretePtr>(array[1]);
 
@@ -146,11 +146,11 @@ int main()
 
             //ConcretePtr<std::int32_t[3]> should_fail{array};
 
-            expect(that % !std::convertible_to<decltype(array), ConcretePtr<std::int32_t[3]>>);
-            expect(that % !std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array)>);
-            expect(that % !std::is_assignable_v<ConcretePtr<std::int32_t[3]>&, decltype(array)>);
+            expect(!std::convertible_to<decltype(array), ConcretePtr<std::int32_t[3]>>);
+            expect(!std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array)>);
+            expect(!std::is_assignable_v<ConcretePtr<std::int32_t[3]>&, decltype(array)>);
 
-            expect(that % std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array[0])>);
+            expect(std::constructible_from<ConcretePtr<std::int32_t[3]>, decltype(array[0])>);
 
             const auto ptr = base::vocab::pointer_to<ConcretePtr, std::int32_t[3]>(array[1]);
 

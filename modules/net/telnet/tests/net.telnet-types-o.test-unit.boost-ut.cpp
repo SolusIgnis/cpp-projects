@@ -20,7 +20,7 @@ int main()
 
     "byte_t contract"_test = [] mutable {
         expect(eq(sizeof(byte_t), std::size_t{1}));
-        expect(eq(std::is_unsigned_v<byte_t>, true));
+        expect(std::is_unsigned_v<byte_t>);
     };
 
     // ============================================================
@@ -28,8 +28,8 @@ int main()
     // ============================================================
 
     "command enum structural guarantees"_test = [] mutable {
-        expect(eq(std::is_enum_v<command>, true));
-        expect(eq(std::is_same_v<std::underlying_type_t<command>, byte_t>, true));
+        expect(std::is_enum_v<command>);
+        expect(std::is_same_v<std::underlying_type_t<command>, byte_t>);
     };
 
     // ------------------------------------------------------------
@@ -63,7 +63,7 @@ int main()
     // ============================================================
 
     "negotiation_direction structural guarantees"_test = [] mutable {
-        expect(eq(std::is_enum_v<negotiation_direction>, true));
+        expect(std::is_enum_v<negotiation_direction>);
         expect(eq(sizeof(negotiation_direction), std::size_t{1}));
     };
 }

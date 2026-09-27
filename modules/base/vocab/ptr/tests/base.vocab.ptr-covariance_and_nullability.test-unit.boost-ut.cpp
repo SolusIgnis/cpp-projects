@@ -87,9 +87,9 @@ int main()
     } | pointers_to_test;
 
     "covariant equality comparison"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-        expect(that % std::equality_comparable_with<ConcretePtr<base_type>, ConcretePtr<derived_type>>);
-        expect(that % std::equality_comparable_with<ConcretePtr<base_type>, derived_type*>);
-        expect(that % std::equality_comparable_with<base_type*, ConcretePtr<derived_type>>);
+        expect(std::equality_comparable_with<ConcretePtr<base_type>, ConcretePtr<derived_type>>);
+        expect(std::equality_comparable_with<ConcretePtr<base_type>, derived_type*>);
+        expect(std::equality_comparable_with<base_type*, ConcretePtr<derived_type>>);
     } | pointers_to_test;
 
     //============================================================

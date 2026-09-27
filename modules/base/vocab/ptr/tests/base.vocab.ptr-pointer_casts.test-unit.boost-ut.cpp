@@ -26,12 +26,12 @@ int main()
             ConcretePtr<derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
             auto result1                     = static_pointer_cast<base_type>(source);
 
-            expect(that % std::same_as<decltype(result1), ConcretePtr<base_type>>);
+            expect(std::same_as<decltype(result1), ConcretePtr<base_type>>);
             expect(that % result1.get() == std::addressof(object));
 
             auto result2 = static_pointer_cast<derived_type>(result1);
 
-            expect(that % std::same_as<decltype(result2), ConcretePtr<derived_type>>);
+            expect(std::same_as<decltype(result2), ConcretePtr<derived_type>>);
             expect(that % result2.get() == std::addressof(object));
         }
         | pointers_to_test;
@@ -42,7 +42,7 @@ int main()
         ConcretePtr<const derived_type> source = base::vocab::pointer_to<ConcretePtr>(object);
         auto result                            = static_pointer_cast<base_type>(source);
 
-        expect(that % std::same_as<decltype(result), ConcretePtr<const base_type>>);
+        expect(std::same_as<decltype(result), ConcretePtr<const base_type>>);
     } | pointers_to_test;
 
     "static_pointer_cast preserves null state"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
@@ -63,10 +63,10 @@ int main()
         auto result_1 = dynamic_pointer_cast<mixin_1>(source);
         auto result_2 = dynamic_pointer_cast<mixin_2>(source);
 
-        expect(that % std::same_as<decltype(result_1), ConcretePtr<mixin_1>>);
+        expect(std::same_as<decltype(result_1), ConcretePtr<mixin_1>>);
         expect(eq(result_1.get(), dynamic_cast<mixin_1*>(std::addressof(value))));
 
-        expect(that % std::same_as<decltype(result_2), ConcretePtr<mixin_2>>);
+        expect(std::same_as<decltype(result_2), ConcretePtr<mixin_2>>);
         expect(eq(result_2.get(), dynamic_cast<mixin_2*>(std::addressof(value))));
     } | pointers_to_test;
 
@@ -77,7 +77,7 @@ int main()
 
         auto result = dynamic_pointer_cast<derived_type>(source);
 
-        expect(that % std::same_as<decltype(result), ConcretePtr<derived_type>>);
+        expect(std::same_as<decltype(result), ConcretePtr<derived_type>>);
         expect(eq(result.get(), std::addressof(value)));
         expect(eq(result->extra, value.extra));
     } | pointers_to_test;
@@ -111,7 +111,7 @@ int main()
 
         auto result = dynamic_pointer_cast<base_type>(source);
 
-        expect(that % std::same_as<decltype(result), ConcretePtr<const base_type>>);
+        expect(std::same_as<decltype(result), ConcretePtr<const base_type>>);
     } | pointers_to_test;
 
     "dynamic_pointer_cast preserves null state"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
@@ -137,10 +137,10 @@ int main()
         auto result_bytes = reinterpret_pointer_cast<std::byte>(source);
         auto result_chars = reinterpret_pointer_cast<char>(source);
 
-        expect(that % std::same_as<decltype(result_bytes), ConcretePtr<std::byte>>);
+        expect(std::same_as<decltype(result_bytes), ConcretePtr<std::byte>>);
         expect(eq(result_bytes.get(), reinterpret_cast<std::byte*>(std::addressof(value))));
 
-        expect(that % std::same_as<decltype(result_chars), ConcretePtr<char>>);
+        expect(std::same_as<decltype(result_chars), ConcretePtr<char>>);
         expect(eq(result_chars.get(), reinterpret_cast<char*>(std::addressof(value))));
     } | pointers_to_test;
 
@@ -163,7 +163,7 @@ int main()
             //WARNING: Using this result pointer's stored address potentially invokes undefined behavior.
             auto result = reinterpret_pointer_cast<target_t>(source);
 
-            expect(that % std::same_as<decltype(result), ConcretePtr<target_t>>);
+            expect(std::same_as<decltype(result), ConcretePtr<target_t>>);
             expect(eq(result.get(), reinterpret_cast<target_t*>(std::addressof(value))));
         }
         | pointers_to_test;
@@ -175,7 +175,7 @@ int main()
 
         auto result = reinterpret_pointer_cast<base_type>(source);
 
-        expect(that % std::same_as<decltype(result), ConcretePtr<const base_type>>);
+        expect(std::same_as<decltype(result), ConcretePtr<const base_type>>);
     } | pointers_to_test;
 
     "reinterpret_pointer_cast preserves null state"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
@@ -210,7 +210,7 @@ int main()
         auto source = base::vocab::pointer_to<ConcretePtr>(value);
         auto result = start_lifetime_as<target_t>(source);
 
-        expect(that % std::same_as<decltype(result), ConcretePtr<const target_t>>);
+        expect(std::same_as<decltype(result), ConcretePtr<const target_t>>);
         expect(eq(result.get(), reinterpret_cast<target_t*>(std::addressof(value))));
         expect(eq(result->x, expected.foo));
         expect(eq(result->y, expected.bar));

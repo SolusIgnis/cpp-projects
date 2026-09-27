@@ -25,31 +25,31 @@ int main()
     } | pointers_to_test;
 
     "not bindable from pointee rvalue"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-        expect(that % !std::constructible_from<ConcretePtr<std::int32_t>, std::int32_t>);
-        expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, std::int32_t>);
-        expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, const std::int32_t>);
+        expect(!std::constructible_from<ConcretePtr<std::int32_t>, std::int32_t>);
+        expect(!std::constructible_from<ConcretePtr<const std::int32_t>, std::int32_t>);
+        expect(!std::constructible_from<ConcretePtr<const std::int32_t>, const std::int32_t>);
 
-        expect(that % !std::constructible_from<ConcretePtr<std::int32_t>, std::int32_t&&>);
-        expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, std::int32_t&&>);
-        expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, const std::int32_t&&>);
+        expect(!std::constructible_from<ConcretePtr<std::int32_t>, std::int32_t&&>);
+        expect(!std::constructible_from<ConcretePtr<const std::int32_t>, std::int32_t&&>);
+        expect(!std::constructible_from<ConcretePtr<const std::int32_t>, const std::int32_t&&>);
 
-        expect(that % !std::is_assignable_v<ConcretePtr<std::int32_t>&, std::int32_t&&>);
-        expect(that % !std::is_assignable_v<ConcretePtr<const std::int32_t>&, std::int32_t&&>);
-        expect(that % !std::is_assignable_v<ConcretePtr<const std::int32_t>&, const std::int32_t&&>);
+        expect(!std::is_assignable_v<ConcretePtr<std::int32_t>&, std::int32_t&&>);
+        expect(!std::is_assignable_v<ConcretePtr<const std::int32_t>&, std::int32_t&&>);
+        expect(!std::is_assignable_v<ConcretePtr<const std::int32_t>&, const std::int32_t&&>);
     } | pointers_to_test;
 
     "not bindable from smart pointer rvalue"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-        expect(that % !std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>>);
-        expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>>);
-        expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>>);
+        expect(!std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>>);
+        expect(!std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>>);
+        expect(!std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>>);
 
-        expect(that % !std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>&&>);
-        expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>&&>);
-        expect(that % !std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>&&>);
+        expect(!std::constructible_from<ConcretePtr<std::int32_t>, trivial_smart_ptr<std::int32_t>&&>);
+        expect(!std::constructible_from<ConcretePtr<const std::int32_t>, trivial_smart_ptr<std::int32_t>&&>);
+        expect(!std::constructible_from<ConcretePtr<const std::int32_t>, const trivial_smart_ptr<std::int32_t>&&>);
 
-        expect(that % !std::is_assignable_v<ConcretePtr<std::int32_t>&, trivial_smart_ptr<std::int32_t>&&>);
-        expect(that % !std::is_assignable_v<ConcretePtr<const std::int32_t>&, trivial_smart_ptr<std::int32_t>&&>);
-        expect(that % !std::is_assignable_v<ConcretePtr<const std::int32_t>&, const trivial_smart_ptr<std::int32_t>&&>);
+        expect(!std::is_assignable_v<ConcretePtr<std::int32_t>&, trivial_smart_ptr<std::int32_t>&&>);
+        expect(!std::is_assignable_v<ConcretePtr<const std::int32_t>&, trivial_smart_ptr<std::int32_t>&&>);
+        expect(!std::is_assignable_v<ConcretePtr<const std::int32_t>&, const trivial_smart_ptr<std::int32_t>&&>);
     } | pointers_to_test;
 
     //============================================================
@@ -104,7 +104,7 @@ int main()
             auto ptr = base::vocab::pointer_to<ConcretePtr>(value);
             ptr.reset();
 
-            expect(that % !ptr == true);
+            expect(!ptr == true);
         }
     } | pointers_to_test;
 

@@ -30,10 +30,10 @@ int main()
         if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
             using ptr_t = ConcretePtr<void>;
 
-            expect(that % std::same_as<typename ptr_t::element_type, void>);
-            expect(that % std::same_as<typename ptr_t::value_type, void>);
-            expect(that % std::same_as<typename ptr_t::address_type, void*>);
-            expect(that % std::same_as<typename ptr_t::difference_type, std::ptrdiff_t>);
+            expect(std::same_as<typename ptr_t::element_type, void>);
+            expect(std::same_as<typename ptr_t::value_type, void>);
+            expect(std::same_as<typename ptr_t::address_type, void*>);
+            expect(std::same_as<typename ptr_t::difference_type, std::ptrdiff_t>);
         }
     } | pointers_to_test;
 
@@ -50,32 +50,32 @@ int main()
 
     "void specialization disables dereference operators"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-            expect(that % dereferenceable<ConcretePtr<base_type>>);
-            expect(that % arrow_accessible<ConcretePtr<base_type>>);
+            expect(dereferenceable<ConcretePtr<base_type>>);
+            expect(arrow_accessible<ConcretePtr<base_type>>);
 
-            expect(that % !dereferenceable<ConcretePtr<void>>);
-            expect(that % !arrow_accessible<ConcretePtr<void>>);
+            expect(!dereferenceable<ConcretePtr<void>>);
+            expect(!arrow_accessible<ConcretePtr<void>>);
         }
     } | pointers_to_test;
 
     "construction from void raw pointer is explicit"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-            expect(that % !std::convertible_to<void*, ConcretePtr<void>>);
-            expect(that % std::constructible_from<ConcretePtr<void>, void*>);
+            expect(!std::convertible_to<void*, ConcretePtr<void>>);
+            expect(std::constructible_from<ConcretePtr<void>, void*>);
         }
     } | pointers_to_test;
 
     "construction from void smart pointer is explicit"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-            expect(that % !std::convertible_to<trivial_smart_ptr<void>&, ConcretePtr<void>>);
-            expect(that % std::constructible_from<ConcretePtr<void>, trivial_smart_ptr<void>&>);
+            expect(!std::convertible_to<trivial_smart_ptr<void>&, ConcretePtr<void>>);
+            expect(std::constructible_from<ConcretePtr<void>, trivial_smart_ptr<void>&>);
         }
     } | pointers_to_test;
 
     "void pointer constructs implicitly from typed pointer"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         if constexpr (pointer_test_traits<ConcretePtr>::permits_void_pointee) {
-            expect(that % std::convertible_to<ConcretePtr<std::int32_t>, ConcretePtr<void>>);
-            expect(that % !std::convertible_to<ConcretePtr<void>, ConcretePtr<std::int32_t>>);
+            expect(std::convertible_to<ConcretePtr<std::int32_t>, ConcretePtr<void>>);
+            expect(!std::convertible_to<ConcretePtr<void>, ConcretePtr<std::int32_t>>);
 
             const std::int32_t value{42};
             const auto typed_ptr = base::vocab::pointer_to<ConcretePtr>(value);
@@ -95,12 +95,12 @@ int main()
                 auto source  = base::vocab::pointer_to<ConcretePtr>(object);
                 auto result1 = static_pointer_cast<void>(source);
 
-                expect(that % std::same_as<decltype(result1), ConcretePtr<void>>);
+                expect(std::same_as<decltype(result1), ConcretePtr<void>>);
                 expect(that % result1.get() == std::addressof(object));
 
                 auto result2 = static_pointer_cast<std::int32_t>(result1);
 
-                expect(that % std::same_as<decltype(result2), ConcretePtr<std::int32_t>>);
+                expect(std::same_as<decltype(result2), ConcretePtr<std::int32_t>>);
                 expect(that % result2.get() == std::addressof(object));
             }
         }
@@ -132,7 +132,7 @@ int main()
 
     "incomplete type support"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         if constexpr (pointer_test_traits<ConcretePtr>::allows_pointer_binding) {
-            expect(that % base::meta::concepts::instantiable_with<ConcretePtr, incomplete_type>);
+            expect(base::meta::concepts::instantiable_with<ConcretePtr, incomplete_type>);
 
             //NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, readability-magic-numbers): Test requires a fabricated pointer value to an incomplete type.
             auto* const raw = reinterpret_cast<incomplete_type*>(0x1234);
