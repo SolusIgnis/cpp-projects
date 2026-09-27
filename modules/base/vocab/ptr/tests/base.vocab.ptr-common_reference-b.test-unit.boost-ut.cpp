@@ -43,8 +43,7 @@ int main()
         expect(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&>, ConcretePtr<const std::int32_t>>);
 
         static_assert(
-            std::same_as<std::common_reference_t<std::int32_t*&&, const std::int32_t*&&>, const std::int32_t*>,
-            "Sanity check for raw pointer common_reference_t<T*&&, const T*&&> -> const T*"
+            std::same_as<std::common_reference_t<std::int32_t*&&, const std::int32_t*&&>, const std::int32_t*>, "Sanity check for raw pointer common_reference_t<T*&&, const T*&&> -> const T*"
         );
         expect(std::common_reference_with<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>);
         expect(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>&&, ConcretePtr<const std::int32_t>&&>, ConcretePtr<const std::int32_t>>);
@@ -66,20 +65,23 @@ int main()
 
     "basic_common_reference matches raw pointer common_reference"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         expect(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const volatile std::int32_t>>);
-        expect(std::same_as<
+        expect(
+            std::same_as<
                 std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const volatile std::int32_t>>,
                 ConcretePtr<std::remove_pointer_t<std::remove_cvref_t<std::common_reference_t<std::int32_t*, const volatile std::int32_t*>>>>
             >
         );
     } | pointers_to_test;
 
-    "vocabulary pointer and raw pointer share raw pointer common reference"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
-        expect(std::common_reference_with<ConcretePtr<std::int32_t>, std::int32_t*>);
-        expect(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, std::int32_t*>, std::int32_t*>);
+    "vocabulary pointer and raw pointer share raw pointer common reference"_test =
+        []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
+            expect(std::common_reference_with<ConcretePtr<std::int32_t>, std::int32_t*>);
+            expect(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, std::int32_t*>, std::int32_t*>);
 
-        expect(std::common_reference_with<std::int32_t*, ConcretePtr<std::int32_t>>);
-        expect(std::same_as<std::common_reference_t<std::int32_t*, ConcretePtr<std::int32_t>>, std::int32_t*>);
-    } | pointers_to_test;
+            expect(std::common_reference_with<std::int32_t*, ConcretePtr<std::int32_t>>);
+            expect(std::same_as<std::common_reference_t<std::int32_t*, ConcretePtr<std::int32_t>>, std::int32_t*>);
+        }
+        | pointers_to_test;
 
     "common_reference supports covariance"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         expect(std::common_reference_with<ConcretePtr<derived_type>, ConcretePtr<base_type>>);
