@@ -70,7 +70,7 @@ int main()
     //------------------------------------------------------------
 
     "invalid command format specifier throws"_test = [] mutable {
-        expect(throws<std::format_error>([] { [[maybe_unused]] const auto formatted = std::vformat("{:z}", std::make_format_args(command::iac)); }));
+        expect(throws<std::format_error>([] { [[maybe_unused]] const auto formatted = std::format("{:z}"s, command::iac); }));
     };
 
     //------------------------------------------------------------
@@ -86,7 +86,7 @@ int main()
     };
 
     "invalid negotiation_direction format throws"_test = [] mutable {
-        expect(throws<std::format_error>([]{ [[maybe_unused]] const auto formatted = std::vformat("{:x}", std::make_format_args(negotiation_direction::local)); }));
+        expect(throws<std::format_error>([]{ [[maybe_unused]] const auto formatted = std::format("{:x}"s, negotiation_direction::local); }));
     };
 
     //============================================================
