@@ -18,7 +18,7 @@ int main()
     // Common Reference
     //============================================================
 
-    "basic_common_reference preserves concrete pointer type with cv-qualifications"_test = [] mutable {
+    "basic_common_reference preserves concrete pointer type with cv-qualifications"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         expect(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>);
         expect(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const std::int32_t>>);
 
@@ -35,7 +35,7 @@ int main()
         expect(std::same_as<std::common_reference_t<ConcretePtr<volatile std::int32_t>, ConcretePtr<const std::int32_t>>, ConcretePtr<const volatile std::int32_t>>);
     } | pointers_to_test;
 
-    "basic_common_reference uses reference-to-pointer value category propagation"_test = [] mutable {
+    "basic_common_reference uses reference-to-pointer value category propagation"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         static_assert(
             std::same_as<std::common_reference_t<std::int32_t*&, const std::int32_t*&>, const std::int32_t*>, "Sanity check for raw pointer common_reference_t<T*&, const T*&> -> const T*"
         );
@@ -64,7 +64,7 @@ int main()
         expect(std::same_as<std::common_reference_t<const ConcretePtr<std::int32_t>&, ConcretePtr<const std::int32_t>&&>, const ConcretePtr<const std::int32_t>&>);
     } | pointers_to_test;
 
-    "basic_common_reference matches raw pointer common_reference"_test = [] mutable {
+    "basic_common_reference matches raw pointer common_reference"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         expect(std::common_reference_with<ConcretePtr<std::int32_t>, ConcretePtr<const volatile std::int32_t>>);
         expect(std::same_as<
                 std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const volatile std::int32_t>>,
@@ -73,7 +73,7 @@ int main()
         );
     } | pointers_to_test;
 
-    "vocabulary pointer and raw pointer share raw pointer common reference"_test = [] mutable {
+    "vocabulary pointer and raw pointer share raw pointer common reference"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         expect(std::common_reference_with<ConcretePtr<std::int32_t>, std::int32_t*>);
         expect(std::same_as<std::common_reference_t<ConcretePtr<std::int32_t>, std::int32_t*>, std::int32_t*>);
 
@@ -81,7 +81,7 @@ int main()
         expect(std::same_as<std::common_reference_t<std::int32_t*, ConcretePtr<std::int32_t>>, std::int32_t*>);
     } | pointers_to_test;
 
-    "common_reference supports covariance"_test = [] mutable {
+    "common_reference supports covariance"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         expect(std::common_reference_with<ConcretePtr<derived_type>, ConcretePtr<base_type>>);
         expect(std::same_as<std::common_reference_t<ConcretePtr<derived_type>, ConcretePtr<base_type>>, ConcretePtr<base_type>>);
 
@@ -104,13 +104,13 @@ int main()
         expect(std::same_as<std::common_reference_t<ConcretePtr<const derived_type>, volatile base_type*>, const volatile base_type*>);
     } | pointers_to_test;
 
-    "common_type preserves const qualification"_test = [] mutable {
+    "common_type preserves const qualification"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         using common_t = std::common_type_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>;
 
         expect(std::same_as<common_t, ConcretePtr<const std::int32_t>>);
     } | pointers_to_test;
 
-    "common_reference preserves const qualification"_test = [] mutable {
+    "common_reference preserves const qualification"_test = []<template<typename> typename ConcretePtr>(template_tag<ConcretePtr>) mutable {
         using common_ref = std::common_reference_t<ConcretePtr<std::int32_t>, ConcretePtr<const std::int32_t>>;
 
         expect(std::same_as<common_ref, ConcretePtr<const std::int32_t>>);
