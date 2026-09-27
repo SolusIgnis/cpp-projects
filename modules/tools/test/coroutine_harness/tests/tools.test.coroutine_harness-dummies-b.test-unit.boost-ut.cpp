@@ -45,11 +45,11 @@ int main()
 
     "trivial_awaiter_base await_resume value category correctness"_test = [] mutable {
         expect(requires(std::int32_t& result, dummies::trivial_awaiter_base<std::int32_t>& base) {
-                          result = base.await_resume();
-                      });
+                   result = base.await_resume();
+               });
         expect(requires(std::int32_t& result, dummies::trivial_awaiter_base<std::int32_t>& base) {
-                          result = std::move(base).await_resume();
-                      });
+                   result = std::move(base).await_resume();
+               });
         expect(const_lvalue_resumable<dummies::trivial_awaiter_base<std::int32_t>, std::int32_t>);
         expect(!const_lvalue_resumable<dummies::trivial_awaiter_base<std::unique_ptr<std::int32_t>>, std::unique_ptr<std::int32_t>>);
     };

@@ -295,8 +295,8 @@ int main()
 
         auto task = echo(expected);
         task.set_probe(&probe);
-        task = std::move(task);      // NOLINT(clang-diagnostic-self-move): testing safety of self-assignment
-        expect(!probe.moved); //self-assignment doesn't actually move
+        task = std::move(task); // NOLINT(clang-diagnostic-self-move): testing safety of self-assignment
+        expect(!probe.moved);   //self-assignment doesn't actually move
         expect(eq(run(task), expected));
     };
 #pragma GCC diagnostic pop
