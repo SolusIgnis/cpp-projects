@@ -14,18 +14,18 @@ namespace {
         using net::telnet::negotiation_direction;
         using net::telnet::byte_t;
 
-        // ============================================================
+        //=============================================================
         // option::id_num enum structural properties
-        // ============================================================
+        //=============================================================
 
         "option::id_num enum structural guarantees"_test = [] mutable {
             expect(eq(std::is_enum_v<option::id_num>, true));
             expect(eq(std::is_same_v<std::underlying_type_t<option::id_num>, byte_t>, true));
         };
 
-        // ============================================================
+        //=============================================================
         // option tests
-        // ============================================================
+        //=============================================================
 
         "option stores id and name"_test = [] mutable {
             const option opt{option::id_num::echo, "Echo"};
