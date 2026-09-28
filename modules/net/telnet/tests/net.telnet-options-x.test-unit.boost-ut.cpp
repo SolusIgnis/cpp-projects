@@ -10,11 +10,13 @@ using namespace boost::ext::ut;
 using namespace net::telnet;
 using namespace std::literals;
 
+namespace {
+    constexpr inline std::size_t default_max_subnegotiation_buffer_size{1024};
+} //namespace
+
 //NOLINTNEXTLINE(bugprone-exception-escape): Test framework.
 int main()
 {
-    constexpr inline std::size_t default_max_subnegotiation_buffer_size{1024};
-
     using net::telnet::byte_t;
 
     //NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers, readability-magic-numbers): Verifying literal values.
@@ -90,16 +92,16 @@ int main()
         const option sga{option::id_num::suppress_go_ahead, /*name=*/"SGA"s};
         const option echo2{option::id_num::echo, /*name=*/"Echo again"s};
 
-        expect(that % (echo1 <=> sga) == std::strong_ordering::less);
-        expect(that % (sga <=> echo1) == std::strong_ordering::greater);
-        expect(that % (echo1 <=> echo2) == std::strong_ordering::equal);
+        expect(that % ((echo1 <=> sga) == std::strong_ordering::less));
+        expect(that % ((sga <=> echo1) == std::strong_ordering::greater));
+        expect(that % ((echo1 <=> echo2) == std::strong_ordering::equal));
     };
 
     "option comparison with id_num"_test = [] mutable {
         const option opt{option::id_num::terminal_type};
-        expect(that % (opt <=> option::id_num::echo) == std::strong_ordering::greater);
-        expect(that % (opt <=> option::id_num::terminal_type) == std::strong_ordering::equal);
-        expect(that % (opt <=> option::id_num::linemode) == std::strong_ordering::less);
+        expect(that % ((opt <=> option::id_num::echo) == std::strong_ordering::greater));
+        expect(that % ((opt <=> option::id_num::terminal_type) == std::strong_ordering::equal));
+        expect(that % ((opt <=> option::id_num::linemode) == std::strong_ordering::less));
     };
 
     "option implicit conversion to id_num"_test = [] mutable {
