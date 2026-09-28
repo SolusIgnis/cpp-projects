@@ -101,10 +101,7 @@ int main()
         expect(eq(registered->supports_local(), true));
         expect(eq(registered->supports_remote(), true));
     };
-};
 
-//NOLINTNEXTLINE(bugprone-throwing-static-initialization, cppcoreguidelines-avoid-non-const-global-variables): Test framework.
-suite net_telnet_option_formatter_tests = [] mutable {
     using net::telnet::option;
 
     "default format prints hex and name"_test = [] mutable {
