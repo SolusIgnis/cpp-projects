@@ -96,7 +96,7 @@ int main()
 
         expect(registered.has_value());
         if (registered) {
-            expect(registered->get_name(), name));
+            expect(eq(registered->get_name(), name));
             expect(registered->supports_local());
             expect(registered->supports_remote());
         }
