@@ -87,10 +87,7 @@ int main()
 
         expect(eq(cat.message(static_cast<int>(error::user_handler_not_found)), "No handler registered for requested option"s));
 
-        expect(
-            eq(cat.message(static_cast<int>(error::negotiation_queue_error)),
-               "Telnet negotiation queue bit can only be set when the " "NegotiationState is WANTYES or WANTNO."s)
-        );
+        expect(eq(cat.message(static_cast<int>(error::negotiation_queue_error)), "Telnet negotiation queue bit can only be set when the " "NegotiationState is WANTYES or WANTNO."s));
     };
 
     "processing_signal message coverage"_test = [] mutable {
@@ -98,10 +95,7 @@ int main()
 
         expect(eq(cat.message(static_cast<int>(processing_signal::end_of_line)), "Telnet encountered End-of-Line in the byte stream"s));
 
-        expect(
-            eq(cat.message(static_cast<int>(processing_signal::carriage_return)),
-               "Telnet encountered Carriage-Return sequence in the byte stream requiring special handling"})
-        );
+        expect(eq(cat.message(static_cast<int>(processing_signal::carriage_return)), "Telnet encountered Carriage-Return sequence in the byte stream requiring special handling"s));
 
         expect(eq(cat.message(static_cast<int>(processing_signal::end_of_record)), "Telnet encountered \"End-of-Record\" command in the byte stream"s));
 
@@ -113,10 +107,7 @@ int main()
 
         expect(eq(cat.message(static_cast<int>(processing_signal::abort_output)), "Telnet encountered \"Abort Output\" command in the byte stream"s));
 
-        expect(
-            eq(cat.message(static_cast<int>(processing_signal::interrupt_process)),
-               "Telnet encountered \"Interrupt Process\" command in the byte stream"s)
-        );
+        expect(eq(cat.message(static_cast<int>(processing_signal::interrupt_process)), "Telnet encountered \"Interrupt Process\" command in the byte stream"s));
 
         expect(eq(cat.message(static_cast<int>(processing_signal::telnet_break)), "Telnet encountered \"Break\" command in the byte stream"s));
 
