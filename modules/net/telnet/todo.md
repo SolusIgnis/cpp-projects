@@ -166,14 +166,22 @@ The Telnet project (as of version 0.5.0) has completed Phases 4 and 5, achieving
   - **Estimated Effort**: 4–5 days (1 for design, 2–2.5 for implementation, 1–1.5 for testing).
 
 04. [ ] **Half-Duplex Support**:
-  - **Task**: Add optional half-duplex support per RFC 854 for legacy peers.
+  - **Task**: Add optional half-duplex support per RFC 854 for legacy peers while ensuring modern full-duplex/SGA streams remain deadlock-free.
   - **Steps**:
-    - Evaluate legacy peer requirements.
-    - Update `ProtocolFSM`, `stream`, and `stream::InputProcessor` to handle half-duplex constraints (i.e., `TelnetCommand::GA` handling).
-    - Test with legacy peers and update `:stream`.
+    - Update `ProtocolFSM`, `stream`, and `stream::InputProcessor` to handle half-duplex turn-taking and `command::ga` handling.
+      - Refactor `async_write_negotiation`, `async_write_command`, `async_write_subnegotiation`, and `async_write_temp_buffer` to call `async_write_raw` instead of `asio::async_write` directly.
+      - Make `async_write_raw` private.
+      - Either add `async_queue_write` or `async_write_immediate` to allow `async_write_some` requests to use the output side buffer while protocol commands and AYT responses get written immediately. Flush the buffer immediately at this stage.
+      - Side-Buffer Escaping & Lifetime Safety: Route all user-facing writes (`async_write_some`) through the stream's owned `output_side_buffer` to handle Telnet escaping (`IAC` doubling) and eliminate caller-side buffer lifetime dependencies.
+      - SGA-Governed Token State: 
+        - Local SGA: When inactive, automatically append `IAC GA` to data writes; when active, omit `IAC GA`.
+        - Remote SGA: When active, force `my_token = true` permanently (bypassing token checks and never expecting incoming `GA` commands); when inactive, manage turn-taking via `my_token`.
+      - Input Processor Integration: Listen for incoming `IAC GA` commands to set `my_token = true` and automatically trigger a flush of any parked writes in the `output_side_buffer`.
+      - Post-Flush State Update: Set post-flush token state dynamically (`my_token = remote_sga`) and ensure that enabling remote SGA mid-flight immediately unlocks `my_token = true` and flushes any pending buffers.
+    - Test with legacy half-duplex peers and update `:stream`.
   - **Dependencies**: Affects `:protocol_fsm`, `:stream`, potentially `:errors`.
   - **Priority**: Low (depends on legacy peer needs).
-  - **Estimated Effort**: 2–3 days (1 for evaluation, 1–1.5 for implementation, 0.5 for testing).
+  - **Estimated Effort**: 2–3 days (1 for evaluation/design adjustments, 1–1.5 for implementation, 0.5 for testing).  
 
 ### Future Development Milestones
 - [ ] **Module Export Cleanup**:
