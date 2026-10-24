@@ -87,7 +87,9 @@ int main()
 
         expect(eq(cat.message(static_cast<int>(error::user_handler_not_found)), "No handler registered for requested option"s));
 
-        expect(eq(cat.message(static_cast<int>(error::negotiation_queue_error)), "Telnet negotiation queue bit can only be set when the " "NegotiationState is WANTYES or WANTNO."s));
+        expect(eq(
+            cat.message(static_cast<int>(error::negotiation_queue_error)), "Telnet negotiation queue bit can only be set when the " "NegotiationState is WANTYES or WANTNO."s
+        ));
     };
 
     "processing_signal message coverage"_test = [] mutable {
