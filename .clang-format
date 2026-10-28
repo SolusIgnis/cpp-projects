@@ -278,6 +278,14 @@ Cpp11BracedListStyle: FunctionCall
 DerivePointerAlignment: false
 LineEnding: DeriveLF
 
+QualifierOrder:
+  - inline
+  - static
+  - constexpr
+  - const
+  - volatile
+  - type
+
 IntegerLiteralSeparator:
   Binary:                 0
   BinaryMinDigitsInsert:  0
