@@ -23,6 +23,10 @@ RUN apt-get update && apt-get install -y \
     curl \
     libssl-dev \
     pkg-config \
+    && add-apt-repository ppa:ubuntu-toolchain-r/test \
+    && apt-get update && apt-get install -y \
+        gcc-16 \
+        g++-16 \
     && rm -rf /var/lib/apt/lists/*
 
 # Ensure consistent locale (avoids weird sorting / tool output issues)
@@ -33,7 +37,7 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 # ------------------------------------------------------------
-# 2. Install Clang 23 + tools
+# 2. Install LLVM 23
 # ------------------------------------------------------------
 RUN wget https://apt.llvm.org/llvm.sh && \
     chmod +x llvm.sh && \
@@ -50,9 +54,13 @@ RUN wget https://apt.llvm.org/llvm.sh && \
     rm llvm.sh
 
 # ------------------------------------------------------------
-# 3. Set Clang 23 as default
+# 3. Set GCC 16 and Clang 23 as default
 # ------------------------------------------------------------
-RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-23 65536 && \
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-16 65536 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-16 65536 && \
+    update-alternatives --set gcc /usr/bin/gcc-16 && \
+    update-alternatives --set g++ /usr/bin/g++-16 && \
+    update-alternatives --install /usr/bin/clang clang /usr/bin/clang-23 65536 && \
     update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-23 65536 && \
     update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-23 65536 && \
     update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-23 65536 && \
