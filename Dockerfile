@@ -54,7 +54,7 @@ RUN wget https://apt.llvm.org/llvm.sh && \
     rm llvm.sh
 
 # ------------------------------------------------------------
-# 3. Set GCC 16 and Clang 23 as default
+# 3. Set GCC 16 and LLVM 23 as default
 # ------------------------------------------------------------
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-16 65536 && \
     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-16 65536 && \

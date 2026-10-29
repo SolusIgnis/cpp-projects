@@ -32,7 +32,7 @@ jobs:
   ci-build_and_test-clang_llvm:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/solusignis/ci-env-llvm:latest
+      image: ghcr.io/solusignis/ci-env-linux-llvm_and_gnu:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -55,7 +55,9 @@ jobs:
   ci-build_and_test-gcc_gnu:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/solusignis/ci-env-llvm:latest
+      image: ghcr.io/solusignis/ci-env-linux-llvm_and_gnu:latest
+    # Disabled until compatibility issue between qlibs/ut module and GCC-16 can be resolved.
+    if: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -77,7 +79,7 @@ jobs:
   ci-tooling-clang_llvm:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/solusignis/ci-env-llvm:latest
+      image: ghcr.io/solusignis/ci-env-linux-llvm_and_gnu:latest
     if: >-
       ${{ github.event.inputs.notooling != 'true' }}
     env:
