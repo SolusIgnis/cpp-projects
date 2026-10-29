@@ -29,7 +29,7 @@ on:
         default: false
 
 jobs:
-  ci-build_and_test:
+  ci-build_and_test-clang_llvm:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/solusignis/ci-env-llvm:latest
@@ -51,6 +51,28 @@ jobs:
 
       - name: Run tests
         run: cmake --build --preset=clang-debug --target=tests.run
+
+  ci-build_and_test-gcc_gnu:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/solusignis/ci-env-llvm:latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure
+        run: |
+          cmake --preset=gcc-debug \
+            -DBUILD_TESTING=ON \
+            -DCMAKE_CXX_STANDARD=23 \
+
+      - name: Build
+        run: cmake --build --preset=gcc-debug
+
+      - name: Run tests
+        run: cmake --build --preset=gcc-debug --target=tests.run
 
   ci-tooling-clang_llvm:
     runs-on: ubuntu-latest
